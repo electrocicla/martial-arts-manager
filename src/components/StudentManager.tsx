@@ -1,5 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Search, Plus, Filter } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../hooks/useToast';
+import { useDebounce } from '../hooks/useDebounce';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { Select } from './ui/Select';
+import { Card, CardHeader, CardContent } from './ui/Card';
+import { Badge } from './ui/Badge';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from './ui/Modal';
+import { studentSchema, type StudentFormData } from '../lib/validation';
 import type { Discipline } from '../types';
 
 const disciplines: Discipline[] = ['Jiujitsu', 'MMA', 'Karate', 'Taekwondo', 'Boxing', 'Kenpo Karate'];
@@ -13,98 +25,270 @@ const belts: Record<Discipline, string[]> = {
   'Kenpo Karate': ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'],
 };
 
+const disciplineOptions = disciplines.map(d => ({ value: d, label: d }));
+
 export default function StudentManager() {
   const { students, setStudents } = useApp();
-  const [form, setForm] = useState({ name: '', email: '', phone: '', discipline: '' as Discipline | '', belt: '' });
+  const toast = useToast();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDiscipline, setFilterDiscipline] = useState<Discipline | ''>('');
+  const [filterBelt, setFilterBelt] = useState('');
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<StudentFormData>({
+    resolver: zodResolver(studentSchema),
+    defaultValues: {
+      joinDate: new Date().toISOString().split('T')[0],
+    },
+  });
+
+  const selectedDiscipline = watch('discipline');
+
+  // Filter and search students
+  const filteredStudents = useMemo(() => {
+    return students.filter(student => {
+      const matchesSearch = student.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                          student.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+      const matchesDiscipline = !filterDiscipline || student.discipline === filterDiscipline;
+      const matchesBelt = !filterBelt || student.belt === filterBelt;
+
+      return matchesSearch && matchesDiscipline && matchesBelt;
+    });
+  }, [students, debouncedSearchTerm, filterDiscipline, filterBelt]);
+
+  // Belt options based on selected discipline
+  const beltOptions = selectedDiscipline ? belts[selectedDiscipline].map(b => ({ value: b, label: b })) : [];
 
   useEffect(() => {
     fetch('/api/students')
       .then(r => r.json())
       .then(data => setStudents(data))
-      .catch(console.error);
-  }, [setStudents]);
+      .catch(error => {
+        console.error('Failed to fetch students:', error);
+        toast.error('Failed to load students');
+      });
+  }, [setStudents, toast]);
 
-  const addStudent = async () => {
-    if (form.name && form.email && form.discipline && form.belt) {
+  const onSubmit = async (data: StudentFormData) => {
+    try {
       const newStudent = {
         id: Date.now().toString(),
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        belt: form.belt,
-        discipline: form.discipline,
-        joinDate: new Date().toISOString().split('T')[0],
+        ...data,
       };
-      try {
-        const response = await fetch('/api/students', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newStudent),
-        });
-        if (response.ok) {
-          setStudents([...students, newStudent]);
-          setForm({ name: '', email: '', phone: '', discipline: '', belt: '' });
-        } else {
-          console.error('Failed to add student');
-        }
-      } catch (error) {
-        console.error('Error adding student:', error);
+
+      const response = await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newStudent),
+      });
+
+      if (response.ok) {
+        setStudents([...students, newStudent]);
+        reset();
+        setIsModalOpen(false);
+        toast.success('Student added successfully');
+      } else {
+        throw new Error('Failed to add student');
       }
+    } catch (error) {
+      console.error('Error adding student:', error);
+      toast.error('Failed to add student');
     }
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-xl font-bold mb-4">Student Manager</h2>
-      <div className="space-y-2 mb-4">
-        <input
-          type="text"
-          placeholder="Name"
-          value={form.name}
-          onChange={e => setForm({ ...form, name: e.target.value })}
-          className="w-full border p-2 rounded"
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={e => setForm({ ...form, email: e.target.value })}
-          className="w-full border p-2 rounded"
-        />
-        <input
-          type="tel"
-          placeholder="Phone"
-          value={form.phone}
-          onChange={e => setForm({ ...form, phone: e.target.value })}
-          className="w-full border p-2 rounded"
-        />
-        <select
-          value={form.discipline}
-          onChange={e => setForm({ ...form, discipline: e.target.value as Discipline, belt: '' })}
-          className="w-full border p-2 rounded"
-        >
-          <option value="">Select Discipline</option>
-          {disciplines.map(d => <option key={d} value={d}>{d}</option>)}
-        </select>
-        <select
-          value={form.belt}
-          onChange={e => setForm({ ...form, belt: e.target.value })}
-          className="w-full border p-2 rounded"
-          disabled={!form.discipline}
-        >
-          <option value="">Select Belt</option>
-          {form.discipline && belts[form.discipline].map(b => <option key={b} value={b}>{b}</option>)}
-        </select>
-        <button onClick={addStudent} className="w-full bg-blue-500 text-white p-2 rounded">Add Student</button>
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Students</h1>
+          <p className="text-gray-600 dark:text-gray-400">Manage your martial arts students</p>
+        </div>
+        <Button onClick={() => setIsModalOpen(true)} leftIcon={<Plus className="w-4 h-4" />}>
+          Add Student
+        </Button>
       </div>
-      <ul className="space-y-2">
-        {students.map(s => (
-          <li key={s.id} className="border p-2 rounded bg-white">
-            <div className="font-semibold">{s.name}</div>
-            <div className="text-sm text-gray-600">{s.email} - {s.discipline} {s.belt}</div>
-          </li>
+
+      {/* Search and Filters */}
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Input
+                placeholder="Search students..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                leftIcon={<Search className="w-4 h-4" />}
+              />
+            </div>
+            <Select
+              placeholder="Filter by discipline"
+              value={filterDiscipline}
+              onChange={(e) => setFilterDiscipline(e.target.value as Discipline)}
+              options={disciplineOptions}
+            />
+            <Select
+              placeholder="Filter by belt"
+              value={filterBelt}
+              onChange={(e) => setFilterBelt(e.target.value)}
+              options={filterDiscipline ? belts[filterDiscipline].map(b => ({ value: b, label: b })) : []}
+              disabled={!filterDiscipline}
+            />
+          </div>
+          {(searchTerm || filterDiscipline || filterBelt) && (
+            <div className="flex items-center gap-2 mt-4">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Showing {filteredStudents.length} of {students.length} students
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterDiscipline('');
+                  setFilterBelt('');
+                }}
+              >
+                Clear filters
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Students Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredStudents.map(student => (
+          <Card key={student.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+                    {student.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{student.email}</p>
+                </div>
+                <Badge variant="secondary">{student.belt}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Discipline:
+                  </span>
+                  <Badge variant="secondary">{student.discipline}</Badge>
+                </div>
+                {student.phone && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Phone:
+                    </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {student.phone}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Joined:
+                  </span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {new Date(student.joinDate).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         ))}
-      </ul>
+      </div>
+
+      {filteredStudents.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-500 dark:text-gray-400">
+            {students.length === 0 ? 'No students yet. Add your first student!' : 'No students match your filters.'}
+          </p>
+        </div>
+      )}
+
+      {/* Add Student Modal */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <ModalHeader>
+          <h2 className="text-xl font-semibold">Add New Student</h2>
+        </ModalHeader>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <ModalBody>
+            <div className="space-y-4">
+              <Input
+                {...register('name')}
+                label="Full Name"
+                placeholder="Enter student's full name"
+                error={errors.name?.message}
+              />
+
+              <Input
+                {...register('email')}
+                type="email"
+                label="Email Address"
+                placeholder="Enter email address"
+                error={errors.email?.message}
+              />
+
+              <Input
+                {...register('phone')}
+                type="tel"
+                label="Phone Number (Optional)"
+                placeholder="Enter phone number"
+                error={errors.phone?.message}
+              />
+
+              <Select
+                {...register('discipline')}
+                label="Discipline"
+                placeholder="Select discipline"
+                options={disciplineOptions}
+                error={errors.discipline?.message}
+              />
+
+              <Select
+                {...register('belt')}
+                label="Belt Level"
+                placeholder="Select belt level"
+                options={beltOptions}
+                error={errors.belt?.message}
+                disabled={!selectedDiscipline}
+              />
+
+              <Input
+                {...register('joinDate')}
+                type="date"
+                label="Join Date"
+                error={errors.joinDate?.message}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" isLoading={isSubmitting}>
+              Add Student
+            </Button>
+          </ModalFooter>
+        </form>
+      </Modal>
     </div>
   );
 }
