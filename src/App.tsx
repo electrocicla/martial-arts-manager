@@ -32,8 +32,10 @@ const LoadingSpinner = () => (
 // Main app content for authenticated users
 function AppContent() {
   useEffect(() => {
-    // Set dark theme
-    document.documentElement.setAttribute('data-theme', 'martial');
+    // Set dark theme by default
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
   }, []);
 
   return (
@@ -65,9 +67,10 @@ function AppWrapper() {
   const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Set dark theme globally
-    document.documentElement.setAttribute('data-theme', 'martial');
+    // Set dark theme globally by default
+    document.documentElement.setAttribute('data-theme', 'dark');
     document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
   }, []);
 
   if (isLoading) {

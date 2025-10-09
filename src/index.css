@@ -128,7 +128,7 @@ body {
   transform: scale(0.95);
 }
 
-/* Mobile bottom navigation optimization */
+/* Enhanced Mobile optimizations and touch targets */
 @media (max-width: 768px) {
   .btm-nav {
     height: 4rem;
@@ -137,10 +137,115 @@ body {
   
   .btm-nav > * {
     transition: all 0.3s ease;
+    min-height: 4rem;
   }
   
   .btm-nav > *:active {
     transform: scale(0.95);
     background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Enhanced button touch targets */
+  .btn {
+    min-height: 3rem;
+    touch-action: manipulation;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .input {
+    min-height: 3rem;
+    font-size: 1rem;
+  }
+  
+  /* Better tap highlights */
+  button, a, .btn {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+  }
+}
+
+/* Dark mode enhancements */
+.dark {
+  color-scheme: dark;
+}
+
+/* Enhanced dropdown animations */
+.dropdown-content {
+  animation: slideUpFade 0.2s ease-out;
+  transform-origin: top;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Better notification styling */
+.notification-backdrop {
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Enhanced card hover effects */
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Floating Action Button enhancements */
+.fab-container {
+  position: relative;
+}
+
+.fab-gradient {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  box-shadow: 0 8px 25px -8px rgba(225, 29, 72, 0.4);
+}
+
+.fab-gradient:hover {
+  box-shadow: 0 12px 35px -8px rgba(225, 29, 72, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  .hero {
+    padding: 2rem 1rem;
+  }
+  
+  .hero-content {
+    text-align: center;
+  }
+  
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .stat {
+    padding: 1rem;
+  }
+  
+  .stat-title {
+    font-size: 0.75rem;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
   }
 }

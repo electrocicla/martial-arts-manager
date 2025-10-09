@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, Users, Calendar, CreditCard, BookOpen,
-  Award, BarChart3, Settings, Layers
+  Award, BarChart3, Settings, Layers, Clock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
@@ -58,8 +58,8 @@ export default function MobileNav() {
 
   return (
     <>
-      {/* Mobile Bottom Navigation */}
-      <nav className="btm-nav btm-nav-lg md:hidden bg-base-200/95 backdrop-blur-2xl border-t border-base-300 shadow-2xl shadow-black/50">
+      {/* Enhanced Mobile Bottom Navigation */}
+      <nav className="btm-nav btm-nav-lg md:hidden bg-base-100/90 backdrop-blur-xl border-t border-base-300/50 shadow-2xl shadow-black/20 fixed bottom-0 left-0 right-0 z-40">
         {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
@@ -69,33 +69,30 @@ export default function MobileNav() {
               key={item.name}
               to={item.href}
               className={cn(
-                "relative group transition-all duration-300",
-                isActive ? "active text-primary" : "text-base-content/70"
+                "relative group transition-all duration-300 flex flex-col items-center justify-center py-2 px-1",
+                isActive ? "text-primary" : "text-base-content/60 hover:text-base-content/80"
               )}
             >
               {/* Active indicator */}
               {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-gradient-to-r from-primary to-secondary rounded-full animate-pulse" />
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-gradient-to-r from-primary to-secondary rounded-full" />
               )}
               
-              {/* Icon with glow effect */}
+              {/* Icon with enhanced design */}
               <div className={cn(
-                "relative p-2 rounded-xl transition-all duration-300",
-                isActive && "bg-gradient-to-br from-primary/20 to-secondary/20"
+                "relative p-2.5 rounded-2xl transition-all duration-300 mb-1",
+                isActive ? "bg-primary/10 scale-110" : "group-active:scale-95 group-active:bg-base-200/50"
               )}>
-                <Icon className={cn(
-                  "w-5 h-5 transition-all duration-300",
-                  isActive ? "scale-110 drop-shadow-glow" : "group-active:scale-95"
-                )} />
+                <Icon className="w-6 h-6" />
                 {isActive && (
-                  <span className="absolute inset-0 bg-gradient-to-r from-primary/30 to-secondary/30 blur-xl rounded-full animate-pulse" />
+                  <div className="absolute inset-0 bg-primary/20 blur-md rounded-2xl -z-10" />
                 )}
               </div>
               
               {/* Label */}
               <span className={cn(
-                "btm-nav-label text-xs font-bold transition-all duration-300",
-                isActive ? "text-primary" : "group-active:text-primary/70"
+                "text-xs font-semibold transition-all duration-300 text-center leading-tight",
+                isActive ? "text-primary" : "text-base-content/70"
               )}>
                 {item.name}
               </span>
@@ -113,19 +110,45 @@ export default function MobileNav() {
         )}
       </nav>
 
-      {/* Floating Action Button for mobile */}
-      <div className="fixed bottom-20 right-4 md:hidden z-40">
+      {/* Enhanced Floating Action Button for mobile */}
+      <div className="fixed bottom-24 right-4 md:hidden z-50">
         <div className="dropdown dropdown-top dropdown-end">
-          <label tabIndex={0} className="btn btn-circle btn-lg btn-primary shadow-2xl hover:scale-110 transition-transform">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          <label 
+            tabIndex={0} 
+            className="btn btn-circle btn-lg bg-gradient-to-r from-primary to-secondary border-0 shadow-2xl hover:scale-110 transition-all duration-300 hover:shadow-primary/25"
+          >
+            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
           </label>
-          <ul tabIndex={0} className="dropdown-content menu p-2 shadow-2xl bg-base-200 rounded-box w-52 mb-3 border border-base-300">
-            <li><a className="font-bold">Mark Attendance</a></li>
-            <li><a className="font-bold">Add Student</a></li>
-            <li><a className="font-bold">Schedule Class</a></li>
-            <li><a className="font-bold">Record Payment</a></li>
+          <ul tabIndex={0} className="dropdown-content menu p-3 shadow-2xl bg-base-100 rounded-2xl w-56 mb-4 border border-base-300/50 backdrop-blur-xl">
+            <li className="menu-title pb-2">
+              <span className="text-base-content font-bold">Quick Actions</span>
+            </li>
+            <li>
+              <button className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-primary/10">
+                <Clock className="w-5 h-5 text-primary" />
+                Mark Attendance
+              </button>
+            </li>
+            <li>
+              <button className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-secondary/10">
+                <Users className="w-5 h-5 text-secondary" />
+                Add Student
+              </button>
+            </li>
+            <li>
+              <button className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-accent/10">
+                <Calendar className="w-5 h-5 text-accent" />
+                Schedule Class
+              </button>
+            </li>
+            <li>
+              <button className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-info/10">
+                <Award className="w-5 h-5 text-info" />
+                Record Payment
+              </button>
+            </li>
           </ul>
         </div>
       </div>

@@ -128,44 +128,42 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-base-100 pb-20 md:pb-4">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-base-200 via-base-300 to-base-200 px-4 pt-6 pb-8">
-        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
-        <div className="absolute top-0 right-0 w-72 h-72 bg-primary/20 rounded-full filter blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full filter blur-3xl" />
+    <div className="min-h-screen bg-base-100 pb-24 md:pb-4">
+      {/* Mobile-First Hero Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-base-200/50 to-base-300/30 px-4 sm:px-6 pt-4 pb-6">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <div className="absolute top-0 right-0 w-32 sm:w-48 h-32 sm:h-48 bg-primary/10 rounded-full filter blur-2xl" />
+        <div className="absolute bottom-0 left-0 w-40 sm:w-64 h-40 sm:h-64 bg-secondary/10 rounded-full filter blur-2xl" />
         
         <div className="relative max-w-7xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl md:text-4xl font-black mb-2 text-base-content">
-              {greeting()}, <span className="text-primary">Sensei {user?.name || 'Master'}!</span>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-base-content leading-tight">
+              {greeting()}, <span className="text-primary font-black">Sensei {user?.name?.split(' ')[0] || 'Master'}!</span>
             </h1>
-            <p className="text-base-content/70 text-sm md:text-base">
+            <p className="text-base-content/70 text-sm sm:text-base">
               Here's what's happening at your dojo today
             </p>
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Mobile-Optimized Quick Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {stats.map((stat, idx) => (
-              <div key={idx} className="card bg-base-200/50 backdrop-blur-xl border border-base-300 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div className="card-body p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className={`inline-flex p-2 rounded-lg ${stat.iconBg} mb-2`}>
-                        <stat.icon className="w-5 h-5 text-base-content" />
-                      </div>
-                      <h3 className="text-2xl font-black bg-gradient-to-r text-transparent bg-clip-text ${stat.bgGradient}">
-                        {stat.value}
-                      </h3>
-                      <p className="text-xs text-base-content/60 font-medium mt-1">{stat.title}</p>
-                      <div className={`text-xs mt-2 font-bold ${
-                        stat.trend === 'up' ? 'text-success' : 
-                        stat.trend === 'warning' ? 'text-warning' : 
-                        'text-base-content/50'
-                      }`}>
-                        {stat.change}
-                      </div>
+              <div key={idx} className="card bg-base-100/80 backdrop-blur-sm border border-base-300/50 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                <div className="card-body p-3 sm:p-4">
+                  <div className="flex flex-col">
+                    <div className={`inline-flex p-2 rounded-xl ${stat.iconBg} mb-3 w-fit`}>
+                      <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-base-content" />
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-base-content mb-1">
+                      {stat.value}
+                    </h3>
+                    <p className="text-xs text-base-content/60 font-medium leading-tight">{stat.title}</p>
+                    <div className={`text-xs mt-2 font-bold ${
+                      stat.trend === 'up' ? 'text-success' : 
+                      stat.trend === 'warning' ? 'text-warning' : 
+                      'text-base-content/50'
+                    }`}>
+                      {stat.change}
                     </div>
                   </div>
                 </div>
@@ -175,51 +173,51 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="px-4 py-6 max-w-7xl mx-auto space-y-6">
-        {/* Quick Actions */}
+      <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto space-y-8">
+        {/* Mobile-Optimized Quick Actions */}
         <section>
-          <h2 className="text-lg font-bold text-base-content mb-4 flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-bold text-base-content mb-4 flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />
             Quick Actions
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {quickActions.map((action, idx) => (
               <button
                 key={idx}
                 onClick={() => navigate(action.path)}
-                className={`btn ${action.color} btn-block h-auto py-4 px-3 flex-col gap-2 hover:scale-105 transition-transform`}
+                className={`btn ${action.color} btn-block h-auto py-6 px-4 flex-col gap-3 hover:scale-[1.02] transition-all duration-200 shadow-sm rounded-2xl`}
               >
-                <action.icon className="w-6 h-6" />
-                <div className="text-left w-full">
-                  <div className="font-bold text-sm">{action.title}</div>
-                  <div className="text-xs opacity-70">{action.subtitle}</div>
+                <action.icon className="w-7 h-7 sm:w-8 sm:h-8" />
+                <div className="text-center w-full">
+                  <div className="font-bold text-sm sm:text-base">{action.title}</div>
+                  <div className="text-xs opacity-80 mt-1 leading-tight">{action.subtitle}</div>
                 </div>
               </button>
             ))}
           </div>
         </section>
 
-        {/* Today's Schedule */}
+        {/* Today's Schedule - Mobile Optimized */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-base-content flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center gap-2">
               <Calendar className="w-5 h-5 text-primary" />
               Today's Schedule
             </h2>
-            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/calendar')}>
+            <button className="btn btn-ghost btn-sm text-xs sm:text-sm hover:bg-primary/10" onClick={() => navigate('/calendar')}>
               View All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           
           <div className="space-y-3">
             {todayClasses.map((cls) => (
-              <div key={cls.id} className="card bg-base-200 hover:bg-base-300 transition-colors">
-                <div className="card-body p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-base-content">{cls.name}</h3>
-                        <div className={`badge badge-sm ${
+              <div key={cls.id} className="card bg-base-200/50 backdrop-blur-sm border border-base-300/20 hover:bg-base-300/60 hover:border-primary/30 transition-all duration-300 active:scale-[0.98]">
+                <div className="card-body p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <h3 className="font-bold text-base sm:text-lg text-base-content truncate">{cls.name}</h3>
+                        <div className={`badge badge-sm sm:badge-md ${
                           cls.level === 'Advanced' ? 'badge-error' :
                           cls.level === 'Intermediate' ? 'badge-warning' :
                           'badge-success'
@@ -227,56 +225,75 @@ export default function Dashboard() {
                           {cls.level}
                         </div>
                       </div>
-                      <p className="text-sm text-base-content/70 mb-2">{cls.time}</p>
-                      <div className="flex items-center gap-4 text-xs">
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {cls.students} students
+                      <p className="text-sm sm:text-base text-base-content/70 mb-3 font-medium">{cls.time}</p>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+                        <span className="flex items-center gap-1.5 text-base-content/60">
+                          <Users className="w-3.5 h-3.5 text-primary" />
+                          <span className="font-medium">{cls.students}</span> students
                         </span>
-                        <span className="text-base-content/50">
-                          {cls.instructor}
+                        <span className="text-base-content/50 font-medium">
+                          👨‍🏫 {cls.instructor}
                         </span>
                       </div>
                     </div>
-                    <div className={`badge ${
-                      cls.status === 'ongoing' ? 'badge-success' :
-                      cls.status === 'upcoming' ? 'badge-warning' :
-                      'badge-ghost'
-                    }`}>
-                      {cls.status}
+                    <div className="flex sm:flex-col items-center sm:items-end gap-2">
+                      <div className={`badge badge-lg sm:badge-md ${
+                        cls.status === 'ongoing' ? 'badge-success' :
+                        cls.status === 'upcoming' ? 'badge-warning' :
+                        'badge-ghost'
+                      }`}>
+                        {cls.status === 'ongoing' ? '🔴 Live' :
+                         cls.status === 'upcoming' ? '⏰ Soon' : cls.status}
+                      </div>
+                      <button className="btn btn-ghost btn-xs sm:btn-sm text-primary hover:bg-primary/10">
+                        Details
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
             ))}
+            
+            {/* Add Class Button */}
+            <div className="pt-2">
+              <button className="btn btn-outline btn-primary w-full sm:w-auto">
+                <Calendar className="w-4 h-4" />
+                Schedule New Class
+              </button>
+            </div>
           </div>
         </section>
 
-        {/* Recent Activity */}
+        {/* Recent Activity - Mobile Optimized */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-base-content flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" />
               Recent Activity
             </h2>
-            <button className="btn btn-ghost btn-sm">
+            <button className="btn btn-ghost btn-sm text-xs sm:text-sm">
               View All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           
-          <div className="card bg-base-200">
+          <div className="card bg-base-200/50 backdrop-blur-sm border border-base-300/20">
             <div className="card-body p-0">
               {recentActivity.map((activity, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-4 hover:bg-base-300 transition-colors border-b border-base-300 last:border-0">
-                  <div className="text-2xl">{activity.icon}</div>
+                <div key={idx} className="flex items-start sm:items-center gap-3 p-3 sm:p-4 hover:bg-base-300/50 transition-all duration-200 border-b border-base-300/30 last:border-0 active:scale-[0.98]">
+                  <div className="text-xl sm:text-2xl flex-shrink-0 mt-0.5 sm:mt-0">{activity.icon}</div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-base-content truncate">
+                    <p className="text-sm sm:text-base font-medium text-base-content leading-tight mb-1">
                       {activity.text}
                     </p>
-                    <p className="text-xs text-base-content/50">{activity.time}</p>
+                    <p className="text-xs text-base-content/60">{activity.time}</p>
                   </div>
-                  <div className={`badge badge-sm badge-${activity.type}`}>
-                    {activity.type}
+                  <div className={`badge badge-sm sm:badge-md badge-${activity.type} flex-shrink-0`}>
+                    <span className="hidden sm:inline">{activity.type}</span>
+                    <span className="sm:hidden">
+                      {activity.type === 'success' ? '✓' : 
+                       activity.type === 'info' ? 'ℹ' : 
+                       activity.type === 'warning' ? '⚠' : '●'}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -284,56 +301,79 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Performance Metrics */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/20">
-            <div className="card-body">
-              <h3 className="card-title text-base-content flex items-center gap-2">
+        {/* Performance Metrics - Mobile Enhanced */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="card-body p-4 sm:p-6">
+              <h3 className="card-title text-base sm:text-lg text-base-content flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-primary" />
                 Monthly Goal Progress
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>New Enrollments</span>
-                    <span className="font-bold">18/25</span>
+                  <div className="flex justify-between items-center text-sm sm:text-base mb-2">
+                    <span className="font-medium">New Enrollments</span>
+                    <span className="font-bold text-primary">18/25</span>
                   </div>
-                  <progress className="progress progress-primary" value="72" max="100"></progress>
+                  <div className="relative">
+                    <progress className="progress progress-primary w-full h-3" value="72" max="100"></progress>
+                    <span className="absolute right-1 top-0 text-xs font-bold text-primary-content">72%</span>
+                  </div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Revenue Target</span>
-                    <span className="font-bold">$8,200/$10,000</span>
+                  <div className="flex justify-between items-center text-sm sm:text-base mb-2">
+                    <span className="font-medium">Revenue Target</span>
+                    <span className="font-bold text-secondary">$8,200/$10,000</span>
                   </div>
-                  <progress className="progress progress-secondary" value="82" max="100"></progress>
+                  <div className="relative">
+                    <progress className="progress progress-secondary w-full h-3" value="82" max="100"></progress>
+                    <span className="absolute right-1 top-0 text-xs font-bold text-secondary-content">82%</span>
+                  </div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Class Attendance</span>
-                    <span className="font-bold">89%</span>
+                  <div className="flex justify-between items-center text-sm sm:text-base mb-2">
+                    <span className="font-medium">Class Attendance</span>
+                    <span className="font-bold text-success">89%</span>
                   </div>
-                  <progress className="progress progress-success" value="89" max="100"></progress>
+                  <div className="relative">
+                    <progress className="progress progress-success w-full h-3" value="89" max="100"></progress>
+                    <span className="absolute right-1 top-0 text-xs font-bold text-success-content">89%</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="card bg-gradient-to-br from-warning/10 to-error/10 border-2 border-warning/20">
-            <div className="card-body">
-              <h3 className="card-title text-base-content flex items-center gap-2">
+          <div className="card bg-gradient-to-br from-warning/10 to-error/10 border border-warning/30 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="card-body p-4 sm:p-6">
+              <h3 className="card-title text-base sm:text-lg text-base-content flex items-center gap-2 mb-4">
                 <AlertCircle className="w-5 h-5 text-warning" />
                 Needs Attention
               </h3>
-              <div className="space-y-2">
-                <div className="alert alert-warning py-2">
-                  <span className="text-sm">3 overdue payments</span>
+              <div className="space-y-3">
+                <div className="alert alert-warning py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">💸</span>
+                    <span className="text-sm sm:text-base font-medium">3 overdue payments</span>
+                  </div>
                 </div>
-                <div className="alert alert-info py-2">
-                  <span className="text-sm">5 students missing 2+ classes</span>
+                <div className="alert alert-info py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">📊</span>
+                    <span className="text-sm sm:text-base font-medium">5 students missing 2+ classes</span>
+                  </div>
                 </div>
-                <div className="alert alert-error py-2">
-                  <span className="text-sm">Equipment inspection due</span>
+                <div className="alert alert-error py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🔧</span>
+                    <span className="text-sm sm:text-base font-medium">Equipment inspection due</span>
+                  </div>
                 </div>
+              </div>
+              <div className="mt-4">
+                <button className="btn btn-outline btn-warning btn-sm w-full sm:w-auto">
+                  View Details
+                </button>
               </div>
             </div>
           </div>

@@ -42,3 +42,7 @@ dist-ssr
 
 # Cloudflare
 .cloudflare/
+
+# Development and AI assistant files
+CLAUDE.md
+worklog.md
