@@ -6,7 +6,7 @@ import MobileNav from './components/layout/MobileNav'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
 // Lazy load components for code splitting
-const LandingPage = lazy(() => import('./components/LandingPage').then(m => ({ default: m.LandingPage })))
+const LandingPage = lazy(() => import('./components/LandingPage'))
 const Dashboard = lazy(() => import('./components/Dashboard'))
 const StudentManager = lazy(() => import('./components/StudentManager'))
 const ClassManager = lazy(() => import('./components/ClassManager'))

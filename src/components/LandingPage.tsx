@@ -162,7 +162,7 @@ const GlowingOrb: React.FC<{ className?: string; color: string }> = ({
   />
 );
 
-export const LandingPage: React.FC = () => {
+const LandingPage: React.FC = () => {
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 300], [0, 50]);
   const y2 = useTransform(scrollY, [0, 300], [0, -50]);
@@ -681,3 +681,5 @@ export const LandingPage: React.FC = () => {
     </div>
   );
 };
+
+export default LandingPage;
