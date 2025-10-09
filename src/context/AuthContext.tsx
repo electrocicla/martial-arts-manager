@@ -12,6 +12,7 @@ interface User {
   email: string;
   name: string;
   role: 'admin' | 'instructor' | 'student';
+  avatar_url?: string;
 }
 
 interface LoginData {

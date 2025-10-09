@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { 
   Settings as SettingsIcon, User, Bell, Shield, 
-  Palette, Globe, Database, CreditCard,
-  Mail, MessageSquare, Save, ChevronRight,
-  Moon, Sun, Award, Building
+  Palette, Database, CreditCard,
+  Mail, MessageSquare, Save,
+  Moon, Sun, Building, AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 

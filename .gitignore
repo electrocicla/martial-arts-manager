@@ -28,6 +28,8 @@ dist-ssr
 .env.local
 .env.production
 .env.staging
+.dev.vars
+.dev.vars.*
 
 # Wrangler
 .wrangler/

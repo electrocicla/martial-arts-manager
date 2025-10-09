@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   Award, Calendar, Users, Check, X, 
-  AlertCircle, Clock, Target, TrendingUp
+  AlertCircle, Clock, TrendingUp
 } from 'lucide-react';
 
 export default function BeltTesting() {
