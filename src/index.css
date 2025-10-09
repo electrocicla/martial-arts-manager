@@ -248,6 +248,20 @@ body {
   .stat-value {
     font-size: 1.5rem;
   }
+  
+  /* Fix mobile dashboard content overlap with navigation */
+  .mobile-dashboard-content {
+    padding-bottom: 8rem; /* Account for bottom nav + FAB */
+  }
+  
+  /* Better mobile spacing for dashboard cards */
+  .dashboard-section {
+    margin-bottom: 2rem;
+  }
+  
+  .dashboard-section:last-child {
+    margin-bottom: 4rem;
+  }
 }
 
 /* Login Page Special Effects */

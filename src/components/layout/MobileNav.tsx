@@ -59,7 +59,7 @@ export default function MobileNav() {
   return (
     <>
       {/* Enhanced Mobile Bottom Navigation */}
-      <nav className="btm-nav btm-nav-lg md:hidden bg-base-100/90 backdrop-blur-xl border-t border-base-300/50 shadow-2xl shadow-black/20 fixed bottom-0 left-0 right-0 z-40">
+      <nav className="btm-nav btm-nav-lg md:hidden bg-base-100/95 backdrop-blur-xl border-t border-base-300/50 shadow-2xl shadow-black/20 fixed bottom-0 left-0 right-0 z-50">
         {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
@@ -110,44 +110,56 @@ export default function MobileNav() {
         )}
       </nav>
 
-      {/* Enhanced Floating Action Button for mobile */}
-      <div className="fixed bottom-24 right-4 md:hidden z-50">
+      {/* Enhanced Floating Action Button for mobile - Fixed positioning */}
+      <div className="fixed bottom-28 right-4 md:hidden z-[60]">
         <div className="dropdown dropdown-top dropdown-end">
           <label 
             tabIndex={0} 
-            className="btn btn-circle btn-lg bg-gradient-to-r from-primary to-secondary border-0 shadow-2xl hover:scale-110 transition-all duration-300 hover:shadow-primary/25"
+            className="btn btn-circle btn-lg bg-gradient-to-r from-primary to-secondary border-0 shadow-2xl hover:scale-110 transition-all duration-300 hover:shadow-primary/25 hover:shadow-2xl"
           >
             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
           </label>
-          <ul tabIndex={0} className="dropdown-content menu p-3 shadow-2xl bg-base-100 rounded-2xl w-56 mb-4 border border-base-300/50 backdrop-blur-xl">
-            <li className="menu-title pb-2">
-              <span className="text-base-content font-bold">Quick Actions</span>
+          <ul tabIndex={0} className="dropdown-content menu p-4 shadow-2xl bg-base-100/95 backdrop-blur-xl rounded-2xl w-64 mb-4 border border-base-300/50 max-h-80 overflow-y-auto">
+            <li className="menu-title pb-3 border-b border-base-300/50 mb-2">
+              <span className="text-base-content font-bold text-sm">Quick Actions</span>
             </li>
             <li>
-              <button className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-primary/10">
-                <Clock className="w-5 h-5 text-primary" />
-                Mark Attendance
-              </button>
+              <Link to="/attendance" className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-primary/10 text-left">
+                <Clock className="w-5 h-5 text-primary flex-shrink-0" />
+                <div className="flex flex-col items-start">
+                  <span className="font-medium">Mark Attendance</span>
+                  <span className="text-xs opacity-60">Check students in/out</span>
+                </div>
+              </Link>
             </li>
             <li>
-              <button className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-secondary/10">
-                <Users className="w-5 h-5 text-secondary" />
-                Add Student
-              </button>
+              <Link to="/students" className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-secondary/10 text-left">
+                <Users className="w-5 h-5 text-secondary flex-shrink-0" />
+                <div className="flex flex-col items-start">
+                  <span className="font-medium">Add Student</span>
+                  <span className="text-xs opacity-60">Register new member</span>
+                </div>
+              </Link>
             </li>
             <li>
-              <button className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-accent/10">
-                <Calendar className="w-5 h-5 text-accent" />
-                Schedule Class
-              </button>
+              <Link to="/classes" className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-accent/10 text-left">
+                <Calendar className="w-5 h-5 text-accent flex-shrink-0" />
+                <div className="flex flex-col items-start">
+                  <span className="font-medium">Schedule Class</span>
+                  <span className="text-xs opacity-60">Create new session</span>
+                </div>
+              </Link>
             </li>
             <li>
-              <button className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-info/10">
-                <Award className="w-5 h-5 text-info" />
-                Record Payment
-              </button>
+              <Link to="/payments" className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-info/10 text-left">
+                <Award className="w-5 h-5 text-info flex-shrink-0" />
+                <div className="flex flex-col items-start">
+                  <span className="font-medium">Record Payment</span>
+                  <span className="text-xs opacity-60">Process transaction</span>
+                </div>
+              </Link>
             </li>
           </ul>
         </div>
