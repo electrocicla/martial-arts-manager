@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
-  Zap, 
   Users, 
   Calendar, 
   CreditCard, 
-  Shield, 
-  Smartphone, 
   Award,
   Instagram,
   ExternalLink,
   ArrowRight,
-  Sparkles,
   Target,
   Activity
 } from 'lucide-react';
@@ -147,46 +143,46 @@ export const LandingPage: React.FC = () => {
     {
       icon: Users,
       title: "Student Management",
-      description: "Complete student profiles with belt progression tracking",
+      description: "Complete student profiles with contact info, emergency contacts, belt progression history, and attendance tracking",
       color: "from-blue-500 to-cyan-500",
     },
     {
+      icon: Award,
+      title: "Belt Progression Tracking",
+      description: "Monitor each student's martial arts journey, track belt promotions, and maintain detailed progression records",
+      color: "from-amber-500 to-yellow-500",
+    },
+    {
       icon: Calendar,
-      title: "Class Scheduling",
-      description: "Advanced scheduling with capacity management",
+      title: "Class Scheduling & Management",
+      description: "Schedule classes, manage capacity, assign instructors, and track recurring training sessions",
       color: "from-purple-500 to-pink-500",
     },
     {
       icon: CreditCard,
-      title: "Payment Tracking",
-      description: "Comprehensive payment and revenue management",
+      title: "Payment & Billing System",
+      description: "Track monthly fees, private lessons, equipment sales, and generate detailed financial reports",
       color: "from-green-500 to-emerald-500",
     },
     {
-      icon: Shield,
-      title: "Secure Authentication",
-      description: "Enterprise-grade security with JWT tokens",
+      icon: Activity,
+      title: "Attendance Monitoring",
+      description: "Quick check-in system, attendance history, class participation rates, and student engagement analytics",
       color: "from-orange-500 to-red-500",
     },
     {
-      icon: Smartphone,
-      title: "Mobile First",
-      description: "Optimized for mobile devices and tablets",
+      icon: Target,
+      title: "Growth Analytics",
+      description: "Track dojo growth, student retention, revenue trends, and make data-driven decisions for your academy",
       color: "from-indigo-500 to-blue-500",
-    },
-    {
-      icon: Award,
-      title: "Professional UI",
-      description: "Modern interface with advanced animations",
-      color: "from-teal-500 to-cyan-500",
     },
   ];
 
   const stats = [
-    { icon: Target, value: "100%", label: "Secure" },
-    { icon: Zap, value: "99.9%", label: "Uptime" },
-    { icon: Activity, value: "24/7", label: "Support" },
-    { icon: Sparkles, value: "Modern", label: "UI/UX" },
+    { icon: Users, value: "500+", label: "Students Managed" },
+    { icon: Award, value: "50+", label: "Belt Promotions Tracked" },
+    { icon: Calendar, value: "1000+", label: "Classes Scheduled" },
+    { icon: Target, value: "95%", label: "Student Retention" },
   ];
 
   return (
@@ -219,22 +215,27 @@ export const LandingPage: React.FC = () => {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mb-8"
+            className="mb-12"
           >
-            <div className="relative mx-auto w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 p-1 animate-spin-slow">
-                <div className="w-full h-full rounded-full bg-slate-900 p-2">
+            <div className="relative mx-auto w-40 h-40 sm:w-48 sm:h-48 lg:w-56 lg:h-56">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 p-1 animate-spin-slow shadow-2xl shadow-amber-500/50">
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-slate-800 to-slate-900 p-3 shadow-inner">
                   <img
-                    src="https://scontent-scl2-1.cdninstagram.com/v/t51.2885-19/531698919_18281812477287304_8780455469433302932_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=scontent-scl2-1.cdninstagram.com&_nc_cat=104&_nc_oc=Q6cZ2QHnbqeIJd2WWW12Q3i9aSJsRqRpAHtxZ0_S7liNl7lXr6bSsDOd-b_dOR8VGv2VHIXuQ79oNUpZMQjLaBc4Hd-P&_nc_ohc=sf8MDo5ViPsQ7kNvwFHwQQl&_nc_gid=r4_9AcPbGoaOqB7IafpGoA&edm=AOQ1c0wBAAAA&ccb=7-5&oh=00_AfexnmQKAXyqO_viFlw8ZPtxaZC3qOD1-iW-9TcbeuW6kg&oe=68ED0128&_nc_sid=8b3546"
+                    src="/hammar_logo.jpg"
                     alt="Hamarr Jiu-Jitsu MMA Logo"
-                    className="w-full h-full rounded-full object-cover shadow-2xl"
+                    className="w-full h-full rounded-full object-cover shadow-2xl ring-4 ring-white/10"
                   />
                 </div>
               </div>
               <motion.div
-                className="absolute -inset-4 rounded-full border-2 border-amber-500/30"
+                className="absolute -inset-6 rounded-full border-2 border-amber-400/20"
                 animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+              />
+              <motion.div
+                className="absolute -inset-8 rounded-full border border-orange-500/10"
+                animate={{ rotate: -360 }}
+                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
               />
             </div>
           </motion.div>
@@ -244,23 +245,46 @@ export const LandingPage: React.FC = () => {
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-6"
+            className="space-y-8"
           >
-            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-bold bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent leading-tight">
-              MARTIAL ARTS
-              <br />
-              <span className="text-3xl sm:text-5xl lg:text-7xl">MANAGER</span>
-            </h1>
+            <div className="space-y-4">
+              <motion.h1 
+                className="text-5xl sm:text-7xl lg:text-9xl font-black tracking-tight"
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 1, delay: 0.3 }}
+              >
+                <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-red-500 bg-clip-text text-transparent drop-shadow-2xl">
+                  MARTIAL ARTS
+                </span>
+                <br />
+                <span className="text-4xl sm:text-6xl lg:text-8xl bg-gradient-to-r from-white via-slate-200 to-slate-300 bg-clip-text text-transparent font-extrabold">
+                  MANAGER
+                </span>
+              </motion.h1>
+              
+              <motion.div
+                className="w-32 h-1 bg-gradient-to-r from-amber-400 to-orange-500 mx-auto rounded-full shadow-lg shadow-amber-500/50"
+                initial={{ width: 0 }}
+                animate={{ width: 128 }}
+                transition={{ duration: 1, delay: 0.8 }}
+              />
+            </div>
             
-            <motion.p 
-              className="text-lg sm:text-xl lg:text-2xl text-slate-300 max-w-3xl mx-auto leading-relaxed"
+            <motion.div 
+              className="space-y-4 max-w-4xl mx-auto"
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
             >
-              Professional management system for martial arts schools. 
-              Built with cutting-edge technology for the modern dojo.
-            </motion.p>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
+                Empower Your Dojo with Professional Management
+              </h2>
+              <p className="text-lg sm:text-xl lg:text-2xl text-slate-300 leading-relaxed font-medium">
+                The ultimate solution for martial arts instructors to organize students, track belt progressions, 
+                manage payments, schedule classes, monitor attendance, and grow your martial arts academy.
+              </p>
+            </motion.div>
 
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8"
@@ -367,6 +391,45 @@ export const LandingPage: React.FC = () => {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative z-10 py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="space-y-8"
+          >
+            <h2 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+              Ready to Elevate Your Dojo?
+            </h2>
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              Join martial arts instructors worldwide who trust our platform to manage their schools, 
+              track student progress, and grow their academies.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
+              >
+                Start Your Free Trial
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+              <a
+                href="https://www.instagram.com/hamarr_jiujitsu_mma/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors duration-300 text-lg"
+              >
+                <Instagram className="w-6 h-6" />
+                Follow @hamarr_jiujitsu_mma
+              </a>
+            </div>
+          </motion.div>
         </div>
       </section>
 

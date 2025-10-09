@@ -22,7 +22,7 @@ function base64urlEscape(str: string): string {
 
 function base64urlUnescape(str: string): string {
   str += new Array(5 - (str.length % 4)).join('=');
-  return str.replace(/\-/g, '+').replace(/_/g, '/');
+  return str.replace(/-/g, '+').replace(/_/g, '/');
 }
 
 function base64urlDecode(str: string): string {
