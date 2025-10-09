@@ -105,27 +105,32 @@ export default function StudentManager() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 max-w-6xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Students</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your martial arts students</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">Students</h1>
+          <p className="text-sm sm:text-base font-medium bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">Manage your martial arts students</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} leftIcon={<Plus className="w-4 h-4" />}>
+        <Button 
+          onClick={() => setIsModalOpen(true)} 
+          leftIcon={<Plus className="w-4 h-4 sm:w-5 sm:h-5" />}
+          className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold shadow-lg"
+        >
           Add Student
         </Button>
       </div>
 
       {/* Search and Filters */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card className="mb-4 sm:mb-6 backdrop-blur-xl bg-white/10 border-white/20">
+        <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div>
               <Input
                 placeholder="Search students..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                leftIcon={<Search className="w-4 h-4" />}
+                leftIcon={<Search className="w-4 h-4 sm:w-5 sm:h-5" />}
+                className="text-sm sm:text-base"
               />
             </div>
             <Select

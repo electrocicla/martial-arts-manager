@@ -31,26 +31,26 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
-            <LogIn className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 px-4 py-6 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-sm sm:max-w-md lg:max-w-lg backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
+        <CardHeader className="text-center px-4 sm:px-6 py-6 sm:py-8">
+          <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-lg">
+            <LogIn className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-2 sm:mb-3">
             Welcome Back
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base lg:text-lg font-medium bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
             Sign in to your Martial Arts Manager account
           </p>
         </CardHeader>
 
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <CardContent className="px-4 sm:px-6 pb-6 sm:pb-8">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
-                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+              <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-red-500/10 border border-red-500/20 rounded-xl backdrop-blur-sm">
+                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 flex-shrink-0" />
+                <p className="text-xs sm:text-sm text-red-300 font-medium">{error}</p>
               </div>
             )}
 
@@ -62,6 +62,7 @@ export default function Login() {
                 label="Email Address"
                 error={errors.email?.message}
                 disabled={isLoading}
+                className="text-sm sm:text-base"
               />
             </div>
 
@@ -73,16 +74,17 @@ export default function Login() {
                 label="Password"
                 error={errors.password?.message}
                 disabled={isLoading}
+                className="text-sm sm:text-base"
                 rightIcon={
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="text-slate-400 hover:text-white transition-colors duration-200 p-1"
                   >
                     {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
+                      <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                     ) : (
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
                   </button>
                 }
@@ -91,7 +93,7 @@ export default function Login() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3 sm:py-4 text-sm sm:text-base shadow-xl hover:shadow-cyan-500/25 transition-all duration-300"
               disabled={isLoading}
               isLoading={isLoading}
             >
@@ -99,12 +101,12 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="mt-6 sm:mt-8 text-center">
+            <p className="text-xs sm:text-sm text-slate-300">
               Don't have an account?{' '}
               <Link
                 to="/register"
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                className="font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent hover:from-emerald-300 hover:to-teal-400 transition-all duration-200"
               >
                 Sign up
               </Link>

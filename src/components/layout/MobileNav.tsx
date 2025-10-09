@@ -57,7 +57,7 @@ export default function MobileNav({ className }: MobileNavProps) {
 
   return (
     <nav className={cn(
-      "fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-2 py-2 flex justify-around items-center z-50 md:hidden",
+      "fixed bottom-0 left-0 right-0 bg-black/20 backdrop-blur-xl border-t border-white/20 px-2 py-2 sm:py-3 flex justify-around items-center z-50 md:hidden shadow-2xl",
       className
     )}>
       {allowedItems.map((item) => {
@@ -69,14 +69,14 @@ export default function MobileNav({ className }: MobileNavProps) {
             key={item.name}
             to={item.href}
             className={cn(
-              "flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-colors min-w-0 flex-1",
+              "flex flex-col items-center justify-center px-2 sm:px-3 py-2 rounded-xl transition-all duration-300 min-w-0 flex-1 transform hover:scale-105",
               isActive
-                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700"
+                ? "bg-gradient-to-r from-cyan-500/20 to-blue-600/20 text-cyan-400 scale-105 shadow-lg"
+                : "text-slate-300 hover:text-white hover:bg-white/10"
             )}
           >
-            <Icon className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium truncate">{item.name}</span>
+            <Icon className="w-5 h-5 sm:w-6 sm:h-6 mb-1 drop-shadow-lg" />
+            <span className="text-xs font-bold truncate">{item.name}</span>
           </Link>
         );
       })}

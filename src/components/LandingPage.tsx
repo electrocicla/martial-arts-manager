@@ -243,59 +243,89 @@ export const LandingPage: React.FC = () => {
         style={{ y: y1, opacity }}
       >
         <div className="max-w-7xl mx-auto text-center">
-          {/* Logo */}
+          {/* Logo and Brand */}
           <motion.div
             initial={{ scale: 0, opacity: 0, rotateY: 180 }}
             animate={{ scale: 1, opacity: 1, rotateY: 0 }}
             transition={{ duration: 1.2, ease: "easeOut", type: "spring", stiffness: 80 }}
             className="mb-8 sm:mb-12"
           >
-            <div className="relative mx-auto w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56">
-              {/* Multiple rotating rings */}
-              <motion.div
-                className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 p-1 shadow-2xl shadow-amber-500/50"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12">
+              {/* Logo */}
+              <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0">
+                {/* Multiple rotating rings */}
+                <motion.div
+                  className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 p-1 shadow-2xl shadow-amber-500/50"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                >
+                  <div className="w-full h-full rounded-full bg-gradient-to-br from-slate-800 to-slate-900 p-2 sm:p-3 shadow-inner">
+                    <img
+                      src="/hammar_logo.jpg"
+                      alt="Hamarr Jiu-Jitsu MMA Logo"
+                      className="w-full h-full rounded-full object-cover shadow-2xl ring-2 sm:ring-4 ring-white/10"
+                    />
+                  </div>
+                </motion.div>
+                
+                {/* Outer rotating rings */}
+                <motion.div
+                  className="absolute -inset-4 sm:-inset-6 rounded-full border-2 border-amber-400/30"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                />
+                <motion.div
+                  className="absolute -inset-6 sm:-inset-8 rounded-full border border-orange-500/20"
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                />
+                <motion.div
+                  className="absolute -inset-8 sm:-inset-10 rounded-full border border-red-500/10"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
+                />
+                
+                {/* Pulsing glow effect */}
+                <motion.div
+                  className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400/20 to-orange-500/20 blur-xl"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.3, 0.6, 0.3],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              </div>
+              
+              {/* Brand Text */}
+              <motion.div 
+                className="text-center lg:text-left"
+                initial={{ x: 100, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
               >
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-slate-800 to-slate-900 p-2 sm:p-3 shadow-inner">
-                  <img
-                    src="/hammar_logo.jpg"
-                    alt="Hamarr Jiu-Jitsu MMA Logo"
-                    className="w-full h-full rounded-full object-cover shadow-2xl ring-2 sm:ring-4 ring-white/10"
-                  />
-                </div>
+                <motion.h1 
+                  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-tight mb-2 sm:mb-4"
+                  initial={{ y: 30, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.7 }}
+                >
+                  <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent drop-shadow-2xl animate-pulse">
+                    HAMMAR
+                  </span>
+                </motion.h1>
+                <motion.p 
+                  className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600 bg-clip-text"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.9 }}
+                >
+                  Martial Arts Manager
+                </motion.p>
               </motion.div>
-              
-              {/* Outer rotating rings */}
-              <motion.div
-                className="absolute -inset-4 sm:-inset-6 rounded-full border-2 border-amber-400/30"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-              />
-              <motion.div
-                className="absolute -inset-6 sm:-inset-8 rounded-full border border-orange-500/20"
-                animate={{ rotate: -360 }}
-                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-              />
-              <motion.div
-                className="absolute -inset-8 sm:-inset-10 rounded-full border border-red-500/10"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
-              />
-              
-              {/* Pulsing glow effect */}
-              <motion.div
-                className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400/20 to-orange-500/20 blur-xl"
-                animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
             </div>
           </motion.div>
 
@@ -314,7 +344,7 @@ export const LandingPage: React.FC = () => {
                 transition={{ duration: 1.2, delay: 0.3, type: "spring", stiffness: 100 }}
               >
                 <motion.span 
-                  className="block bg-gradient-to-r from-amber-300 via-orange-400 to-red-500 bg-clip-text text-transparent drop-shadow-2xl"
+                  className="block bg-gradient-to-r from-pink-500 via-red-500 to-orange-500 bg-clip-text text-transparent drop-shadow-2xl animate-pulse"
                   initial={{ x: -100, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.5 }}
@@ -322,7 +352,7 @@ export const LandingPage: React.FC = () => {
                   MARTIAL ARTS
                 </motion.span>
                 <motion.span 
-                  className="block text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl bg-gradient-to-r from-white via-slate-200 to-slate-300 bg-clip-text text-transparent font-extrabold mt-2"
+                  className="block text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent font-extrabold mt-2"
                   initial={{ x: 100, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.7 }}
@@ -346,7 +376,7 @@ export const LandingPage: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               <motion.h2 
-                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight"
+                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black leading-tight bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-400 bg-clip-text text-transparent"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 1.1 }}
@@ -354,7 +384,7 @@ export const LandingPage: React.FC = () => {
                 Empower Your Dojo with Professional Management
               </motion.h2>
               <motion.p 
-                className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-300 leading-relaxed font-medium"
+                className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-bold bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-400 bg-clip-text text-transparent"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 1.3 }}
@@ -490,7 +520,7 @@ export const LandingPage: React.FC = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+            <h2 className="text-3xl sm:text-5xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent animate-pulse">
               Powerful Features
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
@@ -582,7 +612,7 @@ export const LandingPage: React.FC = () => {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <h2 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+            <h2 className="text-3xl sm:text-5xl font-black bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500 bg-clip-text text-transparent animate-pulse">
               Ready to Elevate Your Dojo?
             </h2>
             <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">

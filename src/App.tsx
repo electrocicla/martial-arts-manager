@@ -16,9 +16,9 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 // Main app content for authenticated users
 function AppContent() {
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Header />
-      <main className="pb-20 md:pb-8">
+      <main className="pb-16 sm:pb-20 md:pb-8 px-1 sm:px-2 md:px-0">
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/students" element={<StudentManager />} />

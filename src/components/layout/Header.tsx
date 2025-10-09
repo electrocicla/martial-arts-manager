@@ -22,23 +22,23 @@ export default function Header({ onMenuClick }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+    <header className="bg-white/10 backdrop-blur-xl border-b border-white/20 px-3 sm:px-4 py-3 sm:py-4 shadow-lg">
       <div className="flex items-center justify-between">
         {/* Mobile menu button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={onMenuClick}
-          className="md:hidden"
-          leftIcon={<Menu className="w-4 h-4" />}
+          className="md:hidden text-white hover:bg-white/10 p-2"
+          leftIcon={<Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
         >
-          Menu
+          <span className="sr-only sm:not-sr-only text-xs">Menu</span>
         </Button>
 
         {/* Logo/Title */}
         <div className="flex-1 md:flex-none md:mx-auto">
-          <Link to="/" className="text-xl font-bold text-gray-900 dark:text-white">
-            Martial Arts Manager
+          <Link to="/" className="text-lg sm:text-xl md:text-2xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+            HAMMAR Manager
           </Link>
         </div>
 
