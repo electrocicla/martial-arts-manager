@@ -236,86 +236,67 @@ const LandingPage: React.FC = () => {
       />
 
       {/* Hero Section */}
-      <section className="z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-0">
+      <section className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-0">
         <div className="max-w-7xl mx-auto text-center">
           {/* Logo and Brand */}
           <div className="mb-8 sm:mb-12">
             <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12">
               {/* Logo */}
               <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0">
-                {/* Multiple rotating rings */}
-                <motion.div
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 p-1 shadow-2xl shadow-amber-500/50"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                >
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-slate-800 to-slate-900 p-2 sm:p-3 shadow-inner">
+                {/* Electric border container */}
+                <div className="electric-border absolute inset-0 rounded-full bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 p-1 shadow-2xl shadow-cyan-500/50">
+                  <div className="w-full h-full rounded-full bg-gradient-to-br from-slate-900 to-slate-800 p-2 sm:p-3 shadow-inner relative overflow-hidden">
                     <img
                       src="/hammar_logo.jpg"
                       alt="Hamarr Jiu-Jitsu MMA Logo"
-                      className="w-full h-full rounded-full object-cover shadow-2xl ring-2 sm:ring-4 ring-white/10"
+                      className="w-full h-full rounded-full object-cover shadow-2xl ring-2 sm:ring-4 ring-cyan-400/20 relative z-10"
+                      onLoad={() => console.log('Logo loaded successfully')}
+                      onError={(e) => {
+                        console.error('Logo failed to load:', e);
+                        console.log('Trying to load:', e.currentTarget.src);
+                      }}
                     />
                   </div>
-                </motion.div>
+                  
+                  {/* Electric sparks */}
+                  <div className="electric-spark"></div>
+                  <div className="electric-spark"></div>
+                  <div className="electric-spark"></div>
+                  <div className="electric-spark"></div>
+                  <div className="electric-spark"></div>
+                  <div className="electric-spark"></div>
+                </div>
                 
-                {/* Outer rotating rings */}
-                <motion.div
-                  className="absolute -inset-4 sm:-inset-6 rounded-full border-2 border-amber-400/30"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                />
-                <motion.div
-                  className="absolute -inset-6 sm:-inset-8 rounded-full border border-orange-500/20"
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                />
-                <motion.div
-                  className="absolute -inset-8 sm:-inset-10 rounded-full border border-red-500/10"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
-                />
+                {/* Electric glow */}
+                <div className="electric-glow"></div>
                 
-                {/* Pulsing glow effect */}
+                {/* Additional electric rings */}
                 <motion.div
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400/20 to-orange-500/20 blur-xl"
-                  animate={{
-                    scale: [1, 1.3, 1],
-                    opacity: [0.3, 0.6, 0.3],
+                  className="absolute -inset-2 sm:-inset-3 rounded-full border border-cyan-400/40"
+                  animate={{ 
+                    opacity: [0.3, 0.8, 0.3],
+                    scale: [0.98, 1.02, 0.98]
                   }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <motion.div
+                  className="absolute -inset-4 sm:-inset-6 rounded-full border border-blue-400/20"
+                  animate={{ 
+                    opacity: [0.2, 0.6, 0.2],
+                    scale: [0.96, 1.04, 0.96]
                   }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                 />
               </div>
               
               {/* Brand Text */}
               <div className="text-center lg:text-left">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-tight mb-2 sm:mb-4">
-                  <span 
-                    className="block drop-shadow-2xl text-cyan-400"
-                    style={{
-                      background: 'linear-gradient(to right, #22d3ee, #3b82f6, #9333ea)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                      display: 'inline-block'
-                    }}
-                  >
+                  <span className="block gradient-text-cyan-purple drop-shadow-2xl">
                     HAMMAR
                   </span>
                 </h1>
-                <p 
-                  className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-emerald-400"
-                  style={{
-                    background: 'linear-gradient(to right, #34d399, #14b8a6, #06b6d4)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    display: 'inline-block'
-                  }}
-                >
+                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold gradient-text-emerald-teal">
                   Martial Arts Manager
                 </p>
               </div>
