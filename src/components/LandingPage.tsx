@@ -237,42 +237,34 @@ const LandingPage: React.FC = () => {
 
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-0">
-        <div className="max-w-7xl mx-auto text-center">
-          {/* Logo and Brand */}
-          <div className="mb-8 sm:mb-12">
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12">
-              {/* Logo */}
-              <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0">
-                {/* Electric border container */}
-                <div className="electric-border absolute inset-0 rounded-full bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 p-1 shadow-2xl shadow-cyan-500/50">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-slate-900 to-slate-800 p-2 sm:p-3 shadow-inner relative overflow-hidden">
-                    <img
-                      src="/hammar_logo.jpg"
-                      alt="Hamarr Jiu-Jitsu MMA Logo"
-                      className="w-full h-full rounded-full object-cover shadow-2xl ring-2 sm:ring-4 ring-cyan-400/20 relative z-10"
-                      onLoad={() => console.log('Logo loaded successfully')}
-                      onError={(e) => {
-                        console.error('Logo failed to load:', e);
-                        console.log('Trying to load:', e.currentTarget.src);
-                      }}
-                    />
-                  </div>
-                  
-                  {/* Electric sparks */}
-                  <div className="electric-spark"></div>
-                  <div className="electric-spark"></div>
-                  <div className="electric-spark"></div>
-                  <div className="electric-spark"></div>
-                  <div className="electric-spark"></div>
-                  <div className="electric-spark"></div>
+        <div className="max-w-8xl mx-auto">
+          {/* Desktop Layout (lg and above) */}
+          <div className="hidden lg:grid lg:grid-cols-2 lg:gap-16 xl:gap-24 items-center min-h-[80vh]">
+            {/* Left Side - Logo */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="relative w-64 h-64 xl:w-80 xl:h-80 2xl:w-96 2xl:h-96 flex-shrink-0">
+                <div className="w-full h-full rounded-full bg-slate-800 p-3 electric-border">
+                  <img
+                    src="/hammar_logo.jpg"
+                    alt="Hamarr Jiu-Jitsu MMA Logo"
+                    className="w-full h-full rounded-full object-cover"
+                  />
                 </div>
+                
+                {/* Electric sparks positioned absolutely */}
+                <div className="electric-spark absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+                <div className="electric-spark absolute top-1/4 right-0"></div>
+                <div className="electric-spark absolute bottom-0 left-1/2 transform -translate-x-1/2"></div>
+                <div className="electric-spark absolute top-1/4 left-0"></div>
+                <div className="electric-spark absolute top-1/3 right-1/4"></div>
+                <div className="electric-spark absolute bottom-1/3 left-1/4"></div>
                 
                 {/* Electric glow */}
                 <div className="electric-glow"></div>
                 
                 {/* Additional electric rings */}
                 <motion.div
-                  className="absolute -inset-2 sm:-inset-3 rounded-full border border-cyan-400/40"
+                  className="absolute -inset-3 rounded-full border border-cyan-400/40"
                   animate={{ 
                     opacity: [0.3, 0.8, 0.3],
                     scale: [0.98, 1.02, 0.98]
@@ -280,7 +272,7 @@ const LandingPage: React.FC = () => {
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 />
                 <motion.div
-                  className="absolute -inset-4 sm:-inset-6 rounded-full border border-blue-400/20"
+                  className="absolute -inset-6 rounded-full border border-blue-400/20"
                   animate={{ 
                     opacity: [0.2, 0.6, 0.2],
                     scale: [0.96, 1.04, 0.96]
@@ -288,130 +280,313 @@ const LandingPage: React.FC = () => {
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                 />
               </div>
-              
-              {/* Brand Text */}
-              <div className="text-center lg:text-left">
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-tight mb-2 sm:mb-4">
-                  <span className="block gradient-text-cyan-purple drop-shadow-2xl">
-                    HAMMAR
-                  </span>
-                </h1>
-                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold gradient-text-emerald-teal">
-                  Martial Arts Manager
-                </p>
+            </div>
+            
+            {/* Right Side - Brand Text and Content */}
+            <div className="text-left space-y-8">
+              {/* Brand Text - Cinturón Negro con Cinta Roja */}
+              <motion.h1 
+                className="text-4xl xl:text-5xl 2xl:text-6xl font-black tracking-tight leading-tight space-y-3"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1, delay: 0.3 }}
+              >
+                <motion.div 
+                  className="block dark-energy-text drop-shadow-2xl"
+                  initial={{ x: 50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                >
+                  HAMMAR
+                </motion.div>
+                
+                <motion.div 
+                  className="block fire-energy-text text-3xl xl:text-4xl 2xl:text-5xl animate-pulse"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.7 }}
+                >
+                  MARTIAL ARTS
+                </motion.div>
+                
+                <motion.div 
+                  className="block dark-energy-text drop-shadow-2xl"
+                  initial={{ x: 50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.9 }}
+                >
+                  MANAGER
+                </motion.div>
+              </motion.h1>
+
+              {/* Hero Content */}
+              <div className="space-y-6">
+                <motion.div
+                  className="w-32 h-1 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-lg shadow-amber-500/50"
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: "auto", opacity: 1 }}
+                  transition={{ duration: 1.2, delay: 0.9 }}
+                />
+                
+                <motion.div 
+                  className="space-y-4 max-w-2xl"
+                  initial={{ y: 30, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                >
+                  <motion.h2 
+                    className="text-2xl xl:text-3xl 2xl:text-4xl font-black leading-tight gradient-text-emerald-teal"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 1.1 }}
+                  >
+                    Empower Your Dojo with Professional Management
+                  </motion.h2>
+                  <motion.p 
+                    className="text-lg xl:text-xl 2xl:text-2xl leading-relaxed font-bold gradient-text-violet-purple"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 1.3 }}
+                  >
+                    The ultimate solution for martial arts instructors to organize students, track belt progressions, 
+                    manage payments, schedule classes, monitor attendance, and grow your martial arts academy.
+                  </motion.p>
+                </motion.div>
+
+                <motion.div
+                  className="flex gap-6 pt-6"
+                  initial={{ y: 30, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 1.5 }}
+                >
+                  <motion.a 
+                    href="/login"
+                    whileHover={{ scale: 1.08, y: -4 }}
+                    whileTap={{ scale: 0.92 }}
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 1.7 }}
+                    className="group"
+                  >
+                    <div className="relative">
+                      <Button
+                        size="lg"
+                        className="mega-cta-button text-white font-black px-12 py-6 text-xl relative overflow-hidden transition-all duration-700"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 opacity-90" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/30 to-transparent animate-pulse" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                        <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-orange-500 rounded-xl blur-sm opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute -inset-2 bg-gradient-to-r from-red-500 to-orange-400 rounded-xl blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-500" />
+                        
+                        <span className="relative z-10 flex items-center gap-3">
+                          <span className="animate-pulse">⚡</span>
+                          GET STARTED
+                          <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
+                          <span className="animate-pulse">⚡</span>
+                        </span>
+                      </Button>
+                    </div>
+                  </motion.a>
+
+                  <motion.a
+                    href="https://www.instagram.com/hamarr_jiujitsu_mma/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-3 px-8 py-6 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl font-bold text-lg transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-pink-500/40 group relative overflow-hidden"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    initial={{ x: 50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 1.9 }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                    
+                    <span className="relative z-10 flex items-center gap-3">
+                      <Instagram className="w-6 h-6" />
+                      Follow Us
+                      <ExternalLink className="w-5 h-5" />
+                    </span>
+                  </motion.a>
+                </motion.div>
               </div>
             </div>
           </div>
 
-          {/* Hero Text */}
-          <div className="space-y-6 sm:space-y-8">
-            <div className="space-y-4 sm:space-y-6">
-              <motion.h1 
-                className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight leading-tight"
-                initial={{ y: 30, opacity: 0, scale: 0.8 }}
-                animate={{ y: 0, opacity: 1, scale: 1 }}
-                transition={{ duration: 1.2, delay: 0.3, type: "spring", stiffness: 100 }}
-              >
-                <motion.span 
-                  className="block gradient-text-pink-orange drop-shadow-2xl animate-pulse"
-                  initial={{ x: -100, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.5 }}
-                >
-                  MARTIAL ARTS
-                </motion.span>
-                <motion.span 
-                  className="block text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl gradient-text-cyan-purple font-extrabold mt-2"
-                  initial={{ x: 100, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.7 }}
-                >
-                  MANAGER
-                </motion.span>
-              </motion.h1>
-              
+          {/* Mobile/Tablet Layout (below lg) */}
+          <div className="lg:hidden text-center">
+            <div className="mb-8 sm:mb-12">
+              <div className="flex flex-col items-center justify-center gap-6">
+                {/* Logo */}
+                <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 flex-shrink-0">
+                  <div className="w-full h-full rounded-full bg-slate-800 p-2 electric-border">
+                    <img
+                      src="/hammar_logo.jpg"
+                      alt="Hamarr Jiu-Jitsu MMA Logo"
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  </div>
+                  
+                  {/* Electric sparks positioned absolutely */}
+                  <div className="electric-spark absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+                  <div className="electric-spark absolute top-1/4 right-0"></div>
+                  <div className="electric-spark absolute bottom-0 left-1/2 transform -translate-x-1/2"></div>
+                  <div className="electric-spark absolute top-1/4 left-0"></div>
+                  <div className="electric-spark absolute top-1/3 right-1/4"></div>
+                  <div className="electric-spark absolute bottom-1/3 left-1/4"></div>
+                  
+                  {/* Electric glow */}
+                  <div className="electric-glow"></div>
+                  
+                  {/* Additional electric rings */}
+                  <motion.div
+                    className="absolute -inset-2 sm:-inset-3 rounded-full border border-cyan-400/40"
+                    animate={{ 
+                      opacity: [0.3, 0.8, 0.3],
+                      scale: [0.98, 1.02, 0.98]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <motion.div
+                    className="absolute -inset-4 sm:-inset-6 rounded-full border border-blue-400/20"
+                    animate={{ 
+                      opacity: [0.2, 0.6, 0.2],
+                      scale: [0.96, 1.04, 0.96]
+                    }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                  />
+                </div>
+                
+                {/* Brand Text - Cinturón Negro con Cinta Roja */}
+                <div className="text-center max-w-4xl">
+                  <motion.h1 
+                    className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight space-y-2"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.3 }}
+                  >
+                    <motion.div 
+                      className="block dark-energy-text drop-shadow-2xl"
+                      initial={{ x: -100, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ duration: 0.8, delay: 0.5 }}
+                    >
+                      HAMMAR
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="block fire-energy-text text-2xl sm:text-3xl md:text-4xl animate-pulse"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.8, delay: 0.7 }}
+                    >
+                      MARTIAL ARTS
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="block dark-energy-text drop-shadow-2xl"
+                      initial={{ x: 100, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ duration: 0.8, delay: 0.9 }}
+                    >
+                      MANAGER
+                    </motion.div>
+                  </motion.h1>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Hero Content */}
+            <div className="space-y-6 sm:space-y-8">
               <motion.div
                 className="w-24 sm:w-32 md:w-40 h-1 bg-gradient-to-r from-amber-400 to-orange-500 mx-auto rounded-full shadow-lg shadow-amber-500/50"
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ width: "auto", opacity: 1 }}
                 transition={{ duration: 1.2, delay: 0.9 }}
               />
-            </div>
-            
-            <motion.div 
-              className="space-y-4 sm:space-y-6 max-w-3xl lg:max-w-4xl mx-auto px-4"
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              <motion.h2 
-                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black leading-tight gradient-text-emerald-teal"
-                initial={{ y: 20, opacity: 0 }}
+              
+              <motion.div 
+                className="space-y-4 sm:space-y-6 max-w-3xl mx-auto px-4"
+                initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 1.1 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
               >
-                Empower Your Dojo with Professional Management
-              </motion.h2>
-              <motion.p 
-                className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-bold gradient-text-violet-purple"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 1.3 }}
-              >
-                The ultimate solution for martial arts instructors to organize students, track belt progressions, 
-                manage payments, schedule classes, monitor attendance, and grow your martial arts academy.
-              </motion.p>
-            </motion.div>
-
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center pt-6 sm:pt-8"
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.5 }}
-            >
-              <motion.a 
-                href="/login"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 1.7 }}
-              >
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-2xl hover:shadow-amber-500/40 transition-all duration-500 group relative overflow-hidden"
+                <motion.h2 
+                  className="text-xl sm:text-2xl md:text-3xl font-black leading-tight gradient-text-emerald-teal"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 1.1 }}
                 >
-                  {/* Shimmer effect */}
+                  Empower Your Dojo with Professional Management
+                </motion.h2>
+                <motion.p 
+                  className="text-base sm:text-lg md:text-xl leading-relaxed font-bold gradient-text-violet-purple"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 1.3 }}
+                >
+                  The ultimate solution for martial arts instructors to organize students, track belt progressions, 
+                  manage payments, schedule classes, monitor attendance, and grow your martial arts academy.
+                </motion.p>
+              </motion.div>
+
+              <motion.div
+                className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center pt-6 sm:pt-8"
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 1.5 }}
+              >
+                <motion.a 
+                  href="/login"
+                  whileHover={{ scale: 1.08, y: -4 }}
+                  whileTap={{ scale: 0.92 }}
+                  initial={{ x: -50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 1.7 }}
+                  className="group"
+                >
+                  <div className="relative">
+                    <Button
+                      size="lg"
+                      className="mega-cta-button text-white font-black px-8 sm:px-12 py-4 sm:py-6 text-lg sm:text-xl relative overflow-hidden transition-all duration-700"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 opacity-90" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/30 to-transparent animate-pulse" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                      <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-orange-500 rounded-xl blur-sm opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute -inset-2 bg-gradient-to-r from-red-500 to-orange-400 rounded-xl blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-500" />
+                      
+                      <span className="relative z-10 flex items-center gap-3">
+                        <span className="animate-pulse">⚡</span>
+                        GET STARTED
+                        <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-2 transition-transform duration-300" />
+                        <span className="animate-pulse">⚡</span>
+                      </span>
+                    </Button>
+                  </div>
+                </motion.a>
+
+                <motion.a
+                  href="https://www.instagram.com/hamarr_jiujitsu_mma/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl font-medium transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-pink-500/40 text-sm sm:text-base group relative overflow-hidden"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  initial={{ x: 50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 1.9 }}
+                >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   
                   <span className="relative z-10 flex items-center gap-2">
-                    Get Started
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                    <Instagram className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Follow Us
+                    <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
                   </span>
-                </Button>
-              </motion.a>
-
-              <motion.a
-                href="https://www.instagram.com/hamarr_jiujitsu_mma/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl font-medium transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-pink-500/40 text-sm sm:text-base group relative overflow-hidden"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                initial={{ x: 50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 1.9 }}
-              >
-                {/* Shimmer effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                
-                <span className="relative z-10 flex items-center gap-2">
-                  <Instagram className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Follow Us
-                  <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
-                </span>
-              </motion.a>
-            </motion.div>
+                </motion.a>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>

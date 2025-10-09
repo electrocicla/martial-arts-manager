@@ -108,47 +108,154 @@
     color: #ffffff; /* fallback */
   }
 
-  /* Electric Lightning Effects */
+  /* Cinturón Negro con Cinta Roja - Efectos de Energía */
+  .dark-energy-text {
+    color: #000000;
+    text-shadow: 
+      0 0 10px rgba(0, 0, 0, 0.8),
+      0 0 20px rgba(30, 30, 30, 0.6),
+      0 0 30px rgba(60, 60, 60, 0.4),
+      0 0 40px rgba(100, 100, 100, 0.3),
+      0 4px 8px rgba(0, 0, 0, 0.5);
+    filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.7));
+    position: relative;
+    animation: darkEnergyFlow 3s ease-in-out infinite;
+  }
+
+  .dark-energy-text::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(50, 50, 50, 0.2) 30%,
+      rgba(100, 100, 100, 0.1) 50%,
+      transparent 70%
+    );
+    border-radius: 10px;
+    z-index: -1;
+    animation: darkAura 4s ease-in-out infinite;
+  }
+
+  .fire-energy-text {
+    background: linear-gradient(45deg, #dc2626, #ea580c, #f97316, #dc2626) !important;
+    background-size: 300% 300% !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    text-shadow: 
+      0 0 20px rgba(239, 68, 68, 0.8),
+      0 0 40px rgba(249, 115, 22, 0.6),
+      0 0 60px rgba(234, 88, 12, 0.4);
+    filter: 
+      drop-shadow(0 0 10px rgba(239, 68, 68, 0.5))
+      drop-shadow(0 0 20px rgba(249, 115, 22, 0.3));
+    position: relative;
+    animation: fireEnergyFlow 2s ease-in-out infinite;
+  }
+
+  .fire-energy-text::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(239, 68, 68, 0.4) 0%,
+      rgba(249, 115, 22, 0.3) 30%,
+      rgba(234, 88, 12, 0.2) 50%,
+      transparent 70%
+    );
+    border-radius: 15px;
+    z-index: -1;
+    animation: fireParticles 3s ease-in-out infinite;
+  }
+
+  /* Mega CTA Button */
+  .mega-cta-button {
+    border-radius: 12px;
+    box-shadow: 
+      0 10px 30px rgba(239, 68, 68, 0.4),
+      0 5px 15px rgba(249, 115, 22, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    animation: megaPulse 2s ease-in-out infinite;
+  }
+
+  .mega-cta-button:hover {
+    box-shadow: 
+      0 15px 40px rgba(239, 68, 68, 0.6),
+      0 8px 20px rgba(249, 115, 22, 0.5),
+      0 0 50px rgba(234, 88, 12, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* Enhanced Electric Lightning Effects */
   .electric-border {
     position: relative;
     overflow: visible;
+    border: 2px solid transparent;
+    background: linear-gradient(#1e293b, #1e293b) padding-box,
+                linear-gradient(45deg, #00d4ff, #0099ff, #00d4ff) border-box;
+    box-shadow: 
+      0 0 20px rgba(0, 212, 255, 0.5),
+      inset 0 0 20px rgba(0, 212, 255, 0.1);
   }
 
   .electric-border::before,
   .electric-border::after {
     content: '';
     position: absolute;
-    inset: -3px;
-    padding: 3px;
+    inset: -4px;
+    padding: 4px;
     border-radius: inherit;
     background: linear-gradient(45deg, 
-      transparent, transparent, 
-      #00d4ff, #0099ff, #0066ff, 
-      transparent, transparent, 
-      #00d4ff, #0099ff);
-    background-size: 400% 400%;
+      transparent 20%, 
+      #00d4ff 25%, 
+      #0099ff 35%, 
+      #0066ff 45%, 
+      transparent 50%, 
+      transparent 55%, 
+      #00d4ff 65%, 
+      #0099ff 75%, 
+      transparent 80%);
+    background-size: 300% 300%;
     opacity: 0;
     z-index: -1;
-    animation: electricFlow 2s ease-in-out infinite;
+    animation: electricFlow 1.5s ease-in-out infinite;
   }
 
   .electric-border::after {
-    animation-delay: 1s;
+    animation-delay: 0.75s;
     background: linear-gradient(-45deg, 
-      transparent, transparent, 
-      #66d4ff, #33aaff, #0088ff, 
-      transparent, transparent, 
-      #66d4ff, #33aaff);
+      transparent 20%, 
+      #66d4ff 25%, 
+      #33aaff 35%, 
+      #0088ff 45%, 
+      transparent 50%, 
+      transparent 55%, 
+      #66d4ff 65%, 
+      #33aaff 75%, 
+      transparent 80%);
   }
 
   .electric-spark {
     position: absolute;
-    width: 2px;
-    height: 15px;
-    background: linear-gradient(to bottom, #00d4ff, transparent);
-    border-radius: 1px;
+    width: 3px;
+    height: 20px;
+    background: linear-gradient(to bottom, #00d4ff, #0099ff, transparent);
+    border-radius: 2px;
     opacity: 0;
-    animation: sparkle 3s ease-in-out infinite;
+    animation: sparkle 2s ease-in-out infinite;
+    box-shadow: 0 0 8px #00d4ff;
   }
 
   .electric-spark:nth-child(1) {
@@ -239,14 +346,32 @@
   0%, 100% { 
     opacity: 0; 
     background-position: 0% 50%; 
+    filter: brightness(1);
   }
-  10%, 90% { 
-    opacity: 0.8; 
+  15% { 
+    opacity: 0.9; 
+    background-position: 25% 50%; 
+    filter: brightness(1.2);
+  }
+  30% { 
+    opacity: 1; 
     background-position: 50% 50%; 
+    filter: brightness(1.5);
   }
-  50% { 
+  45% { 
+    opacity: 0.9; 
+    background-position: 75% 50%; 
+    filter: brightness(1.2);
+  }
+  60% { 
     opacity: 1; 
     background-position: 100% 50%; 
+    filter: brightness(1.5);
+  }
+  85% { 
+    opacity: 0.7; 
+    background-position: 125% 50%; 
+    filter: brightness(1.1);
   }
 }
 
@@ -273,6 +398,86 @@
   50% { 
     opacity: 0.6; 
     transform: scale(1.05); 
+  }
+}
+
+@keyframes darkEnergyFlow {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px rgba(0, 0, 0, 0.8),
+      0 0 20px rgba(30, 30, 30, 0.6),
+      0 0 30px rgba(60, 60, 60, 0.4),
+      0 4px 8px rgba(0, 0, 0, 0.5);
+    filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.7));
+  }
+  50% {
+    text-shadow: 
+      0 0 15px rgba(0, 0, 0, 1),
+      0 0 30px rgba(30, 30, 30, 0.8),
+      0 0 45px rgba(60, 60, 60, 0.6),
+      0 0 60px rgba(100, 100, 100, 0.4),
+      0 6px 12px rgba(0, 0, 0, 0.7);
+    filter: drop-shadow(0 0 25px rgba(0, 0, 0, 0.9));
+  }
+}
+
+@keyframes darkAura {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes fireEnergyFlow {
+  0%, 100% {
+    background-position: 0% 0%;
+    text-shadow: 
+      0 0 20px rgba(239, 68, 68, 0.8),
+      0 0 40px rgba(249, 115, 22, 0.6),
+      0 0 60px rgba(234, 88, 12, 0.4);
+  }
+  50% {
+    background-position: 100% 100%;
+    text-shadow: 
+      0 0 30px rgba(239, 68, 68, 1),
+      0 0 60px rgba(249, 115, 22, 0.8),
+      0 0 90px rgba(234, 88, 12, 0.6),
+      0 0 120px rgba(220, 38, 38, 0.4);
+  }
+}
+
+@keyframes fireParticles {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1) rotate(0deg);
+  }
+  33% {
+    opacity: 0.7;
+    transform: scale(1.1) rotate(120deg);
+  }
+  66% {
+    opacity: 0.5;
+    transform: scale(1.05) rotate(240deg);
+  }
+}
+
+@keyframes megaPulse {
+  0%, 100% {
+    box-shadow: 
+      0 10px 30px rgba(239, 68, 68, 0.4),
+      0 5px 15px rgba(249, 115, 22, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 15px 35px rgba(239, 68, 68, 0.6),
+      0 8px 20px rgba(249, 115, 22, 0.4),
+      0 0 30px rgba(234, 88, 12, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 }
 
