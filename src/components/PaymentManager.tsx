@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Card, CardContent, CardHeader } from './ui/Card';
 import { Input } from './ui/Input';
 import { Select } from './ui/Select';
@@ -12,10 +11,11 @@ import { useDebounce } from '../hooks/useDebounce';
 import { paymentSchema } from '../lib/validation';
 import { useApp } from '../context/AppContext';
 import { Search, Plus, DollarSign, Calendar, User } from 'lucide-react';
+import type { Payment } from '../types';
 
 export default function PaymentManager() {
   const { payments, setPayments, students } = useApp();
-  const { toast } = useToast();
+  const toast = useToast();
 
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,14 +58,14 @@ export default function PaymentManager() {
         payment.type.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         payment.notes?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
 
-      const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || (payment as Payment & { status?: string }).status === statusFilter;
       const matchesType = typeFilter === 'all' || payment.type === typeFilter;
 
       return matchesSearch && matchesStatus && matchesType;
     });
   }, [payments, students, debouncedSearchTerm, statusFilter, typeFilter]);
 
-  const addPayment = async (data: any) => {
+  const addPayment = async (data: unknown) => {
     try {
       const response = await fetch('/api/payments', {
         method: 'POST',
@@ -76,16 +76,16 @@ export default function PaymentManager() {
       if (!response.ok) throw new Error('Failed to add payment');
 
       const newPayment = await response.json();
-      setPayments([...payments, newPayment]);
+      // Ensure status property exists with default value
+      const paymentWithStatus = { ...newPayment, status: newPayment.status || 'completed' };
+      setPayments([...payments, paymentWithStatus]);
       reset();
       toast.success('Payment added successfully', {
         description: 'The payment has been recorded in the system.'
       });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to add payment',
-        type: 'error'
+    } catch {
+      toast.error('Failed to add payment', {
+        description: 'Please try again later.'
       });
     }
   };
@@ -310,8 +310,8 @@ export default function PaymentManager() {
                         <Badge variant={getTypeBadgeVariant(payment.type)}>
                           {payment.type}
                         </Badge>
-                        <Badge variant={getStatusBadgeVariant(payment.status || 'completed')}>
-                          {payment.status || 'completed'}
+                        <Badge variant={getStatusBadgeVariant((payment as Payment & { status?: string }).status || 'completed')}>
+                          {(payment as Payment & { status?: string }).status || 'completed'}
                         </Badge>
                       </div>
 

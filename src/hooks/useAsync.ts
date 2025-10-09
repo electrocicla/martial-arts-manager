@@ -7,7 +7,7 @@ interface AsyncState<T> {
 }
 
 interface AsyncActions<T> {
-  execute: (...args: any[]) => Promise<T | undefined>;
+  execute: (...args: unknown[]) => Promise<T | undefined>;
   reset: () => void;
 }
 
@@ -18,7 +18,7 @@ interface AsyncActions<T> {
  * @returns Object with state and actions
  */
 export function useAsync<T>(
-  asyncFunction: (...args: any[]) => Promise<T>,
+  asyncFunction: (...args: unknown[]) => Promise<T>,
   immediate = false
 ): AsyncState<T> & AsyncActions<T> {
   const [state, setState] = useState<AsyncState<T>>({
@@ -28,7 +28,7 @@ export function useAsync<T>(
   });
 
   const execute = useCallback(
-    async (...args: any[]) => {
+    async (...args: unknown[]) => {
       setState(prevState => ({ ...prevState, loading: true, error: null }));
 
       try {

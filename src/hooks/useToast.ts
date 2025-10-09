@@ -77,7 +77,7 @@ export function useToast() {
       }: {
         loading?: string;
         success?: string | ((data: T) => string);
-        error?: string | ((error: any) => string);
+        error?: string | ((error: unknown) => string);
       } = {}
     ) => {
       return sonnerToast.promise(promise, {

@@ -12,7 +12,7 @@ export default function AttendanceManager() {
       fetch(`/api/attendance?classId=${classId}`)
         .then(r => r.json())
         .then(data => {
-          const att = data.reduce((acc: Record<string, boolean>, item: any) => {
+          const att = data.reduce((acc: Record<string, boolean>, item: { student_id: string; attended: number }) => {
             acc[item.student_id] = item.attended === 1;
             return acc;
           }, {});

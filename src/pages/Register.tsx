@@ -33,6 +33,7 @@ export default function Register() {
   const onSubmit = async (data: RegisterFormData) => {
     clearError();
     const { confirmPassword, ...registerData } = data;
+    void confirmPassword; // Acknowledge unused variable
     const success = await registerUser(registerData);
     if (success) {
       navigate('/');
