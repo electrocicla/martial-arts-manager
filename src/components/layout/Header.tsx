@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Bell, Search, Menu, X, User, LogOut, 
-  Settings, Award, Clock, Users, Calendar
+  Search, Menu, User, LogOut, 
+  Settings, Clock, Users, Calendar
 } from 'lucide-react';
 
 export default function Header() {
@@ -23,40 +23,33 @@ export default function Header() {
   return (
     <>
       {/* Mobile Header - Static Design */}
-      <header className="navbar bg-gray-900/95 backdrop-blur-lg border-b border-gray-700/50 mobile-header md:hidden min-h-[4rem]">
-        <div className="navbar-start">
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="btn btn-ghost btn-circle hover:bg-gray-700/50 text-gray-300"
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-        
-        <div className="navbar-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
-              <Award className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-base-content">Dojo Manager</h1>
-            </div>
+      {/* Mobile Header - Optimized Layout */}
+      <header className="flex items-center justify-between px-4 py-3 bg-gray-900 border-b border-gray-700 md:hidden">
+        {/* Left: Menu Button */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+
+        {/* Center: Logo and Title */}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <span className="text-white font-bold text-sm">🥋</span>
           </div>
+          <h1 className="text-xl font-bold text-white">Dojo Manager</h1>
         </div>
 
-        <div className="navbar-end">
-          {/* Simple notification icon - compact design */}
-          <button className="btn btn-ghost btn-sm p-2 hover:bg-gray-700/50 transition-colors">
-            <div className="relative">
-              <Bell className="w-5 h-5 text-gray-300" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-            </div>
-          </button>
+        {/* Right: User Avatar */}
+        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} alt={user.name} className="w-8 h-8 rounded-full" />
+          ) : (
+            <User className="w-4 h-4 text-gray-300" />
+          )}
         </div>
       </header>
-
-
 
       {/* Mobile Slide Menu - Improved */}
       <div className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ${
@@ -96,96 +89,77 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Search Bar - Improved */}
-          <div className="p-6 border-b border-base-300">
-            <div className="form-control">
-              <div className="input-group">
-                <input
-                  type="text"
-                  placeholder="Search students, classes..."
-                  className="input input-bordered w-full focus:border-primary"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button className="btn btn-primary btn-square">
-                  <Search className="w-5 h-5" />
-                </button>
+          {/* Search Bar - Fixed Alignment */}
+          <div className="p-4 border-b border-gray-700">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
               </div>
+              <input
+                type="text"
+                placeholder="Search students, classes..."
+                className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
           </div>
 
-          {/* Menu Items - Enhanced */}
+          {/* Menu Items - Fixed Alignment */}
           <div className="flex-1 overflow-y-auto">
-            <ul className="menu p-4 space-y-1">
-              <li className="menu-title text-base-content/70 font-bold">
-                <span>Quick Actions</span>
-              </li>
-              <li>
-                <button 
-                  onClick={() => { navigate('/attendance'); setMobileMenuOpen(false); }}
-                  className="btn btn-ghost justify-start w-full h-12 rounded-xl"
-                >
-                  <Clock className="w-5 h-5 text-primary" />
-                  Mark Attendance
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => { navigate('/students'); setMobileMenuOpen(false); }}
-                  className="btn btn-ghost justify-start w-full h-12 rounded-xl"
-                >
-                  <Users className="w-5 h-5 text-secondary" />
-                  Add Student
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => { navigate('/classes'); setMobileMenuOpen(false); }}
-                  className="btn btn-ghost justify-start w-full h-12 rounded-xl"
-                >
-                  <Calendar className="w-5 h-5 text-accent" />
-                  Schedule Class
-                </button>
-              </li>
+            <div className="p-4 space-y-6">
+              {/* Quick Actions */}
+              <div>
+                <h3 className="text-sm font-semibold text-white mb-3">Quick Actions</h3>
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => { navigate('/attendance'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Clock className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0" />
+                    <span>Mark Attendance</span>
+                  </button>
+                  <button 
+                    onClick={() => { navigate('/students'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Users className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Add Student</span>
+                  </button>
+                  <button 
+                    onClick={() => { navigate('/classes'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Calendar className="w-5 h-5 text-purple-400 mr-3 flex-shrink-0" />
+                    <span>Schedule Class</span>
+                  </button>
+                </div>
+              </div>
               
-              <div className="divider my-4"></div>
-              
-              <li className="menu-title text-base-content/70 font-bold">
-                <span>Account</span>
-              </li>
-              <li>
-                <button 
-                  onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
-                  className="btn btn-ghost justify-start w-full h-12 rounded-xl"
-                >
-                  <Settings className="w-5 h-5 text-info" />
-                  Settings
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                  className="btn btn-ghost justify-start w-full h-12 rounded-xl text-error hover:bg-error/10"
-                >
-                  <LogOut className="w-5 h-5" />
-                  Logout
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Theme Info at Bottom */}
-          <div className="p-4 border-t border-gray-700">
-            <div className="alert alert-info">
-              <div className="flex items-center gap-3">
-                <Award className="w-5 h-5 text-info flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-sm">Dark Mode Active</h3>
-                  <div className="text-xs opacity-70">Optimized for your eyes</div>
+              {/* Account */}
+              <div>
+                <h3 className="text-sm font-semibold text-white mb-3">Account</h3>
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Settings className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
+                    <span>Settings</span>
+                  </button>
+                  <button 
+                    onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
+                  >
+                    <LogOut className="w-5 h-5 mr-3 flex-shrink-0" />
+                    <span>Logout</span>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
+
+
         </div>
       </div>
 
@@ -194,31 +168,21 @@ export default function Header() {
       <header className="hidden md:flex h-16 bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/50 items-center px-6 ml-64">
         <div className="flex-1 flex items-center gap-4">
           {/* Search */}
-          <div className="form-control">
-            <div className="input-group">
-              <input
-                type="text"
-                placeholder="Search students, classes..."
-                className="input input-bordered input-sm w-96"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button className="btn btn-sm btn-square">
-                <Search className="w-4 h-4" />
-              </button>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
             </div>
+            <input
+              type="text"
+              placeholder="Search students, classes..."
+              className="w-96 pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Simple notification icon - compact design */}
-          <button className="btn btn-ghost btn-sm p-2 hover:bg-gray-700/50 transition-colors">
-            <div className="relative">
-              <Bell className="w-5 h-5 text-gray-300" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-            </div>
-          </button>
-
           {/* Simple User Info - No Dropdown */}
           <div className="flex items-center gap-2">
             <div className="avatar">
