@@ -36,7 +36,7 @@ const MartialArtsParticles: React.FC = () => {
       const newParticles: Particle[] = [];
       const colors = ['#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6', '#10b981'];
       
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 20; i++) {
         newParticles.push({
           id: i,
           x: Math.random() * window.innerWidth,
