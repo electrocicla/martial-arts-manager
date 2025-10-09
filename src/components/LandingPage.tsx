@@ -164,9 +164,7 @@ const GlowingOrb: React.FC<{ className?: string; color: string }> = ({
 
 const LandingPage: React.FC = () => {
   const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 300], [0, 50]);
   const y2 = useTransform(scrollY, [0, 300], [0, -50]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   const features = [
     {
@@ -238,18 +236,10 @@ const LandingPage: React.FC = () => {
       />
 
       {/* Hero Section */}
-      <motion.section 
-        className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-0"
-        style={{ y: y1, opacity }}
-      >
+      <section className="z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-0">
         <div className="max-w-7xl mx-auto text-center">
           {/* Logo and Brand */}
-          <motion.div
-            initial={{ scale: 0, opacity: 0, rotateY: 180 }}
-            animate={{ scale: 1, opacity: 1, rotateY: 0 }}
-            transition={{ duration: 1.2, ease: "easeOut", type: "spring", stiffness: 80 }}
-            className="mb-8 sm:mb-12"
-          >
+          <div className="mb-8 sm:mb-12">
             <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12">
               {/* Logo */}
               <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0">
@@ -301,41 +291,39 @@ const LandingPage: React.FC = () => {
               </div>
               
               {/* Brand Text */}
-              <motion.div 
-                className="text-center lg:text-left"
-                initial={{ x: 100, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 1, delay: 0.5 }}
-              >
-                <motion.h1 
-                  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-tight mb-2 sm:mb-4"
-                  initial={{ y: 30, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.7 }}
-                >
-                  <span className="block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent drop-shadow-2xl animate-pulse">
+              <div className="text-center lg:text-left">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-tight mb-2 sm:mb-4">
+                  <span 
+                    className="block drop-shadow-2xl text-cyan-400"
+                    style={{
+                      background: 'linear-gradient(to right, #22d3ee, #3b82f6, #9333ea)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      display: 'inline-block'
+                    }}
+                  >
                     HAMMAR
                   </span>
-                </motion.h1>
-                <motion.p 
-                  className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-transparent bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600 bg-clip-text"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.9 }}
+                </h1>
+                <p 
+                  className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-emerald-400"
+                  style={{
+                    background: 'linear-gradient(to right, #34d399, #14b8a6, #06b6d4)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    display: 'inline-block'
+                  }}
                 >
                   Martial Arts Manager
-                </motion.p>
-              </motion.div>
+                </p>
+              </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Hero Text */}
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-6 sm:space-y-8"
-          >
+          <div className="space-y-6 sm:space-y-8">
             <div className="space-y-4 sm:space-y-6">
               <motion.h1 
                 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tight leading-tight"
@@ -443,9 +431,9 @@ const LandingPage: React.FC = () => {
                 </span>
               </motion.a>
             </motion.div>
-          </motion.div>
+          </div>
         </div>
-      </motion.section>
+      </section>
 
       {/* Stats Section */}
       <motion.section 
