@@ -4,6 +4,7 @@ import ClassManager from './components/ClassManager'
 import PaymentManager from './components/PaymentManager'
 import CalendarView from './components/CalendarView'
 import AttendanceManager from './components/AttendanceManager'
+import Dashboard from './components/Dashboard'
 
 function App() {
   return (
@@ -14,7 +15,7 @@ function App() {
         </header>
         <main className="pb-16">
           <Routes>
-            <Route path="/" element={<div className="p-4 text-center max-w-md mx-auto">Welcome to Martial Arts Manager<br/>Manage your students, classes, payments, and more.</div>} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/students" element={<StudentManager />} />
             <Route path="/classes" element={<ClassManager />} />
             <Route path="/payments" element={<PaymentManager />} />
