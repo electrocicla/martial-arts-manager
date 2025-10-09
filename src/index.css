@@ -31,6 +31,82 @@
   .backface-hidden {
     backface-visibility: hidden;
   }
+
+  /* Fixed gradient text utilities */
+  .gradient-text {
+    display: inline-block;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+  }
+
+  .gradient-text-fallback {
+    /* Fallback color in case gradient fails */
+    color: #22d3ee;
+  }
+
+  .gradient-text-pink-orange {
+    background: linear-gradient(to right, #ec4899, #ef4444, #f97316) !important;
+    display: inline-block;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: #ec4899; /* fallback */
+  }
+
+  .gradient-text-cyan-purple {
+    background: linear-gradient(to right, #22d3ee, #3b82f6, #9333ea) !important;
+    display: inline-block;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: #22d3ee; /* fallback */
+  }
+
+  .gradient-text-emerald-teal {
+    background: linear-gradient(to right, #34d399, #14b8a6, #06b6d4) !important;
+    display: inline-block;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: #34d399; /* fallback */
+  }
+
+  .gradient-text-violet-purple {
+    background: linear-gradient(to right, #8b5cf6, #a855f7, #6366f1) !important;
+    display: inline-block;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: #8b5cf6; /* fallback */
+  }
+
+  .gradient-text-yellow-red {
+    background: linear-gradient(to right, #facc15, #f97316, #ef4444) !important;
+    display: inline-block;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: #facc15; /* fallback */
+  }
+
+  .gradient-text-green-teal {
+    background: linear-gradient(to right, #22c55e, #10b981, #14b8a6) !important;
+    display: inline-block;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: #22c55e; /* fallback */
+  }
+
+  .gradient-text-white-amber {
+    background: linear-gradient(to right, #ffffff, #fbbf24, #f59e0b) !important;
+    display: inline-block;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: #ffffff; /* fallback */
+  }
 }
 
 @keyframes float {

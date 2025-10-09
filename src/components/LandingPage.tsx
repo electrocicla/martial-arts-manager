@@ -332,7 +332,7 @@ const LandingPage: React.FC = () => {
                 transition={{ duration: 1.2, delay: 0.3, type: "spring", stiffness: 100 }}
               >
                 <motion.span 
-                  className="block bg-gradient-to-r from-pink-500 via-red-500 to-orange-500 bg-clip-text text-transparent drop-shadow-2xl animate-pulse"
+                  className="block gradient-text-pink-orange drop-shadow-2xl animate-pulse"
                   initial={{ x: -100, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.5 }}
@@ -340,7 +340,7 @@ const LandingPage: React.FC = () => {
                   MARTIAL ARTS
                 </motion.span>
                 <motion.span 
-                  className="block text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent font-extrabold mt-2"
+                  className="block text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl gradient-text-cyan-purple font-extrabold mt-2"
                   initial={{ x: 100, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.7 }}
@@ -364,7 +364,7 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.6 }}
             >
               <motion.h2 
-                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black leading-tight bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-400 bg-clip-text text-transparent"
+                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black leading-tight gradient-text-emerald-teal"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 1.1 }}
@@ -372,7 +372,7 @@ const LandingPage: React.FC = () => {
                 Empower Your Dojo with Professional Management
               </motion.h2>
               <motion.p 
-                className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-bold bg-gradient-to-r from-violet-400 via-purple-500 to-indigo-400 bg-clip-text text-transparent"
+                className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed font-bold gradient-text-violet-purple"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 1.3 }}
@@ -476,7 +476,7 @@ const LandingPage: React.FC = () => {
                     
                     <div className="relative z-10">
                       <motion.div 
-                        className="text-2xl sm:text-3xl lg:text-4xl font-black text-transparent bg-gradient-to-r from-white via-amber-200 to-amber-400 bg-clip-text mb-1 sm:mb-2"
+                        className="text-2xl sm:text-3xl lg:text-4xl font-black gradient-text-white-amber mb-1 sm:mb-2"
                         initial={{ scale: 0.5 }}
                         whileInView={{ scale: 1 }}
                         transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
@@ -508,7 +508,7 @@ const LandingPage: React.FC = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-5xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent animate-pulse">
+            <h2 className="text-3xl sm:text-5xl font-black mb-6 gradient-text-yellow-red animate-pulse">
               Powerful Features
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
@@ -573,7 +573,7 @@ const LandingPage: React.FC = () => {
                   </div>
                   
                   <div className="relative z-10">
-                    <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-amber-200 group-hover:bg-clip-text transition-all duration-300">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white group-hover:gradient-text-white-amber transition-all duration-300">
                       {feature.title}
                     </h3>
                     <p className="text-slate-400 group-hover:text-slate-300 leading-relaxed text-sm sm:text-base transition-colors duration-300">
@@ -600,7 +600,7 @@ const LandingPage: React.FC = () => {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <h2 className="text-3xl sm:text-5xl font-black bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500 bg-clip-text text-transparent animate-pulse">
+            <h2 className="text-3xl sm:text-5xl font-black gradient-text-green-teal animate-pulse">
               Ready to Elevate Your Dojo?
             </h2>
             <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
