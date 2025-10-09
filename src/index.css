@@ -249,3 +249,77 @@ body {
     font-size: 1.5rem;
   }
 }
+
+/* Login Page Special Effects */
+.dark-energy-text {
+  background: linear-gradient(135deg, #64748b 0%, #334155 50%, #1e293b 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 20px rgba(100, 116, 139, 0.3);
+}
+
+.fire-energy-text {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 30%, #b91c1c 60%, #991b1b 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  animation: fireGlow 3s ease-in-out infinite alternate;
+}
+
+.electric-border {
+  position: relative;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, rgba(100, 116, 139, 0.1), rgba(51, 65, 85, 0.1)) padding-box,
+              linear-gradient(135deg, #64748b, #ef4444, #dc2626, #64748b) border-box;
+  animation: electricPulse 4s ease-in-out infinite;
+}
+
+@keyframes fireGlow {
+  0% {
+    text-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  }
+  100% {
+    text-shadow: 0 0 30px rgba(239, 68, 68, 0.6), 0 0 40px rgba(220, 38, 38, 0.3);
+  }
+}
+
+@keyframes electricPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(100, 116, 139, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.3), 0 0 40px rgba(100, 116, 139, 0.2);
+  }
+}
+
+/* Enhanced CTA Button */
+.mega-cta-button {
+  background: linear-gradient(135deg, #dc2626 0%, #ea580c 50%, #dc2626 100%);
+  box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.4), 
+              0 0 20px rgba(234, 88, 12, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(220, 38, 38, 0.5);
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.mega-cta-button:hover {
+  box-shadow: 0 15px 35px -5px rgba(220, 38, 38, 0.6), 
+              0 0 30px rgba(234, 88, 12, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.4), 
+                0 0 20px rgba(234, 88, 12, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.6), 
+                0 0 30px rgba(234, 88, 12, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+}
