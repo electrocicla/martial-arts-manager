@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { Student, Class, Payment } from '../types';
+import { createContext, useContext, useState } from 'react';
+import type { ReactNode } from 'react';
+import type { Student, Class, Payment } from '../types';
 
 interface AppContextType {
   students: Student[];

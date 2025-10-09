@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 
 export default function PaymentManager() {
   const { payments, setPayments, students } = useApp();
   const [form, setForm] = useState({ studentId: '', amount: 0, date: '', type: '', notes: '' });
 
-  const addPayment = () => {
+  useEffect(() => {
+    fetch('/api/payments')
+      .then(r => r.json())
+      .then(data => setPayments(data))
+      .catch(console.error);
+  }, [setPayments]);
+
+  const addPayment = async () => {
     if (form.studentId && form.amount && form.date && form.type) {
       const newPayment = {
         id: Date.now().toString(),
@@ -15,8 +22,21 @@ export default function PaymentManager() {
         type: form.type,
         notes: form.notes,
       };
-      setPayments([...payments, newPayment]);
-      setForm({ studentId: '', amount: 0, date: '', type: '', notes: '' });
+      try {
+        const response = await fetch('/api/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newPayment),
+        });
+        if (response.ok) {
+          setPayments([...payments, newPayment]);
+          setForm({ studentId: '', amount: 0, date: '', type: '', notes: '' });
+        } else {
+          console.error('Failed to add payment');
+        }
+      } catch (error) {
+        console.error('Error adding payment:', error);
+      }
     }
   };
 

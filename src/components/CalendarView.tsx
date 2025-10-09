@@ -12,7 +12,7 @@ export default function CalendarView() {
   return (
     <div className="p-4 max-w-md mx-auto">
       <h2 className="text-xl font-bold mb-4">Class Calendar</h2>
-      <Calendar onChange={setSelectedDate} value={selectedDate} className="mb-4 w-full" />
+      <Calendar onChange={(value) => setSelectedDate(value as Date)} value={selectedDate} selectRange={false} className="mb-4 w-full" />
       {selectedDate && (
         <div>
           <h3 className="text-lg font-bold">Classes on {selectedDate.toDateString()}</h3>

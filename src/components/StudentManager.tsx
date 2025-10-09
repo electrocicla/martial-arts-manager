@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Discipline } from '../types';
+import type { Discipline } from '../types';
 
 const disciplines: Discipline[] = ['Jiujitsu', 'MMA', 'Karate', 'Taekwondo', 'Boxing', 'Kenpo Karate'];
 
@@ -17,7 +17,14 @@ export default function StudentManager() {
   const { students, setStudents } = useApp();
   const [form, setForm] = useState({ name: '', email: '', phone: '', discipline: '' as Discipline | '', belt: '' });
 
-  const addStudent = () => {
+  useEffect(() => {
+    fetch('/api/students')
+      .then(r => r.json())
+      .then(data => setStudents(data))
+      .catch(console.error);
+  }, [setStudents]);
+
+  const addStudent = async () => {
     if (form.name && form.email && form.discipline && form.belt) {
       const newStudent = {
         id: Date.now().toString(),
@@ -28,8 +35,21 @@ export default function StudentManager() {
         discipline: form.discipline,
         joinDate: new Date().toISOString().split('T')[0],
       };
-      setStudents([...students, newStudent]);
-      setForm({ name: '', email: '', phone: '', discipline: '', belt: '' });
+      try {
+        const response = await fetch('/api/students', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newStudent),
+        });
+        if (response.ok) {
+          setStudents([...students, newStudent]);
+          setForm({ name: '', email: '', phone: '', discipline: '', belt: '' });
+        } else {
+          console.error('Failed to add student');
+        }
+      } catch (error) {
+        console.error('Error adding student:', error);
+      }
     }
   };
 

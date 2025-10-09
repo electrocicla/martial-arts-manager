@@ -3,6 +3,7 @@ import StudentManager from './components/StudentManager'
 import ClassManager from './components/ClassManager'
 import PaymentManager from './components/PaymentManager'
 import CalendarView from './components/CalendarView'
+import AttendanceManager from './components/AttendanceManager'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="/classes" element={<ClassManager />} />
             <Route path="/payments" element={<PaymentManager />} />
             <Route path="/calendar" element={<CalendarView />} />
+            <Route path="/attendance/:classId" element={<AttendanceManager />} />
           </Routes>
         </main>
         <nav className="fixed bottom-0 w-full bg-white border-t flex justify-around p-2 md:hidden">

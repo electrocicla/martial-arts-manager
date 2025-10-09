@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Discipline } from '../types';
+import type { Discipline } from '../types';
+import { Link } from 'react-router-dom';
 
 const disciplines: Discipline[] = ['Jiujitsu', 'MMA', 'Karate', 'Taekwondo', 'Boxing', 'Kenpo Karate'];
 
@@ -8,7 +9,14 @@ export default function ClassManager() {
   const { classes, setClasses } = useApp();
   const [form, setForm] = useState({ name: '', discipline: '' as Discipline | '', date: '', time: '', location: '', instructor: '', maxStudents: 20 });
 
-  const addClass = () => {
+  useEffect(() => {
+    fetch('/api/classes')
+      .then(r => r.json())
+      .then(data => setClasses(data))
+      .catch(console.error);
+  }, [setClasses]);
+
+  const addClass = async () => {
     if (form.name && form.discipline && form.date && form.time && form.location && form.instructor) {
       const newClass = {
         id: Date.now().toString(),
@@ -20,8 +28,21 @@ export default function ClassManager() {
         instructor: form.instructor,
         maxStudents: form.maxStudents,
       };
-      setClasses([...classes, newClass]);
-      setForm({ name: '', discipline: '', date: '', time: '', location: '', instructor: '', maxStudents: 20 });
+      try {
+        const response = await fetch('/api/classes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newClass),
+        });
+        if (response.ok) {
+          setClasses([...classes, newClass]);
+          setForm({ name: '', discipline: '', date: '', time: '', location: '', instructor: '', maxStudents: 20 });
+        } else {
+          console.error('Failed to add class');
+        }
+      } catch (error) {
+        console.error('Error adding class:', error);
+      }
     }
   };
 
@@ -46,6 +67,7 @@ export default function ClassManager() {
           <li key={c.id} className="border p-2 rounded bg-white">
             <div className="font-semibold">{c.name} - {c.discipline}</div>
             <div className="text-sm text-gray-600">{c.date} {c.time} at {c.location} by {c.instructor}</div>
+            <Link to={`/attendance/${c.id}`} className="text-blue-500 text-sm">Mark Attendance</Link>
           </li>
         ))}
       </ul>
