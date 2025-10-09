@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
   Bell, Search, Menu, X, User, LogOut, 
-  Settings, Award, ChevronDown, Clock, Users, Calendar
+  Settings, Award, Clock, Users, Calendar
 } from 'lucide-react';
 
 export default function Header() {
@@ -11,23 +11,19 @@ export default function Header() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  const notifications = [
-    { id: 1, text: 'New student enrollment', time: '5m ago', unread: true },
-    { id: 2, text: 'Payment received', time: '1h ago', unread: true },
-    { id: 3, text: 'Class reminder', time: '2h ago', unread: false },
-  ];
+
 
   return (
     <>
-      {/* Mobile Header - Fixed Design */}
-      <header className="navbar bg-base-100/95 backdrop-blur-lg border-b border-base-300 sticky top-0 mobile-header md:hidden min-h-[4rem]">
+      {/* Mobile Header - Static Design */}
+      <header className="navbar bg-base-100 border-b border-base-300 mobile-header md:hidden min-h-[4rem]">
         <div className="navbar-start">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -50,62 +46,17 @@ export default function Header() {
         </div>
 
         <div className="navbar-end">
-          <div className="dropdown dropdown-end">
-            <label 
-              tabIndex={0} 
-              className="btn btn-ghost btn-circle hover:bg-base-200 relative"
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-            >
-              <div className="indicator">
-                <Bell className="w-6 h-6" />
-                <span className="badge badge-xs badge-error indicator-item animate-pulse">3</span>
-              </div>
-            </label>
-            <div className={`dropdown-content menu p-0 shadow-2xl bg-base-100 rounded-2xl w-80 mt-4 border border-base-300 transition-all duration-200 ${notificationsOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
-              {/* Close button */}
-              <div className="flex items-center justify-between p-4 border-b border-base-300">
-                <h3 className="font-bold text-lg">Notifications</h3>
-                <button 
-                  className="btn btn-ghost btn-circle btn-sm"
-                  onClick={() => setNotificationsOpen(false)}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              
-              <div className="max-h-80 overflow-y-auto">
-                {notifications.map((notif) => (
-                  <div key={notif.id} className={`p-4 border-b border-base-200 last:border-0 hover:bg-base-200 transition-colors ${notif.unread ? 'bg-primary/5' : ''}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm ${notif.unread ? 'font-semibold text-base-content' : 'text-base-content/80'}`}>
-                          {notif.text}
-                        </p>
-                        <p className="text-xs text-base-content/60 mt-1">{notif.time}</p>
-                      </div>
-                      {notif.unread && <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="p-4 border-t border-base-300">
-                <button className="btn btn-primary btn-sm w-full" onClick={() => setNotificationsOpen(false)}>
-                  Mark All as Read
-                </button>
-              </div>
+          {/* Simple notification icon - no dropdown */}
+          <button className="btn btn-ghost btn-circle hover:bg-base-200 relative">
+            <div className="indicator">
+              <Bell className="w-6 h-6" />
+              <span className="badge badge-xs badge-error indicator-item animate-pulse hidden">3</span>
             </div>
-          </div>
+          </button>
         </div>
       </header>
 
-      {/* Notification Backdrop */}
-      {notificationsOpen && (
-        <div 
-          className="fixed inset-0 z-40 md:hidden"
-          onClick={() => setNotificationsOpen(false)}
-        />
-      )}
+
 
       {/* Mobile Slide Menu - Improved */}
       <div className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ${
@@ -140,7 +91,7 @@ export default function Header() {
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-base-content text-lg truncate">{user?.name || 'User'}</h3>
                 <p className="text-base-content/70 text-sm capitalize">{user?.role || 'Member'}</p>
-                <div className="badge badge-primary badge-sm mt-1">Administrator</div>
+                <div className="badge badge-primary badge-sm mt-1 capitalize">{user?.role || 'Member'}</div>
               </div>
             </div>
           </div>
@@ -240,7 +191,7 @@ export default function Header() {
 
 
       {/* Desktop Header */}
-      <header className="hidden md:flex h-16 bg-base-200/95 backdrop-blur-xl border-b border-base-300 sticky top-0 z-30 items-center px-6 ml-64">
+      <header className="hidden md:flex h-16 bg-base-200 border-b border-base-300 items-center px-6 ml-64">
         <div className="flex-1 flex items-center gap-4">
           {/* Search */}
           <div className="form-control">
@@ -260,64 +211,28 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Notifications */}
-          <div className="dropdown dropdown-end">
-            <label tabIndex={0} className="btn btn-ghost btn-circle">
-              <div className="indicator">
-                <Bell className="w-5 h-5" />
-                <span className="badge badge-xs badge-primary indicator-item">3</span>
-              </div>
-            </label>
-            <ul tabIndex={0} className="dropdown-content menu p-2 shadow-2xl bg-base-200 rounded-box w-80 mt-3 border border-base-300">
-              <li className="menu-title">
-                <span>Notifications</span>
-              </li>
-              {notifications.map((notif) => (
-                <li key={notif.id}>
-                  <a className={notif.unread ? 'font-bold' : ''}>
-                    <div className="flex-1">
-                      <p className="text-sm">{notif.text}</p>
-                      <p className="text-xs opacity-60">{notif.time}</p>
-                    </div>
-                    {notif.unread && <span className="badge badge-primary badge-xs"></span>}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Simple notification icon - no dropdown */}
+          <button className="btn btn-ghost btn-circle">
+            <div className="indicator">
+              <Bell className="w-5 h-5" />
+              <span className="badge badge-xs badge-primary indicator-item hidden">3</span>
+            </div>
+          </button>
 
-          {/* User Menu */}
-          <div className="dropdown dropdown-end">
-            <label tabIndex={0} className="btn btn-ghost flex items-center gap-2">
-              <div className="avatar">
-                <div className="w-8 rounded-full">
-                  {user?.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.name} />
-                  ) : (
-                    <div className="bg-base-300 flex items-center justify-center">
-                      <User className="w-4 h-4" />
-                    </div>
-                  )}
-                </div>
+          {/* Simple User Info - No Dropdown */}
+          <div className="flex items-center gap-2">
+            <div className="avatar">
+              <div className="w-8 rounded-full">
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt={user.name} />
+                ) : (
+                  <div className="bg-base-300 flex items-center justify-center">
+                    <User className="w-4 h-4" />
+                  </div>
+                )}
               </div>
-              <span className="font-bold">{user?.name || 'User'}</span>
-              <ChevronDown className="w-4 h-4" />
-            </label>
-            <ul tabIndex={0} className="dropdown-content menu p-2 shadow-2xl bg-base-200 rounded-box w-52 mt-3 border border-base-300">
-              <li className="menu-title">
-                <span>{user?.email}</span>
-              </li>
-              <li><a onClick={() => navigate('/profile')}>
-                <User className="w-4 h-4" /> Profile
-              </a></li>
-              <li><a onClick={() => navigate('/settings')}>
-                <Settings className="w-4 h-4" /> Settings
-              </a></li>
-              <div className="divider my-1"></div>
-              <li><a onClick={handleLogout}>
-                <LogOut className="w-4 h-4" /> Logout
-              </a></li>
-            </ul>
+            </div>
+            <span className="font-bold hidden sm:inline">{user?.name || 'User'}</span>
           </div>
         </div>
       </header>

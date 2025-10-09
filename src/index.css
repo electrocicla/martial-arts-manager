@@ -224,37 +224,42 @@ body {
 
 /* Comprehensive Mobile Layout Fixes */
 @media (max-width: 768px) {
-  /* Ensure main content doesn't overlap with sticky header */
+  /* Ensure ALL main content doesn't overlap with sticky header */
   .main-content {
-    margin-top: 4rem; /* Height of mobile header */
-    padding-top: 1rem;
+    padding-top: 6rem !important; /* Height of mobile header + extra spacing */
+    margin-top: 0 !important;
+    position: relative !important;
+    z-index: 1 !important;
   }
   
-  /* Fix dashboard specific mobile layout */
-  .mobile-dashboard {
-    min-height: calc(100vh - 4rem); /* Account for header */
-    padding-top: 0; /* Remove extra top padding since main-content handles it */
-    padding-bottom: 8rem; /* Account for bottom nav + FAB space */
+  /* Fix for all page containers */
+  .main-content > div {
+    padding-top: 0 !important;
   }
   
-  /* Mobile navigation z-index management */
-  .mobile-header {
-    z-index: 100; /* Highest priority */
+  /* Global mobile layout fix - applies to ALL pages */
+  body {
+    padding-top: 0 !important;
   }
   
+  /* Ensure no component can render above the header */
+  main > * {
+    position: relative;
+    z-index: 1 !important;
+  }
+  
+  /* Simplified main content - no header height calculations */
+  .main-content {
+    min-height: 100vh !important;
+    padding-bottom: 6rem; /* Account for bottom nav space */
+  }
+  
+  /* Simplified mobile navigation - No sticky/fixed positioning */
   .mobile-bottom-nav {
-    z-index: 90; /* Second highest */
-  }
-  
-  .mobile-fab {
-    z-index: 80; /* Third priority */
-  }
-  
-  /* Dropdown and modal overlays */
-  .dropdown-content {
-    z-index: 85; /* Between FAB and bottom nav */
-    max-height: 60vh; /* Prevent dropdown from being too tall */
-    overflow-y: auto;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
   }
   
   /* Prevent content from being hidden behind FAB */

@@ -2,6 +2,23 @@
  * Core Type Definitions
  */
 
+// API Response wrapper
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 // Disciplines
 export type Discipline = 'Jiujitsu' | 'MMA' | 'Karate' | 'Taekwondo' | 'Boxing' | 'Kenpo Karate';
 
@@ -20,11 +37,11 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
-  studentId?: string;
-  avatarUrl?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  student_id?: string;
+  avatar_url?: string;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Session {
@@ -43,19 +60,11 @@ export interface Student {
   email: string;
   phone?: string;
   belt: string;
-  discipline: Discipline;
-  joinDate: string;
-  dateOfBirth?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
-  avatarUrl?: string;
-  notes?: string;
-  isActive: boolean;
-  createdBy?: string;
-  updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string;
+  discipline: string;
+  join_date: string;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Class {
@@ -86,19 +95,12 @@ export interface RecurrencePattern {
 
 export interface Payment {
   id: string;
-  studentId: string;
+  student_id: string;
   amount: number;
-  date: string;
-  type: string;
-  notes?: string;
-  status: PaymentStatus;
-  paymentMethod?: string;
-  receiptUrl?: string;
-  createdBy?: string;
-  updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string;
+  payment_date: string;
+  payment_method: string;
+  description?: string;
+  created_at: string;
 }
 
 export interface Attendance {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { BookOpen, Plus, Calendar, Users, Copy, TrendingUp, List, Clock, MapPin, User, Edit, AlertCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
@@ -31,7 +31,22 @@ export default function ClassManager() {
 
   const disciplines = ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate'];
   const locations = ['Main Dojo', 'Training Hall', 'Outdoor Area', 'Gym Floor'];
-  const instructors = ['Sensei Yamamoto', 'Coach Miller', 'Master Chen', 'Sensei Johnson'];
+  const [instructors, setInstructors] = useState<string[]>([]);
+  
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      try {
+        // In a real app, fetch instructors from users table where role = 'instructor'
+        // For now, get from current user or default list
+        setInstructors(['Available Instructor', 'Add New Instructor']);
+      } catch (error) {
+        console.error('Failed to fetch instructors:', error);
+        setInstructors(['Default Instructor']);
+      }
+    };
+    
+    fetchInstructors();
+  }, []);
   
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   // ...existing code...

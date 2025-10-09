@@ -1,8 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Award, Calendar, Users, Check, X, 
   AlertCircle, Clock, TrendingUp
 } from 'lucide-react';
+import type { Student } from '../types';
+
+interface EligibleStudent {
+  id: string;
+  name: string;
+  currentBelt: string;
+  targetBelt: string;
+  classesAttended: number;
+  requiredClasses: number;
+  lastPromotion: string;
+  readyStatus: string;
+}
+
+interface TestHistoryRecord {
+  id: string;
+  belt: string;
+  date: string;
+  examiner: string; 
+  passed: number;
+  failed: number;
+  total: number;
+}
 
 export default function BeltTesting() {
   const [selectedTab, setSelectedTab] = useState('upcoming');
@@ -40,78 +62,56 @@ export default function BeltTesting() {
     },
   ];
 
-  const eligibleStudents = [
-    {
-      id: 1,
-      name: 'John Smith',
-      currentBelt: 'White',
-      targetBelt: 'Yellow',
-      classesAttended: 45,
-      requiredClasses: 40,
-      lastPromotion: '6 months ago',
-      readyStatus: 'ready'
-    },
-    {
-      id: 2,
-      name: 'Sarah Johnson',
-      currentBelt: 'Yellow',
-      targetBelt: 'Orange',
-      classesAttended: 38,
-      requiredClasses: 50,
-      lastPromotion: '4 months ago',
-      readyStatus: 'needs-classes'
-    },
-    {
-      id: 3,
-      name: 'Mike Chen',
-      currentBelt: 'Orange',
-      targetBelt: 'Green',
-      classesAttended: 62,
-      requiredClasses: 60,
-      lastPromotion: '8 months ago',
-      readyStatus: 'ready'
-    },
-    {
-      id: 4,
-      name: 'Emma Wilson',
-      currentBelt: 'Green',
-      targetBelt: 'Blue',
-      classesAttended: 75,
-      requiredClasses: 80,
-      lastPromotion: '10 months ago',
-      readyStatus: 'almost-ready'
-    },
-  ];
+  const [eligibleStudents, setEligibleStudents] = useState<EligibleStudent[]>([]);
+  
+  useEffect(() => {
+    const fetchEligibleStudents = async () => {
+      try {
+        const response = await fetch('/api/students');
+        if (response.ok) {
+          const students = await response.json();
+          // Calculate eligibility based on real student data
+          const eligible = students.map((student: Student) => ({
+            id: student.id,
+            name: student.name,
+            currentBelt: student.belt,
+            targetBelt: getNextBelt(student.belt),
+            classesAttended: 0, // Would need attendance data
+            requiredClasses: getRequiredClasses(student.belt),
+            lastPromotion: 'Unknown',
+            readyStatus: 'needs-evaluation'
+          }));
+          setEligibleStudents(eligible);
+        }
+      } catch (error) {
+        console.error('Failed to fetch students:', error);
+        setEligibleStudents([]);
+      }
+    };
+    
+    fetchEligibleStudents();
+  }, []);
+  
+  const getNextBelt = (currentBelt: string) => {
+    const beltProgression = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Purple', 'Brown', 'Black'];
+    const currentIndex = beltProgression.indexOf(currentBelt);
+    return currentIndex < beltProgression.length - 1 ? beltProgression[currentIndex + 1] : 'Black';
+  };
+  
+  const getRequiredClasses = (belt: string) => {
+    const requirements: Record<string, number> = {
+      'White': 40, 'Yellow': 50, 'Orange': 60, 'Green': 80, 'Blue': 100
+    };
+    return requirements[belt] || 40;
+  };
 
-  const testHistory = [
-    {
-      id: 1,
-      date: 'December 15, 2024',
-      belt: 'Yellow Belt Test',
-      passed: 10,
-      failed: 2,
-      total: 12,
-      examiner: 'Sensei Yamamoto'
-    },
-    {
-      id: 2,
-      date: 'November 20, 2024',
-      belt: 'Green Belt Test',
-      passed: 7,
-      failed: 1,
-      total: 8,
-      examiner: 'Master Chen'
-    },
-    {
-      id: 3,
-      date: 'October 10, 2024',
-      belt: 'Orange Belt Test',
-      passed: 15,
-      failed: 0,
-      total: 15,
-      examiner: 'Sensei Johnson'
-    },
-  ];
+  const [testHistory, setTestHistory] = useState<TestHistoryRecord[]>([]);
+  
+  useEffect(() => {
+    // In a real app, this would fetch from database
+    // For now, show empty state until real belt testing records are implemented
+    setTestHistory([]);
+  }, []);
 
   const getBeltColor = (belt: string) => {
     const colors: Record<string, string> = {

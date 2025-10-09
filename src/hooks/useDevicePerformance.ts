@@ -30,8 +30,8 @@ export const useDevicePerformance = (): DevicePerformance => {
       
       // Check device capabilities
       const hardwareConcurrency = navigator.hardwareConcurrency || 2;
-      const deviceMemory = (navigator as any).deviceMemory || 4; // GB
-      const connection = (navigator as any).connection;
+      const deviceMemory = navigator.deviceMemory || 4; // GB
+      const connection = navigator.connection;
       
       // Determine if device is low-end
       let isLowEnd = false;

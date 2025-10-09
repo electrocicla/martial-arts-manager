@@ -43,8 +43,19 @@ export default function StudentManager() {
   const stats = [
     { label: 'Total Students', value: students.length, icon: Users, color: 'text-primary' },
     { label: 'Active', value: students.filter(s => s.is_active).length, icon: TrendingUp, color: 'text-success' },
-    { label: 'This Month', value: 8, icon: Calendar, color: 'text-info' },
-    { label: 'Revenue', value: '$12,450', icon: DollarSign, color: 'text-warning' },
+    { label: 'This Month', value: students.filter(s => {
+      try {
+        // Cast to Student type
+        const studentData = s as Student;
+        const studentDate = new Date(studentData.created_at || studentData.join_date || Date.now());
+        const currentDate = new Date();
+        return studentDate.getMonth() === currentDate.getMonth() && 
+               studentDate.getFullYear() === currentDate.getFullYear();
+      } catch {
+        return false;
+      }
+    }).length, icon: Calendar, color: 'text-info' },
+    { label: 'Inactive', value: students.filter(s => !s.is_active).length, icon: DollarSign, color: 'text-warning' },
   ];
 
   const filteredStudents = useMemo(() => {

@@ -1,10 +1,19 @@
-interface Env {
-  DB: any;
+import { Env } from '../types/index';
+
+interface StudentRecord {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  belt: string;
+  discipline: string;
+  join_date: string;
+  created_at: string;
 }
 
 export async function onRequestGet({ env }: { env: Env }) {
   try {
-    const { results } = await env.DB.prepare("SELECT * FROM students").all();
+    const { results } = await env.DB.prepare("SELECT * FROM students").all<StudentRecord>();
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
     });

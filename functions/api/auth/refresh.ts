@@ -7,21 +7,7 @@ import { findSessionByRefreshToken, findUserById, updateUserLastLogin, createSes
 import { getRefreshTokenFromCookies, createRefreshTokenCookie } from '../../middleware/auth';
 import { generateSessionToken, generateUserId } from '../../utils/hash';
 
-// Cloudflare Workers D1 types
-interface D1Database {
-  prepare(sql: string): D1PreparedStatement;
-}
-
-interface D1PreparedStatement {
-  bind(...values: any[]): D1PreparedStatement;
-  first<T = unknown>(): Promise<T | null>;
-  run(): Promise<void>;
-}
-
-interface Env {
-  DB: D1Database;
-  JWT_SECRET: string;
-}
+import { Env } from '../../types/index';
 
 interface RefreshResponse {
   success: true;

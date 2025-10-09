@@ -1,10 +1,17 @@
-interface Env {
-  DB: any;
+import { Env } from '../types/index';
+
+interface PaymentRecord {
+  id: string;
+  student_id: string;
+  amount: number;
+  date: string;
+  type: string;
+  notes?: string;
 }
 
 export async function onRequestGet({ env }: { env: Env }) {
   try {
-    const { results } = await env.DB.prepare("SELECT * FROM payments").all();
+    const { results } = await env.DB.prepare("SELECT * FROM payments").all<PaymentRecord>();
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
     });

@@ -1,5 +1,10 @@
-interface Env {
-  DB: any; // D1Database
+import { Env } from '../types/index';
+
+interface AttendanceRecord {
+  id: string;
+  class_id: string;
+  student_id: string;
+  attended: number;
 }
 
 export async function onRequestGet({ env, request }: { env: Env; request: Request }) {
@@ -9,7 +14,7 @@ export async function onRequestGet({ env, request }: { env: Env; request: Reques
     return new Response(JSON.stringify({ error: 'classId required' }), { status: 400 });
   }
   try {
-    const { results } = await env.DB.prepare("SELECT * FROM attendance WHERE class_id = ?").bind(classId).all();
+    const { results } = await env.DB.prepare("SELECT * FROM attendance WHERE class_id = ?").bind(classId).all<AttendanceRecord>();
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
     });

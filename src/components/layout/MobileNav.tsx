@@ -1,60 +1,104 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Home, Users, Calendar, CreditCard, BookOpen,
-  Award, BarChart3, Settings, Layers, Clock
+  Home, Users, Calendar, DollarSign, BookOpen, 
+  Award, Clock, BarChart3, Settings, Plus, X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
 
+// Navigation items configuration - Mobile-first approach
 const navigationItems = [
   {
+    id: 'dashboard',
     name: 'Dashboard',
     href: '/dashboard',
     icon: Home,
-    roles: ['admin', 'instructor', 'student'],
-    gradient: 'from-primary to-secondary',
+    roles: ['admin', 'instructor'],
+    color: 'text-blue-500'
   },
   {
+    id: 'students',
     name: 'Students',
     href: '/students',
     icon: Users,
     roles: ['admin', 'instructor'],
-    gradient: 'from-secondary to-accent',
+    color: 'text-green-500'
   },
   {
+    id: 'classes',
     name: 'Classes',
     href: '/classes',
     icon: BookOpen,
-    roles: ['admin', 'instructor', 'student'],
-    gradient: 'from-info to-primary',
+    roles: ['admin', 'instructor'],
+    color: 'text-purple-500'
   },
   {
+    id: 'payments',
     name: 'Payments',
     href: '/payments',
-    icon: CreditCard,
+    icon: DollarSign,
     roles: ['admin'],
-    gradient: 'from-success to-info',
+    color: 'text-emerald-500'
   },
   {
-    name: 'Calendar',
-    href: '/calendar',
-    icon: Calendar,
-    roles: ['admin', 'instructor', 'student'],
-    gradient: 'from-warning to-secondary',
+    id: 'analytics',
+    name: 'Analytics',
+    href: '/analytics',
+    icon: BarChart3,
+    roles: ['admin'],
+    color: 'text-orange-500'
+  }
+];
+
+// Quick action items for mobile modal
+const quickActions = [
+  {
+    id: 'attendance',
+    name: 'Mark Attendance',
+    href: '/attendance',
+    icon: Clock,
+    description: 'Check students in/out',
+    color: 'text-blue-500'
   },
+  {
+    id: 'add-student',
+    name: 'Add Student',
+    href: '/students',
+    icon: Users,
+    description: 'Register new member',
+    color: 'text-green-500'
+  },
+  {
+    id: 'schedule-class',
+    name: 'Schedule Class',
+    href: '/classes',
+    icon: Calendar,
+    description: 'Create new session',
+    color: 'text-purple-500'
+  },
+  {
+    id: 'record-payment',
+    name: 'Record Payment',
+    href: '/payments',
+    icon: DollarSign,
+    description: 'Process transaction',
+    color: 'text-emerald-500'
+  }
 ];
 
 export default function MobileNav() {
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
 
+  // Filter items based on user role
   const allowedItems = navigationItems.filter(item =>
     user?.role && item.roles.includes(user.role)
   );
 
-  // Add More button at the end
+  // Take only first 4 items for bottom nav (mobile-first design)
   const visibleItems = allowedItems.slice(0, 4);
-  const hasMore = allowedItems.length > 4;
 
   return (
     <>
@@ -100,70 +144,67 @@ export default function MobileNav() {
           );
         })}
         
-        {hasMore && (
-          <button className="relative group transition-all duration-300 text-base-content/70">
-            <div className="p-2 rounded-xl transition-all duration-300 group-active:scale-95">
-              <Layers className="w-5 h-5" />
-            </div>
-            <span className="btm-nav-label text-xs font-bold">More</span>
-          </button>
-        )}
+        {/* Quick Actions Button */}
+        <button
+          onClick={() => setIsQuickActionsOpen(true)}
+          className="relative group transition-all duration-300 text-base-content/70 flex flex-col items-center justify-center py-2 px-1"
+        >
+          <div className="p-2 rounded-xl transition-all duration-300 group-active:scale-95">
+            <Plus className="w-5 h-5" />
+          </div>
+          <span className="text-xs font-bold">Actions</span>
+        </button>
       </nav>
 
-      {/* Enhanced Floating Action Button for mobile - Fixed positioning */}
-      <div className="fixed bottom-28 right-4 md:hidden mobile-fab">
-        <div className="dropdown dropdown-top dropdown-end">
-          <label 
-            tabIndex={0} 
-            className="btn btn-circle btn-lg bg-gradient-to-r from-primary to-secondary border-0 shadow-2xl hover:scale-110 transition-all duration-300 hover:shadow-primary/25 hover:shadow-2xl"
-          >
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-            </svg>
-          </label>
-          <ul tabIndex={0} className="dropdown-content menu p-4 shadow-2xl bg-base-100/95 backdrop-blur-xl rounded-2xl w-64 mb-4 border border-base-300/50 max-h-80 overflow-y-auto">
-            <li className="menu-title pb-3 border-b border-base-300/50 mb-2">
-              <span className="text-base-content font-bold text-sm">Quick Actions</span>
-            </li>
-            <li>
-              <Link to="/attendance" className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-primary/10 text-left">
-                <Clock className="w-5 h-5 text-primary flex-shrink-0" />
-                <div className="flex flex-col items-start">
-                  <span className="font-medium">Mark Attendance</span>
-                  <span className="text-xs opacity-60">Check students in/out</span>
-                </div>
-              </Link>
-            </li>
-            <li>
-              <Link to="/students" className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-secondary/10 text-left">
-                <Users className="w-5 h-5 text-secondary flex-shrink-0" />
-                <div className="flex flex-col items-start">
-                  <span className="font-medium">Add Student</span>
-                  <span className="text-xs opacity-60">Register new member</span>
-                </div>
-              </Link>
-            </li>
-            <li>
-              <Link to="/classes" className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-accent/10 text-left">
-                <Calendar className="w-5 h-5 text-accent flex-shrink-0" />
-                <div className="flex flex-col items-start">
-                  <span className="font-medium">Schedule Class</span>
-                  <span className="text-xs opacity-60">Create new session</span>
-                </div>
-              </Link>
-            </li>
-            <li>
-              <Link to="/payments" className="btn btn-ghost justify-start h-12 rounded-xl hover:bg-info/10 text-left">
-                <Award className="w-5 h-5 text-info flex-shrink-0" />
-                <div className="flex flex-col items-start">
-                  <span className="font-medium">Record Payment</span>
-                  <span className="text-xs opacity-60">Process transaction</span>
-                </div>
-              </Link>
-            </li>
-          </ul>
+      {/* Quick Actions Modal - Modern Tailwind Modal Pattern */}
+      {isQuickActionsOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsQuickActionsOpen(false)}
+          />
+          
+          {/* Modal content */}
+          <div className="fixed inset-x-4 bottom-20 top-auto rounded-2xl bg-gray-900/95 backdrop-blur-xl border border-gray-800 shadow-2xl">
+            {/* Modal header */}
+            <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3">
+              <h2 className="text-lg font-semibold text-white">Quick Actions</h2>
+              <button
+                onClick={() => setIsQuickActionsOpen(false)}
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-800 hover:text-gray-300 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            {/* Quick actions list */}
+            <div className="p-4">
+              <div className="space-y-2">
+                {quickActions.map((action) => {
+                  const Icon = action.icon;
+                  return (
+                    <Link
+                      key={action.id}
+                      to={action.href}
+                      onClick={() => setIsQuickActionsOpen(false)}
+                      className="flex items-center rounded-xl p-3 transition-colors hover:bg-gray-800/50 active:bg-gray-700/50"
+                    >
+                      <div className="mr-3 rounded-lg bg-gray-800/50 p-2.5">
+                        <Icon className={cn("h-5 w-5", action.color)} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white">{action.name}</p>
+                        <p className="text-xs text-gray-400">{action.description}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-base-200/95 backdrop-blur-xl border-r border-base-300 z-40 flex-col">

@@ -1,32 +1,16 @@
 import { useState, useEffect } from 'react';
-
-interface Student {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  belt: string;
-  discipline: string;
-  join_date: string;
-}
+import type { Student, Payment } from '../types/index';
 
 interface Class {
   id: string;
   name: string;
-  discipline: string;
-  date: string;
-  time: string;
-  location: string;
   instructor: string;
-  max_students: number;
-}
-
-interface Payment {
-  id: string;
-  student_id: string;
-  amount: number;
-  date: string;
-  description: string;
+  start_time: string;
+  end_time: string;
+  discipline: string;
+  capacity: number;
+  enrolled_count: number;
+  created_at: string;
 }
 
 interface DashboardStats {
@@ -93,15 +77,18 @@ export function useDashboardData(): DashboardData {
         weekStart.setDate(now.getDate() - now.getDay());
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-        const todayClasses = classes.filter(cls => cls.date === today);
+        const todayClasses = classes.filter(cls => {
+          const classDate = new Date(cls.start_time).toISOString().split('T')[0];
+          return classDate === today;
+        });
         
         const thisWeekClasses = classes.filter(cls => {
-          const classDate = new Date(cls.date);
+          const classDate = new Date(cls.start_time);
           return classDate >= weekStart && classDate <= now;
         });
 
         const thisMonthPayments = payments.filter(payment => {
-          const paymentDate = new Date(payment.date);
+          const paymentDate = new Date(payment.payment_date);
           return paymentDate >= monthStart && paymentDate <= now;
         });
 
@@ -113,7 +100,7 @@ export function useDashboardData(): DashboardData {
         const revenueThisMonth = thisMonthPayments.reduce((sum, payment) => sum + payment.amount, 0);
 
         const upcomingClasses = classes.filter(cls => {
-          const classDate = new Date(cls.date);
+          const classDate = new Date(cls.start_time);
           return classDate > now;
         });
 

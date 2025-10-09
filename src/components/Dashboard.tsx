@@ -28,27 +28,27 @@ export default function Dashboard() {
     {
       title: 'Active Students',
       value: isLoading ? '...' : dashboardStats.activeStudents.toString(),
-      change: dashboardStats.activeStudents === 0 ? 'No data' : '+12%',
+      change: dashboardStats.activeStudents === 0 ? 'No data' : `${dashboardStats.activeStudents} active`,
       trend: dashboardStats.activeStudents === 0 ? 'neutral' : 'up',
       icon: Users,
-      description: 'from last month',
+      description: 'registered members',
       color: 'text-primary',
       bgColor: 'bg-primary/10',
     },
     {
       title: 'Classes This Week',
       value: isLoading ? '...' : dashboardStats.classesThisWeek.toString(),
-      change: dashboardStats.classesThisWeek === 0 ? 'No classes' : '+8%',
+      change: dashboardStats.classesThisWeek === 0 ? 'No classes' : `${dashboardStats.classesThisWeek} scheduled`,
       trend: dashboardStats.classesThisWeek === 0 ? 'neutral' : 'up',
       icon: BookOpen,
-      description: 'scheduled sessions',
+      description: 'sessions this week',
       color: 'text-secondary',
       bgColor: 'bg-secondary/10',
     },
     {
       title: 'Revenue This Month',
       value: isLoading ? '...' : `$${dashboardStats.revenueThisMonth.toLocaleString()}`,
-      change: dashboardStats.revenueThisMonth === 0 ? 'No revenue' : '+15%',
+      change: dashboardStats.revenueThisMonth === 0 ? 'No revenue' : 'Monthly total',
       trend: dashboardStats.revenueThisMonth === 0 ? 'neutral' : 'up',
       icon: DollarSign,
       description: 'total earnings',
@@ -58,10 +58,10 @@ export default function Dashboard() {
     {
       title: 'New Enrollments',
       value: isLoading ? '...' : dashboardStats.newEnrollments.toString(),
-      change: dashboardStats.newEnrollments === 0 ? 'Get started' : '+23%',
+      change: dashboardStats.newEnrollments === 0 ? 'Get started' : 'This month',
       trend: dashboardStats.newEnrollments === 0 ? 'neutral' : 'up',
       icon: Award,
-      description: 'this month',
+      description: 'new students',
       color: 'text-info',
       bgColor: 'bg-info/10',
     },
@@ -103,13 +103,13 @@ export default function Dashboard() {
     ...(recentPayments.slice(0, 2).map(payment => ({
       icon: '💰',
       text: `Payment received: $${payment.amount}`,
-      time: new Date(payment.date).toLocaleDateString(),
+      time: new Date(payment.payment_date).toLocaleDateString(),
       type: 'info' as const
     }))),
     ...todayClasses.slice(0, 2).map(cls => ({
       icon: '�',
       text: `Class scheduled: ${cls.name}`,
-      time: cls.time,
+      time: new Date(cls.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       type: 'warning' as const
     }))
   ];
@@ -241,8 +241,7 @@ export default function Dashboard() {
               todayClasses.map((cls) => {
                 // Determine class status based on time
                 const now = new Date();
-                const [startTime] = cls.time.split(' - ');
-                const classTime = new Date(`${cls.date} ${startTime}`);
+                const classTime = new Date(cls.start_time);
                 const status = classTime > now ? 'upcoming' : 'ongoing';
                 
                 return (
@@ -256,17 +255,19 @@ export default function Dashboard() {
                               {cls.discipline}
                             </div>
                           </div>
-                          <p className="text-sm sm:text-base text-base-content/70 mb-3 font-medium">{cls.time}</p>
+                          <p className="text-sm sm:text-base text-base-content/70 mb-3 font-medium">
+                            {new Date(cls.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
                             <span className="flex items-center gap-1.5 text-base-content/60">
                               <Users className="w-3.5 h-3.5 text-primary" />
-                              <span className="font-medium">{cls.max_students}</span> max students
+                              <span className="font-medium">{cls.capacity}</span> max students
                             </span>
                             <span className="text-base-content/50 font-medium">
                               👨‍🏫 {cls.instructor}
                             </span>
                             <span className="text-base-content/50 font-medium">
-                              📍 {cls.location}
+                              📍 Main Studio
                             </span>
                           </div>
                         </div>

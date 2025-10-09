@@ -2,43 +2,7 @@
  * Database utilities for Cloudflare D1
  */
 
-// Cloudflare Workers D1 types
-interface D1Database {
-  prepare(sql: string): D1PreparedStatement;
-}
-
-interface D1PreparedStatement {
-  bind(...values: any[]): D1PreparedStatement;
-  first<T = unknown>(): Promise<T | null>;
-  run(): Promise<void>;
-}
-
-interface Env {
-  DB: D1Database;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  password_hash: string;
-  name: string;
-  role: 'admin' | 'instructor' | 'student';
-  student_id?: string;
-  avatar_url?: string;
-  is_active: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Session {
-  id: string;
-  user_id: string;
-  refresh_token: string;
-  expires_at: string;
-  created_at: string;
-  ip_address?: string;
-  user_agent?: string;
-}
+import { Env, User, Session, D1Database, D1BindValue } from '../types/index';
 
 /**
  * Create a new user in the database

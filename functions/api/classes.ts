@@ -1,10 +1,30 @@
-interface Env {
-  DB: any;
+import { Env } from '../types/index';
+
+interface ClassRecord {
+  id: string;
+  name: string;
+  discipline: string;
+  date: string;
+  time: string;
+  location: string;
+  instructor: string;
+  max_students: number;
+}
+
+interface CreateClassRequest {
+  id: string;
+  name: string;
+  discipline: string;
+  date: string;
+  time: string;
+  location: string;
+  instructor: string;
+  maxStudents: number;
 }
 
 export async function onRequestGet({ env }: { env: Env }) {
   try {
-    const { results } = await env.DB.prepare("SELECT * FROM classes").all();
+    const { results } = await env.DB.prepare("SELECT * FROM classes").all<ClassRecord>();
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
     });
@@ -15,7 +35,7 @@ export async function onRequestGet({ env }: { env: Env }) {
 
 export async function onRequestPost({ request, env }: { request: Request; env: Env }) {
   try {
-    const body = await request.json() as { id: string; name: string; discipline: string; date: string; time: string; location: string; instructor: string; maxStudents: number };
+    const body = await request.json() as CreateClassRequest;
     const { id, name, discipline, date, time, location, instructor, maxStudents } = body;
     await env.DB.prepare("INSERT INTO classes (id, name, discipline, date, time, location, instructor, max_students) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
       .bind(id, name, discipline, date, time, location, instructor, maxStudents).run();
