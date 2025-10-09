@@ -360,13 +360,13 @@ const LandingPage: React.FC = () => {
                 />
                 
                 <motion.div 
-                  className="space-y-4 max-w-2xl"
+                  className="space-y-6 max-w-2xl"
                   initial={{ y: 30, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
                 >
                   <motion.h2 
-                    className="text-2xl xl:text-3xl 2xl:text-4xl font-black leading-tight gradient-text-emerald-teal"
+                    className="text-2xl xl:text-3xl 2xl:text-4xl font-black leading-tight gradient-text-emerald-teal mb-4"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.6, delay: 1.1 }}
@@ -374,7 +374,7 @@ const LandingPage: React.FC = () => {
                     Empower Your Dojo with Professional Management
                   </motion.h2>
                   <motion.p 
-                    className="text-lg xl:text-xl 2xl:text-2xl leading-relaxed font-bold gradient-text-violet-purple"
+                    className="text-lg xl:text-xl 2xl:text-2xl leading-relaxed font-bold gradient-text-violet-purple mt-4"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.6, delay: 1.3 }}
@@ -537,13 +537,13 @@ const LandingPage: React.FC = () => {
               />
               
               <motion.div 
-                className="space-y-4 sm:space-y-6 max-w-3xl mx-auto px-4"
+                className="space-y-8 max-w-3xl mx-auto px-4"
                 initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
               >
                 <motion.h2 
-                  className="text-xl sm:text-2xl md:text-3xl font-black leading-tight gradient-text-emerald-teal"
+                  className="text-xl sm:text-2xl md:text-3xl font-black leading-tight gradient-text-emerald-teal mb-6"
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.6, delay: 1.1 }}
@@ -551,7 +551,7 @@ const LandingPage: React.FC = () => {
                   Empower Your Dojo with Professional Management
                 </motion.h2>
                 <motion.p 
-                  className="text-base sm:text-lg md:text-xl leading-relaxed font-bold gradient-text-violet-purple"
+                  className="text-base sm:text-lg md:text-xl leading-relaxed font-bold gradient-text-violet-purple mt-6"
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.6, delay: 1.3 }}
@@ -695,7 +695,7 @@ const LandingPage: React.FC = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-5xl font-black mb-6 gradient-text-yellow-red animate-pulse">
+            <h2 className="text-3xl sm:text-5xl font-black mb-6 gradient-text-yellow-red">
               Powerful Features
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
@@ -787,7 +787,7 @@ const LandingPage: React.FC = () => {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <h2 className="text-3xl sm:text-5xl font-black gradient-text-green-teal animate-pulse">
+            <h2 className="text-3xl sm:text-5xl font-black gradient-text-green-teal">
               Ready to Elevate Your Dojo?
             </h2>
             <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">

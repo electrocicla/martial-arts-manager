@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, LogIn, AlertCircle, ArrowLeft, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
@@ -31,89 +32,167 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 px-4 py-6 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-sm sm:max-w-md lg:max-w-lg backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
-        <CardHeader className="text-center px-4 sm:px-6 py-6 sm:py-8">
-          <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-lg">
-            <LogIn className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-2 sm:mb-3">
-            Welcome Back
-          </h1>
-          <p className="text-sm sm:text-base lg:text-lg font-medium bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
-            Sign in to your Martial Arts Manager account
-          </p>
-        </CardHeader>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-black px-4 py-6 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 via-transparent to-red-900/20"></div>
+      <div className="absolute top-0 left-0 w-full h-full">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl"></div>
+      </div>
 
-        <CardContent className="px-4 sm:px-6 pb-6 sm:pb-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
-            {error && (
-              <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-red-500/10 border border-red-500/20 rounded-xl backdrop-blur-sm">
-                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 flex-shrink-0" />
-                <p className="text-xs sm:text-sm text-red-300 font-medium">{error}</p>
-              </div>
-            )}
-
-            <div>
-              <Input
-                {...register('email')}
-                type="email"
-                placeholder="Enter your email"
-                label="Email Address"
-                error={errors.email?.message}
-                disabled={isLoading}
-                className="text-sm sm:text-base"
-              />
-            </div>
-
-            <div>
-              <Input
-                {...register('password')}
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                label="Password"
-                error={errors.password?.message}
-                disabled={isLoading}
-                className="text-sm sm:text-base"
-                rightIcon={
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-slate-400 hover:text-white transition-colors duration-200 p-1"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
-                    ) : (
-                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
-                    )}
-                  </button>
-                }
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3 sm:py-4 text-sm sm:text-base shadow-xl hover:shadow-cyan-500/25 transition-all duration-300"
-              disabled={isLoading}
-              isLoading={isLoading}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 w-full max-w-md"
+      >
+        <Card className="backdrop-blur-xl bg-slate-800/40 border border-slate-700/50 shadow-2xl electric-border">
+          <CardHeader className="text-center px-6 py-8">
+            {/* HAMARR Logo */}
+            <motion.div 
+              className="relative w-24 h-24 mx-auto mb-6"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
             >
-              {isLoading ? 'Signing In...' : 'Sign In'}
-            </Button>
-          </form>
+              <div className="w-full h-full rounded-full bg-slate-800 p-2 electric-border">
+                <img 
+                  src="/hammar_logo.jpg" 
+                  alt="HAMARR Logo" 
+                  className="w-full h-full object-cover rounded-full"
+                />
+              </div>
+            </motion.div>
 
-          <div className="mt-6 sm:mt-8 text-center">
-            <p className="text-xs sm:text-sm text-slate-300">
-              Don't have an account?{' '}
-              <Link
-                to="/register"
-                className="font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent hover:from-emerald-300 hover:to-teal-400 transition-all duration-200"
+            {/* Title */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="space-y-2"
+            >
+              <h1 className="text-2xl sm:text-3xl font-black dark-energy-text">
+                HAMARR
+              </h1>
+              <h2 className="text-xl sm:text-2xl font-black fire-energy-text">
+                MARTIAL ARTS
+              </h2>
+              <h3 className="text-lg sm:text-xl font-black text-white">
+                MANAGER
+              </h3>
+            </motion.div>
+
+            <motion.p 
+              className="text-sm text-slate-300 mt-4 font-medium"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              Welcome back, warrior. Access your dojo.
+            </motion.p>
+          </CardHeader>
+
+          <CardContent className="px-6 pb-8">
+            <motion.form 
+              onSubmit={handleSubmit(onSubmit)} 
+              className="space-y-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+            >
+              {error && (
+                <motion.div 
+                  className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                  <p className="text-sm text-red-300 font-medium">{error}</p>
+                </motion.div>
+              )}
+
+              <div>
+                <Input
+                  {...register('email')}
+                  type="email"
+                  placeholder="Enter your email"
+                  label="Email Address"
+                  error={errors.email?.message}
+                  disabled={isLoading}
+                  className="bg-slate-800/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                />
+              </div>
+
+              <div>
+                <Input
+                  {...register('password')}
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  label="Password"
+                  error={errors.password?.message}
+                  disabled={isLoading}
+                  className="bg-slate-800/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                  rightIcon={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-slate-400 hover:text-cyan-400 transition-colors duration-200"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  }
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full mega-cta-button text-white font-black py-4 text-lg relative overflow-hidden transition-all duration-700 group"
+                disabled={isLoading}
+                isLoading={isLoading}
               >
-                Sign up
+                <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 opacity-90" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  <Zap className="w-5 h-5 text-yellow-300" />
+                  {isLoading ? 'Signing In...' : 'Sign In'}
+                  <Zap className="w-5 h-5 text-yellow-300" />
+                </span>
+              </Button>
+            </motion.form>
+
+            <motion.div 
+              className="mt-8 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 1.0 }}
+            >
+              <p className="text-sm text-slate-300">
+                Don't have an account?{' '}
+                <Link
+                  to="/register"
+                  className="font-bold fire-energy-text hover:text-orange-400 transition-all duration-200"
+                >
+                  Sign up
+                </Link>
+              </p>
+              
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 mt-4 text-sm text-slate-400 hover:text-cyan-400 transition-colors duration-200"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Home
               </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }
