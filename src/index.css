@@ -260,12 +260,15 @@ body {
 }
 
 .fire-energy-text {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 30%, #b91c1c 60%, #991b1b 100%);
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #d97706 60%, #b45309 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  text-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(245, 158, 11, 0.4);
   animation: fireGlow 3s ease-in-out infinite alternate;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: rgba(251, 191, 36, 0.6);
 }
 
 .electric-border {
@@ -278,10 +281,10 @@ body {
 
 @keyframes fireGlow {
   0% {
-    text-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(245, 158, 11, 0.4);
   }
   100% {
-    text-shadow: 0 0 30px rgba(239, 68, 68, 0.6), 0 0 40px rgba(220, 38, 38, 0.3);
+    text-shadow: 0 0 30px rgba(251, 191, 36, 0.8), 0 0 50px rgba(245, 158, 11, 0.6), 0 0 70px rgba(217, 119, 6, 0.4);
   }
 }
 
@@ -322,4 +325,30 @@ body {
                 0 0 30px rgba(234, 88, 12, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.25);
   }
+}
+
+/* Enhanced link visibility in login context */
+.login-signup-link {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: 900;
+  text-decoration: underline;
+  text-decoration-color: #fbbf24;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.login-signup-link:hover {
+  background: linear-gradient(135deg, #ffffff 0%, #fbbf24 50%, #f59e0b 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  text-shadow: 0 0 25px rgba(251, 191, 36, 1), 0 0 40px rgba(245, 158, 11, 0.6);
+  text-decoration-color: #ffffff;
+  transform: scale(1.05);
 }

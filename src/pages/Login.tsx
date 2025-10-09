@@ -176,7 +176,7 @@ export default function Login() {
                 Don't have an account?{' '}
                 <Link
                   to="/register"
-                  className="font-bold fire-energy-text hover:text-orange-400 transition-all duration-200"
+                  className="login-signup-link"
                 >
                   Sign up
                 </Link>
@@ -184,7 +184,7 @@ export default function Login() {
               
               <Link
                 to="/"
-                className="inline-flex items-center gap-2 mt-4 text-sm text-slate-400 hover:text-cyan-400 transition-colors duration-200"
+                className="inline-flex items-center gap-2 mt-4 text-sm text-slate-300 hover:text-white transition-all duration-200 font-medium underline underline-offset-2 hover:underline-offset-4"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Home
