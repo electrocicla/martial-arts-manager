@@ -286,12 +286,12 @@ export default function StudentManager() {
                     </div>
                     <div className="flex gap-1">
                       <button 
-                        className="btn btn-ghost btn-xs"
+                        className="btn btn-ghost btn-xs rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
                         onClick={() => setSelectedStudent(student)}
                       >
                         <Eye className="w-3 h-3" />
                       </button>
-                      <button className="btn btn-ghost btn-xs">
+                      <button className="btn btn-ghost btn-xs rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200">
                         <Edit className="w-3 h-3" />
                       </button>
                     </div>
@@ -351,12 +351,12 @@ export default function StudentManager() {
                     <td>
                       <div className="flex gap-1">
                         <button 
-                          className="btn btn-ghost btn-xs"
+                          className="btn btn-ghost btn-xs rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
                           onClick={() => setSelectedStudent(student)}
                         >
                           View
                         </button>
-                        <button className="btn btn-ghost btn-xs">Edit</button>
+                        <button className="btn btn-ghost btn-xs rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200">Edit</button>
                       </div>
                     </td>
                   </tr>
@@ -717,10 +717,10 @@ export default function StudentManager() {
             </div>
 
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setSelectedStudent(null)}>
+              <button className="btn btn-ghost rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200" onClick={() => setSelectedStudent(null)}>
                 Close
               </button>
-              <button className="btn btn-primary">
+              <button className="btn btn-primary rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                 <Edit className="w-4 h-4" />
                 Edit Student
               </button>

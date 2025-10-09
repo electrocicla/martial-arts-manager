@@ -529,10 +529,10 @@ export default function ClassManager() {
             </div>
 
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setShowAddModal(false)}>
+              <button className="btn btn-ghost rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200" onClick={() => setShowAddModal(false)}>
                 Cancel
               </button>
-              <button className="btn btn-primary" onClick={handleAddClass}>
+              <button className="btn btn-primary rounded-lg shadow-md hover:shadow-lg transition-all duration-200" onClick={handleAddClass}>
                 <Plus className="w-4 h-4" />
                 Schedule Class
               </button>

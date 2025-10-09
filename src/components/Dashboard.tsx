@@ -156,7 +156,7 @@ export default function Dashboard() {
           {/* Mobile-Optimized Quick Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {stats.map((stat, idx) => (
-              <div key={idx} className="card bg-gray-800/90 backdrop-blur-sm border border-gray-700/50 hover:shadow-lg hover:shadow-gray-900/25 transition-all duration-300 hover:scale-[1.02]">
+              <div key={idx} className="card bg-gray-800/90 backdrop-blur-sm border border-gray-700/50 hover:shadow-lg hover:shadow-gray-900/25 transition-all duration-300 hover:scale-[1.02] rounded-xl">
                 <div className="card-body p-3 sm:p-4">
                   <div className="flex flex-col">
                     <div className={`inline-flex p-2 rounded-xl ${stat.bgColor} mb-3 w-fit`}>
@@ -193,7 +193,7 @@ export default function Dashboard() {
               <button
                 key={idx}
                 onClick={() => navigate(action.path)}
-                className={`btn ${action.color} btn-block h-auto py-6 px-4 flex-col gap-3 hover:scale-[1.02] transition-all duration-200 shadow-sm rounded-2xl`}
+                className={`btn ${action.color} btn-block h-auto py-6 px-4 flex-col gap-3 hover:scale-[1.02] transition-all duration-200 shadow-md hover:shadow-lg rounded-xl`}
               >
                 <action.icon className="w-7 h-7 sm:w-8 sm:h-8" />
                 <div className="text-center w-full">
@@ -212,7 +212,7 @@ export default function Dashboard() {
               <Calendar className="w-5 h-5 text-primary" />
               Today's Schedule
             </h2>
-            <button className="btn btn-ghost btn-sm text-xs sm:text-sm hover:bg-primary/10" onClick={() => navigate('/calendar')}>
+            <button className="btn btn-ghost btn-sm text-xs sm:text-sm hover:bg-primary/10 rounded-lg transition-all duration-200" onClick={() => navigate('/calendar')}>
               View All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -224,14 +224,14 @@ export default function Dashboard() {
                 <span className="ml-2 text-base-content/70">Loading today's classes...</span>
               </div>
             ) : todayClasses.length === 0 ? (
-              <div className="card bg-base-200/50 backdrop-blur-sm border border-base-300/20">
+              <div className="card bg-base-200/50 backdrop-blur-sm border border-base-300/20 rounded-xl shadow-lg">
                 <div className="card-body p-6 text-center">
                   <Calendar className="w-12 h-12 text-base-content/30 mx-auto mb-3" />
                   <h3 className="font-bold text-base-content mb-2">No Classes Today</h3>
                   <p className="text-sm text-base-content/60 mb-4">There are no classes scheduled for today.</p>
                   <button 
                     onClick={() => navigate('/classes')} 
-                    className="btn btn-primary btn-sm"
+                    className="btn btn-primary btn-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                   >
                     Schedule a Class
                   </button>
@@ -245,7 +245,7 @@ export default function Dashboard() {
                 const status = classTime > now ? 'upcoming' : 'ongoing';
                 
                 return (
-                  <div key={cls.id} className="card bg-base-200/50 backdrop-blur-sm border border-base-300/20 hover:bg-base-300/60 hover:border-primary/30 transition-all duration-300 active:scale-[0.98]">
+                  <div key={cls.id} className="card bg-base-200/50 backdrop-blur-sm border border-base-300/20 hover:bg-base-300/60 hover:border-primary/30 transition-all duration-300 active:scale-[0.98] rounded-xl shadow-md hover:shadow-lg">
                     <div className="card-body p-3 sm:p-4">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -296,7 +296,7 @@ export default function Dashboard() {
             
             {/* Add Class Button */}
             <div className="pt-2">
-              <button className="btn btn-outline btn-primary w-full sm:w-auto">
+              <button className="btn btn-outline btn-primary w-full sm:w-auto rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                 <Calendar className="w-4 h-4" />
                 Schedule New Class
               </button>
@@ -311,12 +311,12 @@ export default function Dashboard() {
               <Activity className="w-5 h-5 text-primary" />
               Recent Activity
             </h2>
-            <button className="btn btn-ghost btn-sm text-xs sm:text-sm">
+            <button className="btn btn-ghost btn-sm text-xs sm:text-sm rounded-lg hover:bg-primary/10 transition-all duration-200">
               View All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           
-          <div className="card bg-base-200/50 backdrop-blur-sm border border-base-300/20">
+          <div className="card bg-base-200/50 backdrop-blur-sm border border-base-300/20 rounded-xl shadow-lg">
             <div className="card-body p-0">
               {recentActivity.map((activity, idx) => (
                 <div key={idx} className="flex items-start sm:items-center gap-3 p-3 sm:p-4 hover:bg-base-300/50 transition-all duration-200 border-b border-base-300/30 last:border-0 active:scale-[0.98]">
@@ -342,7 +342,7 @@ export default function Dashboard() {
 
         {/* Performance Metrics - Mobile Enhanced */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 dashboard-section">
-          <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
             <div className="card-body p-4 sm:p-6">
               <h3 className="card-title text-base sm:text-lg text-base-content flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-primary" />
@@ -362,7 +362,7 @@ export default function Dashboard() {
                   </div>
                   <button 
                     onClick={() => navigate('/students')}
-                    className="btn btn-primary btn-sm"
+                    className="btn btn-primary btn-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                   >
                     Add First Student
                   </button>
@@ -408,7 +408,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="card bg-gradient-to-br from-info/10 to-success/10 border border-info/30 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="card bg-gradient-to-br from-info/10 to-success/10 border border-info/30 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
             <div className="card-body p-4 sm:p-6">
               <h3 className="card-title text-base sm:text-lg text-base-content flex items-center gap-2 mb-4">
                 <Activity className="w-5 h-5 text-info" />
