@@ -1,0 +1,12 @@
+name = "martial-arts-manager"
+compatibility_date = "2023-12-01"
+
+[env.production]
+d1_databases = [
+  { binding = "DB", database_name = "martial-arts-db", database_id = "your-database-id" }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "martial-arts-db"
+database_id = "your-database-id"
