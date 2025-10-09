@@ -23,11 +23,11 @@ export default function Header() {
   return (
     <>
       {/* Mobile Header - Static Design */}
-      <header className="navbar bg-base-100 border-b border-base-300 mobile-header md:hidden min-h-[4rem]">
+      <header className="navbar bg-gray-900/95 backdrop-blur-lg border-b border-gray-700/50 mobile-header md:hidden min-h-[4rem]">
         <div className="navbar-start">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="btn btn-ghost btn-circle hover:bg-base-200"
+            className="btn btn-ghost btn-circle hover:bg-gray-700/50 text-gray-300"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -46,11 +46,11 @@ export default function Header() {
         </div>
 
         <div className="navbar-end">
-          {/* Simple notification icon - no dropdown */}
-          <button className="btn btn-ghost btn-circle hover:bg-base-200 relative">
-            <div className="indicator">
-              <Bell className="w-6 h-6" />
-              <span className="badge badge-xs badge-error indicator-item animate-pulse hidden">3</span>
+          {/* Simple notification icon - compact design */}
+          <button className="btn btn-ghost btn-sm p-2 hover:bg-gray-700/50 transition-colors">
+            <div className="relative">
+              <Bell className="w-5 h-5 text-gray-300" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
             </div>
           </button>
         </div>
@@ -71,7 +71,7 @@ export default function Header() {
         />
         
         {/* Menu Panel */}
-        <div className={`absolute left-0 top-0 h-full w-80 bg-base-100 shadow-2xl transition-transform duration-300 flex flex-col ${
+        <div className={`absolute left-0 top-0 h-full w-80 bg-gray-900/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 flex flex-col ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}>
           {/* User Profile Section - Enhanced */}
@@ -175,7 +175,7 @@ export default function Header() {
           </div>
 
           {/* Theme Info at Bottom */}
-          <div className="p-4 border-t border-base-300">
+          <div className="p-4 border-t border-gray-700">
             <div className="alert alert-info">
               <div className="flex items-center gap-3">
                 <Award className="w-5 h-5 text-info flex-shrink-0" />
@@ -191,7 +191,7 @@ export default function Header() {
 
 
       {/* Desktop Header */}
-      <header className="hidden md:flex h-16 bg-base-200 border-b border-base-300 items-center px-6 ml-64">
+      <header className="hidden md:flex h-16 bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/50 items-center px-6 ml-64">
         <div className="flex-1 flex items-center gap-4">
           {/* Search */}
           <div className="form-control">
@@ -210,12 +210,12 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Simple notification icon - no dropdown */}
-          <button className="btn btn-ghost btn-circle">
-            <div className="indicator">
-              <Bell className="w-5 h-5" />
-              <span className="badge badge-xs badge-primary indicator-item hidden">3</span>
+        <div className="flex items-center gap-3">
+          {/* Simple notification icon - compact design */}
+          <button className="btn btn-ghost btn-sm p-2 hover:bg-gray-700/50 transition-colors">
+            <div className="relative">
+              <Bell className="w-5 h-5 text-gray-300" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
             </div>
           </button>
 

@@ -12,6 +12,65 @@ html {
 
 body {
   overscroll-behavior: none;
+  background-color: #111827; /* gray-900 */
+  color: #f3f4f6; /* gray-100 */
+}
+
+/* Dark theme improvements */
+.text-base-content {
+  color: #f3f4f6 !important; /* gray-100 */
+}
+
+.bg-base-100 {
+  background-color: #1f2937 !important; /* gray-800 */
+}
+
+.bg-base-200 {
+  background-color: #374151 !important; /* gray-700 */
+}
+
+.bg-base-300 {
+  background-color: #4b5563 !important; /* gray-600 */
+}
+
+.border-base-300 {
+  border-color: #4b5563 !important; /* gray-600 */
+}
+
+/* Improve text contrast */
+h1, h2, h3, h4, h5, h6 {
+  color: #f9fafb; /* gray-50 */
+}
+
+p, span, div {
+  color: #e5e7eb; /* gray-200 */
+}
+
+/* Better button contrast */
+.btn {
+  border-color: #4b5563;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+  border-color: #1d4ed8;
+}
+
+/* Better card styling */
+.card {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  color: #f3f4f6;
+}
+
+.card-title {
+  color: #f9fafb;
 }
 
 /* Custom animations */

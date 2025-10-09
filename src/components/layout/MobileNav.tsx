@@ -103,7 +103,7 @@ export default function MobileNav() {
   return (
     <>
       {/* Enhanced Mobile Bottom Navigation */}
-      <nav className="btm-nav btm-nav-lg md:hidden bg-base-100/95 backdrop-blur-xl border-t border-base-300/50 shadow-2xl shadow-black/20 fixed bottom-0 left-0 right-0 mobile-bottom-nav">
+      <nav className="btm-nav btm-nav-lg md:hidden bg-gray-900/95 backdrop-blur-xl border-t border-gray-700/50 shadow-2xl shadow-black/40 fixed bottom-0 left-0 right-0 mobile-bottom-nav">
         {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;

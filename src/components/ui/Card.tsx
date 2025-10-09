@@ -37,7 +37,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     ref
   ) => {
     const baseClasses = [
-      'bg-white rounded-xl transition-all duration-200',
+      'bg-gray-800/90 rounded-xl transition-all duration-200 border border-gray-700/50',
       
       // Variant styles
       {

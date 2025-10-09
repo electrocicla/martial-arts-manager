@@ -70,7 +70,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
           aria-modal="true"
           aria-labelledby={title ? 'modal-title' : undefined}
           className={`
-            relative w-full ${sizeStyles[size]} transform rounded-xl bg-white 
+            relative w-full ${sizeStyles[size]} transform rounded-xl bg-gray-800 border border-gray-700 
             shadow-2xl transition-all duration-300 animate-in zoom-in-95
             dark:bg-gray-800 dark:shadow-gray-900/50 ${className}
           `}
@@ -94,7 +94,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
                   onClick={onClose}
                   className="
                     rounded-lg p-2 text-gray-400 transition-colors duration-200
-                    hover:bg-gray-100 hover:text-gray-600 focus:outline-none
+                    hover:bg-gray-700 hover:text-gray-300 focus:outline-none
                     focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
                     dark:hover:bg-gray-700 dark:hover:text-gray-300
                     dark:focus:ring-indigo-400 dark:focus:ring-offset-gray-800

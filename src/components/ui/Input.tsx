@@ -39,14 +39,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     // Variant styles with proper state handling
     const variantStyles = {
       default: `
-        border border-gray-300 bg-white text-gray-900 placeholder-gray-500
+        border border-gray-600 bg-gray-800 text-gray-100 placeholder-gray-400
         hover:border-gray-400 focus:border-indigo-500 focus:ring-indigo-500
         dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400
         dark:hover:border-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400
       `,
       filled: `
-        border-0 bg-gray-100 text-gray-900 placeholder-gray-500
-        hover:bg-gray-200 focus:bg-white focus:ring-indigo-500
+        border-0 bg-gray-700 text-gray-100 placeholder-gray-400
+        hover:bg-gray-600 focus:bg-gray-800 focus:ring-indigo-400
         dark:bg-gray-700 dark:text-white dark:placeholder-gray-400
         dark:hover:bg-gray-600 dark:focus:bg-gray-800 dark:focus:ring-indigo-400
       `,

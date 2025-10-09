@@ -51,7 +51,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           variant === 'primary' && !disabled,
         
         // Secondary
-        'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 border border-gray-300': 
+        'bg-gray-700 text-gray-100 hover:bg-gray-600 focus:ring-gray-500 border border-gray-600': 
           variant === 'secondary' && !disabled,
         
         // Outline
@@ -59,7 +59,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           variant === 'outline' && !disabled,
         
         // Ghost
-        'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500': 
+        'bg-transparent text-gray-300 hover:bg-gray-800 focus:ring-gray-500': 
           variant === 'ghost' && !disabled,
         
         // Danger

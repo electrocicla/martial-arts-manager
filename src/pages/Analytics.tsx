@@ -75,7 +75,7 @@ export default function Analytics() {
   ];
 
   return (
-    <div className="min-h-screen bg-base-100 pb-20 md:pb-8">
+    <div className="min-h-screen bg-gray-900 pb-20 md:pb-8">
       {/* Header */}
       <div className="bg-gradient-to-br from-base-200 to-base-300 px-4 py-6">
         <div className="max-w-7xl mx-auto">

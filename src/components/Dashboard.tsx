@@ -117,7 +117,7 @@ export default function Dashboard() {
   // Show error state if data fetching failed
   if (error) {
     return (
-      <div className="min-h-screen bg-base-100 pb-24 md:pb-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 pb-24 md:pb-4 flex items-center justify-center">
         <div className="card bg-error/10 border border-error/30 max-w-md">
           <div className="card-body text-center">
             <AlertCircle className="w-12 h-12 text-error mx-auto mb-4" />
@@ -136,7 +136,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-base-100 mobile-dashboard md:pb-4 md:pt-4">
+    <div className="min-h-screen bg-gray-900 mobile-dashboard md:pb-4 md:pt-4">
       {/* Mobile-First Hero Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-base-200/50 to-base-300/30 px-4 sm:px-6 pt-4 pb-6">
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
@@ -156,7 +156,7 @@ export default function Dashboard() {
           {/* Mobile-Optimized Quick Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {stats.map((stat, idx) => (
-              <div key={idx} className="card bg-base-100/80 backdrop-blur-sm border border-base-300/50 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+              <div key={idx} className="card bg-gray-800/90 backdrop-blur-sm border border-gray-700/50 hover:shadow-lg hover:shadow-gray-900/25 transition-all duration-300 hover:scale-[1.02]">
                 <div className="card-body p-3 sm:p-4">
                   <div className="flex flex-col">
                     <div className={`inline-flex p-2 rounded-xl ${stat.bgColor} mb-3 w-fit`}>

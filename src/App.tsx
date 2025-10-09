@@ -21,7 +21,7 @@ const Register = lazy(() => import('./pages/Register'));
 
 // Loading component with DaisyUI
 const LoadingSpinner = () => (
-  <div className="min-h-screen bg-base-100 flex items-center justify-center">
+  <div className="min-h-screen bg-gray-900 flex items-center justify-center">
     <div className="flex flex-col items-center gap-4">
       <span className="loading loading-spinner loading-lg text-primary"></span>
       <p className="text-base-content font-medium animate-pulse">Loading Dojo Manager...</p>
@@ -39,7 +39,7 @@ function AppContent() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="min-h-screen bg-gray-900">
       <Header />
       <main className="md:ml-64 min-h-screen main-content">
         <Suspense fallback={<LoadingSpinner />}>

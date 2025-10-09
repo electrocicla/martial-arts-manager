@@ -140,7 +140,7 @@ export default function ClassManager() {
   };
 
   return (
-    <div className="min-h-screen bg-base-100 pb-20 md:pb-8">
+    <div className="min-h-screen bg-gray-900 pb-20 md:pb-8">
       {/* Header */}
       <div className="bg-gradient-to-br from-base-200 to-base-300 px-4 py-6">
         <div className="max-w-7xl mx-auto">
@@ -177,7 +177,7 @@ export default function ClassManager() {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
             {stats.map((stat, idx) => (
-              <div key={idx} className="stat bg-base-100/50 backdrop-blur rounded-lg p-3">
+              <div key={idx} className="stat bg-gray-800/80 backdrop-blur rounded-lg p-3 border border-gray-700/50">
                 <div className="stat-figure">
                   <stat.icon className={`w-5 h-5 ${stat.color}`} />
                 </div>
