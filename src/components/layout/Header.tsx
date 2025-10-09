@@ -27,7 +27,7 @@ export default function Header() {
   return (
     <>
       {/* Mobile Header - Fixed Design */}
-      <header className="navbar bg-base-100/90 backdrop-blur-lg border-b border-base-300 sticky top-0 z-50 md:hidden min-h-[4rem]">
+      <header className="navbar bg-base-100/95 backdrop-blur-lg border-b border-base-300 sticky top-0 mobile-header md:hidden min-h-[4rem]">
         <div className="navbar-start">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

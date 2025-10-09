@@ -41,7 +41,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-base-100">
       <Header />
-      <main className="md:ml-64 min-h-screen">
+      <main className="md:ml-64 min-h-screen main-content">
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />

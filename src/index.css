@@ -222,8 +222,47 @@ body {
   transform: translateY(-2px);
 }
 
-/* Mobile-specific improvements */
-@media (max-width: 640px) {
+/* Comprehensive Mobile Layout Fixes */
+@media (max-width: 768px) {
+  /* Ensure main content doesn't overlap with sticky header */
+  .main-content {
+    margin-top: 4rem; /* Height of mobile header */
+    padding-top: 1rem;
+  }
+  
+  /* Fix dashboard specific mobile layout */
+  .mobile-dashboard {
+    min-height: calc(100vh - 4rem); /* Account for header */
+    padding-top: 0; /* Remove extra top padding since main-content handles it */
+    padding-bottom: 8rem; /* Account for bottom nav + FAB space */
+  }
+  
+  /* Mobile navigation z-index management */
+  .mobile-header {
+    z-index: 100; /* Highest priority */
+  }
+  
+  .mobile-bottom-nav {
+    z-index: 90; /* Second highest */
+  }
+  
+  .mobile-fab {
+    z-index: 80; /* Third priority */
+  }
+  
+  /* Dropdown and modal overlays */
+  .dropdown-content {
+    z-index: 85; /* Between FAB and bottom nav */
+    max-height: 60vh; /* Prevent dropdown from being too tall */
+    overflow-y: auto;
+  }
+  
+  /* Prevent content from being hidden behind FAB */
+  .dashboard-content {
+    margin-right: 0.5rem; /* Give space for FAB */
+  }
+  
+  /* Legacy mobile improvements */
   .hero {
     padding: 2rem 1rem;
   }

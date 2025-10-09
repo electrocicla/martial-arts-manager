@@ -59,7 +59,7 @@ export default function MobileNav() {
   return (
     <>
       {/* Enhanced Mobile Bottom Navigation */}
-      <nav className="btm-nav btm-nav-lg md:hidden bg-base-100/95 backdrop-blur-xl border-t border-base-300/50 shadow-2xl shadow-black/20 fixed bottom-0 left-0 right-0 z-50">
+      <nav className="btm-nav btm-nav-lg md:hidden bg-base-100/95 backdrop-blur-xl border-t border-base-300/50 shadow-2xl shadow-black/20 fixed bottom-0 left-0 right-0 mobile-bottom-nav">
         {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
@@ -111,7 +111,7 @@ export default function MobileNav() {
       </nav>
 
       {/* Enhanced Floating Action Button for mobile - Fixed positioning */}
-      <div className="fixed bottom-28 right-4 md:hidden z-[60]">
+      <div className="fixed bottom-28 right-4 md:hidden mobile-fab">
         <div className="dropdown dropdown-top dropdown-end">
           <label 
             tabIndex={0} 

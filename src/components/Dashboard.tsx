@@ -28,8 +28,8 @@ export default function Dashboard() {
     {
       title: 'Active Students',
       value: isLoading ? '...' : dashboardStats.activeStudents.toString(),
-      change: '+12%',
-      trend: 'up',
+      change: dashboardStats.activeStudents === 0 ? 'No data' : '+12%',
+      trend: dashboardStats.activeStudents === 0 ? 'neutral' : 'up',
       icon: Users,
       description: 'from last month',
       color: 'text-primary',
@@ -38,8 +38,8 @@ export default function Dashboard() {
     {
       title: 'Classes This Week',
       value: isLoading ? '...' : dashboardStats.classesThisWeek.toString(),
-      change: '+8%',
-      trend: 'up',
+      change: dashboardStats.classesThisWeek === 0 ? 'No classes' : '+8%',
+      trend: dashboardStats.classesThisWeek === 0 ? 'neutral' : 'up',
       icon: BookOpen,
       description: 'scheduled sessions',
       color: 'text-secondary',
@@ -48,8 +48,8 @@ export default function Dashboard() {
     {
       title: 'Revenue This Month',
       value: isLoading ? '...' : `$${dashboardStats.revenueThisMonth.toLocaleString()}`,
-      change: '+15%',
-      trend: 'up',
+      change: dashboardStats.revenueThisMonth === 0 ? 'No revenue' : '+15%',
+      trend: dashboardStats.revenueThisMonth === 0 ? 'neutral' : 'up',
       icon: DollarSign,
       description: 'total earnings',
       color: 'text-success',
@@ -58,8 +58,8 @@ export default function Dashboard() {
     {
       title: 'New Enrollments',
       value: isLoading ? '...' : dashboardStats.newEnrollments.toString(),
-      change: '+23%',
-      trend: 'up',
+      change: dashboardStats.newEnrollments === 0 ? 'Get started' : '+23%',
+      trend: dashboardStats.newEnrollments === 0 ? 'neutral' : 'up',
       icon: Award,
       description: 'this month',
       color: 'text-info',
@@ -136,7 +136,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-base-100 pb-28 md:pb-4">
+    <div className="min-h-screen bg-base-100 mobile-dashboard md:pb-4 md:pt-4">
       {/* Mobile-First Hero Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-base-200/50 to-base-300/30 px-4 sm:px-6 pt-4 pb-6">
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
@@ -181,7 +181,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto space-y-8 mobile-dashboard-content">
+      <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto space-y-8 mobile-dashboard-content dashboard-content">
         {/* Mobile-Optimized Quick Actions */}
         <section className="dashboard-section">
           <h2 className="text-lg sm:text-xl font-bold text-base-content mb-4 flex items-center gap-2">
