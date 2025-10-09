@@ -47,7 +47,7 @@ export default function StudentManager() {
       try {
         // Cast to Student type
         const studentData = s as Student;
-        const studentDate = new Date(studentData.created_at || studentData.join_date || Date.now());
+        const studentDate = new Date(studentData.joinDate || Date.now());
         const currentDate = new Date();
         return studentDate.getMonth() === currentDate.getMonth() && 
                studentDate.getFullYear() === currentDate.getFullYear();
