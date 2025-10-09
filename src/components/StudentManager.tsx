@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { Student } from '../types';
-import { Users, Search, Plus, Download, Upload, UserPlus, TrendingUp, Calendar, DollarSign, Mail, Phone, Eye, Edit } from 'lucide-react';
+import { Users, Search, Download, Upload, UserPlus, TrendingUp, Calendar, DollarSign, Mail, Phone, Eye, Edit } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function StudentManager() {
@@ -99,112 +99,141 @@ export default function StudentManager() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-20 md:pb-8">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-base-200 to-base-300 px-4 py-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-primary/20">
-                <Users className="w-8 h-8 text-primary" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Professional Header */}
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            {/* Title Section */}
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                <Users className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-black text-base-content">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                   Student Management
                 </h1>
-                <p className="text-sm text-base-content/70">
-                  {students.length} total students • {students.filter(s => s.is_active).length} active
+                <p className="text-gray-600 dark:text-gray-300 mt-1">
+                  Manage your dojo's student roster and profiles
                 </p>
+                <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span className="flex items-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    {students.length} total students
+                  </span>
+                  <span className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    {students.filter(s => s.is_active).length} active
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <button className="btn btn-ghost btn-sm">
-                <Download className="w-4 h-4" />
-                Export
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3">
+              <button className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                <Download className="w-4 h-4 mr-2" />
+                Export Data
               </button>
-              <button className="btn btn-ghost btn-sm">
-                <Upload className="w-4 h-4" />
-                Import
+              <button className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                <Upload className="w-4 h-4 mr-2" />
+                Import Students
               </button>
               <button 
-                className="btn btn-primary btn-sm"
+                className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 onClick={() => setShowAddModal(true)}
               >
-                <UserPlus className="w-4 h-4" />
-                Add Student
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add New Student
               </button>
             </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-            {stats.map((stat, idx) => (
-              <div key={idx} className="stat bg-gray-800/80 backdrop-blur rounded-lg p-3 border border-gray-700/50">
-                <div className="stat-figure">
-                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                </div>
-                <div className="stat-title text-xs">{stat.label}</div>
-                <div className="stat-value text-xl">{stat.value}</div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-6 max-w-7xl mx-auto">
-        {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-3 mb-6">
-          <div className="flex-1">
-            <div className="input-group">
-              <span className="bg-base-200">
-                <Search className="w-4 h-4" />
-              </span>
-              <input
-                type="text"
-                placeholder="Search students..."
-                className="input input-bordered w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+      {/* Stats Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {stats.map((stat, idx) => (
+            <div key={idx} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.label}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stat.value}</p>
+                </div>
+                <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg">
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
+        </div>
 
-          <div className="flex gap-2">
-            <select 
-              className="select select-bordered"
-              value={filterBelt}
-              onChange={(e) => setFilterBelt(e.target.value)}
-            >
-              <option value="all">All Belts</option>
-              {belts.map(belt => (
-                <option key={belt} value={belt}>{belt}</option>
-              ))}
-            </select>
+        {/* Search and Filters Section */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg mb-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search Input */}
+            <div className="flex-1">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search students by name, email, or belt..."
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
 
-            <select 
-              className="select select-bordered"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-
-            <div className="btn-group">
-              <button 
-                className={`btn btn-sm ${viewMode === 'grid' ? 'btn-active' : ''}`}
-                onClick={() => setViewMode('grid')}
+            {/* Filters */}
+            <div className="flex gap-3">
+              <select 
+                className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                value={filterBelt}
+                onChange={(e) => setFilterBelt(e.target.value)}
               >
-                Grid
-              </button>
-              <button 
-                className={`btn btn-sm ${viewMode === 'list' ? 'btn-active' : ''}`}
-                onClick={() => setViewMode('list')}
+                <option value="all">All Belts</option>
+                {belts.map(belt => (
+                  <option key={belt} value={belt}>{belt} Belt</option>
+                ))}
+              </select>
+
+              <select 
+                className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
               >
-                List
-              </button>
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+
+              {/* View Mode Toggle */}
+              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                <button 
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    viewMode === 'grid' 
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                  onClick={() => setViewMode('grid')}
+                >
+                  Grid
+                </button>
+                <button 
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    viewMode === 'list' 
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                  onClick={() => setViewMode('list')}
+                >
+                  List
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -345,135 +374,236 @@ export default function StudentManager() {
         )}
       </div>
 
-      {/* Add Student Modal */}
+      {/* Add Student Modal - Professional Design */}
       {showAddModal && (
-        <div className="modal modal-open">
-          <div className="modal-box max-w-2xl">
-            <h3 className="font-bold text-lg mb-4">Add New Student</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Full Name *</span>
-                </label>
-                <input 
-                  type="text" 
-                  className="input input-bordered" 
-                  value={newStudent.name}
-                  onChange={(e) => setNewStudent({...newStudent, name: e.target.value})}
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Email *</span>
-                </label>
-                <input 
-                  type="email" 
-                  className="input input-bordered" 
-                  value={newStudent.email}
-                  onChange={(e) => setNewStudent({...newStudent, email: e.target.value})}
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Phone</span>
-                </label>
-                <input 
-                  type="tel" 
-                  className="input input-bordered" 
-                  value={newStudent.phone}
-                  onChange={(e) => setNewStudent({...newStudent, phone: e.target.value})}
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Date of Birth</span>
-                </label>
-                <input 
-                  type="date" 
-                  className="input input-bordered" 
-                  value={newStudent.date_of_birth}
-                  onChange={(e) => setNewStudent({...newStudent, date_of_birth: e.target.value})}
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Belt Rank</span>
-                </label>
-                <select 
-                  className="select select-bordered"
-                  value={newStudent.belt}
-                  onChange={(e) => setNewStudent({...newStudent, belt: e.target.value})}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowAddModal(false)}
+          />
+          
+          {/* Modal */}
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <UserPlus className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add New Student</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Create a new student profile</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowAddModal(false)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
-                  {belts.map(belt => (
-                    <option key={belt} value={belt}>{belt}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Discipline</span>
-                </label>
-                <select 
-                  className="select select-bordered"
-                  value={newStudent.discipline}
-                  onChange={(e) => setNewStudent({...newStudent, discipline: e.target.value})}
-                >
-                  {disciplines.map(disc => (
-                    <option key={disc} value={disc}>{disc}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Emergency Contact Name</span>
-                </label>
-                <input 
-                  type="text" 
-                  className="input input-bordered" 
-                  value={newStudent.emergency_contact_name}
-                  onChange={(e) => setNewStudent({...newStudent, emergency_contact_name: e.target.value})}
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Emergency Contact Phone</span>
-                </label>
-                <input 
-                  type="tel" 
-                  className="input input-bordered" 
-                  value={newStudent.emergency_contact_phone}
-                  onChange={(e) => setNewStudent({...newStudent, emergency_contact_phone: e.target.value})}
-                />
-              </div>
-
-              <div className="form-control md:col-span-2">
-                <label className="label">
-                  <span className="label-text">Notes</span>
-                </label>
-                <textarea 
-                  className="textarea textarea-bordered h-24" 
-                  value={newStudent.notes}
-                  onChange={(e) => setNewStudent({...newStudent, notes: e.target.value})}
-                ></textarea>
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             </div>
 
-            <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setShowAddModal(false)}>
-                Cancel
-              </button>
-              <button className="btn btn-primary" onClick={handleAddStudent}>
-                <Plus className="w-4 h-4" />
-                Add Student
-              </button>
+            {/* Form Content */}
+            <div className="p-6">
+              <form className="space-y-8">
+                {/* Personal Information Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <div className="w-1 h-6 bg-blue-500 rounded-full mr-3"></div>
+                    Personal Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          placeholder="Enter student's full name"
+                          value={newStudent.name}
+                          onChange={(e) => setNewStudent({...newStudent, name: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Email Address <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input 
+                          type="email" 
+                          className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          placeholder="student@example.com"
+                          value={newStudent.email}
+                          onChange={(e) => setNewStudent({...newStudent, email: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Phone Number
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input 
+                          type="tel" 
+                          className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          placeholder="+1 (555) 123-4567"
+                          value={newStudent.phone}
+                          onChange={(e) => setNewStudent({...newStudent, phone: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Date of Birth
+                      </label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input 
+                          type="date" 
+                          className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          value={newStudent.date_of_birth}
+                          onChange={(e) => setNewStudent({...newStudent, date_of_birth: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Martial Arts Information */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <div className="w-1 h-6 bg-green-500 rounded-full mr-3"></div>
+                    Martial Arts Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Belt Rank
+                      </label>
+                      <select 
+                        className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        value={newStudent.belt}
+                        onChange={(e) => setNewStudent({...newStudent, belt: e.target.value})}
+                      >
+                        {belts.map(belt => (
+                          <option key={belt} value={belt} className="bg-white dark:bg-gray-700">
+                            {belt} Belt
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Discipline
+                      </label>
+                      <select 
+                        className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        value={newStudent.discipline}
+                        onChange={(e) => setNewStudent({...newStudent, discipline: e.target.value})}
+                      >
+                        {disciplines.map(disc => (
+                          <option key={disc} value={disc} className="bg-white dark:bg-gray-700">
+                            {disc}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Emergency Contact */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <div className="w-1 h-6 bg-red-500 rounded-full mr-3"></div>
+                    Emergency Contact
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Contact Name
+                      </label>
+                      <input 
+                        type="text" 
+                        className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder="Emergency contact name"
+                        value={newStudent.emergency_contact_name}
+                        onChange={(e) => setNewStudent({...newStudent, emergency_contact_name: e.target.value})}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Contact Phone
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input 
+                          type="tel" 
+                          className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          placeholder="+1 (555) 987-6543"
+                          value={newStudent.emergency_contact_phone}
+                          onChange={(e) => setNewStudent({...newStudent, emergency_contact_phone: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Notes */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                    <div className="w-1 h-6 bg-purple-500 rounded-full mr-3"></div>
+                    Additional Information
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Notes
+                    </label>
+                    <textarea 
+                      className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                      rows={4}
+                      placeholder="Any additional notes about the student..."
+                      value={newStudent.notes}
+                      onChange={(e) => setNewStudent({...newStudent, notes: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-700/50 px-6 py-4 border-t border-gray-200 dark:border-gray-600 rounded-b-2xl">
+              <div className="flex justify-end space-x-3">
+                <button 
+                  type="button"
+                  className="px-6 py-2.5 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-500 focus:ring-2 focus:ring-gray-500 transition-all duration-200 font-medium"
+                  onClick={() => setShowAddModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium flex items-center space-x-2"
+                  onClick={handleAddStudent}
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Add Student</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
