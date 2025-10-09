@@ -4,10 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "wrangler pages dev --local --port 5173",
+    "dev:local": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "pnpm build && wrangler pages deploy dist",
+    "type-check": "tsc --noEmit",
+    "db:local": "wrangler d1 execute martial-arts-db --local --file=./schema.sql",
+    "db:prod": "wrangler d1 execute martial-arts-db --file=./schema.sql"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -15,6 +20,7 @@
     "@types/react-calendar": "^4.1.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.22",
     "lucide-react": "^0.545.0",
     "react": "^19.1.1",
     "react-calendar": "^6.0.0",

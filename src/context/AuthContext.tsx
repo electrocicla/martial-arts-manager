@@ -55,6 +55,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuthStatus();
   }, []);
 
+  // Set up automatic token refresh
+  useEffect(() => {
+    if (!user) return;
+
+    // Refresh token every 90 minutes (before 2-hour expiry)
+    const interval = setInterval(() => {
+      refreshAuth();
+    }, 90 * 60 * 1000); // 90 minutes
+
+    return () => clearInterval(interval);
+  }, [user]);
+
   // Check authentication status
   const checkAuthStatus = async () => {
     try {

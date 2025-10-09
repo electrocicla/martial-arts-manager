@@ -44,22 +44,22 @@ export async function createTokens(
 ): Promise<TokenPair> {
   const now = Math.floor(Date.now() / 1000);
   
-  // Access token (15 minutes)
+  // Access token (2 hours for better UX)
   const accessPayload: JWTPayload = {
     sub: userId,
     email,
     role,
     iat: now,
-    exp: now + 15 * 60, // 15 minutes
+    exp: now + 2 * 60 * 60, // 2 hours
   };
 
-  // Refresh token (7 days)
+  // Refresh token (30 days for longer sessions)
   const refreshPayload: JWTPayload = {
     sub: userId,
     email,
     role,
     iat: now,
-    exp: now + 7 * 24 * 60 * 60, // 7 days
+    exp: now + 30 * 24 * 60 * 60, // 30 days
   };
 
   const [accessToken, refreshToken] = await Promise.all([
