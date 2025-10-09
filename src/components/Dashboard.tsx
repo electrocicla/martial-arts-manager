@@ -346,74 +346,117 @@ export default function Dashboard() {
             <div className="card-body p-4 sm:p-6">
               <h3 className="card-title text-base sm:text-lg text-base-content flex items-center gap-2 mb-4">
                 <Target className="w-5 h-5 text-primary" />
-                Monthly Goal Progress
+                Monthly Progress
               </h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between items-center text-sm sm:text-base mb-2">
-                    <span className="font-medium">New Enrollments</span>
-                    <span className="font-bold text-primary">18/25</span>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  <span className="ml-2 text-sm">Loading progress...</span>
+                </div>
+              ) : dashboardStats.totalStudents === 0 ? (
+                <div className="text-center py-8">
+                  <div className="mb-4">
+                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500">No data available yet</p>
+                    <p className="text-sm text-gray-400 mt-1">Start by adding students and classes</p>
                   </div>
-                  <div className="relative">
-                    <progress className="progress progress-primary w-full h-3" value="72" max="100"></progress>
-                    <span className="absolute right-1 top-0 text-xs font-bold text-primary-content">72%</span>
+                  <button 
+                    onClick={() => navigate('/students')}
+                    className="btn btn-primary btn-sm"
+                  >
+                    Add First Student
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center text-sm sm:text-base mb-2">
+                      <span className="font-medium">Total Students</span>
+                      <span className="font-bold text-primary">{dashboardStats.totalStudents}</span>
+                    </div>
+                    <div className="relative">
+                      <progress className="progress progress-primary w-full h-3" value="100" max="100"></progress>
+                      <span className="absolute right-1 top-0 text-xs font-bold text-primary-content">Active</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center text-sm sm:text-base mb-2">
+                      <span className="font-medium">Revenue This Month</span>
+                      <span className="font-bold text-secondary">${dashboardStats.revenueThisMonth.toLocaleString()}</span>
+                    </div>
+                    <div className="relative">
+                      <progress className="progress progress-secondary w-full h-3" value={dashboardStats.revenueThisMonth > 0 ? "100" : "0"} max="100"></progress>
+                      <span className="absolute right-1 top-0 text-xs font-bold text-secondary-content">
+                        {dashboardStats.revenueThisMonth > 0 ? 'Earning' : 'No revenue'}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center text-sm sm:text-base mb-2">
+                      <span className="font-medium">Classes This Week</span>
+                      <span className="font-bold text-success">{dashboardStats.classesThisWeek}</span>
+                    </div>
+                    <div className="relative">
+                      <progress className="progress progress-success w-full h-3" value={dashboardStats.classesThisWeek > 0 ? "100" : "0"} max="100"></progress>
+                      <span className="absolute right-1 top-0 text-xs font-bold text-success-content">
+                        {dashboardStats.classesThisWeek > 0 ? 'Scheduled' : 'No classes'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="flex justify-between items-center text-sm sm:text-base mb-2">
-                    <span className="font-medium">Revenue Target</span>
-                    <span className="font-bold text-secondary">$8,200/$10,000</span>
-                  </div>
-                  <div className="relative">
-                    <progress className="progress progress-secondary w-full h-3" value="82" max="100"></progress>
-                    <span className="absolute right-1 top-0 text-xs font-bold text-secondary-content">82%</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between items-center text-sm sm:text-base mb-2">
-                    <span className="font-medium">Class Attendance</span>
-                    <span className="font-bold text-success">89%</span>
-                  </div>
-                  <div className="relative">
-                    <progress className="progress progress-success w-full h-3" value="89" max="100"></progress>
-                    <span className="absolute right-1 top-0 text-xs font-bold text-success-content">89%</span>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
-          <div className="card bg-gradient-to-br from-warning/10 to-error/10 border border-warning/30 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="card bg-gradient-to-br from-info/10 to-success/10 border border-info/30 shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="card-body p-4 sm:p-6">
               <h3 className="card-title text-base sm:text-lg text-base-content flex items-center gap-2 mb-4">
-                <AlertCircle className="w-5 h-5 text-warning" />
-                Needs Attention
+                <Activity className="w-5 h-5 text-info" />
+                Quick Actions
               </h3>
-              <div className="space-y-3">
-                <div className="alert alert-warning py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">💸</span>
-                    <span className="text-sm sm:text-base font-medium">3 overdue payments</span>
-                  </div>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-info" />
+                  <span className="ml-2 text-sm">Loading actions...</span>
                 </div>
-                <div className="alert alert-info py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">📊</span>
-                    <span className="text-sm sm:text-base font-medium">5 students missing 2+ classes</span>
-                  </div>
+              ) : (
+                <div className="space-y-3">
+                  <button 
+                    onClick={() => navigate('/students')}
+                    className="alert alert-info py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Users className="w-5 h-5" />
+                      <span className="text-sm sm:text-base font-medium">Manage Students</span>
+                    </div>
+                  </button>
+                  <button 
+                    onClick={() => navigate('/classes')}
+                    className="alert alert-success py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5" />
+                      <span className="text-sm sm:text-base font-medium">Schedule Classes</span>
+                    </div>
+                  </button>
+                  <button 
+                    onClick={() => navigate('/payments')}
+                    className="alert alert-warning py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-5 h-5" />
+                      <span className="text-sm sm:text-base font-medium">Record Payments</span>
+                    </div>
+                  </button>
                 </div>
-                <div className="alert alert-error py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🔧</span>
-                    <span className="text-sm sm:text-base font-medium">Equipment inspection due</span>
-                  </div>
+              )}
+              {dashboardStats.totalStudents === 0 && !isLoading && (
+                <div className="mt-4 p-4 bg-base-200 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    👋 Welcome! Start by adding your first student to get your dojo management up and running.
+                  </p>
                 </div>
-              </div>
-              <div className="mt-4">
-                <button className="btn btn-outline btn-warning btn-sm w-full sm:w-auto">
-                  View Details
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </section>
