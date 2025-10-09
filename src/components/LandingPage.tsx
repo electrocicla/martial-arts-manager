@@ -451,8 +451,8 @@ export const LandingPage: React.FC = () => {
                     
                     {/* Icon with enhanced styling */}
                     <div className="relative z-10 mb-3 sm:mb-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 p-2 sm:p-2.5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                        <stat.icon className="w-full h-full text-white drop-shadow-lg" strokeWidth={1.5} />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 p-2 sm:p-2.5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg flex items-center justify-center">
+                        <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-lg" strokeWidth={1.5} />
                       </div>
                     </div>
                     
@@ -522,10 +522,10 @@ export const LandingPage: React.FC = () => {
                   
                   {/* Icon with martial arts styling */}
                   <div className="relative z-10 mb-6">
-                    <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-r ${feature.color} p-4 sm:p-5 mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg relative`}>
+                    <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-r ${feature.color} p-4 sm:p-5 mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg relative flex items-center justify-center`}>
                       {/* Inner glow */}
                       <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${feature.color} opacity-50 blur-sm group-hover:opacity-75 transition-opacity duration-300`} />
-                      <feature.icon className="w-full h-full text-white relative z-10 drop-shadow-lg" strokeWidth={1.5} />
+                      <feature.icon className="w-8 h-8 sm:w-10 sm:h-10 text-white relative z-10 drop-shadow-lg" strokeWidth={1.5} />
                     </div>
                     
                     {/* Floating particles around icon */}
