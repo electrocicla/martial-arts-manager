@@ -9,6 +9,10 @@ interface AppContextType {
   setClasses: (classes: Class[]) => void;
   payments: Payment[];
   setPayments: (payments: Payment[]) => void;
+  // Helpers to add single items
+  addStudent: (student: Student) => Promise<void>;
+  addClass: (cls: Class) => Promise<void>;
+  addPayment: (payment: Payment) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -18,8 +22,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [classes, setClasses] = useState<Class[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
 
+  // Define single-item addition helpers
+  const addStudent = async (student: Student) => {
+    setStudents(prev => [...prev, student]);
+  };
+  const addClass = async (cls: Class) => {
+    setClasses(prev => [...prev, cls]);
+  };
+  const addPayment = async (payment: Payment) => {
+    setPayments(prev => [...prev, payment]);
+  };
   return (
-    <AppContext.Provider value={{ students, setStudents, classes, setClasses, payments, setPayments }}>
+    <AppContext.Provider value={{ 
+      students, setStudents, addStudent,
+      classes, setClasses, addClass,
+      payments, setPayments, addPayment
+    }}>
       {children}
     </AppContext.Provider>
   );

@@ -198,6 +198,21 @@ pnpm dev:local
 # Build for production
 pnpm build
 
+
+## 📝 Changelog
+
+### 2025-10-09: Refactoring & TypeScript Improvements
+- Added `typecheck` script alias (`pnpm run typecheck`) to enforce strict type checking.
+- Extended `AppContext` with `addStudent`, `addClass`, and `addPayment` helper methods for single-item additions.
+- Unified field naming across database models and components: `maxStudents`, `joinDate`, `is_active`, `recurrence_pattern`.
+- Refactored `ClassManager.tsx` and `StudentManager.tsx`:
+  - Replaced legacy `max_students` and `join_date` with camelCase fields.
+  - Removed unused imports and state variables (`selectedClass`).
+  - Fixed all ESLint and TypeScript errors, achieving zero warnings/errors in CI.
+  - Imported and adjusted Lucide icons to match actual usage.
+- Ensured all components compile cleanly via `tsc --noEmit` and lint cleanly via `eslint --max-warnings 0`.
+  
+All tests and checks are now passing. Ready for deployment!
 # Preview production build locally
 pnpm preview
 
