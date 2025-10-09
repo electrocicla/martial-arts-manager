@@ -131,20 +131,20 @@ export default function StudentManager() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3">
-              <button className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200">
-                <Download className="w-4 h-4 mr-2" />
-                Export Data
+              <button className="inline-flex items-center px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                <Download className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="whitespace-nowrap">Export Data</span>
               </button>
-              <button className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200">
-                <Upload className="w-4 h-4 mr-2" />
-                Import Students
+              <button className="inline-flex items-center px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                <Upload className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="whitespace-nowrap">Import Students</span>
               </button>
               <button 
-                className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 onClick={() => setShowAddModal(true)}
               >
-                <UserPlus className="w-4 h-4 mr-2" />
-                Add New Student
+                <UserPlus className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="whitespace-nowrap">Add New Student</span>
               </button>
             </div>
           </div>

@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, Menu, User, LogOut, 
-  Settings, Clock, Users, Calendar
+  Settings, Clock, Users, Calendar, Home
 } from 'lucide-react';
 
 export default function Header() {
@@ -33,13 +33,16 @@ export default function Header() {
           <Menu className="w-6 h-6" />
         </button>
 
-        {/* Center: Logo and Title */}
-        <div className="flex items-center gap-3">
+        {/* Center: Logo and Title - Clickeable */}
+        <button 
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+        >
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
             <span className="text-white font-bold text-sm">🥋</span>
           </div>
           <h1 className="text-xl font-bold text-white">Dojo Manager</h1>
-        </div>
+        </button>
 
         {/* Right: User Avatar */}
         <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
@@ -108,6 +111,61 @@ export default function Header() {
           {/* Menu Items - Fixed Alignment */}
           <div className="flex-1 overflow-y-auto">
             <div className="p-4 space-y-6">
+              {/* Navigation */}
+              <div>
+                <h3 className="text-sm font-semibold text-white mb-3">Navigation</h3>
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Home className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0" />
+                    <span>Dashboard</span>
+                  </button>
+                  <button 
+                    onClick={() => { navigate('/students'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Users className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    <span>Students</span>
+                  </button>
+                  <button 
+                    onClick={() => { navigate('/classes'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Calendar className="w-5 h-5 text-purple-400 mr-3 flex-shrink-0" />
+                    <span>Classes</span>
+                  </button>
+                  <button 
+                    onClick={() => { navigate('/payments'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <div className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
+                      💳
+                    </div>
+                    <span>Payments</span>
+                  </button>
+                  <button 
+                    onClick={() => { navigate('/analytics'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <div className="w-5 h-5 text-orange-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
+                      📊
+                    </div>
+                    <span>Analytics</span>
+                  </button>
+                  <button 
+                    onClick={() => { navigate('/belt-testing'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <div className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
+                      🥋
+                    </div>
+                    <span>Belt Testing</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Quick Actions */}
               <div>
                 <h3 className="text-sm font-semibold text-white mb-3">Quick Actions</h3>
@@ -120,18 +178,13 @@ export default function Header() {
                     <span>Mark Attendance</span>
                   </button>
                   <button 
-                    onClick={() => { navigate('/students'); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
                     className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
                   >
-                    <Users className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Add Student</span>
-                  </button>
-                  <button 
-                    onClick={() => { navigate('/classes'); setMobileMenuOpen(false); }}
-                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    <Calendar className="w-5 h-5 text-purple-400 mr-3 flex-shrink-0" />
-                    <span>Schedule Class</span>
+                    <div className="w-5 h-5 text-indigo-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
+                      📅
+                    </div>
+                    <span>Calendar View</span>
                   </button>
                 </div>
               </div>

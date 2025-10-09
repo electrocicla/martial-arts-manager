@@ -34,12 +34,28 @@ const navigationItems = [
     color: 'text-purple-500'
   },
   {
+    id: 'calendar',
+    name: 'Calendar',
+    href: '/calendar',
+    icon: Calendar,
+    roles: ['admin', 'instructor'],
+    color: 'text-indigo-500'
+  },
+  {
     id: 'payments',
     name: 'Payments',
     href: '/payments',
     icon: DollarSign,
     roles: ['admin'],
     color: 'text-emerald-500'
+  },
+  {
+    id: 'belt-testing',
+    name: 'Belt Testing',
+    href: '/belt-testing',
+    icon: Award,
+    roles: ['admin', 'instructor'],
+    color: 'text-yellow-500'
   },
   {
     id: 'analytics',
