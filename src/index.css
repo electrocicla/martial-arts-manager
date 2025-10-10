@@ -439,6 +439,7 @@ p, span, div {
   font-weight: 800;
   text-decoration: underline;
   text-decoration-color: rgba(220, 38, 38, 0.8);
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.9);
 }
 
 .electric-border {

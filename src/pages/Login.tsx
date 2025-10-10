@@ -77,7 +77,7 @@ export default function Login() {
               <h2 className="text-xl sm:text-2xl font-black fire-energy-text">
                 MARTIAL ARTS
               </h2>
-              <h3 className="text-lg sm:text-xl font-black text-white">
+              <h3 className="text-lg sm:text-xl font-black dark-energy-text">
                 MANAGER
               </h3>
             </motion.div>
