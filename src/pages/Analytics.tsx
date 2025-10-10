@@ -14,7 +14,7 @@ export default function Analytics() {
   const isLoading = kpisLoading || revenueLoading || progressLoading || trendsLoading;
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-20 md:pb-8">
+    <div className="min-h-screen bg-black pb-20 md:pb-8">
       {isLoading ? (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">

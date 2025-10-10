@@ -48,26 +48,26 @@ export default function StudentManager() {
   }, [students, searchQuery, filterBelt, filterStatus]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-black via-red-900/10 to-black">
       {/* Professional Header */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-40">
+      <div className="bg-black/80 backdrop-blur-xl border-b border-red-500/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             {/* Title Section */}
             <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+              <div className="p-3 bg-gradient-to-br from-red-600 to-red-800 rounded-xl shadow-lg">
                 <Users className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-3xl font-bold text-white">
                   Student Management
                 </h1>
-                <p className="text-gray-600 dark:text-gray-300 mt-1">
+                <p className="text-red-200 mt-1">
                   Manage your dojo's student roster and profiles
                 </p>
-                <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center space-x-4 mt-2 text-sm text-red-300">
                   <span className="flex items-center">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
                     {students.length} total students
                   </span>
                   <span className="flex items-center">

@@ -33,14 +33,14 @@ export default function ClassManager() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-20 md:pb-8">
+    <div className="min-h-screen bg-black pb-20 md:pb-8">
       {/* Header */}
-      <div className="bg-gradient-to-br from-base-200 to-base-300 px-4 py-6">
+      <div className="bg-gradient-to-br from-black to-red-900/20 px-4 py-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-primary/20">
-                <BookOpen className="w-8 h-8 text-primary" />
+              <div className="p-3 rounded-lg bg-red-600/30">
+                <BookOpen className="w-8 h-8 text-red-400" />
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-black text-base-content">

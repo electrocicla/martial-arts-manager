@@ -12,7 +12,7 @@ html {
 
 body {
   overscroll-behavior: none;
-  background-color: #111827; /* gray-900 */
+  background-color: #000000; /* Pure black for martial arts theme */
   color: #f3f4f6; /* gray-100 */
 }
 
@@ -22,15 +22,15 @@ body {
 }
 
 .bg-base-100 {
-  background-color: #1f2937 !important; /* gray-800 */
+  background-color: #000000 !important; /* Pure black for martial arts theme */
 }
 
 .bg-base-200 {
-  background-color: #374151 !important; /* gray-700 */
+  background-color: #1a1a1a !important; /* Dark gray for contrast */
 }
 
 .bg-base-300 {
-  background-color: #4b5563 !important; /* gray-600 */
+  background-color: #2a2a2a !important; /* Medium dark gray */
 }
 
 .border-base-300 {

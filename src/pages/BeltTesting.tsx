@@ -9,7 +9,7 @@ export default function BeltTesting() {
   const eligibleStudents = useEligibleStudents();
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-20 md:pb-8">
+    <div className="min-h-screen bg-black pb-20 md:pb-8">
       <BeltTestingHeader selectedTab={selectedTab} onTabChange={setSelectedTab} />
 
       <div className="px-4 py-6 max-w-7xl mx-auto">

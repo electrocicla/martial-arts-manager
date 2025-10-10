@@ -22,8 +22,8 @@ export default function Dashboard() {
   // Show error state if data fetching failed
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 pb-24 md:pb-4 flex items-center justify-center">
-        <div className="card bg-error/10 border border-error/30 max-w-md">
+      <div className="min-h-screen bg-black pb-24 md:pb-4 flex items-center justify-center">
+        <div className="card bg-red-900/20 border border-red-500/30 max-w-md">
           <div className="card-body text-center">
             <AlertCircle className="w-12 h-12 text-error mx-auto mb-4" />
             <h2 className="card-title text-error justify-center mb-2">Dashboard Error</h2>
@@ -41,7 +41,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 mobile-dashboard md:pb-4 md:pt-4">
+    <div className="min-h-screen bg-black mobile-dashboard md:pb-4 md:pt-4">
       <DashboardHeader greeting={greeting} />
 
       <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto space-y-8 mobile-dashboard-content dashboard-content">

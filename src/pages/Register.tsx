@@ -41,13 +41,13 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 px-4 py-6 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-sm sm:max-w-md lg:max-w-lg backdrop-blur-xl bg-white/10 border-white/20 shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-red-900/20 to-black px-4 py-6 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-sm sm:max-w-md lg:max-w-lg backdrop-blur-xl bg-black/60 border border-red-500/30 shadow-2xl">
         <CardHeader className="text-center px-4 sm:px-6 py-6 sm:py-8">
-          <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-lg">
+          <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-red-600 to-red-800 rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-lg">
             <UserPlus className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600 bg-clip-text text-transparent mb-2 sm:mb-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-red-400 via-red-500 to-red-600 bg-clip-text text-transparent mb-2 sm:mb-3">
             Create Account
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
