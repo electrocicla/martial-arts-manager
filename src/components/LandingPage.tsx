@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useDevicePerformance } from '../hooks/useDevicePerformance';
 import {
   Users,
   Calendar,
@@ -19,6 +20,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
   const { scrollY } = useScroll();
   const y2 = useTransform(scrollY, [0, 300], [0, -50]);
   const { t } = useTranslation();
+  const performance = useDevicePerformance();
 
   const features = [
     {
@@ -71,23 +73,31 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
       {/* Animated Background */}
       <MartialArtsParticles />
       
-      {/* Background Orbs */}
-      <GlowingOrb 
-        className="top-10 sm:top-20 left-5 sm:left-10 w-48 h-48 sm:w-72 sm:h-72" 
-        color="#000000" 
-      />
-      <GlowingOrb 
-        className="top-32 sm:top-40 right-5 sm:right-20 w-60 h-60 sm:w-96 sm:h-96" 
-        color="#DC2626" 
-      />
-      <GlowingOrb 
-        className="bottom-10 sm:bottom-20 left-1/4 w-52 h-52 sm:w-80 sm:h-80" 
-        color="#000000" 
-      />
-      <GlowingOrb 
-        className="top-1/2 right-1/4 w-40 h-40 sm:w-64 sm:h-64" 
-        color="#B91C1C" 
-      />
+      {/* Background Orbs - Performance optimized */}
+      {!performance.isLowEnd && (
+        <>
+          <GlowingOrb 
+            className="top-10 sm:top-20 left-5 sm:left-10 w-48 h-48 sm:w-72 sm:h-72" 
+            color="#000000" 
+          />
+          <GlowingOrb 
+            className="top-32 sm:top-40 right-5 sm:right-20 w-60 h-60 sm:w-96 sm:h-96" 
+            color="#DC2626" 
+          />
+          {!performance.isMobile && (
+            <>
+              <GlowingOrb 
+                className="bottom-10 sm:bottom-20 left-1/4 w-52 h-52 sm:w-80 sm:h-80" 
+                color="#000000" 
+              />
+              <GlowingOrb 
+                className="top-1/2 right-1/4 w-40 h-40 sm:w-64 sm:h-64" 
+                color="#B91C1C" 
+              />
+            </>
+          )}
+        </>
+      )}
 
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-0">
@@ -105,34 +115,46 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                   />
                 </div>
                 
-                {/* Electric sparks positioned absolutely */}
-                <div className="electric-spark absolute top-0 left-1/2 transform -translate-x-1/2"></div>
-                <div className="electric-spark absolute top-1/4 right-0"></div>
-                <div className="electric-spark absolute bottom-0 left-1/2 transform -translate-x-1/2"></div>
-                <div className="electric-spark absolute top-1/4 left-0"></div>
-                <div className="electric-spark absolute top-1/3 right-1/4"></div>
-                <div className="electric-spark absolute bottom-1/3 left-1/4"></div>
-                
-                {/* Electric glow */}
-                <div className="electric-glow"></div>
-                
-                {/* Additional electric rings */}
-                <motion.div
-                  className="absolute -inset-3 rounded-full border border-cyan-400/40"
-                  animate={{ 
-                    opacity: [0.3, 0.8, 0.3],
-                    scale: [0.98, 1.02, 0.98]
-                  }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                />
-                <motion.div
-                  className="absolute -inset-6 rounded-full border border-blue-400/20"
-                  animate={{ 
-                    opacity: [0.2, 0.6, 0.2],
-                    scale: [0.96, 1.04, 0.96]
-                  }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                />
+                {/* Electric sparks positioned absolutely - Performance optimized */}
+                {!performance.isLowEnd && (
+                  <>
+                    <div className="electric-spark absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+                    <div className="electric-spark absolute top-1/4 right-0"></div>
+                    <div className="electric-spark absolute bottom-0 left-1/2 transform -translate-x-1/2"></div>
+                    {!performance.isMobile && (
+                      <>
+                        <div className="electric-spark absolute top-1/4 left-0"></div>
+                        <div className="electric-spark absolute top-1/3 right-1/4"></div>
+                        <div className="electric-spark absolute bottom-1/3 left-1/4"></div>
+                      </>
+                    )}
+                    
+                    {/* Electric glow */}
+                    <div className="electric-glow"></div>
+                    
+                    {/* Additional electric rings - Only on capable devices */}
+                    {!performance.isMobile && (
+                      <>
+                        <motion.div
+                          className="absolute -inset-3 rounded-full border border-cyan-400/40"
+                          animate={{ 
+                            opacity: [0.3, 0.8, 0.3],
+                            scale: [0.98, 1.02, 0.98]
+                          }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        />
+                        <motion.div
+                          className="absolute -inset-6 rounded-full border border-blue-400/20"
+                          animate={{ 
+                            opacity: [0.2, 0.6, 0.2],
+                            scale: [0.96, 1.04, 0.96]
+                          }}
+                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                        />
+                      </>
+                    )}
+                  </>
+                )}
               </div>
             </div>
             

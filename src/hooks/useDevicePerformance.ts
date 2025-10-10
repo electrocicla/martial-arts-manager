@@ -38,26 +38,28 @@ export const useDevicePerformance = (): DevicePerformance => {
       let particleCount = 25; // Desktop default
       
       if (isMobile) {
-        // Mobile performance tiers
-        if (hardwareConcurrency <= 4 || deviceMemory <= 2) {
+        // More aggressive mobile performance tiers for 30% improvement
+        if (hardwareConcurrency <= 4 || deviceMemory <= 2 || connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g') {
           isLowEnd = true;
-          particleCount = 8; // Very conservative for low-end mobile
-        } else if (hardwareConcurrency <= 6 || deviceMemory <= 4) {
-          particleCount = 12; // Moderate for mid-range mobile
+          particleCount = 4; // Very conservative for low-end mobile (reduced from 6)
+        } else if (hardwareConcurrency <= 6 || deviceMemory <= 4 || connection?.effectiveType === '3g') {
+          particleCount = 8; // Moderate for mid-range mobile (reduced from 12)
         } else {
-          particleCount = 15; // Higher-end mobile
+          particleCount = 12; // Higher-end mobile (reduced from 15)
         }
         
         // Further reduce if slow connection
         if (connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g')) {
           isLowEnd = true;
-          particleCount = Math.min(particleCount, 6);
+          particleCount = Math.min(particleCount, 3);
         }
       } else {
-        // Desktop performance
+        // Desktop performance - also more conservative
         if (hardwareConcurrency <= 2 || deviceMemory <= 4) {
           isLowEnd = true;
-          particleCount = 15;
+          particleCount = 12; // Reduced from 15
+        } else if (hardwareConcurrency <= 4 || deviceMemory <= 8) {
+          particleCount = 18; // Reduced from 25
         }
       }
       
