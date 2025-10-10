@@ -421,48 +421,48 @@ p, span, div {
 
 /* Login Page Special Effects */
 .dark-energy-text {
-  background: linear-gradient(135deg, #64748b 0%, #334155 50%, #1e293b 100%);
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  text-shadow: 0 0 20px rgba(100, 116, 139, 0.3);
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(220, 38, 38, 0.3);
 }
 
 .fire-energy-text {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #d97706 60%, #b45309 100%);
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 30%, #991B1B 60%, #7F1D1D 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  text-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(245, 158, 11, 0.4);
+  text-shadow: 0 0 20px rgba(220, 38, 38, 0.8), 0 0 40px rgba(185, 28, 28, 0.6);
   animation: fireGlow 3s ease-in-out infinite alternate;
   font-weight: 800;
   text-decoration: underline;
-  text-decoration-color: rgba(251, 191, 36, 0.6);
+  text-decoration-color: rgba(220, 38, 38, 0.8);
 }
 
 .electric-border {
   position: relative;
   border: 2px solid transparent;
-  background: linear-gradient(135deg, rgba(100, 116, 139, 0.1), rgba(51, 65, 85, 0.1)) padding-box,
-              linear-gradient(135deg, #64748b, #ef4444, #dc2626, #64748b) border-box;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(31, 31, 31, 0.3)) padding-box,
+              linear-gradient(135deg, #000000, #DC2626, #B91C1C, #000000) border-box;
   animation: electricPulse 4s ease-in-out infinite;
 }
 
 @keyframes fireGlow {
   0% {
-    text-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(245, 158, 11, 0.4);
+    text-shadow: 0 0 20px rgba(220, 38, 38, 0.8), 0 0 40px rgba(185, 28, 28, 0.6);
   }
   100% {
-    text-shadow: 0 0 30px rgba(251, 191, 36, 0.8), 0 0 50px rgba(245, 158, 11, 0.6), 0 0 70px rgba(217, 119, 6, 0.4);
+    text-shadow: 0 0 30px rgba(220, 38, 38, 1), 0 0 50px rgba(185, 28, 28, 0.8), 0 0 70px rgba(153, 27, 27, 0.6);
   }
 }
 
 @keyframes electricPulse {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(100, 116, 139, 0.2);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
   }
   50% {
-    box-shadow: 0 0 30px rgba(239, 68, 68, 0.3), 0 0 40px rgba(100, 116, 139, 0.2);
+    box-shadow: 0 0 30px rgba(220, 38, 38, 0.4), 0 0 40px rgba(0, 0, 0, 0.3);
   }
 }
 

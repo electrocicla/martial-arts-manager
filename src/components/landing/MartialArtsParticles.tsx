@@ -29,7 +29,7 @@ const MartialArtsParticles: React.FC = () => {
   useEffect(() => {
     if (!shouldRender) return;
 
-    const colors = ['#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6', '#10b981', '#f97316', '#ec4899'];
+    const colors = ['#000000', '#DC2626', '#B91C1C', '#7F1D1D', '#991B1B', '#B91C1C', '#DC2626'];
 
     // Create physics-based particles
     const physicsParticles = createParticlePool({

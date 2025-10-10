@@ -23,37 +23,37 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
       icon: Users,
       title: "Student Management",
       description: "Complete student profiles with contact info, emergency contacts, belt progression history, and attendance tracking",
-      color: "from-blue-500 to-cyan-500",
+      color: "from-black to-red-900",
     },
     {
       icon: Award,
       title: "Belt Progression Tracking",
       description: "Monitor each student's martial arts journey, track belt promotions, and maintain detailed progression records",
-      color: "from-amber-500 to-yellow-500",
+      color: "from-red-900 to-black",
     },
     {
       icon: Calendar,
       title: "Class Scheduling & Management",
       description: "Schedule classes, manage capacity, assign instructors, and track recurring training sessions",
-      color: "from-purple-500 to-pink-500",
+      color: "from-black to-red-800",
     },
     {
       icon: CreditCard,
       title: "Payment & Billing System",
       description: "Track monthly fees, private lessons, equipment sales, and generate detailed financial reports",
-      color: "from-green-500 to-emerald-500",
+      color: "from-red-800 to-black",
     },
     {
       icon: Activity,
       title: "Attendance Monitoring",
       description: "Quick check-in system, attendance history, class participation rates, and student engagement analytics",
-      color: "from-orange-500 to-red-500",
+      color: "from-black to-red-700",
     },
     {
       icon: Target,
       title: "Growth Analytics",
       description: "Track dojo growth, student retention, revenue trends, and make data-driven decisions for your academy",
-      color: "from-indigo-500 to-blue-500",
+      color: "from-red-700 to-black",
     },
   ];
 
@@ -65,26 +65,26 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden relative">
+    <div className="min-h-screen bg-gradient-to-br from-black via-red-900/20 to-black text-white overflow-hidden relative">
       {/* Animated Background */}
       <MartialArtsParticles />
       
       {/* Background Orbs */}
       <GlowingOrb 
         className="top-10 sm:top-20 left-5 sm:left-10 w-48 h-48 sm:w-72 sm:h-72" 
-        color="#8b5cf6" 
+        color="#000000" 
       />
       <GlowingOrb 
         className="top-32 sm:top-40 right-5 sm:right-20 w-60 h-60 sm:w-96 sm:h-96" 
-        color="#06b6d4" 
+        color="#DC2626" 
       />
       <GlowingOrb 
         className="bottom-10 sm:bottom-20 left-1/4 w-52 h-52 sm:w-80 sm:h-80" 
-        color="#f59e0b" 
+        color="#000000" 
       />
       <GlowingOrb 
         className="top-1/2 right-1/4 w-40 h-40 sm:w-64 sm:h-64" 
-        color="#ef4444" 
+        color="#B91C1C" 
       />
 
       {/* Hero Section */}
@@ -174,7 +174,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
               {/* Hero Content */}
               <div className="space-y-6">
                 <motion.div
-                  className="w-32 h-1 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-lg shadow-amber-500/50"
+                  className="w-32 h-1 bg-gradient-to-r from-red-600 to-black rounded-full shadow-lg shadow-red-500/50"
                   initial={{ width: 0, opacity: 0 }}
                   animate={{ width: "auto", opacity: 1 }}
                   transition={{ duration: 1.2, delay: 0.9 }}
@@ -187,7 +187,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                   transition={{ duration: 0.8, delay: 0.6 }}
                 >
                   <motion.h2 
-                    className="text-2xl xl:text-3xl 2xl:text-4xl font-black leading-tight gradient-text-emerald-teal mb-4"
+                    className="text-2xl xl:text-3xl 2xl:text-4xl font-black leading-tight text-white mb-4"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.6, delay: 1.1 }}
@@ -195,7 +195,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                     Empower Your Dojo with Professional Management
                   </motion.h2>
                   <motion.p 
-                    className="text-lg xl:text-xl 2xl:text-2xl leading-relaxed font-bold gradient-text-violet-purple mt-4"
+                    className="text-lg xl:text-xl 2xl:text-2xl leading-relaxed font-bold text-white mt-4"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.6, delay: 1.3 }}
@@ -245,7 +245,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                     href="https://www.instagram.com/hamarr_jiujitsu_mma/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-3 px-8 py-6 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl font-bold text-lg transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-pink-500/40 group relative overflow-hidden"
+                    className="inline-flex items-center gap-3 px-8 py-6 bg-gradient-to-r from-black to-red-800 hover:from-red-800 hover:to-black rounded-xl font-bold text-lg transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-red-500/40 group relative overflow-hidden"
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     initial={{ x: 50, opacity: 0 }}
@@ -364,7 +364,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                 transition={{ duration: 0.8, delay: 0.6 }}
               >
                 <motion.h2 
-                  className="text-xl sm:text-2xl md:text-3xl font-black leading-tight gradient-text-emerald-teal mb-6"
+                  className="text-xl sm:text-2xl md:text-3xl font-black leading-tight text-white mb-6"
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.6, delay: 1.1 }}
@@ -372,7 +372,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                   Empower Your Dojo with Professional Management
                 </motion.h2>
                 <motion.p 
-                  className="text-base sm:text-lg md:text-xl leading-relaxed font-bold gradient-text-violet-purple mt-6"
+                  className="text-base sm:text-lg md:text-xl leading-relaxed font-bold text-white mt-6"
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.6, delay: 1.3 }}

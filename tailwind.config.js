@@ -30,8 +30,8 @@ export default {
           '50%': { transform: 'translateY(-20px)' },
         },
         glow: {
-          '0%': { boxShadow: '0 0 5px #E0022A, 0 0 10px #E0022A, 0 0 15px #E0022A' },
-          '100%': { boxShadow: '0 0 10px #E0022A, 0 0 20px #E0022A, 0 0 30px #E0022A' },
+          '0%': { boxShadow: '0 0 5px #DC2626, 0 0 10px #DC2626, 0 0 15px #DC2626' },
+          '100%': { boxShadow: '0 0 10px #DC2626, 0 0 20px #DC2626, 0 0 30px #DC2626' },
         },
         particle: {
           '0%': { transform: 'translateY(100vh) translateX(0px)', opacity: '0' },
