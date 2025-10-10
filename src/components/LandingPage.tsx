@@ -256,7 +256,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                     
                     <span className="relative z-10 flex items-center gap-3">
                       <Instagram className="w-6 h-6" />
-                      Follow Us
+                      Follow @hamarr_jiujitsu_mma
                       <ExternalLink className="w-5 h-5" />
                     </span>
                   </motion.a>
@@ -422,7 +422,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                   href="https://www.instagram.com/hamarr_jiujitsu_mma/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl font-medium transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-pink-500/40 text-sm sm:text-base group relative overflow-hidden"
+                  className="inline-flex items-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-black to-red-800 hover:from-red-800 hover:to-black rounded-xl font-medium transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-red-500/40 text-sm sm:text-base group relative overflow-hidden"
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
                   initial={{ x: 50, opacity: 0 }}
@@ -433,7 +433,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                   
                   <span className="relative z-10 flex items-center gap-2">
                     <Instagram className="w-4 h-4 sm:w-5 sm:h-5" />
-                    Follow Us
+                    Follow @hamarr_jiujitsu_mma
                     <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
                   </span>
                 </motion.a>
