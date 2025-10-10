@@ -12,6 +12,17 @@ export default function AnalyticsOverview({
   studentProgress,
   monthlyTrends
 }: AnalyticsOverviewProps) {
+  // Calculate dynamic max values for charts
+  const maxRevenue = Math.max(...revenueByClass.map(item => item.revenue), 1);
+  const maxMonthlyRevenue = Math.max(...monthlyTrends.map(item => item.revenue), 1);
+  const maxMonthlyStudents = Math.max(...monthlyTrends.map(item => item.students), 1);
+
+  // Calculate real insights
+  const currentMonth = monthlyTrends[monthlyTrends.length - 1];
+  const previousMonth = monthlyTrends[monthlyTrends.length - 2];
+  const revenueChange = previousMonth ? ((currentMonth.revenue - previousMonth.revenue) / previousMonth.revenue * 100) : 0;
+  const studentChange = previousMonth ? ((currentMonth.students - previousMonth.students) / previousMonth.students * 100) : 0;
+
   return (
     <>
       {/* Charts Section */}
@@ -30,7 +41,7 @@ export default function AnalyticsOverview({
                   <div className="w-full bg-base-300 rounded-full h-2">
                     <div
                       className={`${item.color} h-2 rounded-full transition-all duration-500`}
-                      style={{ width: `${(item.revenue / 8500) * 100}%` }}
+                      style={{ width: `${(item.revenue / maxRevenue) * 100}%` }}
                     ></div>
                   </div>
                   <p className="text-xs text-base-content/60 mt-1">
@@ -107,12 +118,12 @@ export default function AnalyticsOverview({
                   <div className="flex items-end justify-center gap-1 h-32 mb-2">
                     <div
                       className="w-4 bg-primary rounded-t transition-all duration-500 hover:opacity-80"
-                      style={{ height: `${(month.revenue / 24580) * 100}%` }}
+                      style={{ height: `${(month.revenue / maxMonthlyRevenue) * 100}%` }}
                       title={`Revenue: $${month.revenue}`}
                     ></div>
                     <div
                       className="w-4 bg-secondary rounded-t transition-all duration-500 hover:opacity-80"
-                      style={{ height: `${(month.students / 156) * 100}%` }}
+                      style={{ height: `${(month.students / maxMonthlyStudents) * 100}%` }}
                       title={`Students: ${month.students}`}
                     ></div>
                     <div
@@ -131,17 +142,23 @@ export default function AnalyticsOverview({
 
       {/* Quick Insights */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="alert alert-success">
+        <div className={`alert ${revenueChange >= 0 ? 'alert-success' : 'alert-error'}`}>
           <TrendingUp className="w-4 h-4" />
-          <span className="text-sm">Revenue up 15.3% from last month</span>
+          <span className="text-sm">
+            Revenue {revenueChange >= 0 ? 'up' : 'down'} {Math.abs(revenueChange).toFixed(1)}% from last month
+          </span>
         </div>
-        <div className="alert alert-warning">
+        <div className={`alert ${studentChange >= 0 ? 'alert-success' : 'alert-warning'}`}>
           <Activity className="w-4 h-4" />
-          <span className="text-sm">5 students at risk of churning</span>
+          <span className="text-sm">
+            {studentChange >= 0 ? 'Gained' : 'Lost'} {Math.abs(studentChange).toFixed(1)}% students this month
+          </span>
         </div>
-        <div className="alert alert-info">
+        <div className={`alert ${currentMonth.attendance >= 80 ? 'alert-success' : currentMonth.attendance >= 60 ? 'alert-warning' : 'alert-error'}`}>
           <Target className="w-4 h-4" />
-          <span className="text-sm">82% of monthly goal achieved</span>
+          <span className="text-sm">
+            {currentMonth.attendance}% average attendance this month
+          </span>
         </div>
       </div>
     </>
