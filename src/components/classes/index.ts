@@ -1,0 +1,1 @@
+export { default as ClassFormModal } from './ClassFormModal';

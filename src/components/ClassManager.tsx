@@ -1,8 +1,12 @@
-import { useState, useMemo } from 'react';
-import { BookOpen, Plus, Calendar, Users, Copy, TrendingUp, List, Clock, MapPin, User, Edit, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import React from 'react';
+import { BookOpen, Plus, Calendar, Users, Copy, List, Clock, MapPin, User, Edit, TrendingUp } from 'lucide-react';
 import { useClasses } from '../hooks/useClasses';
 import { useNavigate } from 'react-router-dom';
-import type { Class, ClassFormData, Discipline } from '../types/index';
+import { useClassFilters } from '../hooks/useClassFilters';
+import { useClassStats } from '../hooks/useClassStats';
+import { getDisciplineColor, getClassStatus } from '../lib/classUtils';
+import { ClassFormModal } from './classes';
 
 export default function ClassManager() {
   const {
@@ -11,129 +15,21 @@ export default function ClassManager() {
   } = useClasses();
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
-  // ...existing code...
   const [filterDiscipline, setFilterDiscipline] = useState('all');
   const [filterDay, setFilterDay] = useState('all');
   const [viewMode, setViewMode] = useState<'schedule' | 'list'>('schedule');
 
-  const [newClass, setNewClass] = useState({
-    name: '',
-    discipline: 'Brazilian Jiu-Jitsu',
-    date: new Date().toISOString().split('T')[0],
-    time: '18:00',
-    location: 'Main Dojo',
-    instructor: 'Sensei Yamamoto',
-    max_students: 20,
-    description: '',
-    is_recurring: false,
-    recurrence_pattern: {
-      frequency: 'weekly',
-      days: [1, 3, 5],
-      endDate: '',
-    },
-  });
+  const { filteredClasses, groupedByDay } = useClassFilters(classes, filterDiscipline, filterDay);
+  const stats = useClassStats(classes);
 
   const disciplines = ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate'];
-  const locations = ['Main Dojo', 'Training Hall', 'Outdoor Area', 'Gym Floor'];
-  const instructors = ['Sensei Yamamoto', 'Coach Johnson', 'Master Chen', 'Instructor Davis'];
-  
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  // ...existing code...
 
-  const stats = [
-    { label: 'Total Classes', value: classes.length, icon: BookOpen, color: 'text-primary' },
-    { label: 'This Week', value: 24, icon: Calendar, color: 'text-info' },
-    { label: 'Total Capacity', value: classes.reduce((acc: number, c: Class) => acc + c.max_students, 0), icon: Users, color: 'text-success' },
-    { label: 'Avg. Attendance', value: '89%', icon: TrendingUp, color: 'text-warning' },
-  ];
-
-  const getDisciplineColor = (discipline: string) => {
-    const colors: Record<string, string> = {
-      'Brazilian Jiu-Jitsu': 'badge-primary',
-      'Kickboxing': 'badge-secondary',
-      'Muay Thai': 'badge-accent',
-      'MMA': 'badge-info',
-      'Karate': 'badge-warning',
-    };
-    return colors[discipline] || 'badge-ghost';
-  };
-
-  const getClassStatus = (date: string, time: string) => {
-    const classDateTime = new Date(`${date}T${time}`);
-    const now = new Date();
-    const diffHours = (classDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-    
-    if (diffHours < 0) return { status: 'completed', label: 'Completed', color: 'badge-ghost' };
-    if (diffHours < 1) return { status: 'ongoing', label: 'In Progress', color: 'badge-success' };
-    if (diffHours < 24) return { status: 'upcoming', label: 'Today', color: 'badge-warning' };
-    return { status: 'scheduled', label: 'Scheduled', color: 'badge-info' };
-  };
-
-  const filteredClasses = useMemo(() => {
-    return classes.filter((cls: Class) => {
-      const matchesDiscipline = filterDiscipline === 'all' || cls.discipline === filterDiscipline;
-      const classDay = new Date(cls.date).getDay();
-      const matchesDay = filterDay === 'all' || parseInt(filterDay) === classDay;
-
-      return matchesDiscipline && matchesDay;
-    });
-  }, [classes, filterDiscipline, filterDay]);
-
-  const groupedByDay = useMemo(() => {
-    const grouped: Record<string, typeof classes> = {};
-    filteredClasses.forEach((cls) => {
-      const day = new Date(cls.date).toLocaleDateString();
-      if (!grouped[day]) grouped[day] = [];
-      grouped[day].push(cls);
-    });
-    return grouped;
-  }, [filteredClasses]);
-
-  const handleAddClass = async () => {
-    if (!newClass.name || !newClass.date || !newClass.time) {
-      alert('Please fill in required fields');
-      return;
-    }
-
-    const classData: ClassFormData = {
-      name: newClass.name,
-      discipline: newClass.discipline as Discipline,
-      date: newClass.date,
-      time: newClass.time,
-      location: newClass.location,
-      instructor: newClass.instructor,
-      maxStudents: newClass.max_students,
-      description: newClass.description || undefined,
-      isRecurring: newClass.is_recurring,
-      recurrencePattern: newClass.is_recurring ? {
-        frequency: newClass.recurrence_pattern.frequency as 'daily' | 'weekly' | 'monthly',
-        days: newClass.recurrence_pattern.days,
-        endDate: newClass.recurrence_pattern.endDate || undefined,
-      } : undefined,
-    };
-
-    const result = await createClass(classData);
-    if (result) {
-      setShowAddModal(false);
-      setNewClass({
-        name: '',
-        discipline: 'Brazilian Jiu-Jitsu',
-        date: new Date().toISOString().split('T')[0],
-        time: '18:00',
-        location: 'Main Dojo',
-        instructor: 'Sensei Yamamoto',
-        max_students: 20,
-        description: '',
-        is_recurring: false,
-        recurrence_pattern: {
-          frequency: 'weekly',
-          days: [1, 3, 5],
-          endDate: '',
-        },
-      });
-    } else {
-      alert('Failed to add class');
-    }
+  const iconMap = {
+    BookOpen,
+    Calendar,
+    Users,
+    TrendingUp,
   };
 
   return (
@@ -176,7 +72,7 @@ export default function ClassManager() {
             {stats.map((stat, idx) => (
               <div key={idx} className="stat bg-gray-800/80 backdrop-blur rounded-lg p-3 border border-gray-700/50">
                 <div className="stat-figure">
-                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                  {React.createElement(iconMap[stat.iconName as keyof typeof iconMap], { className: `w-5 h-5 ${stat.color}` })}
                 </div>
                 <div className="stat-title text-xs">{stat.label}</div>
                 <div className="stat-value text-xl">{stat.value}</div>
@@ -390,153 +286,11 @@ export default function ClassManager() {
         )}
       </div>
 
-      {/* Add/Edit Class Modal */}
-      {showAddModal && (
-        <div className="modal modal-open">
-          <div className="modal-box max-w-2xl">
-            <h3 className="font-bold text-lg mb-4">Schedule New Class</h3>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Class Name *</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    className="input input-bordered" 
-                    placeholder="e.g., Adult BJJ"
-                    value={newClass.name}
-                    onChange={(e) => setNewClass({...newClass, name: e.target.value})}
-                  />
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Discipline *</span>
-                  </label>
-                  <select 
-                    className="select select-bordered"
-                    value={newClass.discipline}
-                    onChange={(e) => setNewClass({...newClass, discipline: e.target.value})}
-                  >
-                    {disciplines.map(disc => (
-                      <option key={disc} value={disc}>{disc}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Date *</span>
-                  </label>
-                  <input 
-                    type="date" 
-                    className="input input-bordered" 
-                    value={newClass.date}
-                    onChange={(e) => setNewClass({...newClass, date: e.target.value})}
-                  />
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Time *</span>
-                  </label>
-                  <input 
-                    type="time" 
-                    className="input input-bordered" 
-                    value={newClass.time}
-                    onChange={(e) => setNewClass({...newClass, time: e.target.value})}
-                  />
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Location</span>
-                  </label>
-                  <select 
-                    className="select select-bordered"
-                    value={newClass.location}
-                    onChange={(e) => setNewClass({...newClass, location: e.target.value})}
-                  >
-                    {locations.map(loc => (
-                      <option key={loc} value={loc}>{loc}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Instructor</span>
-                  </label>
-                  <select 
-                    className="select select-bordered"
-                    value={newClass.instructor}
-                    onChange={(e) => setNewClass({...newClass, instructor: e.target.value})}
-                  >
-                    {instructors.map(inst => (
-                      <option key={inst} value={inst}>{inst}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Max Students</span>
-                  </label>
-                  <input 
-                    type="number" 
-                    className="input input-bordered" 
-                    value={newClass.max_students}
-                    onChange={(e) => setNewClass({...newClass, max_students: parseInt(e.target.value)})}
-                  />
-                </div>
-
-                <div className="form-control">
-                  <label className="label cursor-pointer">
-                    <span className="label-text">Recurring Class</span>
-                    <input 
-                      type="checkbox" 
-                      className="toggle toggle-primary" 
-                      checked={newClass.is_recurring}
-                      onChange={(e) => setNewClass({...newClass, is_recurring: e.target.checked})}
-                    />
-                  </label>
-                </div>
-              </div>
-
-              {newClass.is_recurring && (
-                <div className="alert alert-info">
-                  <AlertCircle className="w-4 h-4" />
-                  <span className="text-sm">Set up recurring schedule for this class</span>
-                </div>
-              )}
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Description</span>
-                </label>
-                <textarea 
-                  className="textarea textarea-bordered h-24" 
-                  placeholder="Class description..."
-                  value={newClass.description}
-                  onChange={(e) => setNewClass({...newClass, description: e.target.value})}
-                ></textarea>
-              </div>
-            </div>
-
-            <div className="modal-action">
-              <button className="btn btn-ghost rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200" onClick={() => setShowAddModal(false)}>
-                Cancel
-              </button>
-              <button className="btn btn-primary rounded-lg shadow-md hover:shadow-lg transition-all duration-200" onClick={handleAddClass}>
-                <Plus className="w-4 h-4" />
-                Schedule Class
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ClassFormModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSubmit={createClass}
+      />
     </div>
   );
 }
