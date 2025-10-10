@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Student, Payment, Class } from '../types/index';
 
-interface DashboardStats {
+export interface DashboardStats {
   totalStudents: number;
   activeStudents: number;
   classesThisWeek: number;
