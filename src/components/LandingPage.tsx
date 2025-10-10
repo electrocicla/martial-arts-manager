@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   Users,
   Calendar,
@@ -17,42 +18,43 @@ import { Card } from './ui/Card';
 import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';const LandingPage: React.FC = () => {
   const { scrollY } = useScroll();
   const y2 = useTransform(scrollY, [0, 300], [0, -50]);
+  const { t } = useTranslation();
 
   const features = [
     {
       icon: Users,
-      title: "Student Management",
-      description: "Complete student profiles with contact info, emergency contacts, belt progression history, and attendance tracking",
+      title: t('landing.features.studentManagement.title'),
+      description: t('landing.features.studentManagement.description'),
       color: "from-black to-red-900",
     },
     {
       icon: Award,
-      title: "Belt Progression Tracking",
-      description: "Monitor each student's martial arts journey, track belt promotions, and maintain detailed progression records",
+      title: t('landing.features.beltProgression.title'),
+      description: t('landing.features.beltProgression.description'),
       color: "from-red-900 to-black",
     },
     {
       icon: Calendar,
-      title: "Class Scheduling & Management",
-      description: "Schedule classes, manage capacity, assign instructors, and track recurring training sessions",
+      title: t('landing.features.classScheduling.title'),
+      description: t('landing.features.classScheduling.description'),
       color: "from-black to-red-800",
     },
     {
       icon: CreditCard,
-      title: "Payment & Billing System",
-      description: "Track monthly fees, private lessons, equipment sales, and generate detailed financial reports",
+      title: t('landing.features.paymentBilling.title'),
+      description: t('landing.features.paymentBilling.description'),
       color: "from-red-800 to-black",
     },
     {
       icon: Activity,
-      title: "Attendance Monitoring",
-      description: "Quick check-in system, attendance history, class participation rates, and student engagement analytics",
+      title: t('landing.features.attendanceMonitoring.title'),
+      description: t('landing.features.attendanceMonitoring.description'),
       color: "from-black to-red-700",
     },
     {
       icon: Target,
-      title: "Growth Analytics",
-      description: "Track dojo growth, student retention, revenue trends, and make data-driven decisions for your academy",
+      title: t('landing.features.growthAnalytics.title'),
+      description: t('landing.features.growthAnalytics.description'),
       color: "from-red-700 to-black",
     },
   ];
@@ -192,7 +194,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.6, delay: 1.1 }}
                   >
-                    Empower Your Dojo with Professional Management
+                    {t('landing.hero.subtitle')}
                   </motion.h2>
                   <motion.p 
                     className="text-lg xl:text-xl 2xl:text-2xl leading-relaxed font-bold text-white mt-4"
@@ -200,8 +202,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.6, delay: 1.3 }}
                   >
-                    The ultimate solution for martial arts instructors to organize students, track belt progressions, 
-                    manage payments, schedule classes, monitor attendance, and grow your martial arts academy.
+                    {t('landing.hero.description')}
                   </motion.p>
                 </motion.div>
 
@@ -233,7 +234,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                         
                         <span className="relative z-10 flex items-center gap-3">
                           <Zap className="w-5 h-5 text-yellow-300" />
-                          GET STARTED
+                          {t('landing.hero.getStarted')}
                           <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
                           <Zap className="w-5 h-5 text-yellow-300" />
                         </span>
@@ -256,7 +257,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                     
                     <span className="relative z-10 flex items-center gap-3">
                       <Instagram className="w-6 h-6" />
-                      Follow @hamarr_jiujitsu_mma
+                      {t('landing.hero.followUs')}
                       <ExternalLink className="w-5 h-5" />
                     </span>
                   </motion.a>

@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "dashboard": "Panel de Control",
+    "students": "Estudiantes",
+    "classes": "Clases",
+    "payments": "Pagos",
+    "attendance": "Asistencia",
+    "analytics": "Análisis",
+    "settings": "Configuración",
+    "beltTesting": "Exámenes de Cinturón"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar Sesión",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "role": "Rol",
+    "student": "Estudiante",
+    "instructor": "Instructor",
+    "admin": "Administrador",
+    "loginButton": "Iniciar Sesión",
+    "registerButton": "Crear Cuenta",
+    "welcomeBack": "Bienvenido de Vuelta",
+    "createAccount": "Crear Cuenta",
+    "joinMartialArts": "Únete a Martial Arts Manager"
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "stats": {
+      "totalStudents": "Total de Estudiantes",
+      "activeStudents": "Estudiantes Activos",
+      "todayClasses": "Clases de Hoy",
+      "monthlyRevenue": "Ingresos Mensuales"
+    },
+    "quickActions": {
+      "title": "Acciones Rápidas",
+      "addStudent": "Agregar Estudiante",
+      "scheduleClass": "Programar Clase",
+      "recordPayment": "Registrar Pago",
+      "markAttendance": "Marcar Asistencia"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title1": "HAMARR",
+      "title2": "ARTES MARCIALES",
+      "title3": "GESTOR",
+      "subtitle": "Potencia Tu Dojo con Gestión Profesional",
+      "description": "La solución definitiva para instructores de artes marciales para organizar estudiantes, rastrear progresiones de cinturón, gestionar pagos, programar clases, monitorear asistencia y hacer crecer tu academia de artes marciales.",
+      "getStarted": "COMENZAR",
+      "followUs": "Síguenos @hamarr_jiujitsu_mma"
+    },
+    "features": {
+      "studentManagement": {
+        "title": "Gestión de Estudiantes",
+        "description": "Perfiles completos de estudiantes con información de contacto, contactos de emergencia, historial de progresión de cinturón y seguimiento de asistencia"
+      },
+      "beltProgression": {
+        "title": "Seguimiento de Progresión de Cinturón",
+        "description": "Monitorea el viaje de artes marciales de cada estudiante, rastrea promociones de cinturón y mantiene registros detallados de progresión"
+      },
+      "classScheduling": {
+        "title": "Programación y Gestión de Clases",
+        "description": "Programa clases, gestiona capacidad, asigna instructores y rastrea sesiones de entrenamiento recurrentes"
+      },
+      "paymentBilling": {
+        "title": "Sistema de Pagos y Facturación",
+        "description": "Rastrea cuotas mensuales, lecciones privadas, ventas de equipo y genera informes financieros detallados"
+      },
+      "attendanceMonitoring": {
+        "title": "Monitoreo de Asistencia",
+        "description": "Sistema de check-in rápido, historial de asistencia, tasas de participación en clases y análisis de compromiso de estudiantes"
+      },
+      "growthAnalytics": {
+        "title": "Análisis de Crecimiento",
+        "description": "Rastrea el crecimiento del dojo, retención de estudiantes, tendencias de ingresos y toma decisiones basadas en datos para tu academia"
+      }
+    }
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "yes": "Sí",
+    "no": "No",
+    "confirm": "Confirmar",
+    "close": "Cerrar"
+  }
+}

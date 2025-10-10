@@ -44,10 +44,13 @@
 - **State Management**: Custom hooks with real-time data synchronization
 - **Charts**: Recharts integration for advanced analytics visualization
 
-### ⚡ **Performance Optimizations**
-- **40%+ Mobile Performance Improvement**: Particle recycling, GPU acceleration, optimized frame rates
-- **Smart Device Detection**: Dynamic particle counts (8-15 mobile vs 25 desktop)
-- **Memory Efficiency**: 60% reduction in garbage collection pressure through object pooling
+### 🌍 **Multi-Language Support**
+- **Complete Internationalization**: English, Spanish, and Portuguese support
+- **React i18next Integration**: Industry-standard i18n framework with language detection
+- **Automatic Language Detection**: Browser language detection with localStorage persistence
+- **Seamless Language Switching**: Real-time language switching without page reload
+- **Complete Translation Coverage**: All UI elements, landing page, and user-facing text translated
+- **Martial Arts Terminology**: Proper translations for belt ranks, dojo terms, and martial arts concepts
 - **GPU Acceleration**: Hardware acceleration hints, CSS containment for mobile devices
 - **Real-time Monitoring**: FPS tracking and performance metrics in development mode
 - **Lazy Loading**: Intersection Observer for viewport-based rendering optimization
@@ -94,6 +97,7 @@
 - **Styling**: Tailwind CSS 4 with custom design system and component library
 - **Backend**: Cloudflare Workers with Cloudflare D1 SQLite database
 - **Authentication**: JWT with Web Crypto API and secure session management
+- **Internationalization**: React i18next with browser language detection (English, Spanish, Portuguese)
 - **Forms**: React Hook Form + Zod validation with comprehensive error handling
 - **State Management**: Custom hooks with real-time data synchronization
 - **Charts**: Recharts integration for advanced analytics visualization

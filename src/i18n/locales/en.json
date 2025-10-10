@@ -1,0 +1,104 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "students": "Students",
+    "classes": "Classes",
+    "payments": "Payments",
+    "attendance": "Attendance",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "beltTesting": "Belt Testing"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "role": "Role",
+    "student": "Student",
+    "instructor": "Instructor",
+    "admin": "Administrator",
+    "loginButton": "Sign In",
+    "registerButton": "Create Account",
+    "welcomeBack": "Welcome Back",
+    "createAccount": "Create Account",
+    "joinMartialArts": "Join Martial Arts Manager"
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "stats": {
+      "totalStudents": "Total Students",
+      "activeStudents": "Active Students",
+      "todayClasses": "Today's Classes",
+      "monthlyRevenue": "Monthly Revenue"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "addStudent": "Add Student",
+      "scheduleClass": "Schedule Class",
+      "recordPayment": "Record Payment",
+      "markAttendance": "Mark Attendance"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title1": "HAMARR",
+      "title2": "MARTIAL ARTS",
+      "title3": "MANAGER",
+      "subtitle": "Empower Your Dojo with Professional Management",
+      "description": "The ultimate solution for martial arts instructors to organize students, track belt progressions, manage payments, schedule classes, monitor attendance, and grow your martial arts academy.",
+      "getStarted": "GET STARTED",
+      "followUs": "Follow @hamarr_jiujitsu_mma"
+    },
+    "features": {
+      "studentManagement": {
+        "title": "Student Management",
+        "description": "Complete student profiles with contact info, emergency contacts, belt progression history, and attendance tracking"
+      },
+      "beltProgression": {
+        "title": "Belt Progression Tracking",
+        "description": "Monitor each student's martial arts journey, track belt promotions, and maintain detailed progression records"
+      },
+      "classScheduling": {
+        "title": "Class Scheduling & Management",
+        "description": "Schedule classes, manage capacity, assign instructors, and track recurring training sessions"
+      },
+      "paymentBilling": {
+        "title": "Payment & Billing System",
+        "description": "Track monthly fees, private lessons, equipment sales, and generate detailed financial reports"
+      },
+      "attendanceMonitoring": {
+        "title": "Attendance Monitoring",
+        "description": "Quick check-in system, attendance history, class participation rates, and student engagement analytics"
+      },
+      "growthAnalytics": {
+        "title": "Growth Analytics",
+        "description": "Track dojo growth, student retention, revenue trends, and make data-driven decisions for your academy"
+      }
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "close": "Close"
+  }
+}

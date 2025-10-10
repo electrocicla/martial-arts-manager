@@ -5,6 +5,7 @@ import {
   Search, Menu, User, LogOut, 
   Settings, Clock, Users, Calendar, Home
 } from 'lucide-react';
+import { LanguageSwitcher } from '../LanguageSwitcher';
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -236,6 +237,9 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+          
           {/* Simple User Info - No Dropdown */}
           <div className="flex items-center gap-2">
             <div className="avatar">
