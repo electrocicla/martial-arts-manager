@@ -426,6 +426,7 @@ p, span, div {
   -webkit-background-clip: text;
   color: transparent;
   text-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(220, 38, 38, 0.3);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
 }
 
 .fire-energy-text {
