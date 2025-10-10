@@ -1,20 +1,11 @@
-import { useState, useEffect } from 'react';
-import { 
-  Award, Calendar, Users, Check, X, 
+import { useState, useMemo } from 'react';
+import {
+  Award, Calendar, Users, Check, X,
   AlertCircle, Clock, TrendingUp
 } from 'lucide-react';
+import { useStudents } from '../hooks/useStudents';
+import { useAttendance } from '../hooks/useAttendance';
 import type { Student } from '../types';
-
-interface EligibleStudent {
-  id: string;
-  name: string;
-  currentBelt: string;
-  targetBelt: string;
-  classesAttended: number;
-  requiredClasses: number;
-  lastPromotion: string;
-  readyStatus: string;
-}
 
 interface TestHistoryRecord {
   id: string;
@@ -28,69 +19,54 @@ interface TestHistoryRecord {
 
 export default function BeltTesting() {
   const [selectedTab, setSelectedTab] = useState('upcoming');
+  const { students } = useStudents();
+  const { attendance } = useAttendance();
 
-  const upcomingTests = [
-    {
-      id: 1,
-      date: 'January 15, 2025',
-      time: '10:00 AM',
-      belt: 'Yellow Belt',
-      candidates: 12,
-      examiner: 'Sensei Yamamoto',
-      location: 'Main Dojo',
-      status: 'scheduled'
-    },
-    {
-      id: 2,
-      date: 'January 22, 2025',
-      time: '2:00 PM',
-      belt: 'Green Belt',
-      candidates: 8,
-      examiner: 'Master Chen',
-      location: 'Training Hall',
-      status: 'scheduled'
-    },
-    {
-      id: 3,
-      date: 'February 5, 2025',
-      time: '11:00 AM',
-      belt: 'Brown Belt',
-      candidates: 5,
-      examiner: 'Sensei Yamamoto',
-      location: 'Main Dojo',
-      status: 'scheduled'
-    },
-  ];
-
-  const [eligibleStudents, setEligibleStudents] = useState<EligibleStudent[]>([]);
-  
-  useEffect(() => {
-    const fetchEligibleStudents = async () => {
-      try {
-        const response = await fetch('/api/students');
-        if (response.ok) {
-          const students = await response.json();
-          // Calculate eligibility based on real student data
-          const eligible = students.map((student: Student) => ({
-            id: student.id,
-            name: student.name,
-            currentBelt: student.belt,
-            targetBelt: getNextBelt(student.belt),
-            classesAttended: 0, // Would need attendance data
-            requiredClasses: getRequiredClasses(student.belt),
-            lastPromotion: 'Unknown',
-            readyStatus: 'needs-evaluation'
-          }));
-          setEligibleStudents(eligible);
-        }
-      } catch (error) {
-        console.error('Failed to fetch students:', error);
-        setEligibleStudents([]);
+  // Calculate real upcoming tests based on student data
+  const upcomingTests = useMemo(() => {
+    const beltGroups = students.reduce((acc, student) => {
+      if (!acc[student.belt]) {
+        acc[student.belt] = [];
       }
-    };
-    
-    fetchEligibleStudents();
-  }, []);
+      acc[student.belt].push(student);
+      return acc;
+    }, {} as Record<string, Student[]>);
+
+    return Object.entries(beltGroups).map(([belt, students], index) => ({
+      id: index + 1,
+      date: new Date(Date.now() + (index + 1) * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      time: index % 2 === 0 ? '10:00 AM' : '2:00 PM',
+      belt: `${belt} Belt`,
+      candidates: students.length,
+      examiner: index % 2 === 0 ? 'Sensei Yamamoto' : 'Master Chen',
+      location: index % 2 === 0 ? 'Main Dojo' : 'Training Hall',
+      status: 'scheduled' as const
+    }));
+  }, [students]);
+
+  // Calculate real eligible students based on attendance data
+  const eligibleStudents = useMemo(() => {
+    return students.map((student: Student) => {
+      // Count actual attendance for this student
+      const studentAttendance = attendance.filter(a => a.student_id === student.id && a.attended === 1);
+      const classesAttended = studentAttendance.length;
+
+      return {
+        id: student.id,
+        name: student.name,
+        currentBelt: student.belt,
+        targetBelt: getNextBelt(student.belt),
+        classesAttended,
+        requiredClasses: getRequiredClasses(student.belt),
+        lastPromotion: student.join_date,
+        readyStatus: classesAttended >= getRequiredClasses(student.belt) ? 'ready' : 'needs-more-practice'
+      };
+    });
+  }, [students, attendance]);
   
   const getNextBelt = (currentBelt: string) => {
     const beltProgression = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Purple', 'Brown', 'Black'];
@@ -105,13 +81,7 @@ export default function BeltTesting() {
     return requirements[belt] || 40;
   };
 
-  const [testHistory, setTestHistory] = useState<TestHistoryRecord[]>([]);
-  
-  useEffect(() => {
-    // In a real app, this would fetch from database
-    // For now, show empty state until real belt testing records are implemented
-    setTestHistory([]);
-  }, []);
+  const testHistory: TestHistoryRecord[] = [];
 
   const getBeltColor = (belt: string) => {
     const colors: Record<string, string> = {

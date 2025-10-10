@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader } from './ui/Card';
@@ -9,12 +9,19 @@ import { Badge } from './ui/Badge';
 import { useToast } from '../hooks/useToast';
 import { useDebounce } from '../hooks/useDebounce';
 import { paymentSchema } from '../lib/validation';
-import { useApp } from '../context/AppContext';
+import { usePayments } from '../hooks/usePayments';
+import { useStudents } from '../hooks/useStudents';
 import { Search, Plus, DollarSign, Calendar, User } from 'lucide-react';
-import type { Payment } from '../types';
+import type { Payment, PaymentFormData, Student } from '../types/index';
 
 export default function PaymentManager() {
-  const { payments, setPayments, students } = useApp();
+  const {
+    payments,
+    createPayment,
+  } = usePayments();
+
+  const { students } = useStudents();
+
   const toast = useToast();
 
   // Search and filter state
@@ -42,48 +49,30 @@ export default function PaymentManager() {
     }
   });
 
-  useEffect(() => {
-    fetch('/api/payments')
-      .then(r => r.json())
-      .then(data => setPayments(data))
-      .catch(console.error);
-  }, [setPayments]);
-
   // Filtered payments
   const filteredPayments = useMemo(() => {
-    return payments.filter(payment => {
-      const student = students.find(s => s.id === payment.student_id);
+    return payments.filter((payment: Payment) => {
+      const student = students.find((s: Student) => s.id === payment.student_id);
       const matchesSearch = !debouncedSearchTerm ||
         student?.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         payment.type.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         payment.notes?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
 
-      const matchesStatus = statusFilter === 'all' || (payment as Payment & { status?: string }).status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
       const matchesType = typeFilter === 'all' || payment.type === typeFilter;
 
       return matchesSearch && matchesStatus && matchesType;
     });
   }, [payments, students, debouncedSearchTerm, statusFilter, typeFilter]);
 
-  const addPayment = async (data: unknown) => {
-    try {
-      const response = await fetch('/api/payments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      if (!response.ok) throw new Error('Failed to add payment');
-
-      const newPayment = await response.json();
-      // Ensure status property exists with default value
-      const paymentWithStatus = { ...newPayment, status: newPayment.status || 'completed' };
-      setPayments([...payments, paymentWithStatus]);
+  const addPayment = async (data: PaymentFormData) => {
+    const result = await createPayment(data);
+    if (result) {
       reset();
       toast.success('Payment added successfully', {
         description: 'The payment has been recorded in the system.'
       });
-    } catch {
+    } else {
       toast.error('Failed to add payment', {
         description: 'Please try again later.'
       });
@@ -186,7 +175,7 @@ export default function PaymentManager() {
                   {...register('studentId')}
                   options={[
                     { value: '', label: 'Select a student' },
-                    ...students.map(student => ({ value: student.id, label: student.name }))
+                    ...students.map((student: Student) => ({ value: student.id, label: student.name }))
                   ]}
                 />
                 {errors.studentId && (
@@ -295,8 +284,8 @@ export default function PaymentManager() {
             </CardContent>
           </Card>
         ) : (
-          filteredPayments.map(payment => {
-            const student = students.find(s => s.id === payment.student_id);
+          filteredPayments.map((payment: Payment) => {
+            const student = students.find((s: Student) => s.id === payment.student_id);
             return (
               <Card key={payment.id}>
                 <CardContent className="p-6">

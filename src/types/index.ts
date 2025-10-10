@@ -20,7 +20,7 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 }
 
 // Disciplines
-export type Discipline = 'Jiujitsu' | 'MMA' | 'Karate' | 'Taekwondo' | 'Boxing' | 'Kenpo Karate';
+export type Discipline = 'Brazilian Jiu-Jitsu' | 'Kickboxing' | 'Muay Thai' | 'MMA' | 'Karate' | 'Jiujitsu' | 'Taekwondo' | 'Boxing' | 'Kenpo Karate';
 
 // User Roles
 export type UserRole = 'admin' | 'instructor' | 'student';
@@ -211,6 +211,14 @@ export interface PaymentFormData {
   date: string;
   type: string;
   paymentMethod?: string;
+  notes?: string;
+}
+
+export interface AttendanceFormData {
+  studentId: string;
+  classId: string;
+  date: string;
+  status: 'present' | 'absent' | 'late' | 'excused';
   notes?: string;
 }
 

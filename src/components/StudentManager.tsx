@@ -1,11 +1,14 @@
-import { useState, useMemo, useEffect } from 'react';
-import type { Student } from '../types';
+import { useState, useMemo } from 'react';
+import type { Student, StudentFormData, Discipline } from '../types/index';
 import { Users, Search, Download, Upload, UserPlus, TrendingUp, Calendar, DollarSign, Mail, Phone, Eye, Edit } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import { generateId } from '../lib/utils';
+import { useStudents } from '../hooks/useStudents';
 
 export default function StudentManager() {
-  const { students, setStudents } = useApp();
+  const {
+    students,
+    stats: studentStats,
+    createStudent,
+  } = useStudents();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterBelt, setFilterBelt] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -28,23 +31,6 @@ export default function StudentManager() {
   const belts = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'];
   const disciplines = ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate'];
 
-  // Load students from API on component mount
-  useEffect(() => {
-    const loadStudents = async () => {
-      try {
-        const response = await fetch('/api/students');
-        if (response.ok) {
-          const data = await response.json();
-          setStudents(data);
-        }
-      } catch (error) {
-        console.error('Failed to load students:', error);
-      }
-    };
-
-    loadStudents();
-  }, [setStudents]);
-
   const getBeltColor = (belt: string) => {
     const colors: Record<string, string> = {
       'White': 'badge-ghost',
@@ -59,32 +45,28 @@ export default function StudentManager() {
   };
 
   const stats = [
-    { label: 'Total Students', value: students.length, icon: Users, color: 'text-primary' },
-    { label: 'Active', value: students.filter(s => s.is_active).length, icon: TrendingUp, color: 'text-success' },
-    { label: 'This Month', value: students.filter(s => {
+    { label: 'Total Students', value: studentStats?.total || students.length, icon: Users, color: 'text-primary' },
+    { label: 'Active', value: studentStats?.active || students.filter((s: Student) => s.is_active).length, icon: TrendingUp, color: 'text-success' },
+    { label: 'This Month', value: students.filter((s: Student) => {
       try {
-        // Cast to Student type
-        const studentData = s as Student;
-        const studentDate = new Date(studentData.join_date || Date.now());
+        const studentDate = new Date(s.join_date || Date.now());
         const currentDate = new Date();
-        return studentDate.getMonth() === currentDate.getMonth() && 
+        return studentDate.getMonth() === currentDate.getMonth() &&
                studentDate.getFullYear() === currentDate.getFullYear();
       } catch {
         return false;
       }
     }).length, icon: Calendar, color: 'text-info' },
-    { label: 'Inactive', value: students.filter(s => !s.is_active).length, icon: DollarSign, color: 'text-warning' },
-  ];
-
-  const filteredStudents = useMemo(() => {
-    return students.filter((student) => {
+    { label: 'Inactive', value: (studentStats?.total || students.length) - (studentStats?.active || students.filter((s: Student) => s.is_active).length), icon: DollarSign, color: 'text-warning' },
+  ];  const filteredStudents = useMemo(() => {
+    return students.filter((student: Student) => {
       const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            student.email.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesBelt = filterBelt === 'all' || student.belt === filterBelt;
-      const matchesStatus = filterStatus === 'all' || 
+      const matchesStatus = filterStatus === 'all' ||
                            (filterStatus === 'active' && student.is_active) ||
                            (filterStatus === 'inactive' && !student.is_active);
-      
+
       return matchesSearch && matchesBelt && matchesStatus;
     });
   }, [students, searchQuery, filterBelt, filterStatus]);
@@ -95,52 +77,33 @@ export default function StudentManager() {
       return;
     }
 
-    try {
-      const studentData = {
-        id: generateId(),
-        name: newStudent.name,
-        email: newStudent.email,
-        phone: newStudent.phone || undefined,
-        belt: newStudent.belt,
-        discipline: newStudent.discipline,
-        join_date: new Date().toISOString().split('T')[0],
-        dateOfBirth: newStudent.date_of_birth || undefined,
-        emergencyContactName: newStudent.emergency_contact_name || undefined,
-        emergencyContactPhone: newStudent.emergency_contact_phone || undefined,
-        notes: newStudent.notes || undefined,
-      };
+    const studentData: StudentFormData = {
+      name: newStudent.name,
+      email: newStudent.email,
+      phone: newStudent.phone || undefined,
+      belt: newStudent.belt,
+      discipline: newStudent.discipline as Discipline,
+      dateOfBirth: newStudent.date_of_birth || undefined,
+      emergencyContactName: newStudent.emergency_contact_name || undefined,
+      emergencyContactPhone: newStudent.emergency_contact_phone || undefined,
+      notes: newStudent.notes || undefined,
+    };
 
-      const response = await fetch('/api/students', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(studentData),
+    const result = await createStudent(studentData);
+    if (result) {
+      setShowAddModal(false);
+      setNewStudent({
+        name: '',
+        email: '',
+        phone: '',
+        belt: 'White',
+        discipline: 'Brazilian Jiu-Jitsu',
+        date_of_birth: '',
+        emergency_contact_name: '',
+        emergency_contact_phone: '',
+        notes: '',
       });
-
-      if (response.ok) {
-        // Reload students from API
-        const studentsResponse = await fetch('/api/students');
-        if (studentsResponse.ok) {
-          const updatedStudents = await studentsResponse.json();
-          setStudents(updatedStudents);
-        }
-
-        setShowAddModal(false);
-        setNewStudent({
-          name: '',
-          email: '',
-          phone: '',
-          belt: 'White',
-          discipline: 'Brazilian Jiu-Jitsu',
-          date_of_birth: '',
-          emergency_contact_name: '',
-          emergency_contact_phone: '',
-          notes: '',
-        });
-      } else {
-        alert('Failed to add student');
-      }
-    } catch (error) {
-      console.error('Error adding student:', error);
+    } else {
       alert('Failed to add student');
     }
   };
@@ -170,7 +133,7 @@ export default function StudentManager() {
                   </span>
                   <span className="flex items-center">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    {students.filter(s => s.is_active).length} active
+                    {students.filter((s: Student) => s.is_active).length} active
                   </span>
                 </div>
               </div>
@@ -288,7 +251,7 @@ export default function StudentManager() {
         {/* Students Grid/List */}
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredStudents.map((student) => (
+            {filteredStudents.map((student: Student) => (
               <div key={student.id} className="card bg-base-200 hover:shadow-xl transition-all duration-300">
                 <div className="card-body p-4">
                   <div className="flex items-start justify-between">
@@ -362,7 +325,7 @@ export default function StudentManager() {
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.map((student) => (
+                {filteredStudents.map((student: Student) => (
                   <tr key={student.id} className="hover">
                     <td>
                       <div className="flex items-center gap-3">

@@ -1,50 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   BarChart3, TrendingUp, Users, DollarSign,
   Calendar, Target, Activity, Download,
   ChevronDown, Filter, RefreshCw
 } from 'lucide-react';
-import type { Student, Payment, Class } from '../types';
+import { useStudents } from '../hooks/useStudents';
+import { usePayments } from '../hooks/usePayments';
+import { useClasses } from '../hooks/useClasses';
+import { useAttendance } from '../hooks/useAttendance';
+import type { Class } from '../types';
 
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState('month');
   const [selectedMetric, setSelectedMetric] = useState('overview');
-  const [students, setStudents] = useState<Student[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [classes, setClasses] = useState<Class[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const [studentsRes, paymentsRes, classesRes] = await Promise.all([
-          fetch('/api/students'),
-          fetch('/api/payments'),
-          fetch('/api/classes'),
-        ]);
+  const { students, isLoading: studentsLoading } = useStudents();
+  const { payments, isLoading: paymentsLoading } = usePayments();
+  const { classes, isLoading: classesLoading } = useClasses();
+  const { attendance, isLoading: attendanceLoading } = useAttendance();
 
-        if (studentsRes.ok) {
-          const studentsData = await studentsRes.json();
-          setStudents(studentsData);
-        }
-        if (paymentsRes.ok) {
-          const paymentsData = await paymentsRes.json();
-          setPayments(paymentsData);
-        }
-        if (classesRes.ok) {
-          const classesData = await classesRes.json();
-          setClasses(classesData);
-        }
-      } catch (error) {
-        console.error('Failed to load analytics data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
-  }, []);
+  const isLoading = studentsLoading || paymentsLoading || classesLoading || attendanceLoading;
 
   // Calculate real KPIs
   const now = new Date();
@@ -107,31 +82,77 @@ export default function Analytics() {
     },
   ];
 
-  const revenueByClass = [
-    { class: 'Adult BJJ', revenue: 8500, students: 45, color: 'bg-primary' },
-    { class: 'Teen Kickboxing', revenue: 6200, students: 38, color: 'bg-secondary' },
-    { class: 'Kids Karate', revenue: 5800, students: 42, color: 'bg-accent' },
-    { class: 'MMA Training', revenue: 4080, students: 31, color: 'bg-info' },
-  ];
+  // Calculate real revenue by class using attendance data
+  const revenueByClass = classes.map((cls: Class, index: number) => {
+    // Count unique students who attended this class
+    const classAttendance = attendance.filter(a => a.class_id === cls.id);
+    const uniqueStudents = new Set(classAttendance.map(a => a.student_id)).size;
 
-  const studentProgress = [
-    { belt: 'White', count: 45, percentage: 28.8 },
-    { belt: 'Yellow', count: 32, percentage: 20.5 },
-    { belt: 'Orange', count: 28, percentage: 17.9 },
-    { belt: 'Green', count: 22, percentage: 14.1 },
-    { belt: 'Blue', count: 15, percentage: 9.6 },
-    { belt: 'Brown', count: 10, percentage: 6.4 },
-    { belt: 'Black', count: 4, percentage: 2.6 },
-  ];
+    // Calculate revenue for this class (distribute total revenue based on attendance)
+    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalAttendance = attendance.length;
+    const revenue = totalAttendance > 0 ? (classAttendance.length / totalAttendance) * totalRevenue : 0;
 
-  const monthlyTrends = [
-    { month: 'Jan', revenue: 18500, students: 142, attendance: 85 },
-    { month: 'Feb', revenue: 19200, students: 145, attendance: 87 },
-    { month: 'Mar', revenue: 20100, students: 148, attendance: 86 },
-    { month: 'Apr', revenue: 21500, students: 150, attendance: 88 },
-    { month: 'May', revenue: 22800, students: 153, attendance: 89 },
-    { month: 'Jun', revenue: 24580, students: 156, attendance: 89 },
-  ];
+    const colors = ['bg-primary', 'bg-secondary', 'bg-accent', 'bg-info', 'bg-success', 'bg-warning', 'bg-error'];
+    return {
+      class: cls.name,
+      revenue: Math.round(revenue),
+      students: uniqueStudents,
+      color: colors[index % colors.length]
+    };
+  });
+
+  // Calculate real student progress by belt
+  const beltCounts = students.reduce((acc, student) => {
+    acc[student.belt] = (acc[student.belt] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const totalStudents = students.length;
+  const studentProgress = Object.entries(beltCounts).map(([belt, count]) => ({
+    belt,
+    count,
+    percentage: totalStudents > 0 ? (count / totalStudents * 100) : 0
+  })).sort((a, b) => {
+    const beltOrder = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'];
+    return beltOrder.indexOf(a.belt) - beltOrder.indexOf(b.belt);
+  });
+
+  // Calculate real monthly trends (last 6 months)
+  const monthlyTrends = [];
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+    const monthPayments = payments.filter(p => {
+      const paymentDate = new Date(p.date);
+      return paymentDate >= monthStart && paymentDate <= monthEnd;
+    });
+
+    const monthStudents = students.filter(s => {
+      const joinDate = new Date(s.join_date);
+      return joinDate >= monthStart && joinDate <= monthEnd;
+    });
+
+    const monthAttendance = attendance.filter(a => {
+      const attendanceDate = new Date(a.created_at);
+      return attendanceDate >= monthStart && attendanceDate <= monthEnd;
+    });
+
+    const attendanceRate = monthAttendance.length > 0 ?
+      (monthAttendance.filter(a => a.attended === 1).length / monthAttendance.length * 100) : 0;
+
+    const revenue = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    monthlyTrends.push({
+      month: date.toLocaleDateString('en-US', { month: 'short' }),
+      revenue,
+      students: monthStudents.length,
+      attendance: Math.round(attendanceRate)
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 pb-20 md:pb-8">

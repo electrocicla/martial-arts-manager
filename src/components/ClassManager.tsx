@@ -1,11 +1,14 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { BookOpen, Plus, Calendar, Users, Copy, TrendingUp, List, Clock, MapPin, User, Edit, AlertCircle } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useClasses } from '../hooks/useClasses';
 import { useNavigate } from 'react-router-dom';
-import { generateId } from '../lib/utils';
+import type { Class, ClassFormData, Discipline } from '../types/index';
 
 export default function ClassManager() {
-  const { classes, setClasses } = useApp();
+  const {
+    classes,
+    createClass,
+  } = useClasses();
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
   // ...existing code...
@@ -32,34 +35,7 @@ export default function ClassManager() {
 
   const disciplines = ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate'];
   const locations = ['Main Dojo', 'Training Hall', 'Outdoor Area', 'Gym Floor'];
-  const [instructors, setInstructors] = useState<string[]>([]);
-  
-  useEffect(() => {
-    const loadClasses = async () => {
-      try {
-        const response = await fetch('/api/classes');
-        if (response.ok) {
-          const data = await response.json();
-          setClasses(data);
-        }
-      } catch (error) {
-        console.error('Failed to load classes:', error);
-      }
-    };
-
-    const fetchInstructors = async () => {
-      try {
-        // For now, use default instructors. In a real app, fetch from users table where role = 'instructor'
-        setInstructors(['Sensei Yamamoto', 'Coach Johnson', 'Master Chen', 'Instructor Davis']);
-      } catch (error) {
-        console.error('Failed to fetch instructors:', error);
-        setInstructors(['Default Instructor']);
-      }
-    };
-
-    loadClasses();
-    fetchInstructors();
-  }, [setClasses]);
+  const instructors = ['Sensei Yamamoto', 'Coach Johnson', 'Master Chen', 'Instructor Davis'];
   
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   // ...existing code...
@@ -67,7 +43,7 @@ export default function ClassManager() {
   const stats = [
     { label: 'Total Classes', value: classes.length, icon: BookOpen, color: 'text-primary' },
     { label: 'This Week', value: 24, icon: Calendar, color: 'text-info' },
-  { label: 'Total Capacity', value: classes.reduce((acc, c) => acc + c.max_students, 0), icon: Users, color: 'text-success' },
+    { label: 'Total Capacity', value: classes.reduce((acc: number, c: Class) => acc + c.max_students, 0), icon: Users, color: 'text-success' },
     { label: 'Avg. Attendance', value: '89%', icon: TrendingUp, color: 'text-warning' },
   ];
 
@@ -94,11 +70,11 @@ export default function ClassManager() {
   };
 
   const filteredClasses = useMemo(() => {
-    return classes.filter((cls) => {
+    return classes.filter((cls: Class) => {
       const matchesDiscipline = filterDiscipline === 'all' || cls.discipline === filterDiscipline;
       const classDay = new Date(cls.date).getDay();
       const matchesDay = filterDay === 'all' || parseInt(filterDay) === classDay;
-      
+
       return matchesDiscipline && matchesDay;
     });
   }, [classes, filterDiscipline, filterDay]);
@@ -119,57 +95,43 @@ export default function ClassManager() {
       return;
     }
 
-    try {
-      const classData = {
-        id: generateId(),
-        name: newClass.name,
-        discipline: newClass.discipline,
-        date: newClass.date,
-        time: newClass.time,
-        location: newClass.location,
-        instructor: newClass.instructor,
-        maxStudents: newClass.max_students,
-        description: newClass.description || undefined,
-        isRecurring: newClass.is_recurring,
-        recurrencePattern: newClass.is_recurring ? JSON.stringify(newClass.recurrence_pattern) : undefined,
-      };
+    const classData: ClassFormData = {
+      name: newClass.name,
+      discipline: newClass.discipline as Discipline,
+      date: newClass.date,
+      time: newClass.time,
+      location: newClass.location,
+      instructor: newClass.instructor,
+      maxStudents: newClass.max_students,
+      description: newClass.description || undefined,
+      isRecurring: newClass.is_recurring,
+      recurrencePattern: newClass.is_recurring ? {
+        frequency: newClass.recurrence_pattern.frequency as 'daily' | 'weekly' | 'monthly',
+        days: newClass.recurrence_pattern.days,
+        endDate: newClass.recurrence_pattern.endDate || undefined,
+      } : undefined,
+    };
 
-      const response = await fetch('/api/classes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(classData),
+    const result = await createClass(classData);
+    if (result) {
+      setShowAddModal(false);
+      setNewClass({
+        name: '',
+        discipline: 'Brazilian Jiu-Jitsu',
+        date: new Date().toISOString().split('T')[0],
+        time: '18:00',
+        location: 'Main Dojo',
+        instructor: 'Sensei Yamamoto',
+        max_students: 20,
+        description: '',
+        is_recurring: false,
+        recurrence_pattern: {
+          frequency: 'weekly',
+          days: [1, 3, 5],
+          endDate: '',
+        },
       });
-
-      if (response.ok) {
-        // Reload classes from API
-        const classesResponse = await fetch('/api/classes');
-        if (classesResponse.ok) {
-          const updatedClasses = await classesResponse.json();
-          setClasses(updatedClasses);
-        }
-
-        setShowAddModal(false);
-        setNewClass({
-          name: '',
-          discipline: 'Brazilian Jiu-Jitsu',
-          date: new Date().toISOString().split('T')[0],
-          time: '18:00',
-          location: 'Main Dojo',
-          instructor: 'Sensei Yamamoto',
-          max_students: 20,
-          description: '',
-          is_recurring: false,
-          recurrence_pattern: {
-            frequency: 'weekly',
-            days: [1, 3, 5],
-            endDate: '',
-          },
-        });
-      } else {
-        alert('Failed to add class');
-      }
-    } catch (error) {
-      console.error('Error adding class:', error);
+    } else {
       alert('Failed to add class');
     }
   };
