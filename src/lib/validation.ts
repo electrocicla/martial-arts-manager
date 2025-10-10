@@ -33,10 +33,10 @@ export const studentSchema = z.object({
   phone: z.string().optional(),
   belt: z.string().min(1, 'Please select a belt level'),
   discipline: z.enum(['Jiujitsu', 'MMA', 'Karate', 'Taekwondo', 'Boxing', 'Kenpo Karate']),
-  joinDate: z.string().min(1, 'Join date is required'),
-  dateOfBirth: z.string().optional(),
-  emergencyContactName: z.string().optional(),
-  emergencyContactPhone: z.string().optional(),
+  join_date: z.string().min(1, 'Join date is required'),
+  date_of_birth: z.string().optional(),
+  emergency_contact_name: z.string().optional(),
+  emergency_contact_phone: z.string().optional(),
 });
 
 // =====================================

@@ -1,11 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { useApp } from '../context/AppContext';
 
 export default function CalendarView() {
-  const { classes } = useApp();
+  const { classes, setClasses } = useApp();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const loadClasses = async () => {
+      try {
+        const response = await fetch('/api/classes');
+        if (response.ok) {
+          const data = await response.json();
+          setClasses(data);
+        }
+      } catch (error) {
+        console.error('Failed to load classes:', error);
+      }
+    };
+
+    loadClasses();
+  }, [setClasses]);
 
   const classesOnDate = selectedDate ? classes.filter(c => c.date === selectedDate.toISOString().split('T')[0]) : [];
 

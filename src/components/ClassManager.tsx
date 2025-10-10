@@ -2,9 +2,10 @@ import { useState, useMemo, useEffect } from 'react';
 import { BookOpen, Plus, Calendar, Users, Copy, TrendingUp, List, Clock, MapPin, User, Edit, AlertCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
+import { generateId } from '../lib/utils';
 
 export default function ClassManager() {
-  const { classes, addClass } = useApp();
+  const { classes, setClasses } = useApp();
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
   // ...existing code...
@@ -34,19 +35,31 @@ export default function ClassManager() {
   const [instructors, setInstructors] = useState<string[]>([]);
   
   useEffect(() => {
+    const loadClasses = async () => {
+      try {
+        const response = await fetch('/api/classes');
+        if (response.ok) {
+          const data = await response.json();
+          setClasses(data);
+        }
+      } catch (error) {
+        console.error('Failed to load classes:', error);
+      }
+    };
+
     const fetchInstructors = async () => {
       try {
-        // In a real app, fetch instructors from users table where role = 'instructor'
-        // For now, get from current user or default list
-        setInstructors(['Available Instructor', 'Add New Instructor']);
+        // For now, use default instructors. In a real app, fetch from users table where role = 'instructor'
+        setInstructors(['Sensei Yamamoto', 'Coach Johnson', 'Master Chen', 'Instructor Davis']);
       } catch (error) {
         console.error('Failed to fetch instructors:', error);
         setInstructors(['Default Instructor']);
       }
     };
-    
+
+    loadClasses();
     fetchInstructors();
-  }, []);
+  }, [setClasses]);
   
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   // ...existing code...
@@ -54,7 +67,7 @@ export default function ClassManager() {
   const stats = [
     { label: 'Total Classes', value: classes.length, icon: BookOpen, color: 'text-primary' },
     { label: 'This Week', value: 24, icon: Calendar, color: 'text-info' },
-  { label: 'Total Capacity', value: classes.reduce((acc, c) => acc + c.maxStudents, 0), icon: Users, color: 'text-success' },
+  { label: 'Total Capacity', value: classes.reduce((acc, c) => acc + c.max_students, 0), icon: Users, color: 'text-success' },
     { label: 'Avg. Attendance', value: '89%', icon: TrendingUp, color: 'text-warning' },
   ];
 
@@ -106,37 +119,59 @@ export default function ClassManager() {
       return;
     }
 
-    await addClass({
-      id: `${Date.now()}`,
-      name: newClass.name,
-      discipline: newClass.discipline,
-      date: newClass.date,
-      time: newClass.time,
-      location: newClass.location,
-      instructor: newClass.instructor,
-      maxStudents: newClass.max_students,
-      description: newClass.description,
-      is_active: 1,
-      recurrence_pattern: newClass.is_recurring ? JSON.stringify(newClass.recurrence_pattern) : null,
-    });
+    try {
+      const classData = {
+        id: generateId(),
+        name: newClass.name,
+        discipline: newClass.discipline,
+        date: newClass.date,
+        time: newClass.time,
+        location: newClass.location,
+        instructor: newClass.instructor,
+        maxStudents: newClass.max_students,
+        description: newClass.description || undefined,
+        isRecurring: newClass.is_recurring,
+        recurrencePattern: newClass.is_recurring ? JSON.stringify(newClass.recurrence_pattern) : undefined,
+      };
 
-    setShowAddModal(false);
-    setNewClass({
-      name: '',
-      discipline: 'Brazilian Jiu-Jitsu',
-      date: new Date().toISOString().split('T')[0],
-      time: '18:00',
-      location: 'Main Dojo',
-      instructor: 'Sensei Yamamoto',
-      max_students: 20,
-      description: '',
-      is_recurring: false,
-      recurrence_pattern: {
-        frequency: 'weekly',
-        days: [1, 3, 5],
-        endDate: '',
-      },
-    });
+      const response = await fetch('/api/classes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(classData),
+      });
+
+      if (response.ok) {
+        // Reload classes from API
+        const classesResponse = await fetch('/api/classes');
+        if (classesResponse.ok) {
+          const updatedClasses = await classesResponse.json();
+          setClasses(updatedClasses);
+        }
+
+        setShowAddModal(false);
+        setNewClass({
+          name: '',
+          discipline: 'Brazilian Jiu-Jitsu',
+          date: new Date().toISOString().split('T')[0],
+          time: '18:00',
+          location: 'Main Dojo',
+          instructor: 'Sensei Yamamoto',
+          max_students: 20,
+          description: '',
+          is_recurring: false,
+          recurrence_pattern: {
+            frequency: 'weekly',
+            days: [1, 3, 5],
+            endDate: '',
+          },
+        });
+      } else {
+        alert('Failed to add class');
+      }
+    } catch (error) {
+      console.error('Error adding class:', error);
+      alert('Failed to add class');
+    }
   };
 
   return (
@@ -283,7 +318,7 @@ export default function ClassManager() {
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Users className="w-3 h-3" />
-                                  <span>15/{cls.maxStudents}</span>
+                                  <span>15/{cls.max_students}</span>
                                 </div>
                               </div>
 
@@ -363,7 +398,7 @@ export default function ClassManager() {
                       <td>
                         <div className="flex items-center gap-1">
                           <Users className="w-3 h-3" />
-                          15/{cls.maxStudents}
+                          15/{cls.max_students}
                         </div>
                       </td>
                       <td>

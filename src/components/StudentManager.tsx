@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Student } from '../types';
 import { Users, Search, Download, Upload, UserPlus, TrendingUp, Calendar, DollarSign, Mail, Phone, Eye, Edit } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { generateId } from '../lib/utils';
 
 export default function StudentManager() {
-  const { students, addStudent } = useApp();
+  const { students, setStudents } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterBelt, setFilterBelt] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -27,6 +28,23 @@ export default function StudentManager() {
   const belts = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'];
   const disciplines = ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate'];
 
+  // Load students from API on component mount
+  useEffect(() => {
+    const loadStudents = async () => {
+      try {
+        const response = await fetch('/api/students');
+        if (response.ok) {
+          const data = await response.json();
+          setStudents(data);
+        }
+      } catch (error) {
+        console.error('Failed to load students:', error);
+      }
+    };
+
+    loadStudents();
+  }, [setStudents]);
+
   const getBeltColor = (belt: string) => {
     const colors: Record<string, string> = {
       'White': 'badge-ghost',
@@ -47,7 +65,7 @@ export default function StudentManager() {
       try {
         // Cast to Student type
         const studentData = s as Student;
-        const studentDate = new Date(studentData.joinDate || Date.now());
+        const studentDate = new Date(studentData.join_date || Date.now());
         const currentDate = new Date();
         return studentDate.getMonth() === currentDate.getMonth() && 
                studentDate.getFullYear() === currentDate.getFullYear();
@@ -77,25 +95,54 @@ export default function StudentManager() {
       return;
     }
 
-    await addStudent({
-      id: `${Date.now()}`,
-      ...newStudent,
-      joinDate: new Date().toISOString().split('T')[0],
-      is_active: 1,
-    });
+    try {
+      const studentData = {
+        id: generateId(),
+        name: newStudent.name,
+        email: newStudent.email,
+        phone: newStudent.phone || undefined,
+        belt: newStudent.belt,
+        discipline: newStudent.discipline,
+        join_date: new Date().toISOString().split('T')[0],
+        dateOfBirth: newStudent.date_of_birth || undefined,
+        emergencyContactName: newStudent.emergency_contact_name || undefined,
+        emergencyContactPhone: newStudent.emergency_contact_phone || undefined,
+        notes: newStudent.notes || undefined,
+      };
 
-    setShowAddModal(false);
-    setNewStudent({
-      name: '',
-      email: '',
-      phone: '',
-      belt: 'White',
-      discipline: 'Brazilian Jiu-Jitsu',
-      date_of_birth: '',
-      emergency_contact_name: '',
-      emergency_contact_phone: '',
-      notes: '',
-    });
+      const response = await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(studentData),
+      });
+
+      if (response.ok) {
+        // Reload students from API
+        const studentsResponse = await fetch('/api/students');
+        if (studentsResponse.ok) {
+          const updatedStudents = await studentsResponse.json();
+          setStudents(updatedStudents);
+        }
+
+        setShowAddModal(false);
+        setNewStudent({
+          name: '',
+          email: '',
+          phone: '',
+          belt: 'White',
+          discipline: 'Brazilian Jiu-Jitsu',
+          date_of_birth: '',
+          emergency_contact_name: '',
+          emergency_contact_phone: '',
+          notes: '',
+        });
+      } else {
+        alert('Failed to add student');
+      }
+    } catch (error) {
+      console.error('Error adding student:', error);
+      alert('Failed to add student');
+    }
   };
 
   return (
@@ -276,7 +323,7 @@ export default function StudentManager() {
                     )}
                     <div className="flex items-center gap-2 text-base-content/70">
                       <Calendar className="w-3 h-3" />
-                      <span>Joined {new Date(student.joinDate).toLocaleDateString()}</span>
+                      <span>Joined {new Date(student.join_date).toLocaleDateString()}</span>
                     </div>
                   </div>
 
@@ -341,7 +388,7 @@ export default function StudentManager() {
                       {student.phone && <div className="text-xs opacity-60">{student.phone}</div>}
                     </td>
                     <td className="text-sm">
-                      {new Date(student.joinDate).toLocaleDateString()}
+                      {new Date(student.join_date).toLocaleDateString()}
                     </td>
                     <td>
                       <div className={`badge ${student.is_active ? 'badge-success' : 'badge-error'}`}>
@@ -668,7 +715,7 @@ export default function StudentManager() {
                   </div>
                   <div>
                     <span className="text-base-content/60">Joined:</span>
-                    <p className="font-medium">{new Date(selectedStudent.joinDate).toLocaleDateString()}</p>
+                    <p className="font-medium">{new Date(selectedStudent.join_date).toLocaleDateString()}</p>
                   </div>
                 </div>
               </div>

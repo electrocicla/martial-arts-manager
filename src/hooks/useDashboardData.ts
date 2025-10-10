@@ -1,17 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Student, Payment } from '../types/index';
-
-interface Class {
-  id: string;
-  name: string;
-  instructor: string;
-  start_time: string;
-  end_time: string;
-  discipline: string;
-  capacity: number;
-  enrolled_count: number;
-  created_at: string;
-}
+import type { Student, Payment, Class } from '../types/index';
 
 interface DashboardStats {
   totalStudents: number;
@@ -78,17 +66,17 @@ export function useDashboardData(): DashboardData {
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
         const todayClasses = classes.filter(cls => {
-          const classDate = new Date(cls.start_time).toISOString().split('T')[0];
+          const classDate = cls.date;
           return classDate === today;
         });
-        
+
         const thisWeekClasses = classes.filter(cls => {
-          const classDate = new Date(cls.start_time);
+          const classDate = new Date(cls.date);
           return classDate >= weekStart && classDate <= now;
         });
 
         const thisMonthPayments = payments.filter(payment => {
-          const paymentDate = new Date(payment.payment_date);
+          const paymentDate = new Date(payment.date);
           return paymentDate >= monthStart && paymentDate <= now;
         });
 
@@ -100,7 +88,7 @@ export function useDashboardData(): DashboardData {
         const revenueThisMonth = thisMonthPayments.reduce((sum, payment) => sum + payment.amount, 0);
 
         const upcomingClasses = classes.filter(cls => {
-          const classDate = new Date(cls.start_time);
+          const classDate = new Date(cls.date);
           return classDate > now;
         });
 

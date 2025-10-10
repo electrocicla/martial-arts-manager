@@ -62,29 +62,37 @@ export interface Student {
   belt: string;
   discipline: string;
   join_date: string;
+  date_of_birth?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  avatar_url?: string;
+  notes?: string;
   is_active: number;
+  created_by?: string;
+  updated_by?: string;
   created_at: string;
   updated_at: string;
+  deleted_at?: string;
 }
 
 export interface Class {
   id: string;
   name: string;
-  discipline: Discipline;
+  discipline: string;
   date: string;
   time: string;
   location: string;
   instructor: string;
-  maxStudents: number;
+  max_students: number;
   description?: string;
-  isRecurring: boolean;
-  recurrencePattern?: RecurrencePattern;
-  isActive: boolean;
-  createdBy?: string;
-  updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string;
+  is_recurring: number;
+  recurrence_pattern?: string; // JSON string
+  is_active: number;
+  created_by?: string;
+  updated_by?: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
 }
 
 export interface RecurrencePattern {
@@ -97,21 +105,28 @@ export interface Payment {
   id: string;
   student_id: string;
   amount: number;
-  payment_date: string;
-  payment_method: string;
-  description?: string;
+  date: string;
+  type: string;
+  notes?: string;
+  status: string;
+  payment_method?: string;
+  receipt_url?: string;
+  created_by?: string;
+  updated_by?: string;
   created_at: string;
+  updated_at: string;
+  deleted_at?: string;
 }
 
 export interface Attendance {
   id: string;
-  classId: string;
-  studentId: string;
-  attended: boolean;
-  checkInTime?: string;
+  class_id: string;
+  student_id: string;
+  attended: number;
+  check_in_time?: string;
   notes?: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuditLog {

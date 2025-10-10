@@ -1,48 +1,107 @@
-import { useState } from 'react';
-import { 
+import { useState, useEffect } from 'react';
+import {
   BarChart3, TrendingUp, Users, DollarSign,
   Calendar, Target, Activity, Download,
   ChevronDown, Filter, RefreshCw
 } from 'lucide-react';
+import type { Student, Payment, Class } from '../types';
 
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState('month');
   const [selectedMetric, setSelectedMetric] = useState('overview');
+  const [students, setStudents] = useState<Student[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [studentsRes, paymentsRes, classesRes] = await Promise.all([
+          fetch('/api/students'),
+          fetch('/api/payments'),
+          fetch('/api/classes'),
+        ]);
+
+        if (studentsRes.ok) {
+          const studentsData = await studentsRes.json();
+          setStudents(studentsData);
+        }
+        if (paymentsRes.ok) {
+          const paymentsData = await paymentsRes.json();
+          setPayments(paymentsData);
+        }
+        if (classesRes.ok) {
+          const classesData = await classesRes.json();
+          setClasses(classesData);
+        }
+      } catch (error) {
+        console.error('Failed to load analytics data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Calculate real KPIs
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+  const thisMonthPayments = payments.filter(p => new Date(p.date) >= monthStart);
+  const lastMonthPayments = payments.filter(p =>
+    new Date(p.date) >= lastMonthStart && new Date(p.date) <= lastMonthEnd
+  );
+
+  const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
+  const thisMonthRevenue = thisMonthPayments.reduce((sum, p) => sum + p.amount, 0);
+  const lastMonthRevenue = lastMonthPayments.reduce((sum, p) => sum + p.amount, 0);
+  const revenueChange = lastMonthRevenue > 0 ?
+    ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(1) : '0';
+
+  const activeStudents = students.filter(s => s.is_active === 1).length;
+  const thisMonthStudents = students.filter(s =>
+    new Date(s.join_date) >= monthStart
+  ).length;
 
   const kpiData = [
     {
       title: 'Total Revenue',
-      value: '$24,580',
-      change: '+15.3%',
-      trend: 'up',
+      value: `$${totalRevenue.toLocaleString()}`,
+      change: lastMonthRevenue > 0 ? `${revenueChange}%` : 'No data',
+      trend: thisMonthRevenue >= lastMonthRevenue ? 'up' : 'down',
       icon: DollarSign,
       color: 'text-success',
       bgColor: 'bg-success/20'
     },
     {
       title: 'Active Students',
-      value: '156',
-      change: '+8 this month',
+      value: activeStudents.toString(),
+      change: `+${thisMonthStudents} this month`,
       trend: 'up',
       icon: Users,
       color: 'text-primary',
       bgColor: 'bg-primary/20'
     },
     {
-      title: 'Avg. Attendance',
-      value: '89%',
-      change: '+2.5%',
-      trend: 'up',
-      icon: Activity,
+      title: 'Total Classes',
+      value: classes.length.toString(),
+      change: 'Scheduled',
+      trend: 'neutral',
+      icon: Calendar,
       color: 'text-info',
       bgColor: 'bg-info/20'
     },
     {
-      title: 'Retention Rate',
-      value: '94%',
-      change: '-1.2%',
-      trend: 'down',
-      icon: Target,
+      title: 'This Month Revenue',
+      value: `$${thisMonthRevenue.toLocaleString()}`,
+      change: 'Current month',
+      trend: 'neutral',
+      icon: TrendingUp,
       color: 'text-warning',
       bgColor: 'bg-warning/20'
     },
@@ -76,8 +135,17 @@ export default function Analytics() {
 
   return (
     <div className="min-h-screen bg-gray-900 pb-20 md:pb-8">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-base-200 to-base-300 px-4 py-6">
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-base-content/70">Loading analytics...</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="bg-gradient-to-br from-base-200 to-base-300 px-4 py-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -314,6 +382,8 @@ export default function Analytics() {
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }

@@ -52,7 +52,7 @@ export default function PaymentManager() {
   // Filtered payments
   const filteredPayments = useMemo(() => {
     return payments.filter(payment => {
-      const student = students.find(s => s.id === payment.studentId);
+      const student = students.find(s => s.id === payment.student_id);
       const matchesSearch = !debouncedSearchTerm ||
         student?.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         payment.type.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
@@ -296,7 +296,7 @@ export default function PaymentManager() {
           </Card>
         ) : (
           filteredPayments.map(payment => {
-            const student = students.find(s => s.id === payment.studentId);
+            const student = students.find(s => s.id === payment.student_id);
             return (
               <Card key={payment.id}>
                 <CardContent className="p-6">

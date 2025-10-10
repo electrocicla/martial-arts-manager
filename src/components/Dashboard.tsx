@@ -103,13 +103,13 @@ export default function Dashboard() {
     ...(recentPayments.slice(0, 2).map(payment => ({
       icon: '💰',
       text: `Payment received: $${payment.amount}`,
-      time: new Date(payment.payment_date).toLocaleDateString(),
+      time: new Date(payment.date).toLocaleDateString(),
       type: 'info' as const
     }))),
     ...todayClasses.slice(0, 2).map(cls => ({
-      icon: '�',
+      icon: '🥋',
       text: `Class scheduled: ${cls.name}`,
-      time: new Date(cls.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: new Date(`${cls.date}T${cls.time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       type: 'warning' as const
     }))
   ];
@@ -241,7 +241,7 @@ export default function Dashboard() {
               todayClasses.map((cls) => {
                 // Determine class status based on time
                 const now = new Date();
-                const classTime = new Date(cls.start_time);
+                const classTime = new Date(`${cls.date}T${cls.time}`);
                 const status = classTime > now ? 'upcoming' : 'ongoing';
                 
                 return (
@@ -256,12 +256,12 @@ export default function Dashboard() {
                             </div>
                           </div>
                           <p className="text-sm sm:text-base text-base-content/70 mb-3 font-medium">
-                            {new Date(cls.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(`${cls.date}T${cls.time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
                             <span className="flex items-center gap-1.5 text-base-content/60">
                               <Users className="w-3.5 h-3.5 text-primary" />
-                              <span className="font-medium">{cls.capacity}</span> max students
+                              <span className="font-medium">{cls.max_students}</span> max students
                             </span>
                             <span className="text-base-content/50 font-medium">
                               👨‍🏫 {cls.instructor}

@@ -54,10 +54,10 @@ export function getInitials(name: string): string {
 }
 
 /**
- * Generate a random ID
+ * Generate a unique ID for database records
  */
 export function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return crypto.randomUUID();
 }
 
 /**
