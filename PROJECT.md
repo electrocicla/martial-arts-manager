@@ -3,6 +3,8 @@
 ## Overview
 Comprehensive modernization of the Martial Arts Manager application to transform it from a basic prototype into a production-ready, professional mobile-first management system.
 
+🌐 **Live Demo:** [https://f8306338.martial-arts-manager.pages.dev](https://f8306338.martial-arts-manager.pages.dev)
+
 ## Current State (ACTUAL - October 10, 2025)
 
 ### ✅ **COMPLETED FOUNDATION - 100% Complete:**
