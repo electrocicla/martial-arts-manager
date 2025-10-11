@@ -29,15 +29,23 @@ export async function onRequestGet({ env }: { env: Env }) {
       instructors: instructorsResult.results?.map(r => r.instructor) || [],
     };
 
-    // If no data exists, provide defaults
+    // If no data exists, provide defaults with all available disciplines
     if (metadata.disciplines.length === 0) {
-      metadata.disciplines = ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate'];
+      metadata.disciplines = [
+        'Brazilian Jiu-Jitsu',
+        'Karate', 
+        'Kenpo Karate',
+        'Kickboxing',
+        'MMA',
+        'Muay Thai',
+        'Taekwondo'
+      ];
     }
     if (metadata.locations.length === 0) {
-      metadata.locations = ['Main Dojo', 'Training Hall', 'Outdoor Area', 'Gym Floor'];
+      metadata.locations = ['Main Dojo'];
     }
     if (metadata.instructors.length === 0) {
-      metadata.instructors = ['Sensei Yamamoto', 'Coach Johnson', 'Master Chen', 'Instructor Davis'];
+      metadata.instructors = ['Instructor'];
     }
 
     return new Response(JSON.stringify(metadata), {
