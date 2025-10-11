@@ -172,6 +172,25 @@
       "noClassesScheduled": "Sin clases programadas"
     }
   },
+  "classForm": {
+    "title": "Programar Nueva Clase",
+    "className": "Nombre de la Clase",
+    "classNamePlaceholder": "ej., BJJ Adultos",
+    "discipline": "Disciplina",
+    "date": "Fecha",
+    "time": "Hora",
+    "location": "Ubicación",
+    "instructor": "Instructor",
+    "maxStudents": "Máximo de Estudiantes",
+    "recurringClass": "Clase Recurrente",
+    "recurringSetupMessage": "Configurar horario recurrente para esta clase",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Descripción de la clase...",
+    "cancel": "Cancelar",
+    "scheduleClass": "Programar Clase",
+    "requiredField": "Por favor complete los campos requeridos",
+    "addFailed": "Error al agregar la clase"
+  },
   "landing": {
     "hero": {
       "title1": "HAMARR",

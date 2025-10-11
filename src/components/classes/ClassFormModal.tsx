@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { ClassFormData, Discipline, Class } from '../../types/index';
 
 interface ClassFormModalProps {
@@ -30,6 +31,7 @@ const locations = ['Main Dojo', 'Training Hall', 'Outdoor Area', 'Gym Floor'];
 const instructors = ['Sensei Yamamoto', 'Coach Johnson', 'Master Chen', 'Instructor Davis'];
 
 export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormModalProps) {
+  const { t } = useTranslation();
   const [newClass, setNewClass] = useState<NewClassState>({
     name: '',
     discipline: 'Brazilian Jiu-Jitsu',
@@ -49,7 +51,7 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
 
   const handleSubmit = async () => {
     if (!newClass.name || !newClass.date || !newClass.time) {
-      alert('Please fill in required fields');
+      alert(t('classForm.requiredField'));
       return;
     }
 
@@ -91,7 +93,7 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
         },
       });
     } else {
-      alert('Failed to add class');
+      alert(t('classForm.addFailed'));
     }
   };
 
@@ -100,18 +102,18 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
   return (
     <div className="modal modal-open">
       <div className="modal-box max-w-2xl">
-        <h3 className="font-bold text-lg mb-4">Schedule New Class</h3>
+        <h3 className="font-bold text-lg mb-4">{t('classForm.title')}</h3>
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Class Name *</span>
+                <span className="label-text">{t('classForm.className')} *</span>
               </label>
               <input
                 type="text"
                 className="input input-bordered"
-                placeholder="e.g., Adult BJJ"
+                placeholder={t('classForm.classNamePlaceholder')}
                 value={newClass.name}
                 onChange={(e) => setNewClass({...newClass, name: e.target.value})}
               />
@@ -119,7 +121,7 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Discipline *</span>
+                <span className="label-text">{t('classForm.discipline')} *</span>
               </label>
               <select
                 className="select select-bordered"
@@ -134,7 +136,7 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Date *</span>
+                <span className="label-text">{t('classForm.date')} *</span>
               </label>
               <input
                 type="date"
@@ -146,7 +148,7 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Time *</span>
+                <span className="label-text">{t('classForm.time')} *</span>
               </label>
               <input
                 type="time"
@@ -158,7 +160,7 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Location</span>
+                <span className="label-text">{t('classForm.location')}</span>
               </label>
               <select
                 className="select select-bordered"
@@ -173,7 +175,7 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Instructor</span>
+                <span className="label-text">{t('classForm.instructor')}</span>
               </label>
               <select
                 className="select select-bordered"
@@ -188,7 +190,7 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
 
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Max Students</span>
+                <span className="label-text">{t('classForm.maxStudents')}</span>
               </label>
               <input
                 type="number"
@@ -200,7 +202,7 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
 
             <div className="form-control">
               <label className="label cursor-pointer">
-                <span className="label-text">Recurring Class</span>
+                <span className="label-text">{t('classForm.recurringClass')}</span>
                 <input
                   type="checkbox"
                   className="toggle toggle-primary"
@@ -214,17 +216,17 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
           {newClass.is_recurring && (
             <div className="alert alert-info">
               <AlertCircle className="w-4 h-4" />
-              <span className="text-sm">Set up recurring schedule for this class</span>
+              <span className="text-sm">{t('classForm.recurringSetupMessage')}</span>
             </div>
           )}
 
           <div className="form-control">
             <label className="label">
-              <span className="label-text">Description</span>
+              <span className="label-text">{t('classForm.description')}</span>
             </label>
             <textarea
               className="textarea textarea-bordered h-24"
-              placeholder="Class description..."
+              placeholder={t('classForm.descriptionPlaceholder')}
               value={newClass.description}
               onChange={(e) => setNewClass({...newClass, description: e.target.value})}
             ></textarea>
@@ -233,11 +235,11 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
 
         <div className="modal-action">
           <button className="btn btn-ghost rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200" onClick={onClose}>
-            Cancel
+            {t('classForm.cancel')}
           </button>
           <button className="btn btn-primary rounded-lg shadow-md hover:shadow-lg transition-all duration-200" onClick={handleSubmit}>
             <Plus className="w-4 h-4" />
-            Schedule Class
+            {t('classForm.scheduleClass')}
           </button>
         </div>
       </div>

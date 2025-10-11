@@ -209,6 +209,25 @@
       "noClassesScheduled": "No classes scheduled"
     }
   },
+  "classForm": {
+    "title": "Schedule New Class",
+    "className": "Class Name",
+    "classNamePlaceholder": "e.g., Adult BJJ",
+    "discipline": "Discipline",
+    "date": "Date",
+    "time": "Time",
+    "location": "Location",
+    "instructor": "Instructor",
+    "maxStudents": "Max Students",
+    "recurringClass": "Recurring Class",
+    "recurringSetupMessage": "Set up recurring schedule for this class",
+    "description": "Description",
+    "descriptionPlaceholder": "Class description...",
+    "cancel": "Cancel",
+    "scheduleClass": "Schedule Class",
+    "requiredField": "Please fill in required fields",
+    "addFailed": "Failed to add class"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

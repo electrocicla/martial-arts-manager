@@ -209,6 +209,25 @@
       "noClassesScheduled": "Nenhuma aula agendada"
     }
   },
+  "classForm": {
+    "title": "Agendar Nova Aula",
+    "className": "Nome da Aula",
+    "classNamePlaceholder": "ex., BJJ Adulto",
+    "discipline": "Disciplina",
+    "date": "Data",
+    "time": "Horário",
+    "location": "Localização",
+    "instructor": "Instrutor",
+    "maxStudents": "Máximo de Alunos",
+    "recurringClass": "Aula Recorrente",
+    "recurringSetupMessage": "Configurar horário recorrente para esta aula",
+    "description": "Descrição",
+    "descriptionPlaceholder": "Descrição da aula...",
+    "cancel": "Cancelar",
+    "scheduleClass": "Agendar Aula",
+    "requiredField": "Por favor preencha os campos obrigatórios",
+    "addFailed": "Falha ao adicionar aula"
+  },
   "common": {
     "loading": "Carregando...",
     "error": "Erro",
