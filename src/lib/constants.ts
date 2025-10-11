@@ -6,20 +6,26 @@ import type { Discipline } from '../types';
 
 // Martial Arts Disciplines
 export const DISCIPLINES: Discipline[] = [
-  'Jiujitsu',
-  'MMA',
+  'Brazilian Jiu-Jitsu',
   'Karate',
   'Taekwondo',
+  'Kickboxing',
+  'Muay Thai',
+  'MMA',
+  'Jiujitsu',
   'Boxing',
   'Kenpo Karate',
 ];
 
 // Belt Rankings by Discipline
 export const BELT_RANKINGS: Record<Discipline, string[]> = {
-  Jiujitsu: ['White', 'Blue', 'Purple', 'Brown', 'Black'],
-  MMA: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
-  Karate: ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'],
+  'Brazilian Jiu-Jitsu': ['White', 'Blue', 'Purple', 'Brown', 'Black', 'Red/White', 'Red', 'Black/Red'],
+  Karate: ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Purple', 'Brown', 'Black'],
   Taekwondo: ['White', 'Yellow', 'Green', 'Blue', 'Red', 'Black'],
+  Kickboxing: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
+  'Muay Thai': ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
+  MMA: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
+  Jiujitsu: ['White', 'Blue', 'Purple', 'Brown', 'Black', 'Red/White', 'Red', 'Black/Red'],
   Boxing: ['Beginner', 'Intermediate', 'Advanced', 'Professional'],
   'Kenpo Karate': ['White', 'Yellow', 'Orange', 'Purple', 'Blue', 'Green', 'Brown', 'Black'],
 };

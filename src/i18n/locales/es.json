@@ -209,7 +209,25 @@
     "cancel": "Cancelar",
     "addStudent": "Añadir Alumno",
     "requiredField": "Por favor complete los campos requeridos",
-    "addFailed": "Error al añadir el estudiante"
+    "addFailed": "Error al añadir el estudiante",
+    "belts": {
+      "white": "Blanco",
+      "blue": "Azul",
+      "purple": "Morado",
+      "brown": "Marrón",
+      "black": "Negro",
+      "redwhite": "Rojo/Blanco",
+      "red": "Rojo",
+      "blackred": "Negro/Rojo",
+      "yellow": "Amarillo",
+      "orange": "Naranja",
+      "green": "Verde",
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado",
+      "expert": "Experto",
+      "professional": "Profesional"
+    }
   },
   "classes": {
     "title": "Gestión de Clases",

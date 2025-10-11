@@ -3,14 +3,13 @@ import type { Student, StudentFormData, Discipline } from '../../types/index';
 import { UserPlus, Mail, Phone, Calendar } from 'lucide-react';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
 import { useTranslation } from 'react-i18next';
+import { BELT_RANKINGS } from '../../lib/constants';
 
 interface StudentFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: StudentFormData) => Promise<Student | null>;
 }
-
-const belts = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'];
 
 export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentFormModalProps) {
   const { t } = useTranslation();
@@ -27,6 +26,8 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
     emergency_contact_phone: '',
     notes: '',
   });
+
+  const belts = BELT_RANKINGS[newStudent.discipline as Discipline] || [];
 
   const handleSubmit = async () => {
     if (!newStudent.name || !newStudent.email) {
@@ -192,7 +193,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
                   >
                     {belts.map(belt => (
                       <option key={belt} value={belt} className="bg-white dark:bg-gray-700">
-                        {t(`studentForm.belts.${belt.toLowerCase()}`)}
+                        {t(`studentForm.belts.${belt.toLowerCase().replace(/\//g, '').replace(/\s/g, '')}`)}
                       </option>
                     ))}
                   </select>
@@ -205,7 +206,15 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
                   <select
                     className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     value={newStudent.discipline}
-                    onChange={(e) => setNewStudent({...newStudent, discipline: e.target.value})}
+                    onChange={(e) => {
+                      const newDiscipline = e.target.value as Discipline;
+                      const newBelts = BELT_RANKINGS[newDiscipline] || [];
+                      setNewStudent({
+                        ...newStudent, 
+                        discipline: newDiscipline,
+                        belt: newBelts[0] || 'White'
+                      });
+                    }}
                   >
                     {disciplines.map(disc => (
                       <option key={disc} value={disc} className="bg-white dark:bg-gray-700">

@@ -33,7 +33,7 @@ export default function EligibleStudents({ students }: EligibleStudentsProps) {
                     <div>
                       <p className="font-semibold text-base-content">{student.name}</p>
                       <p className="text-sm text-base-content/70">
-                        {student.classesAttended}/{student.requiredClasses} classes completed
+                        {student.discipline} • {student.classesAttended}/{student.requiredClasses} classes completed
                       </p>
                     </div>
                   </div>

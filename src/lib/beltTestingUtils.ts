@@ -1,4 +1,5 @@
 import type { Student, Attendance, Class } from '../types';
+import { BELT_RANKINGS } from './constants';
 
 export interface UpcomingTest {
   id: number;
@@ -14,6 +15,7 @@ export interface UpcomingTest {
 export interface EligibleStudent {
   id: string;
   name: string;
+  discipline: string;
   currentBelt: string;
   targetBelt: string;
   classesAttended: number;
@@ -53,12 +55,21 @@ export const BELT_COLORS: Record<string, string> = {
   'Blue': 'badge-info',
   'Purple': 'badge-primary',
   'Brown': 'badge-neutral',
-  'Black': 'badge-neutral'
+  'Black': 'badge-neutral',
+  'Red/White': 'badge-error',
+  'Red': 'badge-error',
+  'Black/Red': 'badge-neutral',
+  'Beginner': 'badge-ghost',
+  'Intermediate': 'badge-info',
+  'Advanced': 'badge-warning',
+  'Expert': 'badge-success',
+  'Professional': 'badge-primary'
 };
 
-export function getNextBelt(currentBelt: string): string {
-  const currentIndex = BELT_PROGRESSION.indexOf(currentBelt);
-  return currentIndex < BELT_PROGRESSION.length - 1 ? BELT_PROGRESSION[currentIndex + 1] : 'Black';
+export function getNextBelt(currentBelt: string, discipline: string): string {
+  const belts = BELT_RANKINGS[discipline as keyof typeof BELT_RANKINGS] || [];
+  const currentIndex = belts.indexOf(currentBelt);
+  return currentIndex < belts.length - 1 ? belts[currentIndex + 1] : belts[belts.length - 1];
 }
 
 export function getRequiredClasses(belt: string): number {
@@ -107,8 +118,9 @@ export function calculateEligibleStudents(students: Student[], attendance: Atten
     return {
       id: student.id,
       name: student.name,
+      discipline: student.discipline,
       currentBelt: student.belt,
-      targetBelt: getNextBelt(student.belt),
+      targetBelt: getNextBelt(student.belt, student.discipline),
       classesAttended,
       requiredClasses: getRequiredClasses(student.belt),
       lastPromotion: student.join_date,

@@ -209,7 +209,25 @@
     "cancel": "Cancel",
     "addStudent": "Add Student",
     "requiredField": "Please fill in required fields",
-    "addFailed": "Failed to add student"
+    "addFailed": "Failed to add student",
+    "belts": {
+      "white": "White",
+      "blue": "Blue",
+      "purple": "Purple",
+      "brown": "Brown",
+      "black": "Black",
+      "red/white": "Red/White",
+      "red": "Red",
+      "black/red": "Black/Red",
+      "yellow": "Yellow",
+      "orange": "Orange",
+      "green": "Green",
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "expert": "Expert",
+      "professional": "Professional"
+    }
   },
   "landing": {
     "hero": {
