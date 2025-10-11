@@ -82,7 +82,7 @@ const MartialArtsParticles: React.FC = () => {
 
     window.addEventListener('resize', handleResize, { passive: true });
     return () => window.removeEventListener('resize', handleResize);
-  }, [particleConfig, shouldRender]);
+  }, [particleConfig, shouldRender, performance.isLowEnd, performance.isMobile]);
 
   // Ultra-optimized animation loop with frame skipping
   const animationCallback = React.useCallback((deltaTime: number) => {
@@ -116,7 +116,7 @@ const MartialArtsParticles: React.FC = () => {
       });
       lastUpdateRef.current = window.performance.now();
     }
-  }, [shouldRender, particleConfig.updateThrottle, particles.length]);
+  }, [shouldRender, particleConfig.updateThrottle, particles]);
 
   const { fps } = useOptimizedAnimation(animationCallback, {
     enabled: performance.animationEnabled && shouldRender,

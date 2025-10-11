@@ -5,11 +5,7 @@
 import { verifyJWT } from '../utils/jwt';
 import { findUserById } from '../utils/db';
 
-import { Env, User } from '../types/index';
-
-interface AuthenticatedRequest extends Request {
-  user?: Pick<User, 'id' | 'email' | 'name' | 'role'>;
-}
+import { Env } from '../types/index';
 
 /**
  * Middleware to authenticate JWT tokens

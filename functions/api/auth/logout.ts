@@ -2,9 +2,8 @@
  * Logout endpoint - invalidate refresh token and clear cookies
  */
 
-import { deleteSession, logAuditAction, getClientIP } from '../../utils/db';
+import { deleteSession } from '../../utils/db';
 import { getRefreshTokenFromCookies, createClearRefreshTokenCookie } from '../../middleware/auth';
-import { generateUserId } from '../../utils/hash';
 
 // Cloudflare Workers D1 types
 import { Env } from '../../types/index';

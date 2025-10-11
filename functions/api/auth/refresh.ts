@@ -5,7 +5,7 @@
 import { verifyJWT, createTokens } from '../../utils/jwt';
 import { findSessionByRefreshToken, findUserById, updateUserLastLogin, createSession, deleteSession } from '../../utils/db';
 import { getRefreshTokenFromCookies, createRefreshTokenCookie } from '../../middleware/auth';
-import { generateSessionToken, generateUserId } from '../../utils/hash';
+import { generateUserId } from '../../utils/hash';
 
 import { Env } from '../../types/index';
 

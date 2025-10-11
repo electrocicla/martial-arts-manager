@@ -3,6 +3,14 @@
  * Tracks and reports performance metrics for optimization validation
  */
 
+interface ExtendedPerformance extends Performance {
+  memory?: {
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+    jsHeapSizeLimit: number;
+  };
+}
+
 export interface PerformanceMetrics {
   fps: number;
   memoryUsage?: number;
@@ -49,8 +57,9 @@ class PerformanceMonitor {
   }
 
   getMemoryUsage(): number | undefined {
-    if ('memory' in performance) {
-      return (performance as any).memory.usedJSHeapSize / 1024 / 1024; // MB
+    const extendedPerformance = performance as ExtendedPerformance;
+    if (extendedPerformance.memory) {
+      return extendedPerformance.memory.usedJSHeapSize / 1024 / 1024; // MB
     }
     return undefined;
   }

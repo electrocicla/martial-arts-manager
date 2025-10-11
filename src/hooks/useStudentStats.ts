@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { Users, TrendingUp, Calendar, DollarSign } from 'lucide-react';
 import type { Student } from '../types/index';
+import type { ComponentType } from 'react';
 
 interface StudentStatsItem {
   label: string;
   value: number;
-  icon: any;
+  icon: ComponentType<{ className?: string }>;
   color: string;
 }
 

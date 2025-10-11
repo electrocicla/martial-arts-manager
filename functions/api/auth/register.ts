@@ -7,7 +7,7 @@ import { createTokens } from '../../utils/jwt';
 import { createUser, emailExists, createSession, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
 import { createRefreshTokenCookie } from '../../middleware/auth';
 
-import { Env, ApiResponse } from '../../types/index';
+import { Env } from '../../types/index';
 
 interface RegisterRequest {
   email: string;

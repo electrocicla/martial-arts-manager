@@ -1,11 +1,12 @@
 import type { Student, Payment, Class, Attendance } from '../types';
+import type { ComponentType } from 'react';
 
 export interface KPIMetric {
   title: string;
   value: string;
   change: string;
   trend: 'up' | 'down' | 'neutral';
-  icon: any;
+  icon: ComponentType<{ className?: string }>;
   color: string;
   bgColor: string;
 }

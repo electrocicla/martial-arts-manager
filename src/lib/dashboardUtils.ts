@@ -1,3 +1,5 @@
+import type { Payment, Class } from '../types';
+
 /**
  * Get the appropriate greeting based on current time
  */
@@ -20,7 +22,7 @@ export const getClassStatus = (date: string, time: string) => {
 /**
  * Generate recent activity items from payments and classes
  */
-export const generateRecentActivity = (recentPayments: any[], todayClasses: any[]) => {
+export const generateRecentActivity = (recentPayments: Payment[], todayClasses: Class[]) => {
   return [
     ...(recentPayments.slice(0, 2).map(payment => ({
       icon: '💰',

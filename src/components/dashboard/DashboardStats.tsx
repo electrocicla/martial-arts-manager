@@ -5,7 +5,7 @@ interface StatItem {
   value: string;
   change: string;
   trend: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   description: string;
   color: string;
   bgColor: string;

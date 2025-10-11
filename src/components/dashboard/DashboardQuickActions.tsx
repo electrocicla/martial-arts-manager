@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 interface QuickAction {
   title: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
   subtitle: string;
   path: string;

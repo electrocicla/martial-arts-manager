@@ -2,7 +2,7 @@
  * Database utilities for Cloudflare D1
  */
 
-import { Env, User, Session, D1Database, D1BindValue } from '../types/index';
+import { User, Session, D1Database } from '../types/index';
 
 /**
  * Create a new user in the database

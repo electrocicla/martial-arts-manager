@@ -7,7 +7,7 @@ import { createTokens } from '../../utils/jwt';
 import { findUserByEmail, createSession, updateUserLastLogin, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
 import { createRefreshTokenCookie } from '../../middleware/auth';
 
-import { Env, ApiResponse } from '../../types/index';
+import { Env } from '../../types/index';
 
 interface LoginRequest {
   email: string;
