@@ -65,6 +65,21 @@
       "registerMember": "Registrar membro",
       "processTransaction": "Processar transação"
     },
+    "metrics": {
+      "monthlyProgress": "Progresso Mensal",
+      "noDataAvailableYet": "Nenhum dado disponível ainda",
+      "startByAddingStudentsAndClasses": "Comece adicionando estudantes e aulas",
+      "addFirstStudent": "Adicionar Primeiro Estudante",
+      "manageStudents": "Gerenciar Estudantes",
+      "scheduleClasses": "Agendar Aulas",
+      "recordPayments": "Registrar Pagamentos",
+      "welcomeMessage": "👋 Bem-vindo! Comece adicionando seu primeiro estudante para colocar a gestão do seu dojo em funcionamento.",
+      "totalStudents": "Total de Estudantes",
+      "monthlyRevenue": "Receita Mensal",
+      "totalClasses": "Total de Aulas",
+      "earning": "Ganhando",
+      "scheduled": "Agendadas"
+    },
     "header": {
       "description": "Aqui está o que está acontecendo no seu dojo hoje"
     },
