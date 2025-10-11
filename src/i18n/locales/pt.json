@@ -7,7 +7,9 @@
     "attendance": "Presença",
     "analytics": "Análises",
     "settings": "Configurações",
-    "beltTesting": "Testes de Faixa"
+    "beltTesting": "Testes de Faixa",
+    "calendar": "Vista de Calendário",
+    "markAttendance": "Marcar Presença"
   },
   "auth": {
     "login": "Entrar",
@@ -210,6 +212,10 @@
     "confirm": "Confirmar",
     "close": "Fechar",
     "details": "Detalhes",
-    "noData": "Sem dados"
+    "noData": "Sem dados",
+    "appName": "Gerente do Dojo",
+    "navigation": "Navegação",
+    "account": "Conta",
+    "searchPlaceholder": "Buscar estudantes, aulas..."
   }
 }

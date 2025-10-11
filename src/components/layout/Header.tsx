@@ -6,10 +6,12 @@ import {
   Settings, Clock, Users, Calendar, Home
 } from 'lucide-react';
 import { LanguageSwitcher } from '../LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 export default function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -42,7 +44,7 @@ export default function Header() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
             <span className="text-white font-bold text-sm">🥋</span>
           </div>
-          <h1 className="text-xl font-bold text-white">Dojo Manager</h1>
+          <h1 className="text-xl font-bold text-white">{t('common.appName')}</h1>
         </button>
 
         {/* Right: User Avatar */}
@@ -101,7 +103,7 @@ export default function Header() {
               </div>
               <input
                 type="text"
-                placeholder="Search students, classes..."
+                placeholder={t('common.searchPlaceholder')}
                 className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -114,28 +116,28 @@ export default function Header() {
             <div className="p-4 space-y-6">
               {/* Navigation */}
               <div>
-                <h3 className="text-sm font-semibold text-white mb-3">Navigation</h3>
+                <h3 className="text-sm font-semibold text-white mb-3">{t('common.navigation')}</h3>
                 <div className="space-y-2">
                   <button 
                     onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }}
                     className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
                   >
                     <Home className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0" />
-                    <span>Dashboard</span>
+                    <span>{t('nav.dashboard')}</span>
                   </button>
                   <button 
                     onClick={() => { navigate('/students'); setMobileMenuOpen(false); }}
                     className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
                   >
                     <Users className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>Students</span>
+                    <span>{t('nav.students')}</span>
                   </button>
                   <button 
                     onClick={() => { navigate('/classes'); setMobileMenuOpen(false); }}
                     className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
                   >
                     <Calendar className="w-5 h-5 text-purple-400 mr-3 flex-shrink-0" />
-                    <span>Classes</span>
+                    <span>{t('nav.classes')}</span>
                   </button>
                   <button 
                     onClick={() => { navigate('/payments'); setMobileMenuOpen(false); }}
@@ -144,7 +146,7 @@ export default function Header() {
                     <div className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
                       💳
                     </div>
-                    <span>Payments</span>
+                    <span>{t('nav.payments')}</span>
                   </button>
                   <button 
                     onClick={() => { navigate('/analytics'); setMobileMenuOpen(false); }}
@@ -153,7 +155,7 @@ export default function Header() {
                     <div className="w-5 h-5 text-orange-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
                       📊
                     </div>
-                    <span>Analytics</span>
+                    <span>{t('nav.analytics')}</span>
                   </button>
                   <button 
                     onClick={() => { navigate('/belt-testing'); setMobileMenuOpen(false); }}
@@ -162,21 +164,21 @@ export default function Header() {
                     <div className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
                       🥋
                     </div>
-                    <span>Belt Testing</span>
+                    <span>{t('nav.beltTesting')}</span>
                   </button>
                 </div>
               </div>
 
               {/* Quick Actions */}
               <div>
-                <h3 className="text-sm font-semibold text-white mb-3">Quick Actions</h3>
+                <h3 className="text-sm font-semibold text-white mb-3">{t('dashboard.quickActions.title')}</h3>
                 <div className="space-y-2">
                   <button 
                     onClick={() => { navigate('/attendance'); setMobileMenuOpen(false); }}
                     className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
                   >
                     <Clock className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0" />
-                    <span>Mark Attendance</span>
+                    <span>{t('nav.markAttendance')}</span>
                   </button>
                   <button 
                     onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
@@ -185,28 +187,28 @@ export default function Header() {
                     <div className="w-5 h-5 text-indigo-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
                       📅
                     </div>
-                    <span>Calendar View</span>
+                    <span>{t('nav.calendar')}</span>
                   </button>
                 </div>
               </div>
               
               {/* Account */}
               <div>
-                <h3 className="text-sm font-semibold text-white mb-3">Account</h3>
+                <h3 className="text-sm font-semibold text-white mb-3">{t('common.account')}</h3>
                 <div className="space-y-2">
                   <button 
                     onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
                     className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
                   >
                     <Settings className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
-                    <span>Settings</span>
+                    <span>{t('nav.settings')}</span>
                   </button>
                   <button 
                     onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                     className="flex items-center w-full p-3 text-left text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
                   >
                     <LogOut className="w-5 h-5 mr-3 flex-shrink-0" />
-                    <span>Logout</span>
+                    <span>{t('auth.logout')}</span>
                   </button>
                 </div>
               </div>
@@ -228,7 +230,7 @@ export default function Header() {
             </div>
             <input
               type="text"
-              placeholder="Search students, classes..."
+              placeholder={t('common.searchPlaceholder')}
               className="w-96 pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

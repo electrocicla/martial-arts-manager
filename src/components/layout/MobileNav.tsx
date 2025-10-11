@@ -6,12 +6,13 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
+import { useTranslation } from 'react-i18next';
 
 // Navigation items configuration - Mobile-first approach
 const navigationItems = [
   {
     id: 'dashboard',
-    name: 'Dashboard',
+    nameKey: 'nav.dashboard',
     href: '/dashboard',
     icon: Home,
     roles: ['admin', 'instructor'],
@@ -19,7 +20,7 @@ const navigationItems = [
   },
   {
     id: 'students',
-    name: 'Students',
+    nameKey: 'nav.students',
     href: '/students',
     icon: Users,
     roles: ['admin', 'instructor'],
@@ -27,7 +28,7 @@ const navigationItems = [
   },
   {
     id: 'classes',
-    name: 'Classes',
+    nameKey: 'nav.classes',
     href: '/classes',
     icon: BookOpen,
     roles: ['admin', 'instructor'],
@@ -35,7 +36,7 @@ const navigationItems = [
   },
   {
     id: 'calendar',
-    name: 'Calendar',
+    nameKey: 'nav.calendar',
     href: '/calendar',
     icon: Calendar,
     roles: ['admin', 'instructor'],
@@ -43,7 +44,7 @@ const navigationItems = [
   },
   {
     id: 'payments',
-    name: 'Payments',
+    nameKey: 'nav.payments',
     href: '/payments',
     icon: DollarSign,
     roles: ['admin'],
@@ -51,7 +52,7 @@ const navigationItems = [
   },
   {
     id: 'belt-testing',
-    name: 'Belt Testing',
+    nameKey: 'nav.beltTesting',
     href: '/belt-testing',
     icon: Award,
     roles: ['admin', 'instructor'],
@@ -59,7 +60,7 @@ const navigationItems = [
   },
   {
     id: 'analytics',
-    name: 'Analytics',
+    nameKey: 'nav.analytics',
     href: '/analytics',
     icon: BarChart3,
     roles: ['admin'],
@@ -71,34 +72,34 @@ const navigationItems = [
 const quickActions = [
   {
     id: 'attendance',
-    name: 'Mark Attendance',
+    nameKey: 'nav.attendance',
     href: '/attendance',
     icon: Clock,
-    description: 'Check students in/out',
+    descriptionKey: 'dashboard.quickActions.checkInOut',
     color: 'text-blue-500'
   },
   {
     id: 'add-student',
-    name: 'Add Student',
+    nameKey: 'dashboard.quickActions.addStudent',
     href: '/students',
     icon: Users,
-    description: 'Register new member',
+    descriptionKey: 'dashboard.quickActions.registerMember',
     color: 'text-green-500'
   },
   {
     id: 'schedule-class',
-    name: 'Schedule Class',
+    nameKey: 'dashboard.quickActions.scheduleClass',
     href: '/classes',
     icon: Calendar,
-    description: 'Create new session',
+    descriptionKey: 'dashboard.quickActions.addNewSession',
     color: 'text-purple-500'
   },
   {
     id: 'record-payment',
-    name: 'Record Payment',
+    nameKey: 'dashboard.quickActions.recordPayment',
     href: '/payments',
     icon: DollarSign,
-    description: 'Process transaction',
+    descriptionKey: 'dashboard.quickActions.processTransaction',
     color: 'text-emerald-500'
   }
 ];
@@ -107,6 +108,7 @@ export default function MobileNav() {
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   // Filter items based on user role
   const allowedItems = navigationItems.filter(item =>
@@ -126,7 +128,7 @@ export default function MobileNav() {
 
           return (
             <Link
-              key={item.name}
+              key={item.id}
               to={item.href}
               className={cn(
                 "relative group transition-all duration-300 flex flex-col items-center justify-center py-2 px-1",
@@ -154,7 +156,7 @@ export default function MobileNav() {
                 "text-xs font-semibold transition-all duration-300 text-center leading-tight",
                 isActive ? "text-primary" : "text-base-content/70"
               )}>
-                {item.name}
+                {t(item.nameKey)}
               </span>
             </Link>
           );
@@ -185,7 +187,7 @@ export default function MobileNav() {
           <div className="fixed inset-x-4 bottom-20 top-auto rounded-2xl bg-gray-900/95 backdrop-blur-xl border border-gray-800 shadow-2xl">
             {/* Modal header */}
             <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3">
-              <h2 className="text-lg font-semibold text-white">Quick Actions</h2>
+              <h2 className="text-lg font-semibold text-white">{t('dashboard.quickActions.title')}</h2>
               <button
                 onClick={() => setIsQuickActionsOpen(false)}
                 className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-800 hover:text-gray-300 transition-colors"
@@ -210,8 +212,8 @@ export default function MobileNav() {
                         <Icon className={cn("h-5 w-5", action.color)} />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-white">{action.name}</p>
-                        <p className="text-xs text-gray-400">{action.description}</p>
+                        <p className="text-sm font-medium text-white">{t(action.nameKey)}</p>
+                        <p className="text-xs text-gray-400">{t(action.descriptionKey)}</p>
                       </div>
                     </Link>
                   );
@@ -231,7 +233,6 @@ export default function MobileNav() {
             </div>
             <div>
               <h1 className="text-xl font-black text-base-content">Dojo Manager</h1>
-              <p className="text-xs text-primary font-bold">premium edition</p>
             </div>
           </div>
 
@@ -243,7 +244,7 @@ export default function MobileNav() {
               if (!user?.role || !item.roles.includes(user.role)) return null;
 
               return (
-                <li key={item.name}>
+                <li key={item.id}>
                   <Link
                     to={item.href}
                     className={cn(
@@ -254,7 +255,7 @@ export default function MobileNav() {
                     )}
                   >
                     <Icon className="w-5 h-5" />
-                    {item.name}
+                    {t(item.nameKey)}
                     {isActive && (
                       <span className="absolute right-2 w-2 h-2 bg-white rounded-full animate-pulse" />
                     )}
@@ -268,21 +269,9 @@ export default function MobileNav() {
         <div className="mt-auto p-6">
           <ul className="menu menu-lg p-0 space-y-2">
             <li>
-              <Link to="/belt-testing" className="rounded-lg font-bold hover:bg-base-300">
-                <Award className="w-5 h-5" />
-                Belt Testing
-              </Link>
-            </li>
-            <li>
-              <Link to="/analytics" className="rounded-lg font-bold hover:bg-base-300">
-                <BarChart3 className="w-5 h-5" />
-                Analytics
-              </Link>
-            </li>
-            <li>
               <Link to="/settings" className="rounded-lg font-bold hover:bg-base-300">
                 <Settings className="w-5 h-5" />
-                Settings
+                {t('nav.settings')}
               </Link>
             </li>
           </ul>

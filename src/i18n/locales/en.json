@@ -7,7 +7,9 @@
     "attendance": "Attendance",
     "analytics": "Analytics",
     "settings": "Settings",
-    "beltTesting": "Belt Testing"
+    "beltTesting": "Belt Testing",
+    "calendar": "Calendar View",
+    "markAttendance": "Mark Attendance"
   },
   "auth": {
     "login": "Login",
@@ -210,6 +212,10 @@
     "confirm": "Confirm",
     "close": "Close",
     "details": "Details",
-    "noData": "No data"
+    "noData": "No data",
+    "appName": "Dojo Manager",
+    "navigation": "Navigation",
+    "account": "Account",
+    "searchPlaceholder": "Search students, classes..."
   }
 }

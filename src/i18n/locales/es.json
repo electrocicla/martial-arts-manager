@@ -7,7 +7,9 @@
     "attendance": "Asistencia",
     "analytics": "Análisis",
     "settings": "Configuración",
-    "beltTesting": "Exámenes de Cinturón"
+    "beltTesting": "Exámenes de Cinturón",
+    "calendar": "Vista de Calendario",
+    "markAttendance": "Marcar Asistencia"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -36,14 +38,123 @@
       "totalStudents": "Total de Estudiantes",
       "activeStudents": "Estudiantes Activos",
       "todayClasses": "Clases de Hoy",
-      "monthlyRevenue": "Ingresos Mensuales"
+      "monthlyRevenue": "Ingresos Mensuales",
+      "active": "activos",
+      "registeredMembers": "miembros registrados",
+      "classesThisWeek": "Clases Esta Semana",
+      "sessionsThisWeek": "sesiones esta semana",
+      "noClasses": "Sin clases",
+      "scheduled": "programadas",
+      "revenueThisMonth": "Ingresos Este Mes",
+      "noRevenue": "Sin ingresos",
+      "monthlyTotal": "Total mensual",
+      "totalEarnings": "ganancias totales",
+      "newEnrollments": "Nuevas Inscripciones",
+      "getStarted": "Comenzar",
+      "thisMonth": "Este mes",
+      "newStudents": "nuevos estudiantes"
     },
     "quickActions": {
       "title": "Acciones Rápidas",
       "addStudent": "Agregar Estudiante",
       "scheduleClass": "Programar Clase",
       "recordPayment": "Registrar Pago",
-      "markAttendance": "Marcar Asistencia"
+      "markAttendance": "Marcar Asistencia",
+      "checkInOut": "Registrar entrada/salida estudiantes",
+      "addNewSession": "Agregar nueva sesión",
+      "registerMember": "Registrar miembro",
+      "processTransaction": "Procesar transacción"
+    },
+    "header": {
+      "description": "Aquí está lo que está pasando en tu dojo hoy"
+    },
+    "schedule": {
+      "todaySchedule": "Horario de Hoy",
+      "viewAll": "Ver Todo",
+      "loadingClasses": "Cargando clases de hoy...",
+      "noClassesToday": "Sin Clases Hoy",
+      "noClassesDescription": "No hay clases programadas para hoy.",
+      "scheduleClass": "Programar una Clase",
+      "maxStudents": "máximo de estudiantes",
+      "mainStudio": "Estudio Principal",
+      "live": "🔴 En Vivo",
+      "soon": "⏰ Pronto",
+      "scheduleNewClass": "Programar Nueva Clase"
+    }
+  },
+  "students": {
+    "title": "Gestión de Estudiantes",
+    "subtitle": "Gestiona el registro y perfiles de estudiantes de tu dojo",
+    "totalStudents": "estudiantes totales",
+    "active": "activos",
+    "stats": {
+      "totalStudents": "Total de Estudiantes",
+      "active": "Activos",
+      "thisMonth": "Este Mes",
+      "inactive": "Inactivos"
+    },
+    "actions": {
+      "exportData": "Exportar Datos",
+      "importStudents": "Importar Estudiantes",
+      "addNewStudent": "Agregar Nuevo Estudiante"
+    },
+    "filters": {
+      "search": "Buscar estudiantes...",
+      "filterByBelt": "Filtrar por cinturón",
+      "filterByStatus": "Filtrar por estado",
+      "allBelts": "Todos los cinturones",
+      "allStatuses": "Todos los estados",
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "viewModes": {
+      "grid": "Vista de Cuadrícula",
+      "list": "Vista de Lista"
+    }
+  },
+  "classes": {
+    "title": "Gestión de Clases",
+    "subtitle": "clases programadas esta semana",
+    "actions": {
+      "duplicateWeek": "Duplicar Semana",
+      "addClass": "Agregar Clase",
+      "attendance": "Asistencia",
+      "edit": "Editar",
+      "scheduleFirstClass": "Programar Primera Clase"
+    },
+    "stats": {
+      "totalClasses": "Total de Clases",
+      "thisWeek": "Esta Semana",
+      "totalCapacity": "Capacidad Total",
+      "avgAttendance": "Asistencia Promedio"
+    },
+    "filters": {
+      "allDisciplines": "Todas las Disciplinas",
+      "allDays": "Todos los Días"
+    },
+    "viewModes": {
+      "schedule": "Horario",
+      "list": "Lista"
+    },
+    "status": {
+      "completed": "Completada",
+      "inProgress": "En Progreso",
+      "today": "Hoy",
+      "scheduled": "Programada"
+    },
+    "table": {
+      "headers": {
+        "class": "Clase",
+        "dateTime": "Fecha y Hora",
+        "location": "Ubicación",
+        "instructor": "Instructor",
+        "students": "Estudiantes",
+        "status": "Estado",
+        "actions": "Acciones"
+      }
+    },
+    "empty": {
+      "noClassesScheduled": "Sin clases programadas"
     }
   },
   "landing": {
@@ -99,6 +210,12 @@
     "yes": "Sí",
     "no": "No",
     "confirm": "Confirmar",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "details": "Detalles",
+    "noData": "Sin datos",
+    "appName": "Gerente del Dojo",
+    "navigation": "Navegación",
+    "account": "Cuenta",
+    "searchPlaceholder": "Buscar estudiantes, clases..."
   }
 }
