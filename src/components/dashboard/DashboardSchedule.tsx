@@ -9,6 +9,7 @@ interface Class {
   discipline: string;
   date: string;
   time: string;
+  location: string;
   max_students: number;
   instructor: string;
 }
@@ -81,7 +82,7 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
                           👨‍🏫 {cls.instructor}
                         </span>
                         <span className="text-base-content/50 font-medium">
-                          📍 {t('dashboard.schedule.mainStudio')}
+                          📍 {cls.location}
                         </span>
                       </div>
                     </div>

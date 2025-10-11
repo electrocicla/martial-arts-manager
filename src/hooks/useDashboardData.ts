@@ -95,7 +95,7 @@ export function useDashboardData(): DashboardData {
         setData({
           stats: {
             totalStudents: students.length,
-            activeStudents: students.length, // For now, assume all are active
+            activeStudents: students.filter(s => s.is_active === 1).length,
             classesThisWeek: thisWeekClasses.length,
             revenueThisMonth,
             newEnrollments: thisMonthStudents.length,

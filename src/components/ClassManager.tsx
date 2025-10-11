@@ -2,6 +2,7 @@ import { useState } from 'react';
 import React from 'react';
 import { BookOpen, Plus, Calendar, Users, Copy, List, Clock, MapPin, User, Edit, TrendingUp } from 'lucide-react';
 import { useClasses } from '../hooks/useClasses';
+import { useClassMetadata } from '../hooks/useClassMetadata';
 import { useNavigate } from 'react-router-dom';
 import { useClassFilters } from '../hooks/useClassFilters';
 import { useClassStats } from '../hooks/useClassStats';
@@ -15,6 +16,7 @@ export default function ClassManager() {
     classes,
     createClass,
   } = useClasses();
+  const { disciplines } = useClassMetadata();
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
   const [filterDiscipline, setFilterDiscipline] = useState('all');
@@ -24,7 +26,6 @@ export default function ClassManager() {
   const { filteredClasses, groupedByDay } = useClassFilters(classes, filterDiscipline, filterDay);
   const stats = useClassStats(classes);
 
-  const disciplines = ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate'];
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   const iconMap = {
@@ -178,7 +179,7 @@ export default function ClassManager() {
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Users className="w-3 h-3" />
-                                  <span>15/{cls.max_students}</span>
+                                  <span>{cls.enrolled_count || 0}/{cls.max_students}</span>
                                 </div>
                               </div>
 
@@ -258,7 +259,7 @@ export default function ClassManager() {
                       <td>
                         <div className="flex items-center gap-1">
                           <Users className="w-3 h-3" />
-                          15/{cls.max_students}
+                          {cls.enrolled_count || 0}/{cls.max_students}
                         </div>
                       </td>
                       <td>

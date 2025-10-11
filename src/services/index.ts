@@ -18,6 +18,7 @@ export type {
 export type {
   ClassFilters,
   ClassStats,
+  ClassMetadata,
 } from './class.service';
 
 export type {

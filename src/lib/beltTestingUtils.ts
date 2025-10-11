@@ -1,4 +1,4 @@
-import type { Student, Attendance } from '../types';
+import type { Student, Attendance, Class } from '../types';
 
 export interface UpcomingTest {
   id: number;
@@ -65,7 +65,15 @@ export function getRequiredClasses(belt: string): number {
   return BELT_REQUIREMENTS[belt] || 40;
 }
 
-export function calculateUpcomingTests(students: Student[]): UpcomingTest[] {
+export function calculateUpcomingTests(students: Student[], classes: Class[]): UpcomingTest[] {
+  // Get unique instructors and locations from actual classes
+  const instructors = [...new Set(classes.map(c => c.instructor))];
+  const locations = [...new Set(classes.map(c => c.location))];
+  
+  // Use default values if no classes exist yet
+  const defaultInstructors = instructors.length > 0 ? instructors : ['Sensei Yamamoto'];
+  const defaultLocations = locations.length > 0 ? locations : ['Main Dojo'];
+
   const beltGroups = students.reduce((acc, student) => {
     if (!acc[student.belt]) {
       acc[student.belt] = [];
@@ -84,8 +92,8 @@ export function calculateUpcomingTests(students: Student[]): UpcomingTest[] {
     time: index % 2 === 0 ? '10:00 AM' : '2:00 PM',
     belt: `${belt} Belt`,
     candidates: students.length,
-    examiner: index % 2 === 0 ? 'Sensei Yamamoto' : 'Master Chen',
-    location: index % 2 === 0 ? 'Main Dojo' : 'Training Hall',
+    examiner: defaultInstructors[index % defaultInstructors.length],
+    location: defaultLocations[index % defaultLocations.length],
     status: 'scheduled' as const
   }));
 }

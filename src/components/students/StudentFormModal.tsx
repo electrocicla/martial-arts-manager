@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Student, StudentFormData, Discipline } from '../../types/index';
 import { UserPlus, Mail, Phone, Calendar } from 'lucide-react';
+import { useClassMetadata } from '../../hooks/useClassMetadata';
 
 interface StudentFormModalProps {
   isOpen: boolean;
@@ -9,15 +10,16 @@ interface StudentFormModalProps {
 }
 
 const belts = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'];
-const disciplines = ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate'];
 
 export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentFormModalProps) {
+  const { disciplines } = useClassMetadata();
+  
   const [newStudent, setNewStudent] = useState({
     name: '',
     email: '',
     phone: '',
     belt: 'White',
-    discipline: 'Brazilian Jiu-Jitsu',
+    discipline: disciplines[0] || 'Brazilian Jiu-Jitsu',
     date_of_birth: '',
     emergency_contact_name: '',
     emergency_contact_phone: '',
@@ -50,7 +52,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
         email: '',
         phone: '',
         belt: 'White',
-        discipline: 'Brazilian Jiu-Jitsu',
+        discipline: disciplines[0] || 'Brazilian Jiu-Jitsu',
         date_of_birth: '',
         emergency_contact_name: '',
         emergency_contact_phone: '',

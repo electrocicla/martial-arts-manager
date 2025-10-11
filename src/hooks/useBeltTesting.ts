@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useStudents } from './useStudents';
 import { useAttendance } from './useAttendance';
+import { useClasses } from './useClasses';
 import {
   calculateUpcomingTests,
   calculateEligibleStudents,
@@ -10,10 +11,11 @@ import {
 
 export function useUpcomingTests(): UpcomingTest[] {
   const { students } = useStudents();
+  const { classes } = useClasses();
 
   return useMemo(() => {
-    return calculateUpcomingTests(students);
-  }, [students]);
+    return calculateUpcomingTests(students, classes);
+  }, [students, classes]);
 }
 
 export function useEligibleStudents(): EligibleStudent[] {

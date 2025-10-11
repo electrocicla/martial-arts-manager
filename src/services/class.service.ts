@@ -21,6 +21,12 @@ export interface ClassStats {
   upcoming: number;
 }
 
+export interface ClassMetadata {
+  disciplines: string[];
+  locations: string[];
+  instructors: string[];
+}
+
 export class ClassService {
   private readonly endpoint = '/api/classes';
 
@@ -118,6 +124,10 @@ export class ClassService {
       .slice(0, limit);
 
     return { data: upcoming, success: true };
+  }
+
+  async getMetadata(): Promise<ApiResponse<ClassMetadata>> {
+    return apiClient.get<ClassMetadata>('/api/classes/metadata');
   }
 }
 

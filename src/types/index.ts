@@ -84,6 +84,7 @@ export interface Class {
   location: string;
   instructor: string;
   max_students: number;
+  enrolled_count?: number;
   description?: string;
   is_recurring: number;
   recurrence_pattern?: string; // JSON string
