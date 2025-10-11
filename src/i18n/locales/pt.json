@@ -127,6 +127,35 @@
       "list": "Visualização em Lista"
     }
   },
+  "studentForm": {
+    "title": "Adicionar Novo Aluno",
+    "subtitle": "Criar um novo perfil de estudante",
+    "personalInfo": "Informações Pessoais",
+    "fullName": "Nome Completo",
+    "fullNamePlaceholder": "Digite o nome completo do estudante",
+    "email": "Endereço de E-mail",
+    "emailPlaceholder": "estudante@exemplo.com",
+    "phone": "Número de Telefone",
+    "phonePlaceholder": "+1 (555) 123-4567",
+    "dateOfBirth": "Data de Nascimento",
+    "dateOfBirthPlaceholder": "dd-mm-aaaa",
+    "martialArtsInfo": "Informações de Artes Marciais",
+    "beltRank": "Faixa",
+    "beltSuffix": "Faixa",
+    "discipline": "Disciplina",
+    "emergencyContact": "Contato de Emergência",
+    "contactName": "Nome do Contato",
+    "contactNamePlaceholder": "Nome do contato de emergência",
+    "contactPhone": "Telefone do Contato",
+    "contactPhonePlaceholder": "+1 (555) 987-6543",
+    "additionalInfo": "Informações Adicionais",
+    "notes": "Notas",
+    "notesPlaceholder": "Quaisquer notas adicionais sobre o estudante...",
+    "cancel": "Cancelar",
+    "addStudent": "Adicionar Aluno",
+    "requiredField": "Por favor preencha os campos obrigatórios",
+    "addFailed": "Falha ao adicionar estudante"
+  },
   "landing": {
     "hero": {
       "title1": "HAMARR",

@@ -127,6 +127,35 @@
       "list": "List View"
     }
   },
+  "studentForm": {
+    "title": "Add New Student",
+    "subtitle": "Create a new student profile",
+    "personalInfo": "Personal Information",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter student's full name",
+    "email": "Email Address",
+    "emailPlaceholder": "student@example.com",
+    "phone": "Phone Number",
+    "phonePlaceholder": "+1 (555) 123-4567",
+    "dateOfBirth": "Date of Birth",
+    "dateOfBirthPlaceholder": "dd-mm-yyyy",
+    "martialArtsInfo": "Martial Arts Information",
+    "beltRank": "Belt Rank",
+    "beltSuffix": "Belt",
+    "discipline": "Discipline",
+    "emergencyContact": "Emergency Contact",
+    "contactName": "Contact Name",
+    "contactNamePlaceholder": "Emergency contact name",
+    "contactPhone": "Contact Phone",
+    "contactPhonePlaceholder": "+1 (555) 987-6543",
+    "additionalInfo": "Additional Information",
+    "notes": "Notes",
+    "notesPlaceholder": "Any additional notes about the student...",
+    "cancel": "Cancel",
+    "addStudent": "Add Student",
+    "requiredField": "Please fill in required fields",
+    "addFailed": "Failed to add student"
+  },
   "landing": {
     "hero": {
       "title1": "HAMARR",

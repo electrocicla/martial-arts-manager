@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Student, StudentFormData, Discipline } from '../../types/index';
 import { UserPlus, Mail, Phone, Calendar } from 'lucide-react';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
+import { useTranslation } from 'react-i18next';
 
 interface StudentFormModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface StudentFormModalProps {
 const belts = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'];
 
 export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentFormModalProps) {
+  const { t } = useTranslation();
   const { disciplines } = useClassMetadata();
   
   const [newStudent, setNewStudent] = useState({
@@ -28,7 +30,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
 
   const handleSubmit = async () => {
     if (!newStudent.name || !newStudent.email) {
-      alert('Please fill in required fields');
+      alert(t('studentForm.requiredField'));
       return;
     }
 
@@ -59,7 +61,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
         notes: '',
       });
     } else {
-      alert('Failed to add student');
+      alert(t('studentForm.addFailed'));
     }
   };
 
@@ -83,8 +85,8 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
                 <UserPlus className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add New Student</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Create a new student profile</p>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('studentForm.title')}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('studentForm.subtitle')}</p>
               </div>
             </div>
             <button
@@ -105,18 +107,18 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                 <div className="w-1 h-6 bg-blue-500 rounded-full mr-3"></div>
-                Personal Information
+                {t('studentForm.personalInfo')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Full Name <span className="text-red-500">*</span>
+                    {t('studentForm.fullName')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Enter student's full name"
+                      placeholder={t('studentForm.fullNamePlaceholder')}
                       value={newStudent.name}
                       onChange={(e) => setNewStudent({...newStudent, name: e.target.value})}
                     />
@@ -125,14 +127,14 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
 
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Email Address <span className="text-red-500">*</span>
+                    {t('studentForm.emailAddress')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="email"
                       className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="student@example.com"
+                      placeholder={t('studentForm.emailPlaceholder')}
                       value={newStudent.email}
                       onChange={(e) => setNewStudent({...newStudent, email: e.target.value})}
                     />
@@ -141,14 +143,14 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
 
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Phone Number
+                    {t('studentForm.phoneNumber')}
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="tel"
                       className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="+1 (555) 123-4567"
+                      placeholder={t('studentForm.phonePlaceholder')}
                       value={newStudent.phone}
                       onChange={(e) => setNewStudent({...newStudent, phone: e.target.value})}
                     />
@@ -157,7 +159,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
 
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Date of Birth
+                    {t('studentForm.dateOfBirth')}
                   </label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -176,12 +178,12 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                 <div className="w-1 h-6 bg-green-500 rounded-full mr-3"></div>
-                Martial Arts Information
+                {t('studentForm.martialArtsInfo')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Belt Rank
+                    {t('studentForm.beltRank')}
                   </label>
                   <select
                     className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
@@ -190,7 +192,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
                   >
                     {belts.map(belt => (
                       <option key={belt} value={belt} className="bg-white dark:bg-gray-700">
-                        {belt} Belt
+                        {t(`studentForm.belts.${belt.toLowerCase()}`)}
                       </option>
                     ))}
                   </select>
@@ -198,7 +200,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
 
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Discipline
+                    {t('studentForm.discipline')}
                   </label>
                   <select
                     className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
@@ -219,17 +221,17 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                 <div className="w-1 h-6 bg-red-500 rounded-full mr-3"></div>
-                Emergency Contact
+                {t('studentForm.emergencyContact')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Contact Name
+                    {t('studentForm.contactName')}
                   </label>
                   <input
                     type="text"
                     className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Emergency contact name"
+                    placeholder={t('studentForm.contactNamePlaceholder')}
                     value={newStudent.emergency_contact_name}
                     onChange={(e) => setNewStudent({...newStudent, emergency_contact_name: e.target.value})}
                   />
@@ -237,14 +239,14 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
 
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Contact Phone
+                    {t('studentForm.contactPhone')}
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="tel"
                       className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="+1 (555) 987-6543"
+                      placeholder={t('studentForm.contactPhonePlaceholder')}
                       value={newStudent.emergency_contact_phone}
                       onChange={(e) => setNewStudent({...newStudent, emergency_contact_phone: e.target.value})}
                     />
@@ -257,16 +259,16 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                 <div className="w-1 h-6 bg-purple-500 rounded-full mr-3"></div>
-                Additional Information
+                {t('studentForm.additionalInfo')}
               </h3>
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Notes
+                  {t('studentForm.notes')}
                 </label>
                 <textarea
                   className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
                   rows={4}
-                  placeholder="Any additional notes about the student..."
+                  placeholder={t('studentForm.notesPlaceholder')}
                   value={newStudent.notes}
                   onChange={(e) => setNewStudent({...newStudent, notes: e.target.value})}
                 />
@@ -291,7 +293,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
               onClick={handleSubmit}
             >
               <UserPlus className="w-4 h-4" />
-              <span>Add Student</span>
+              <span>{t('studentForm.addStudent')}</span>
             </button>
           </div>
         </div>
