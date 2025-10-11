@@ -226,7 +226,8 @@
       "intermediate": "Intermedio",
       "advanced": "Avanzado",
       "expert": "Experto",
-      "professional": "Profesional"
+      "professional": "Profesional",
+      "elite": "Élite"
     }
   },
   "classes": {

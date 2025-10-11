@@ -63,7 +63,8 @@ export const BELT_COLORS: Record<string, string> = {
   'Intermediate': 'badge-info',
   'Advanced': 'badge-warning',
   'Expert': 'badge-success',
-  'Professional': 'badge-primary'
+  'Professional': 'badge-primary',
+  'Elite': 'badge-accent'
 };
 
 export function getNextBelt(currentBelt: string, discipline: string): string {

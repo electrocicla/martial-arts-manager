@@ -15,6 +15,7 @@ export const DISCIPLINES: Discipline[] = [
   'Jiujitsu',
   'Boxing',
   'Kenpo Karate',
+  'Weightlifting',
 ];
 
 // Belt Rankings by Discipline
@@ -28,6 +29,7 @@ export const BELT_RANKINGS: Record<Discipline, string[]> = {
   Jiujitsu: ['White', 'Blue', 'Purple', 'Brown', 'Black', 'Red/White', 'Red', 'Black/Red'],
   Boxing: ['Beginner', 'Intermediate', 'Advanced', 'Professional'],
   'Kenpo Karate': ['White', 'Yellow', 'Orange', 'Purple', 'Blue', 'Green', 'Brown', 'Black'],
+  Weightlifting: ['Beginner', 'Intermediate', 'Advanced', 'Elite'],
 };
 
 // User Roles

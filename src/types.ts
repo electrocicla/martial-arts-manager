@@ -67,4 +67,4 @@ export interface Attendance {
   updated_at: string;
 }
 
-export type Discipline = 'Brazilian Jiu-Jitsu' | 'Kickboxing' | 'Muay Thai' | 'MMA' | 'Karate' | 'Jiujitsu' | 'Taekwondo' | 'Boxing' | 'Kenpo Karate';
+export type Discipline = 'Brazilian Jiu-Jitsu' | 'Kickboxing' | 'Muay Thai' | 'MMA' | 'Karate' | 'Jiujitsu' | 'Taekwondo' | 'Boxing' | 'Kenpo Karate' | 'Weightlifting';
