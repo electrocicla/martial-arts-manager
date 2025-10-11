@@ -9,18 +9,20 @@ import { Select } from '../components/ui/Select';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
 import { registerSchema, type RegisterFormData } from '../lib/validation';
-
-const roleOptions = [
-  { value: 'student', label: 'Student' },
-  { value: 'instructor', label: 'Instructor' },
-  { value: 'admin', label: 'Administrator' },
-];
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { register: registerUser, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const roleOptions = [
+    { value: 'student', label: t('registerPage.roles.student') },
+    { value: 'instructor', label: t('registerPage.roles.instructor') },
+    { value: 'admin', label: t('registerPage.roles.admin') },
+  ];
 
   const {
     register,
@@ -48,10 +50,10 @@ export default function Register() {
             <UserPlus className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-red-400 via-red-500 to-red-600 bg-clip-text text-transparent mb-2 sm:mb-3">
-            Create Account
+            {t('registerPage.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Join Martial Arts Manager
+            {t('registerPage.subtitle')}
           </p>
         </CardHeader>
 
@@ -68,8 +70,8 @@ export default function Register() {
               <Input
                 {...register('name')}
                 type="text"
-                placeholder="Enter your full name"
-                label="Full Name"
+                placeholder={t('registerPage.fullNamePlaceholder')}
+                label={t('registerPage.fullName')}
                 error={errors.name?.message}
                 disabled={isLoading}
               />
@@ -79,8 +81,8 @@ export default function Register() {
               <Input
                 {...register('email')}
                 type="email"
-                placeholder="Enter your email"
-                label="Email Address"
+                placeholder={t('registerPage.emailPlaceholder')}
+                label={t('registerPage.emailAddress')}
                 error={errors.email?.message}
                 disabled={isLoading}
               />
@@ -89,8 +91,8 @@ export default function Register() {
             <div>
               <Select
                 {...register('role')}
-                label="Role"
-                placeholder="Select your role"
+                label={t('registerPage.role')}
+                placeholder={t('registerPage.rolePlaceholder')}
                 options={roleOptions}
                 error={errors.role?.message}
                 disabled={isLoading}
@@ -101,8 +103,8 @@ export default function Register() {
               <Input
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Create a password"
-                label="Password"
+                placeholder={t('registerPage.passwordPlaceholder')}
+                label={t('registerPage.password')}
                 error={errors.password?.message}
                 disabled={isLoading}
                 rightIcon={
@@ -125,8 +127,8 @@ export default function Register() {
               <Input
                 {...register('confirmPassword')}
                 type={showConfirmPassword ? 'text' : 'password'}
-                placeholder="Confirm your password"
-                label="Confirm Password"
+                placeholder={t('registerPage.confirmPasswordPlaceholder')}
+                label={t('registerPage.confirmPassword')}
                 error={errors.confirmPassword?.message}
                 disabled={isLoading}
                 rightIcon={
@@ -151,18 +153,18 @@ export default function Register() {
               disabled={isLoading}
               isLoading={isLoading}
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? t('registerPage.creatingAccount') : t('registerPage.title')}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600 dark:text-gray-400">
-              Already have an account?{' '}
+              {t('registerPage.alreadyHaveAccount')}{' '}
               <Link
                 to="/login"
                 className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
-                Sign in
+                {t('registerPage.signIn')}
               </Link>
             </p>
           </div>

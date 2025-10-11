@@ -28,6 +28,28 @@
     "createAccount": "Criar Conta",
     "joinMartialArts": "Junte-se ao Martial Arts Manager"
   },
+  "registerPage": {
+    "title": "Criar Conta",
+    "subtitle": "Junte-se ao Martial Arts Manager",
+    "fullName": "Nome Completo",
+    "fullNamePlaceholder": "Digite seu nome completo",
+    "emailAddress": "Endereço de E-mail",
+    "emailPlaceholder": "Digite seu e-mail",
+    "role": "Função",
+    "rolePlaceholder": "Selecione sua função",
+    "password": "Senha",
+    "passwordPlaceholder": "Crie uma senha",
+    "confirmPassword": "Confirmar Senha",
+    "confirmPasswordPlaceholder": "Confirme sua senha",
+    "creatingAccount": "Criando conta...",
+    "alreadyHaveAccount": "Já tem uma conta?",
+    "signIn": "Entrar",
+    "roles": {
+      "student": "Estudante",
+      "instructor": "Instrutor",
+      "admin": "Administrador"
+    }
+  },
   "dashboard": {
     "greeting": {
       "morning": "Bom dia",

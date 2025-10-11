@@ -9,7 +9,7 @@
 
 **Production-Ready Martial Arts School Management System** built with React 19, TypeScript 5.9, Tailwind CSS 4, and Cloudflare Workers. Features complete JWT authentication, real-time database integration, professional UI components, advanced analytics, and **40%+ mobile performance optimization**. Enterprise-grade with full type safety, comprehensive testing, and production deployment.
 
-🌐 **Live Demo:** [https://3424a14b.martial-arts-manager.pages.dev](https://3424a14b.martial-arts-manager.pages.dev)
+🌐 **Live Demo:** [https://518daffa.martial-arts-manager.pages.dev](https://518daffa.martial-arts-manager.pages.dev)
 
 ## ✨ Features
 
@@ -308,7 +308,7 @@ pnpm build
 - **Maintained Compatibility**: All fixes preserve existing functionality while improving code quality
 
 #### Deployment Update
-- **New Live URL**: Updated deployment URL to `https://3424a14b.martial-arts-manager.pages.dev`
+- **New Live URL**: Updated deployment URL to `https://518daffa.martial-arts-manager.pages.dev`
 - **Production Ready**: Application successfully deployed with all ESLint issues resolved
 
 ### 2025-10-10: UI/UX Enhancements & Complete Data Integration 🎯
