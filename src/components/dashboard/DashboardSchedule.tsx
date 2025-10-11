@@ -108,13 +108,6 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
           })
         )}
 
-        {/* Add Class Button */}
-        <div className="pt-2">
-          <button className="btn btn-outline btn-primary w-full sm:w-auto rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-            <Calendar className="w-4 h-4" />
-            {t('dashboard.schedule.scheduleNewClass')}
-          </button>
-        </div>
       </div>
     </section>
   );

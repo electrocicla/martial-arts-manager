@@ -34,9 +34,9 @@ export default function DashboardMetrics({ dashboardStats, isLoading }: Dashboar
               </div>
               <button
                 onClick={() => navigate('/students')}
-                className="btn btn-primary btn-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                className="btn btn-primary btn-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
-                Add {t('dashboard.metrics.addFirstStudent')}
+                {t('dashboard.metrics.addFirstStudent')}
               </button>
             </div>
           ) : (
@@ -95,29 +95,29 @@ export default function DashboardMetrics({ dashboardStats, isLoading }: Dashboar
             <div className="space-y-3">
               <button
                 onClick={() => navigate('/students')}
-                className="alert alert-info py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full text-left"
+                className="btn btn-info btn-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full text-left bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-0"
               >
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  <span className="text-sm sm:text-base font-medium">{t('dashboard.metrics.manageStudents')}</span>
+                <div className="flex items-center gap-3">
+                  <Users className="w-6 h-6" />
+                  <span className="text-base font-semibold">{t('dashboard.metrics.manageStudents')}</span>
                 </div>
               </button>
               <button
                 onClick={() => navigate('/classes')}
-                className="alert alert-success py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full text-left"
+                className="btn btn-success btn-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full text-left bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-0"
               >
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  <span className="text-sm sm:text-base font-medium">{t('dashboard.metrics.scheduleClasses')}</span>
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-6 h-6" />
+                  <span className="text-base font-semibold">{t('dashboard.metrics.scheduleClasses')}</span>
                 </div>
               </button>
               <button
                 onClick={() => navigate('/payments')}
-                className="alert alert-warning py-3 px-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full text-left"
+                className="btn btn-warning btn-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full text-left bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 border-0"
               >
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" />
-                  <span className="text-sm sm:text-base font-medium">{t('dashboard.metrics.recordPayments')}</span>
+                <div className="flex items-center gap-3">
+                  <DollarSign className="w-6 h-6" />
+                  <span className="text-base font-semibold">{t('dashboard.metrics.recordPayments')}</span>
                 </div>
               </button>
             </div>
