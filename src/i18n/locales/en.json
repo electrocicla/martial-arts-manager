@@ -147,6 +147,51 @@
       }
     }
   },
+  "classes": {
+    "title": "Class Management",
+    "subtitle": "classes scheduled this week",
+    "actions": {
+      "duplicateWeek": "Duplicate Week",
+      "addClass": "Add Class",
+      "attendance": "Attendance",
+      "edit": "Edit",
+      "scheduleFirstClass": "Schedule First Class"
+    },
+    "stats": {
+      "totalClasses": "Total Classes",
+      "thisWeek": "This Week",
+      "totalCapacity": "Total Capacity",
+      "avgAttendance": "Avg. Attendance"
+    },
+    "filters": {
+      "allDisciplines": "All Disciplines",
+      "allDays": "All Days"
+    },
+    "viewModes": {
+      "schedule": "Schedule",
+      "list": "List"
+    },
+    "status": {
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "today": "Today",
+      "scheduled": "Scheduled"
+    },
+    "table": {
+      "headers": {
+        "class": "Class",
+        "dateTime": "Date & Time",
+        "location": "Location",
+        "instructor": "Instructor",
+        "students": "Students",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "empty": {
+      "noClassesScheduled": "No classes scheduled"
+    }
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

@@ -147,6 +147,51 @@
       }
     }
   },
+  "classes": {
+    "title": "Gerenciamento de Aulas",
+    "subtitle": "aulas agendadas esta semana",
+    "actions": {
+      "duplicateWeek": "Duplicar Semana",
+      "addClass": "Adicionar Aula",
+      "attendance": "Presença",
+      "edit": "Editar",
+      "scheduleFirstClass": "Agendar Primeira Aula"
+    },
+    "stats": {
+      "totalClasses": "Total de Aulas",
+      "thisWeek": "Esta Semana",
+      "totalCapacity": "Capacidade Total",
+      "avgAttendance": "Presença Média"
+    },
+    "filters": {
+      "allDisciplines": "Todas as Disciplinas",
+      "allDays": "Todos os Dias"
+    },
+    "viewModes": {
+      "schedule": "Cronograma",
+      "list": "Lista"
+    },
+    "status": {
+      "completed": "Concluída",
+      "inProgress": "Em Andamento",
+      "today": "Hoje",
+      "scheduled": "Agendada"
+    },
+    "table": {
+      "headers": {
+        "class": "Aula",
+        "dateTime": "Data e Hora",
+        "location": "Local",
+        "instructor": "Instrutor",
+        "students": "Estudantes",
+        "status": "Status",
+        "actions": "Ações"
+      }
+    },
+    "empty": {
+      "noClassesScheduled": "Nenhuma aula agendada"
+    }
+  },
   "common": {
     "loading": "Carregando...",
     "error": "Erro",

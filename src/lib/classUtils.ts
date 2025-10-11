@@ -22,10 +22,10 @@ export const getClassStatus = (date: string, time: string) => {
   const now = new Date();
   const diffHours = (classDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-  if (diffHours < 0) return { status: 'completed', label: 'Completed', color: 'badge-ghost' };
-  if (diffHours < 1) return { status: 'ongoing', label: 'In Progress', color: 'badge-success' };
-  if (diffHours < 24) return { status: 'upcoming', label: 'Today', color: 'badge-warning' };
-  return { status: 'scheduled', label: 'Scheduled', color: 'badge-info' };
+  if (diffHours < 0) return { status: 'completed', labelKey: 'completed', color: 'badge-ghost' };
+  if (diffHours < 1) return { status: 'ongoing', labelKey: 'inProgress', color: 'badge-success' };
+  if (diffHours < 24) return { status: 'upcoming', labelKey: 'today', color: 'badge-warning' };
+  return { status: 'scheduled', labelKey: 'scheduled', color: 'badge-info' };
 };
 
 /**
@@ -38,9 +38,9 @@ export const calculateClassStats = (classes: Class[]) => {
   const avgAttendance = '89%'; // This would be calculated from attendance data
 
   return [
-    { label: 'Total Classes', value: totalClasses, iconName: 'BookOpen', color: 'text-primary' },
-    { label: 'This Week', value: thisWeek, iconName: 'Calendar', color: 'text-info' },
-    { label: 'Total Capacity', value: totalCapacity, iconName: 'Users', color: 'text-success' },
-    { label: 'Avg. Attendance', value: avgAttendance, iconName: 'TrendingUp', color: 'text-warning' },
+    { labelKey: 'totalClasses', value: totalClasses, iconName: 'BookOpen', color: 'text-primary' },
+    { labelKey: 'thisWeek', value: thisWeek, iconName: 'Calendar', color: 'text-info' },
+    { labelKey: 'totalCapacity', value: totalCapacity, iconName: 'Users', color: 'text-success' },
+    { labelKey: 'avgAttendance', value: avgAttendance, iconName: 'TrendingUp', color: 'text-warning' },
   ];
 };

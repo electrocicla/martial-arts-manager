@@ -7,8 +7,10 @@ import { useClassFilters } from '../hooks/useClassFilters';
 import { useClassStats } from '../hooks/useClassStats';
 import { getDisciplineColor, getClassStatus } from '../lib/classUtils';
 import { ClassFormModal } from './classes';
+import { useTranslation } from 'react-i18next';
 
 export default function ClassManager() {
+  const { t } = useTranslation();
   const {
     classes,
     createClass,
@@ -44,10 +46,10 @@ export default function ClassManager() {
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-black text-base-content">
-                  Class Management
+                  {t('classes.title')}
                 </h1>
                 <p className="text-sm text-base-content/70">
-                  {classes.length} classes scheduled this week
+                  {classes.length} {t('classes.subtitle')}
                 </p>
               </div>
             </div>
@@ -55,14 +57,14 @@ export default function ClassManager() {
             <div className="flex gap-2">
               <button className="btn btn-ghost btn-sm">
                 <Copy className="w-4 h-4" />
-                Duplicate Week
+                {t('classes.actions.duplicateWeek')}
               </button>
               <button 
                 className="btn btn-primary btn-sm"
                 onClick={() => setShowAddModal(true)}
               >
                 <Plus className="w-4 h-4" />
-                Add Class
+                {t('classes.actions.addClass')}
               </button>
             </div>
           </div>
@@ -91,7 +93,7 @@ export default function ClassManager() {
               value={filterDiscipline}
               onChange={(e) => setFilterDiscipline(e.target.value)}
             >
-              <option value="all">All Disciplines</option>
+              <option value="all">{t('classes.filters.allDisciplines')}</option>
               {disciplines.map(disc => (
                 <option key={disc} value={disc}>{disc}</option>
               ))}
@@ -102,7 +104,7 @@ export default function ClassManager() {
               value={filterDay}
               onChange={(e) => setFilterDay(e.target.value)}
             >
-              <option value="all">All Days</option>
+              <option value="all">{t('classes.filters.allDays')}</option>
               {daysOfWeek.map((day, idx) => (
                 <option key={day} value={idx}>{day}</option>
               ))}
@@ -115,14 +117,14 @@ export default function ClassManager() {
               onClick={() => setViewMode('schedule')}
             >
               <Calendar className="w-4 h-4" />
-              Schedule
+              {t('classes.viewModes.schedule')}
             </button>
             <button 
               className={`btn btn-sm ${viewMode === 'list' ? 'btn-active' : ''}`}
               onClick={() => setViewMode('list')}
             >
               <List className="w-4 h-4" />
-              List
+              {t('classes.viewModes.list')}
             </button>
           </div>
         </div>
@@ -157,7 +159,7 @@ export default function ClassManager() {
                                   {cls.discipline}
                                 </div>
                                 <div className={`badge ${status.color} badge-sm`}>
-                                  {status.label}
+                                  {t(`classes.status.${status.labelKey}`)}
                                 </div>
                               </div>
                               
@@ -190,7 +192,7 @@ export default function ClassManager() {
                                 className="btn btn-primary btn-sm"
                                 onClick={() => navigate(`/attendance/${cls.id}`)}
                               >
-                                Attendance
+                                {t('classes.actions.attendance')}
                               </button>
                               <button className="btn btn-ghost btn-sm">
                                 <Edit className="w-3 h-3" />
@@ -208,12 +210,12 @@ export default function ClassManager() {
             {Object.keys(groupedByDay).length === 0 && (
               <div className="text-center py-12">
                 <Calendar className="w-12 h-12 mx-auto text-base-content/30 mb-4" />
-                <p className="text-base-content/60">No classes scheduled</p>
+                <p className="text-base-content/60">{t('classes.empty.noClassesScheduled')}</p>
                 <button 
                   className="btn btn-primary btn-sm mt-4"
                   onClick={() => setShowAddModal(true)}
                 >
-                  Schedule First Class
+                  {t('classes.actions.scheduleFirstClass')}
                 </button>
               </div>
             )}
@@ -223,13 +225,13 @@ export default function ClassManager() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Class</th>
-                  <th>Date & Time</th>
-                  <th>Location</th>
-                  <th>Instructor</th>
-                  <th>Students</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>{t('classes.table.headers.class')}</th>
+                  <th>{t('classes.table.headers.dateTime')}</th>
+                  <th>{t('classes.table.headers.location')}</th>
+                  <th>{t('classes.table.headers.instructor')}</th>
+                  <th>{t('classes.table.headers.students')}</th>
+                  <th>{t('classes.table.headers.status')}</th>
+                  <th>{t('classes.table.headers.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -261,7 +263,7 @@ export default function ClassManager() {
                       </td>
                       <td>
                         <div className={`badge ${status.color}`}>
-                          {status.label}
+                          {t(`classes.status.${status.labelKey}`)}
                         </div>
                       </td>
                       <td>
@@ -270,10 +272,10 @@ export default function ClassManager() {
                             className="btn btn-ghost btn-xs"
                             onClick={() => navigate(`/attendance/${cls.id}`)}
                           >
-                            Attendance
+                            {t('classes.actions.attendance')}
                           </button>
                           <button className="btn btn-ghost btn-xs">
-                            Edit
+                            {t('classes.actions.edit')}
                           </button>
                         </div>
                       </td>
