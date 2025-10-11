@@ -40,10 +40,40 @@ body {
 /* Improve text contrast */
 h1, h2, h3, h4, h5, h6 {
   color: #f9fafb; /* gray-50 */
+  /* Better font rendering for mobile */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Mobile-specific font improvements */
+@media (max-width: 768px) {
+  h1, h2, h3, h4, h5, h6 {
+    /* Ensure proper text rendering on mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-shadow: none; /* Remove text shadows that can cause outline issues */
+  }
+
+  /* Fix gradient text issues on mobile */
+  .dark-energy-text,
+  .fire-energy-text {
+    /* Fallback for mobile browsers that don't support background-clip: text well */
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    color: #ffffff;
+    -webkit-text-stroke: none;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
 }
 
 p, span, div {
   color: #e5e7eb; /* gray-200 */
+  /* Better font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Better button contrast and rounded corners */

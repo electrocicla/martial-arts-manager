@@ -23,35 +23,40 @@ export const useDevicePerformance = (): DevicePerformance => {
     const detectPerformance = () => {
       // Check if device prefers reduced motion
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      
+
       // Detect mobile devices
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
                        window.innerWidth <= 768;
-      
+
       // Check device capabilities
       const hardwareConcurrency = navigator.hardwareConcurrency || 2;
       const deviceMemory = navigator.deviceMemory || 4; // GB
       const connection = navigator.connection;
-      
+
       // Determine if device is low-end
       let isLowEnd = false;
       let particleCount = 25; // Desktop default
-      
+
       if (isMobile) {
-        // More aggressive mobile performance tiers for 30% improvement
-        if (hardwareConcurrency <= 4 || deviceMemory <= 2 || connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g') {
+        // Ultra-aggressive mobile performance tiers for better mobile experience
+        if (hardwareConcurrency <= 2 || deviceMemory <= 2 || connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g') {
           isLowEnd = true;
-          particleCount = 4; // Very conservative for low-end mobile (reduced from 6)
-        } else if (hardwareConcurrency <= 6 || deviceMemory <= 4 || connection?.effectiveType === '3g') {
-          particleCount = 8; // Moderate for mid-range mobile (reduced from 12)
+          particleCount = 0; // Disable particles entirely for very low-end mobile
+        } else if (hardwareConcurrency <= 4 || deviceMemory <= 3) {
+          isLowEnd = true;
+          particleCount = 3; // Very conservative for low-end mobile
+        } else if (hardwareConcurrency <= 6 || deviceMemory <= 4) {
+          particleCount = 6; // Moderate for mid-range mobile
         } else {
-          particleCount = 12; // Higher-end mobile (reduced from 15)
+          particleCount = 10; // Higher-end mobile
         }
-        
+
         // Further reduce if slow connection
         if (connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g')) {
           isLowEnd = true;
-          particleCount = Math.min(particleCount, 3);
+          particleCount = 0; // Disable particles for very slow connections
+        } else if (connection && connection.effectiveType === '3g') {
+          particleCount = Math.max(particleCount - 3, 0); // Reduce particles for 3G
         }
       } else {
         // Desktop performance - also more conservative
@@ -62,12 +67,12 @@ export const useDevicePerformance = (): DevicePerformance => {
           particleCount = 18; // Reduced from 25
         }
       }
-      
+
       // Override for reduced motion preference
       if (prefersReducedMotion) {
         particleCount = Math.min(particleCount, 5);
       }
-      
+
       setPerformance({
         isLowEnd,
         isMobile,
@@ -79,16 +84,16 @@ export const useDevicePerformance = (): DevicePerformance => {
     };
 
     detectPerformance();
-    
+
     // Re-detect on window resize (orientation change, etc.)
     const handleResize = () => detectPerformance();
     window.addEventListener('resize', handleResize);
-    
+
     // Listen for reduced motion preference changes
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const handleMediaChange = () => detectPerformance();
     mediaQuery.addEventListener('change', handleMediaChange);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
       mediaQuery.removeEventListener('change', handleMediaChange);

@@ -97,6 +97,61 @@
       "scheduleNewClass": "Schedule New Class"
     }
   },
+  "payments": {
+    "title": "Payment Management",
+    "subtitle": "Track and manage student payments",
+    "totalPayments": "payments",
+    "search": {
+      "placeholder": "Search by student name, type, or description...",
+      "filters": "Search & Filters"
+    },
+    "filters": {
+      "allStatuses": "All Statuses",
+      "allTypes": "All Types",
+      "status": {
+        "completed": "Completed",
+        "pending": "Pending",
+        "failed": "Failed",
+        "refunded": "Refunded"
+      },
+      "type": {
+        "monthly": "Monthly",
+        "dropIn": "Drop-in",
+        "private": "Private",
+        "equipment": "Equipment",
+        "other": "Other"
+      }
+    },
+    "form": {
+      "title": "Add New Payment",
+      "student": "Student",
+      "selectStudent": "Select a student",
+      "amount": "Amount ($)",
+      "paymentType": "Payment Type",
+      "paymentDate": "Payment Date",
+      "status": "Status",
+      "notes": "Notes (Optional)",
+      "notesPlaceholder": "Additional notes about the payment",
+      "submit": "Add Payment",
+      "submitting": "Adding..."
+    },
+    "empty": {
+      "title": "No payments found matching your criteria"
+    },
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "failed": "Failed",
+      "refunded": "Refunded"
+    },
+    "type": {
+      "monthly": "Monthly",
+      "dropIn": "Drop-in",
+      "private": "Private",
+      "equipment": "Equipment",
+      "other": "Other"
+    }
+  },
   "students": {
     "title": "Student Management",
     "subtitle": "Manage your dojo's student roster and profiles",

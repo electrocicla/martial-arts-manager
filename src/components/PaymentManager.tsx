@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader } from './ui/Card';
 import { Input } from './ui/Input';
 import { Select } from './ui/Select';
@@ -21,6 +22,8 @@ export default function PaymentManager() {
   } = usePayments();
 
   const { students } = useStudents();
+
+  const { t } = useTranslation();
 
   const toast = useToast();
 
@@ -105,25 +108,25 @@ export default function PaymentManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Payment Management</h2>
-          <p className="text-gray-600">Track and manage student payments</p>
+          <h2 className="text-2xl font-bold text-gray-900">{t('payments.title')}</h2>
+          <p className="text-gray-600">{t('payments.subtitle')}</p>
         </div>
         <Badge variant="secondary" className="px-3 py-1">
-          {filteredPayments.length} payment{filteredPayments.length !== 1 ? 's' : ''}
+          {filteredPayments.length} {t('payments.totalPayments')}
         </Badge>
       </div>
 
       {/* Search and Filters */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Search & Filters</h3>
+          <h3 className="text-lg font-semibold">{t('payments.search.filters')}</h3>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search by student name, type, or description..."
+                placeholder={t('payments.search.placeholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -133,23 +136,23 @@ export default function PaymentManager() {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               options={[
-                { value: 'all', label: 'All Statuses' },
-                { value: 'completed', label: 'Completed' },
-                { value: 'pending', label: 'Pending' },
-                { value: 'failed', label: 'Failed' },
-                { value: 'refunded', label: 'Refunded' }
+                { value: 'all', label: t('payments.filters.allStatuses') },
+                { value: 'completed', label: t('payments.filters.status.completed') },
+                { value: 'pending', label: t('payments.filters.status.pending') },
+                { value: 'failed', label: t('payments.filters.status.failed') },
+                { value: 'refunded', label: t('payments.filters.status.refunded') }
               ]}
             />
             <Select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
               options={[
-                { value: 'all', label: 'All Types' },
-                { value: 'monthly', label: 'Monthly' },
-                { value: 'drop-in', label: 'Drop-in' },
-                { value: 'private', label: 'Private' },
-                { value: 'equipment', label: 'Equipment' },
-                { value: 'other', label: 'Other' }
+                { value: 'all', label: t('payments.filters.allTypes') },
+                { value: 'monthly', label: t('payments.filters.type.monthly') },
+                { value: 'drop-in', label: t('payments.filters.type.dropIn') },
+                { value: 'private', label: t('payments.filters.type.private') },
+                { value: 'equipment', label: t('payments.filters.type.equipment') },
+                { value: 'other', label: t('payments.filters.type.other') }
               ]}
             />
           </div>
@@ -161,7 +164,7 @@ export default function PaymentManager() {
         <CardHeader>
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Add New Payment
+            {t('payments.form.title')}
           </h3>
         </CardHeader>
         <CardContent>
@@ -169,12 +172,12 @@ export default function PaymentManager() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Student
+                  {t('payments.form.student')}
                 </label>
                 <Select
                   {...register('studentId')}
                   options={[
-                    { value: '', label: 'Select a student' },
+                    { value: '', label: t('payments.form.selectStudent') },
                     ...students.map((student: Student) => ({ value: student.id, label: student.name }))
                   ]}
                 />
@@ -185,7 +188,7 @@ export default function PaymentManager() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Amount ($)
+                  {t('payments.form.amount')}
                 </label>
                 <Input
                   type="number"
@@ -201,16 +204,16 @@ export default function PaymentManager() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Payment Type
+                  {t('payments.form.paymentType')}
                 </label>
                 <Select
                   {...register('type')}
                   options={[
-                    { value: 'monthly', label: 'Monthly' },
-                    { value: 'drop-in', label: 'Drop-in' },
-                    { value: 'private', label: 'Private' },
-                    { value: 'equipment', label: 'Equipment' },
-                    { value: 'other', label: 'Other' }
+                    { value: 'monthly', label: t('payments.filters.type.monthly') },
+                    { value: 'drop-in', label: t('payments.filters.type.dropIn') },
+                    { value: 'private', label: t('payments.filters.type.private') },
+                    { value: 'equipment', label: t('payments.filters.type.equipment') },
+                    { value: 'other', label: t('payments.filters.type.other') }
                   ]}
                 />
                 {errors.type && (
@@ -220,7 +223,7 @@ export default function PaymentManager() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Payment Date
+                  {t('payments.form.paymentDate')}
                 </label>
                 <Input
                   type="date"
@@ -233,15 +236,15 @@ export default function PaymentManager() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
+                  {t('payments.form.status')}
                 </label>
                 <Select
                   {...register('status')}
                   options={[
-                    { value: 'completed', label: 'Completed' },
-                    { value: 'pending', label: 'Pending' },
-                    { value: 'failed', label: 'Failed' },
-                    { value: 'refunded', label: 'Refunded' }
+                    { value: 'completed', label: t('payments.filters.status.completed') },
+                    { value: 'pending', label: t('payments.filters.status.pending') },
+                    { value: 'failed', label: t('payments.filters.status.failed') },
+                    { value: 'refunded', label: t('payments.filters.status.refunded') }
                   ]}
                 />
                 {errors.status && (
@@ -251,11 +254,11 @@ export default function PaymentManager() {
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes (Optional)
+                  {t('payments.form.notes')}
                 </label>
                 <Input
                   {...register('notes')}
-                  placeholder="Additional notes about the payment"
+                  placeholder={t('payments.form.notesPlaceholder')}
                 />
                 {errors.notes && (
                   <p className="text-sm text-red-600 mt-1">{errors.notes.message}</p>
@@ -268,7 +271,7 @@ export default function PaymentManager() {
               disabled={isSubmitting}
               className="w-full md:w-auto"
             >
-              {isSubmitting ? 'Adding...' : 'Add Payment'}
+              {isSubmitting ? t('payments.form.submitting') : t('payments.form.submit')}
             </Button>
           </form>
         </CardContent>
@@ -280,7 +283,7 @@ export default function PaymentManager() {
           <Card>
             <CardContent className="text-center py-8">
               <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No payments found matching your criteria</p>
+              <p className="text-gray-500">{t('payments.empty.title')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -297,10 +300,10 @@ export default function PaymentManager() {
                           {student?.name || 'Unknown Student'}
                         </span>
                         <Badge variant={getTypeBadgeVariant(payment.type)}>
-                          {payment.type}
+                          {t(`payments.type.${payment.type.replace('-', '')}`)}
                         </Badge>
                         <Badge variant={getStatusBadgeVariant((payment as Payment & { status?: string }).status || 'completed')}>
-                          {(payment as Payment & { status?: string }).status || 'completed'}
+                          {t(`payments.status.${(payment as Payment & { status?: string }).status || 'completed'}`)}
                         </Badge>
                       </div>
 

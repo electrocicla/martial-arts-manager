@@ -97,6 +97,61 @@
       "scheduleNewClass": "Agendar Nova Aula"
     }
   },
+  "payments": {
+    "title": "Gestão de Pagamentos",
+    "subtitle": "Acompanhe e gerencie os pagamentos dos estudantes",
+    "totalPayments": "pagamentos",
+    "search": {
+      "placeholder": "Buscar por nome do estudante, tipo ou descrição...",
+      "filters": "Busca e Filtros"
+    },
+    "filters": {
+      "allStatuses": "Todos os Status",
+      "allTypes": "Todos os Tipos",
+      "status": {
+        "completed": "Concluído",
+        "pending": "Pendente",
+        "failed": "Falhou",
+        "refunded": "Reembolsado"
+      },
+      "type": {
+        "monthly": "Mensal",
+        "dropIn": "Avulso",
+        "private": "Particular",
+        "equipment": "Equipamento",
+        "other": "Outro"
+      }
+    },
+    "form": {
+      "title": "Adicionar Novo Pagamento",
+      "student": "Estudante",
+      "selectStudent": "Selecionar um estudante",
+      "amount": "Valor ($)",
+      "paymentType": "Tipo de Pagamento",
+      "paymentDate": "Data do Pagamento",
+      "status": "Status",
+      "notes": "Notas (Opcional)",
+      "notesPlaceholder": "Notas adicionais sobre o pagamento",
+      "submit": "Adicionar Pagamento",
+      "submitting": "Adicionando..."
+    },
+    "empty": {
+      "title": "Nenhum pagamento encontrado que corresponda aos seus critérios"
+    },
+    "status": {
+      "completed": "Concluído",
+      "pending": "Pendente",
+      "failed": "Falhou",
+      "refunded": "Reembolsado"
+    },
+    "type": {
+      "monthly": "Mensal",
+      "dropIn": "Avulso",
+      "private": "Particular",
+      "equipment": "Equipamento",
+      "other": "Outro"
+    }
+  },
   "students": {
     "title": "Gestão de Estudantes",
     "subtitle": "Gerencie o cadastro e perfis dos estudantes do seu dojo",
