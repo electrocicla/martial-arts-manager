@@ -27,6 +27,16 @@ interface NewClassState {
   };
 }
 
+const DAYS_OF_WEEK = [
+  { id: 1, label: 'Lun', fullLabel: 'Lunes' },
+  { id: 2, label: 'Mar', fullLabel: 'Martes' },
+  { id: 3, label: 'Mié', fullLabel: 'Miércoles' },
+  { id: 4, label: 'Jue', fullLabel: 'Jueves' },
+  { id: 5, label: 'Vie', fullLabel: 'Viernes' },
+  { id: 6, label: 'Sáb', fullLabel: 'Sábado' },
+  { id: 0, label: 'Dom', fullLabel: 'Domingo' },
+];
+
 export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormModalProps) {
   const { t } = useTranslation();
   const { disciplines, locations, instructors } = useClassMetadata();
@@ -48,19 +58,49 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
     },
   });
 
+  const [customLocation, setCustomLocation] = useState('');
+  const [customInstructor, setCustomInstructor] = useState('');
+  const [showCustomLocation, setShowCustomLocation] = useState(false);
+  const [showCustomInstructor, setShowCustomInstructor] = useState(false);
+
+  const toggleDay = (dayId: number) => {
+    setNewClass(prev => {
+      const currentDays = prev.recurrence_pattern.days;
+      const newDays = currentDays.includes(dayId)
+        ? currentDays.filter(d => d !== dayId)
+        : [...currentDays, dayId].sort((a, b) => a - b);
+      
+      return {
+        ...prev,
+        recurrence_pattern: {
+          ...prev.recurrence_pattern,
+          days: newDays,
+        },
+      };
+    });
+  };
+
   const handleSubmit = async () => {
     if (!newClass.name || !newClass.date || !newClass.time) {
       alert(t('classForm.requiredField'));
       return;
     }
 
+    const finalLocation = showCustomLocation && customLocation 
+      ? customLocation 
+      : newClass.location;
+    
+    const finalInstructor = showCustomInstructor && customInstructor 
+      ? customInstructor 
+      : newClass.instructor;
+
     const classData: ClassFormData = {
       name: newClass.name,
       discipline: newClass.discipline as Discipline,
       date: newClass.date,
       time: newClass.time,
-      location: newClass.location,
-      instructor: newClass.instructor,
+      location: finalLocation,
+      instructor: finalInstructor,
       maxStudents: newClass.max_students,
       description: newClass.description || undefined,
       isRecurring: newClass.is_recurring,
@@ -91,6 +131,10 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
           endDate: '',
         },
       });
+      setCustomLocation('');
+      setCustomInstructor('');
+      setShowCustomLocation(false);
+      setShowCustomInstructor(false);
     } else {
       alert(t('classForm.addFailed'));
     }
@@ -99,24 +143,24 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 font-inter">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300 ease-out"
         onClick={onClose}
       ></div>
       
       {/* Modal Container */}
-      <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden border border-gray-700/50">
+      <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden border border-gray-700/50 animate-scale-in transform transition-all duration-300 ease-out">
         {/* Header */}
-        <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 flex items-center justify-between">
-          <h3 className="font-bold text-2xl text-white flex items-center gap-3">
-            <Plus className="w-7 h-7" />
+        <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 flex items-center justify-between transition-all duration-300 hover:from-red-700 hover:to-red-800">
+          <h3 className="font-bold text-2xl text-white flex items-center gap-3 tracking-tight">
+            <Plus className="w-7 h-7 transition-transform duration-300 hover:rotate-90" />
             {t('classForm.title')}
           </h3>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors duration-200"
+            className="p-2 hover:bg-white/10 rounded-lg transition-all duration-300 ease-out transform hover:scale-110 hover:rotate-90"
             aria-label="Close"
           >
             <X className="w-6 h-6 text-white" />
@@ -124,24 +168,24 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
         </div>
 
         {/* Form Content - Scrollable */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)] scrollbar-thin">
           <div className="space-y-6">
             {/* Basic Information Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wide">
+            <div className="space-y-4 animate-fade-in">
+              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wider">
                 Información Básica
               </h4>
               
               {/* Class Name - Full Width */}
-              <div className="form-control">
+              <div className="form-control transform transition-all duration-300 hover:translate-x-1">
                 <label className="label">
-                  <span className="label-text text-gray-300 font-medium">
+                  <span className="label-text text-gray-300 font-medium tracking-wide">
                     {t('classForm.className')} *
                   </span>
                 </label>
                 <input
                   type="text"
-                  className="input input-bordered w-full bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
+                  className="input input-bordered w-full bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20"
                   placeholder={t('classForm.classNamePlaceholder')}
                   value={newClass.name}
                   onChange={(e) => setNewClass({...newClass, name: e.target.value})}
@@ -149,14 +193,14 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
               </div>
 
               {/* Discipline - Full Width */}
-              <div className="form-control">
+              <div className="form-control transform transition-all duration-300 hover:translate-x-1">
                 <label className="label">
-                  <span className="label-text text-gray-300 font-medium">
+                  <span className="label-text text-gray-300 font-medium tracking-wide">
                     {t('classForm.discipline')} *
                   </span>
                 </label>
                 <select
-                  className="select select-bordered w-full bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
+                  className="select select-bordered w-full bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20 cursor-pointer"
                   value={newClass.discipline}
                   onChange={(e) => setNewClass({...newClass, discipline: e.target.value})}
                   disabled={disciplines.length === 0}
@@ -173,35 +217,35 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
             </div>
 
             {/* Schedule Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wide">
+            <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wider">
                 Horario
               </h4>
               
               <div className="grid grid-cols-2 gap-4">
-                <div className="form-control">
+                <div className="form-control transform transition-all duration-300 hover:translate-x-1">
                   <label className="label">
-                    <span className="label-text text-gray-300 font-medium">
+                    <span className="label-text text-gray-300 font-medium tracking-wide">
                       {t('classForm.date')} *
                     </span>
                   </label>
                   <input
                     type="date"
-                    className="input input-bordered bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
+                    className="input input-bordered bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20 cursor-pointer"
                     value={newClass.date}
                     onChange={(e) => setNewClass({...newClass, date: e.target.value})}
                   />
                 </div>
 
-                <div className="form-control">
+                <div className="form-control transform transition-all duration-300 hover:translate-x-1">
                   <label className="label">
-                    <span className="label-text text-gray-300 font-medium">
+                    <span className="label-text text-gray-300 font-medium tracking-wide">
                       {t('classForm.time')} *
                     </span>
                   </label>
                   <input
                     type="time"
-                    className="input input-bordered bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
+                    className="input input-bordered bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20 cursor-pointer"
                     value={newClass.time}
                     onChange={(e) => setNewClass({...newClass, time: e.target.value})}
                   />
@@ -210,68 +254,136 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
             </div>
 
             {/* Location & Instructor Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wide">
+            <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wider">
                 Ubicación e Instructor
               </h4>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="form-control">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Location Input/Select Combo */}
+                <div className="form-control transform transition-all duration-300 hover:translate-x-1">
                   <label className="label">
-                    <span className="label-text text-gray-300 font-medium">
+                    <span className="label-text text-gray-300 font-medium tracking-wide">
                       {t('classForm.location')}
                     </span>
                   </label>
-                  <select
-                    className="select select-bordered bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
-                    value={newClass.location}
-                    onChange={(e) => setNewClass({...newClass, location: e.target.value})}
-                    disabled={locations.length === 0}
-                  >
-                    {locations.length > 0 ? (
-                      locations.map(loc => (
-                        <option key={loc} value={loc}>{loc}</option>
-                      ))
+                  <div className="space-y-2">
+                    {!showCustomLocation ? (
+                      <div className="flex gap-2">
+                        <select
+                          className="select select-bordered flex-1 bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20 cursor-pointer"
+                          value={newClass.location}
+                          onChange={(e) => setNewClass({...newClass, location: e.target.value})}
+                          disabled={locations.length === 0}
+                        >
+                          {locations.length > 0 ? (
+                            locations.map(loc => (
+                              <option key={loc} value={loc}>{loc}</option>
+                            ))
+                          ) : (
+                            <option value="">Cargando ubicaciones...</option>
+                          )}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => setShowCustomLocation(true)}
+                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
                     ) : (
-                      <option value="">Cargando ubicaciones...</option>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          className="input input-bordered flex-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20"
+                          placeholder="Nueva ubicación..."
+                          value={customLocation}
+                          onChange={(e) => setCustomLocation(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowCustomLocation(false);
+                            setCustomLocation('');
+                          }}
+                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
                     )}
-                  </select>
+                  </div>
                 </div>
 
-                <div className="form-control">
+                {/* Instructor Input/Select Combo */}
+                <div className="form-control transform transition-all duration-300 hover:translate-x-1">
                   <label className="label">
-                    <span className="label-text text-gray-300 font-medium">
+                    <span className="label-text text-gray-300 font-medium tracking-wide">
                       {t('classForm.instructor')}
                     </span>
                   </label>
-                  <select
-                    className="select select-bordered bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
-                    value={newClass.instructor}
-                    onChange={(e) => setNewClass({...newClass, instructor: e.target.value})}
-                    disabled={instructors.length === 0}
-                  >
-                    {instructors.length > 0 ? (
-                      instructors.map(inst => (
-                        <option key={inst} value={inst}>{inst}</option>
-                      ))
+                  <div className="space-y-2">
+                    {!showCustomInstructor ? (
+                      <div className="flex gap-2">
+                        <select
+                          className="select select-bordered flex-1 bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20 cursor-pointer"
+                          value={newClass.instructor}
+                          onChange={(e) => setNewClass({...newClass, instructor: e.target.value})}
+                          disabled={instructors.length === 0}
+                        >
+                          {instructors.length > 0 ? (
+                            instructors.map(inst => (
+                              <option key={inst} value={inst}>{inst}</option>
+                            ))
+                          ) : (
+                            <option value="">Cargando instructores...</option>
+                          )}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => setShowCustomInstructor(true)}
+                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
                     ) : (
-                      <option value="">Cargando instructores...</option>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          className="input input-bordered flex-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20"
+                          placeholder="Nuevo instructor..."
+                          value={customInstructor}
+                          onChange={(e) => setCustomInstructor(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowCustomInstructor(false);
+                            setCustomInstructor('');
+                          }}
+                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
                     )}
-                  </select>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Capacity & Recurrence Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wide">
+            <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wider">
                 Capacidad y Configuración
               </h4>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="form-control">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-control transform transition-all duration-300 hover:translate-x-1">
                   <label className="label">
-                    <span className="label-text text-gray-300 font-medium">
+                    <span className="label-text text-gray-300 font-medium tracking-wide">
                       {t('classForm.maxStudents')}
                     </span>
                   </label>
@@ -279,21 +391,21 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
                     type="number"
                     min="1"
                     max="100"
-                    className="input input-bordered bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
+                    className="input input-bordered bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20"
                     value={newClass.max_students}
                     onChange={(e) => setNewClass({...newClass, max_students: parseInt(e.target.value) || 1})}
                   />
                 </div>
 
                 <div className="form-control flex items-end pb-2">
-                  <label className="label cursor-pointer justify-start gap-3 p-3 hover:bg-gray-800/50 rounded-lg transition-colors">
+                  <label className="label cursor-pointer justify-start gap-3 p-3 hover:bg-gray-800/50 rounded-lg transition-all duration-300 transform hover:scale-[1.02]">
                     <input
                       type="checkbox"
-                      className="toggle toggle-error"
+                      className="toggle toggle-error transition-all duration-300"
                       checked={newClass.is_recurring}
                       onChange={(e) => setNewClass({...newClass, is_recurring: e.target.checked})}
                     />
-                    <span className="label-text text-gray-300 font-medium">
+                    <span className="label-text text-gray-300 font-medium tracking-wide">
                       {t('classForm.recurringClass')}
                     </span>
                   </label>
@@ -301,22 +413,72 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
               </div>
 
               {newClass.is_recurring && (
-                <div className="alert bg-blue-900/30 border border-blue-700/50 text-blue-300 flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm">{t('classForm.recurringSetupMessage')}</span>
+                <div className="space-y-4 animate-slide-down">
+                  <div className="alert bg-blue-900/30 border border-blue-700/50 text-blue-300 flex items-start gap-3 transition-all duration-300 hover:bg-blue-900/40 hover:border-blue-600/50">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">{t('classForm.recurringSetupMessage')}</span>
+                  </div>
+
+                  {/* Day Selector */}
+                  <div className="space-y-3">
+                    <label className="label">
+                      <span className="label-text text-gray-300 font-medium tracking-wide">
+                        Días de la Semana
+                      </span>
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {DAYS_OF_WEEK.map((day) => (
+                        <button
+                          key={day.id}
+                          type="button"
+                          onClick={() => toggleDay(day.id)}
+                          className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 transform hover:scale-110 hover:shadow-lg ${
+                            newClass.recurrence_pattern.days.includes(day.id)
+                              ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md shadow-red-500/50 hover:from-red-700 hover:to-red-800'
+                              : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700 hover:text-gray-300 hover:border-gray-600'
+                          }`}
+                          title={day.fullLabel}
+                        >
+                          {day.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* End Date */}
+                  <div className="form-control transform transition-all duration-300 hover:translate-x-1">
+                    <label className="label">
+                      <span className="label-text text-gray-300 font-medium tracking-wide">
+                        Fecha de Finalización (Opcional)
+                      </span>
+                    </label>
+                    <input
+                      type="date"
+                      className="input input-bordered bg-gray-800 border-gray-700 text-white focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20 cursor-pointer"
+                      value={newClass.recurrence_pattern.endDate}
+                      onChange={(e) => setNewClass({
+                        ...newClass,
+                        recurrence_pattern: {
+                          ...newClass.recurrence_pattern,
+                          endDate: e.target.value,
+                        },
+                      })}
+                      min={newClass.date}
+                    />
+                  </div>
                 </div>
               )}
             </div>
 
             {/* Description Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wide">
+            <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wider">
                 Descripción
               </h4>
               
-              <div className="form-control">
+              <div className="form-control transform transition-all duration-300 hover:translate-x-1">
                 <textarea
-                  className="textarea textarea-bordered bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all h-24 resize-none"
+                  className="textarea textarea-bordered bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all duration-300 ease-out focus:scale-[1.01] focus:shadow-lg focus:shadow-red-500/20 resize-none min-h-[120px] md:min-h-[150px] lg:min-h-[180px]"
                   placeholder={t('classForm.descriptionPlaceholder')}
                   value={newClass.description}
                   onChange={(e) => setNewClass({...newClass, description: e.target.value})}
@@ -329,16 +491,16 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
         {/* Footer Actions */}
         <div className="bg-gray-900 px-6 py-4 border-t border-gray-700 flex justify-end gap-3">
           <button 
-            className="btn bg-gray-800 hover:bg-gray-700 text-white border-gray-700 rounded-lg transition-all duration-200 px-6" 
+            className="btn bg-gray-800 hover:bg-gray-700 text-white border-gray-700 rounded-lg transition-all duration-300 ease-out transform hover:scale-105 hover:shadow-lg px-6" 
             onClick={onClose}
           >
             {t('classForm.cancel')}
           </button>
           <button 
-            className="btn bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-none rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 gap-2 px-6" 
+            className="btn bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-none rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-out transform hover:scale-105 gap-2 px-6" 
             onClick={handleSubmit}
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5 transition-transform duration-300 hover:rotate-90" />
             {t('classForm.scheduleClass')}
           </button>
         </div>

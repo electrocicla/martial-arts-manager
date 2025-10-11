@@ -31,7 +31,7 @@ export function useClassMetadata(): UseClassMetadataReturn {
           setError(response.error || 'Failed to fetch class metadata');
           // Use defaults if API fails
           setMetadata({
-            disciplines: ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate'],
+            disciplines: ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate', 'Weightlifting'],
             locations: ['Main Dojo', 'Training Hall', 'Outdoor Area', 'Gym Floor'],
             instructors: ['Sensei Yamamoto', 'Coach Johnson', 'Master Chen', 'Instructor Davis'],
           });
@@ -40,7 +40,7 @@ export function useClassMetadata(): UseClassMetadataReturn {
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
         // Use defaults if error
         setMetadata({
-          disciplines: ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate'],
+          disciplines: ['Brazilian Jiu-Jitsu', 'Kickboxing', 'Muay Thai', 'MMA', 'Karate', 'Weightlifting'],
           locations: ['Main Dojo', 'Training Hall', 'Outdoor Area', 'Gym Floor'],
           instructors: ['Sensei Yamamoto', 'Coach Johnson', 'Master Chen', 'Instructor Davis'],
         });
