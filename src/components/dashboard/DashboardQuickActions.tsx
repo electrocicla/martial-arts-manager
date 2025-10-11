@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Zap } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface QuickAction {
   title: string;
@@ -16,12 +17,13 @@ interface DashboardQuickActionsProps {
 
 export default function DashboardQuickActions({ quickActions }: DashboardQuickActionsProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <section className="dashboard-section">
       <h2 className="text-lg sm:text-xl font-bold text-base-content mb-4 flex items-center gap-2">
         <Zap className="w-5 h-5 text-primary" />
-        Quick Actions
+        {t('dashboard.quickActions.title')}
       </h2>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {quickActions.map((action, idx) => (

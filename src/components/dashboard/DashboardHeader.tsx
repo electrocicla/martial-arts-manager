@@ -1,4 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 interface DashboardHeaderProps {
   greeting: string;
@@ -6,6 +7,7 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ greeting }: DashboardHeaderProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-base-200/50 to-base-300/30 px-4 sm:px-6 pt-4 pb-6">
@@ -19,7 +21,7 @@ export default function DashboardHeader({ greeting }: DashboardHeaderProps) {
             {greeting}, <span className="text-primary font-black">Sensei {user?.name?.split(' ')[0] || 'Master'}!</span>
           </h1>
           <p className="text-base-content/70 text-sm sm:text-base">
-            Here's what's happening at your dojo today
+            {t('dashboard.header.description')}
           </p>
         </div>
       </div>

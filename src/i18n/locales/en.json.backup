@@ -81,36 +81,35 @@
     }
   },
   "students": {
-    "title": "Student Management",
-    "subtitle": "Manage your dojo's student roster and profiles",
-    "totalStudents": "total students",
-    "active": "active",
-    "stats": {
-      "totalStudents": "Total Students",
-      "active": "Active",
-      "thisMonth": "This Month",
-      "inactive": "Inactive"
+      "title": "Student Management",
+      "subtitle": "Manage your dojo's student roster and profiles",
+      "totalStudents": "total students",
+      "active": "active",
+      "stats": {
+        "totalStudents": "Total Students",
+        "active": "Active",
+        "thisMonth": "This Month",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "exportData": "Export Data",
+        "importStudents": "Import Students",
+        "addNewStudent": "Add New Student"
+      },
+      "filters": {
+        "search": "Search students...",
+        "filterByBelt": "Filter by belt",
+        "filterByStatus": "Filter by status",
+        "allBelts": "All belts",
+        "allStatuses": "All statuses",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "viewModes": {
+        "grid": "Grid View",
+        "list": "List View"
+      }
     },
-    "actions": {
-      "exportData": "Export Data",
-      "importStudents": "Import Students",
-      "addNewStudent": "Add New Student"
-    },
-    "filters": {
-      "search": "Search students...",
-      "filterByBelt": "Filter by belt",
-      "filterByStatus": "Filter by status",
-      "allBelts": "All belts",
-      "allStatuses": "All statuses",
-      "active": "Active",
-      "inactive": "Inactive"
-    },
-    "viewModes": {
-      "grid": "Grid View",
-      "list": "List View"
-    }
-  },
-  "landing": {
     "hero": {
       "title1": "HAMARR",
       "title2": "MARTIAL ARTS",
@@ -167,4 +166,5 @@
     "details": "Details",
     "noData": "No data"
   }
+}
 }

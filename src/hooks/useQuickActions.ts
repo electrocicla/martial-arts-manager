@@ -1,36 +1,39 @@
 import { Clock, Calendar, Users, DollarSign } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Custom hook for configuring quick actions
  */
 export const useQuickActions = () => {
+  const { t } = useTranslation();
+
   const quickActions = [
     {
-      title: 'Mark Attendance',
+      title: t('dashboard.quickActions.markAttendance'),
       icon: Clock,
       color: 'btn-primary',
-      subtitle: 'Check in/out students',
+      subtitle: t('dashboard.quickActions.checkInOut'),
       path: '/attendance'
     },
     {
-      title: 'Schedule Class',
+      title: t('dashboard.quickActions.scheduleClass'),
       icon: Calendar,
       color: 'btn-secondary',
-      subtitle: 'Add new session',
+      subtitle: t('dashboard.quickActions.addNewSession'),
       path: '/classes'
     },
     {
-      title: 'Add Student',
+      title: t('dashboard.quickActions.addStudent'),
       icon: Users,
       color: 'btn-accent',
-      subtitle: 'Register member',
+      subtitle: t('dashboard.quickActions.registerMember'),
       path: '/students'
     },
     {
-      title: 'Record Payment',
+      title: t('dashboard.quickActions.recordPayment'),
       icon: DollarSign,
       color: 'btn-info',
-      subtitle: 'Process transaction',
+      subtitle: t('dashboard.quickActions.processTransaction'),
       path: '/payments'
     },
   ];

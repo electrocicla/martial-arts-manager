@@ -36,14 +36,78 @@
       "totalStudents": "Total de Estudantes",
       "activeStudents": "Estudantes Ativos",
       "todayClasses": "Aulas de Hoje",
-      "monthlyRevenue": "Receita Mensal"
+      "monthlyRevenue": "Receita Mensal",
+      "active": "ativos",
+      "registeredMembers": "membros registrados",
+      "classesThisWeek": "Aulas Desta Semana",
+      "sessionsThisWeek": "sessões esta semana",
+      "noClasses": "Nenhuma aula",
+      "scheduled": "agendadas",
+      "revenueThisMonth": "Receita Deste Mês",
+      "noRevenue": "Nenhuma receita",
+      "monthlyTotal": "Total mensal",
+      "totalEarnings": "ganhos totais",
+      "newEnrollments": "Novas Inscrições",
+      "getStarted": "Começar",
+      "thisMonth": "Este mês",
+      "newStudents": "novos estudantes"
     },
     "quickActions": {
       "title": "Ações Rápidas",
       "addStudent": "Adicionar Estudante",
       "scheduleClass": "Agendar Aula",
       "recordPayment": "Registrar Pagamento",
-      "markAttendance": "Marcar Presença"
+      "markAttendance": "Marcar Presença",
+      "checkInOut": "Fazer check-in/out de estudantes",
+      "addNewSession": "Adicionar nova sessão",
+      "registerMember": "Registrar membro",
+      "processTransaction": "Processar transação"
+    },
+    "header": {
+      "description": "Aqui está o que está acontecendo no seu dojo hoje"
+    },
+    "schedule": {
+      "todaySchedule": "Horário de Hoje",
+      "viewAll": "Ver Tudo",
+      "loadingClasses": "Carregando aulas de hoje...",
+      "noClassesToday": "Nenhuma Aula Hoje",
+      "noClassesDescription": "Não há aulas agendadas para hoje.",
+      "scheduleClass": "Agendar uma Aula",
+      "maxStudents": "estudantes máx",
+      "mainStudio": "Estúdio Principal",
+      "live": "🔴 Ao Vivo",
+      "soon": "⏰ Em Breve",
+      "scheduleNewClass": "Agendar Nova Aula"
+    }
+  },
+  "students": {
+    "title": "Gestão de Estudantes",
+    "subtitle": "Gerencie o cadastro e perfis dos estudantes do seu dojo",
+    "totalStudents": "estudantes totais",
+    "active": "ativos",
+    "stats": {
+      "totalStudents": "Total de Estudantes",
+      "active": "Ativos",
+      "thisMonth": "Este Mês",
+      "inactive": "Inativos"
+    },
+    "actions": {
+      "exportData": "Exportar Dados",
+      "importStudents": "Importar Estudantes",
+      "addNewStudent": "Adicionar Novo Estudante"
+    },
+    "filters": {
+      "search": "Buscar estudantes...",
+      "filterByBelt": "Filtrar por faixa",
+      "filterByStatus": "Filtrar por status",
+      "allBelts": "Todas as faixas",
+      "allStatuses": "Todos os status",
+      "active": "Ativo",
+      "inactive": "Inativo"
+    },
+    "viewModes": {
+      "grid": "Visualização em Grade",
+      "list": "Visualização em Lista"
     }
   },
   "landing": {
@@ -99,6 +163,8 @@
     "yes": "Sim",
     "no": "Não",
     "confirm": "Confirmar",
-    "close": "Fechar"
+    "close": "Fechar",
+    "details": "Detalhes",
+    "noData": "Sem dados"
   }
 }

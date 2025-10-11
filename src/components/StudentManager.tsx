@@ -4,8 +4,10 @@ import { Users, Search, Download, Upload, UserPlus, TrendingUp, Calendar, Dollar
 import { useStudents } from '../hooks/useStudents';
 import { getBeltColor } from '../lib/studentUtils';
 import { StudentFormModal } from './students';
+import { useTranslation } from 'react-i18next';
 
 export default function StudentManager() {
+  const { t } = useTranslation();
   const {
     students,
     stats: studentStats,
@@ -21,9 +23,9 @@ export default function StudentManager() {
   const belts = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'];
 
   const stats = [
-    { label: 'Total Students', value: studentStats?.total || students.length, icon: Users, color: 'text-primary' },
-    { label: 'Active', value: studentStats?.active || students.filter((s: Student) => s.is_active).length, icon: TrendingUp, color: 'text-success' },
-    { label: 'This Month', value: students.filter((s: Student) => {
+    { label: t('students.stats.totalStudents'), value: studentStats?.total || students.length, icon: Users, color: 'text-primary' },
+    { label: t('students.stats.active'), value: studentStats?.active || students.filter((s: Student) => s.is_active).length, icon: TrendingUp, color: 'text-success' },
+    { label: t('students.stats.thisMonth'), value: students.filter((s: Student) => {
       try {
         const studentDate = new Date(s.join_date || Date.now());
         const currentDate = new Date();
@@ -33,7 +35,7 @@ export default function StudentManager() {
         return false;
       }
     }).length, icon: Calendar, color: 'text-info' },
-    { label: 'Inactive', value: (studentStats?.total || students.length) - (studentStats?.active || students.filter((s: Student) => s.is_active).length), icon: DollarSign, color: 'text-warning' },
+    { label: t('students.stats.inactive'), value: (studentStats?.total || students.length) - (studentStats?.active || students.filter((s: Student) => s.is_active).length), icon: DollarSign, color: 'text-warning' },
   ];  const filteredStudents = useMemo(() => {
     return students.filter((student: Student) => {
       const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -60,19 +62,19 @@ export default function StudentManager() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-white">
-                  Student Management
+                  {t('students.title')}
                 </h1>
                 <p className="text-red-200 mt-1">
-                  Manage your dojo's student roster and profiles
+                  {t('students.subtitle')}
                 </p>
                 <div className="flex items-center space-x-4 mt-2 text-sm text-red-300">
                   <span className="flex items-center">
                     <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                    {students.length} total students
+                    {students.length} {t('students.totalStudents')}
                   </span>
                   <span className="flex items-center">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    {students.filter((s: Student) => s.is_active).length} active
+                    {students.filter((s: Student) => s.is_active).length} {t('students.active')}
                   </span>
                 </div>
               </div>
@@ -82,18 +84,18 @@ export default function StudentManager() {
             <div className="flex flex-wrap gap-3">
               <button className="inline-flex items-center px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
                 <Download className="w-4 h-4 mr-2 flex-shrink-0" />
-                <span className="whitespace-nowrap">Export Data</span>
+                <span className="whitespace-nowrap">{t('students.actions.exportData')}</span>
               </button>
               <button className="inline-flex items-center px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
                 <Upload className="w-4 h-4 mr-2 flex-shrink-0" />
-                <span className="whitespace-nowrap">Import Students</span>
+                <span className="whitespace-nowrap">{t('students.actions.importStudents')}</span>
               </button>
               <button 
                 className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 onClick={() => setShowAddModal(true)}
               >
                 <UserPlus className="w-4 h-4 mr-2 flex-shrink-0" />
-                <span className="whitespace-nowrap">Add New Student</span>
+                <span className="whitespace-nowrap">{t('students.actions.addNewStudent')}</span>
               </button>
             </div>
           </div>
@@ -129,7 +131,7 @@ export default function StudentManager() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search students by name, email, or belt..."
+                  placeholder={t('students.filters.search')}
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -144,7 +146,7 @@ export default function StudentManager() {
                 value={filterBelt}
                 onChange={(e) => setFilterBelt(e.target.value)}
               >
-                <option value="all">All Belts</option>
+                <option value="all">{t('students.filters.allBelts')}</option>
                 {belts.map(belt => (
                   <option key={belt} value={belt}>{belt} Belt</option>
                 ))}
@@ -155,14 +157,14 @@ export default function StudentManager() {
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
               >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="all">{t('students.filters.allStatuses')}</option>
+                <option value="active">{t('students.filters.active')}</option>
+                <option value="inactive">{t('students.filters.inactive')}</option>
               </select>
 
               {/* View Mode Toggle */}
               <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                <button 
+                                <button 
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     viewMode === 'grid' 
                       ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
@@ -170,7 +172,7 @@ export default function StudentManager() {
                   }`}
                   onClick={() => setViewMode('grid')}
                 >
-                  Grid
+                  {t('students.viewModes.grid')}
                 </button>
                 <button 
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
@@ -180,7 +182,7 @@ export default function StudentManager() {
                   }`}
                   onClick={() => setViewMode('list')}
                 >
-                  List
+                  {t('students.viewModes.list')}
                 </button>
               </div>
             </div>

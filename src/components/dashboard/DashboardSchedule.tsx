@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, Loader2, ChevronRight } from 'lucide-react';
 import { getClassStatus } from '../../lib/dashboardUtils';
+import { useTranslation } from 'react-i18next';
 
 interface Class {
   id: string;
@@ -19,16 +20,17 @@ interface DashboardScheduleProps {
 
 export default function DashboardSchedule({ todayClasses, isLoading }: DashboardScheduleProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <section className="dashboard-section">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary" />
-          Today's Schedule
+          {t('dashboard.schedule.todaySchedule')}
         </h2>
         <button className="btn btn-ghost btn-sm text-xs sm:text-sm hover:bg-primary/10 rounded-lg transition-all duration-200" onClick={() => navigate('/calendar')}>
-          View All <ChevronRight className="w-4 h-4" />
+          {t('dashboard.schedule.viewAll')} <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
@@ -36,19 +38,19 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <span className="ml-2 text-base-content/70">Loading today's classes...</span>
+            <span className="ml-2 text-base-content/70">{t('dashboard.schedule.loadingClasses')}</span>
           </div>
         ) : todayClasses.length === 0 ? (
           <div className="card bg-base-200/50 backdrop-blur-sm border border-base-300/20 rounded-xl shadow-lg">
             <div className="card-body p-6 text-center">
               <Calendar className="w-12 h-12 text-base-content/30 mx-auto mb-3" />
-              <h3 className="font-bold text-base-content mb-2">No Classes Today</h3>
-              <p className="text-sm text-base-content/60 mb-4">There are no classes scheduled for today.</p>
+              <h3 className="font-bold text-base-content mb-2">{t('dashboard.schedule.noClassesToday')}</h3>
+              <p className="text-sm text-base-content/60 mb-4">{t('dashboard.schedule.noClassesDescription')}</p>
               <button
                 onClick={() => navigate('/classes')}
                 className="btn btn-primary btn-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
               >
-                Schedule a Class
+                {t('dashboard.schedule.scheduleClass')}
               </button>
             </div>
           </div>
@@ -73,13 +75,13 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
                         <span className="flex items-center gap-1.5 text-base-content/60">
                           <Users className="w-3.5 h-3.5 text-primary" />
-                          <span className="font-medium">{cls.max_students}</span> max students
+                          <span className="font-medium">{cls.max_students}</span> {t('dashboard.schedule.maxStudents')}
                         </span>
                         <span className="text-base-content/50 font-medium">
                           👨‍🏫 {cls.instructor}
                         </span>
                         <span className="text-base-content/50 font-medium">
-                          📍 Main Studio
+                          📍 {t('dashboard.schedule.mainStudio')}
                         </span>
                       </div>
                     </div>
@@ -89,14 +91,14 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
                         status === 'upcoming' ? 'badge-warning' :
                         'badge-ghost'
                       }`}>
-                        {status === 'ongoing' ? '🔴 Live' :
-                         status === 'upcoming' ? '⏰ Soon' : status}
+                        {status === 'ongoing' ? t('dashboard.schedule.live') :
+                         status === 'upcoming' ? t('dashboard.schedule.soon') : status}
                       </div>
                       <button
                         onClick={() => navigate(`/classes/${cls.id}`)}
                         className="btn btn-ghost btn-xs sm:btn-sm text-primary hover:bg-primary/10"
                       >
-                        Details
+                        {t('common.details')}
                       </button>
                     </div>
                   </div>
@@ -110,7 +112,7 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
         <div className="pt-2">
           <button className="btn btn-outline btn-primary w-full sm:w-auto rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
             <Calendar className="w-4 h-4" />
-            Schedule New Class
+            {t('dashboard.schedule.scheduleNewClass')}
           </button>
         </div>
       </div>
