@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useDevicePerformance } from '../hooks/useDevicePerformance';
 import {
   Users,
@@ -20,6 +21,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
   const { scrollY } = useScroll();
   const y2 = useTransform(scrollY, [0, 300], [0, -50]);
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const performance = useDevicePerformance();
 
   const features = [
@@ -632,18 +634,18 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
             className="space-y-8"
           >
             <h2 className="text-3xl sm:text-5xl font-black gradient-text-green-teal">
-              Ready to Elevate Your Dojo?
+              {t('landing.cta.title')}
             </h2>
             <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              Join martial arts instructors worldwide who trust our platform to manage their schools, 
-              track student progress, and grow their academies.
+              {t('landing.cta.description')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 size="lg" 
+                onClick={() => navigate('/login')}
                 className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
               >
-                Start Your Free Trial
+                {t('landing.cta.startTrial')}
                 <ArrowRight className="w-5 h-5" />
               </Button>
               <a

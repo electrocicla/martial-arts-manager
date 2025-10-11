@@ -67,16 +67,34 @@ h1, h2, h3, h4, h5, h6 {
     text-shadow: none; /* Remove text shadows that can cause outline issues */
   }
 
-  /* Fix gradient text issues on mobile */
+  /* Remove problematic text effects on mobile */
   .dark-energy-text,
   .fire-energy-text {
-    /* Fallback for mobile browsers that don't support background-clip: text well */
+    /* Better rendering on mobile - no complex effects */
+    text-shadow: none;
+    filter: none;
+    animation: none;
+  }
+  
+  /* Simplified dark text for mobile */
+  .dark-energy-text {
+    color: rgba(255, 255, 255, 0.9);
     background: none;
     -webkit-background-clip: initial;
     background-clip: initial;
-    color: #ffffff;
-    -webkit-text-stroke: none;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Simplified fire text for mobile */
+  .fire-energy-text {
+    background: linear-gradient(135deg, #DC2626 0%, #EF4444 50%, #DC2626 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    /* Fallback color for unsupported browsers */
+    @supports not (background-clip: text) {
+      color: #DC2626;
+      background: none;
+    }
   }
 }
 
@@ -460,27 +478,31 @@ p, span, div {
   }
 }
 
-/* Login Page Special Effects */
+/* Login Page Special Effects - Optimized for consistent rendering */
 .dark-energy-text {
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(220, 38, 38, 0.3);
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.8),
+    0 0 8px rgba(255, 255, 255, 0.15),
+    0 0 12px rgba(0, 0, 0, 0.5);
+  font-weight: 900;
+  letter-spacing: 0.05em;
 }
 
 .fire-energy-text {
-  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 30%, #991B1B 60%, #7F1D1D 100%);
+  background: linear-gradient(135deg, #DC2626 0%, #EF4444 30%, #F87171 50%, #EF4444 70%, #DC2626 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  text-shadow: 0 0 20px rgba(220, 38, 38, 0.8), 0 0 40px rgba(185, 28, 28, 0.6);
-  animation: fireGlow 3s ease-in-out infinite alternate;
-  font-weight: 800;
-  text-decoration: underline;
-  text-decoration-color: rgba(220, 38, 38, 0.8);
-  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.9);
+  text-shadow: none;
+  animation: fireGlowOptimized 3s ease-in-out infinite alternate;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  /* Fallback for browsers that don't support background-clip: text */
+  @supports not (background-clip: text) {
+    color: #DC2626;
+    background: none;
+  }
 }
 
 .electric-border {
@@ -491,12 +513,12 @@ p, span, div {
   animation: electricPulse 4s ease-in-out infinite;
 }
 
-@keyframes fireGlow {
+@keyframes fireGlowOptimized {
   0% {
-    text-shadow: 0 0 20px rgba(220, 38, 38, 0.8), 0 0 40px rgba(185, 28, 28, 0.6);
+    filter: drop-shadow(0 0 8px rgba(220, 38, 38, 0.6)) drop-shadow(0 0 12px rgba(239, 68, 68, 0.4));
   }
   100% {
-    text-shadow: 0 0 30px rgba(220, 38, 38, 1), 0 0 50px rgba(185, 28, 28, 0.8), 0 0 70px rgba(153, 27, 27, 0.6);
+    filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.8)) drop-shadow(0 0 16px rgba(248, 113, 113, 0.6));
   }
 }
 
@@ -553,6 +575,51 @@ p, span, div {
 
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Performance optimizations for landing page */
+.landing-optimized {
+  /* Enable GPU acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+/* Optimize heavy elements on mobile */
+@media (max-width: 768px) {
+  /* Reduce blur effects on mobile for better performance */
+  .blur-xl {
+    filter: blur(12px) !important;
+  }
+  
+  .blur-3xl {
+    filter: blur(16px) !important;
+  }
+  
+  /* Simplify backdrop blur on mobile */
+  .backdrop-blur-xl {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+  
+  /* Disable complex animations on low-end devices */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Optimize shadow rendering on mobile */
+  .shadow-2xl {
+    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3) !important;
+  }
 }
 
 /* Enhanced link visibility in login context */

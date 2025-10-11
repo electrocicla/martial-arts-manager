@@ -246,6 +246,11 @@
         "title": "Growth Analytics",
         "description": "Track dojo growth, student retention, revenue trends, and make data-driven decisions for your academy"
       }
+    },
+    "cta": {
+      "title": "Ready to Elevate Your Dojo?",
+      "description": "Join martial arts instructors worldwide who trust our platform to manage their schools, track student progress, and grow their academies.",
+      "startTrial": "Start Your Free Trial"
     }
   },
   "classes": {

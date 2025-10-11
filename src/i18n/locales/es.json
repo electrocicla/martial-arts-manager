@@ -310,6 +310,11 @@
         "title": "Análisis de Crecimiento",
         "description": "Rastrea el crecimiento del dojo, retención de estudiantes, tendencias de ingresos y toma decisiones basadas en datos para tu academia"
       }
+    },
+    "cta": {
+      "title": "¿Listo para Elevar Tu Dojo?",
+      "description": "Únete a instructores de artes marciales de todo el mundo que confían en nuestra plataforma para gestionar sus escuelas, rastrear el progreso de los estudiantes y hacer crecer sus academias.",
+      "startTrial": "Comienza Tu Prueba Gratuita"
     }
   },
   "common": {
