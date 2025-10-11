@@ -642,7 +642,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 size="lg" 
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/register')}
                 className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
               >
                 {t('landing.cta.startTrial')}
