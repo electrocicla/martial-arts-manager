@@ -6,26 +6,40 @@ interface KPICardsProps {
 
 export default function KPICards({ kpis }: KPICardsProps) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
       {kpis.map((kpi, idx) => (
-        <div key={idx} className="card bg-base-200 hover:bg-base-300 transition-all">
-          <div className="card-body p-4">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className={`inline-flex p-2 rounded-lg ${kpi.bgColor} mb-2`}>
-                  <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
-                </div>
-                <h3 className="text-2xl font-black text-base-content">
-                  {kpi.value}
-                </h3>
-                <p className="text-xs text-base-content/60 mt-1">{kpi.title}</p>
-                <div className={`text-xs mt-2 font-bold ${
-                  kpi.trend === 'up' ? 'text-success' : 'text-error'
-                }`}>
-                  {kpi.change}
-                </div>
+        <div 
+          key={idx} 
+          className="group relative bg-gray-900 rounded-xl shadow-xl border border-gray-800 hover:border-gray-700 transition-all duration-300 overflow-hidden"
+        >
+          {/* Gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-br from-red-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          <div className="relative p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className={`p-3 rounded-xl ${kpi.bgColor} shadow-lg`}>
+                <kpi.icon className={`w-6 h-6 ${kpi.color}`} />
+              </div>
+              <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                kpi.trend === 'up' 
+                  ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
+                  : 'bg-red-500/10 text-red-500 border border-red-500/20'
+              }`}>
+                {kpi.change}
               </div>
             </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-3xl lg:text-4xl font-black text-gray-100 group-hover:text-white transition-colors">
+                {kpi.value}
+              </h3>
+              <p className="text-sm font-medium text-gray-400 group-hover:text-gray-300 transition-colors">
+                {kpi.title}
+              </p>
+            </div>
+
+            {/* Decorative bottom accent */}
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 to-red-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
           </div>
         </div>
       ))}
