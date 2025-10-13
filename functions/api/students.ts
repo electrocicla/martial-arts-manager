@@ -92,3 +92,110 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
   }
 }
+
+export async function onRequestPut({ request, env }: { request: Request; env: Env }) {
+  try {
+    // Authenticate user
+    const auth = await authenticateUser(request, env);
+    if (!auth.authenticated) {
+      return new Response(JSON.stringify({ error: auth.error }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const body = await request.json() as {
+      id: string;
+      name: string;
+      email: string;
+      phone?: string;
+      belt: string;
+      discipline: string;
+      joinDate: string;
+      dateOfBirth?: string;
+      emergencyContactName?: string;
+      emergencyContactPhone?: string;
+      notes?: string;
+    };
+
+    const { id, name, email, phone, belt, discipline, joinDate, dateOfBirth, emergencyContactName, emergencyContactPhone, notes } = body;
+
+    // Verify the student belongs to the current user
+    const { results } = await env.DB.prepare(
+      "SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
+    ).bind(id, auth.user.id).all();
+
+    if (!results || results.length === 0) {
+      return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    // Update with updated_by set to current user
+    await env.DB.prepare(`
+      UPDATE students 
+      SET name = ?, email = ?, phone = ?, belt = ?, discipline = ?, 
+          join_date = ?, date_of_birth = ?, emergency_contact_name = ?, 
+          emergency_contact_phone = ?, notes = ?, updated_by = ?, updated_at = ?
+      WHERE id = ? AND created_by = ?
+    `).bind(
+      name, email, phone || null, belt, discipline, joinDate,
+      dateOfBirth || null, emergencyContactName || null, emergencyContactPhone || null,
+      notes || null, auth.user.id, now, id, auth.user.id
+    ).run();
+
+    return new Response(JSON.stringify({ success: true }), { status: 200 });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+  }
+}
+
+export async function onRequestDelete({ request, env }: { request: Request; env: Env }) {
+  try {
+    // Authenticate user
+    const auth = await authenticateUser(request, env);
+    if (!auth.authenticated) {
+      return new Response(JSON.stringify({ error: auth.error }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Get student ID from URL
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'Student ID required' }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Verify the student belongs to the current user
+    const { results } = await env.DB.prepare(
+      "SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
+    ).bind(id, auth.user.id).all();
+
+    if (!results || results.length === 0) {
+      return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    // Soft delete - set deleted_at timestamp
+    await env.DB.prepare(
+      "UPDATE students SET deleted_at = ?, updated_at = ? WHERE id = ? AND created_by = ?"
+    ).bind(now, now, id, auth.user.id).run();
+
+    return new Response(JSON.stringify({ success: true }), { status: 200 });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+  }
+}
