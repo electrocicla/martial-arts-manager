@@ -394,8 +394,9 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
             </button>
             <button
               type="button"
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium flex items-center space-x-2"
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSubmit}
+              disabled={!newStudent.name || !newStudent.email}
             >
               <UserPlus className="w-4 h-4" />
               <span>{t('studentForm.addStudent')}</span>
