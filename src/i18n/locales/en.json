@@ -216,6 +216,10 @@
     "phonePlaceholder": "+1 (555) 123-4567",
     "dateOfBirth": "Date of Birth",
     "dateOfBirthPlaceholder": "dd-mm-yyyy",
+    "day": "Day",
+    "month": "Month",
+    "year": "Year",
+    "selectedDate": "Selected date",
     "martialArtsInfo": "Martial Arts Information",
     "beltRank": "Belt Rank",
     "beltSuffix": "Belt",
@@ -251,6 +255,20 @@
       "professional": "Professional",
       "elite": "Elite"
     }
+  },
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
   },
   "landing": {
     "hero": {

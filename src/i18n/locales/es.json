@@ -216,6 +216,10 @@
     "phonePlaceholder": "+1 (555) 123-4567",
     "dateOfBirth": "Fecha de Nacimiento",
     "dateOfBirthPlaceholder": "dd-mm-aaaa",
+    "day": "Día",
+    "month": "Mes",
+    "year": "Año",
+    "selectedDate": "Fecha seleccionada",
     "martialArtsInfo": "Información de Artes Marciales",
     "beltRank": "Rango de Cinturón",
     "beltSuffix": "Cinturón",
@@ -251,6 +255,20 @@
       "professional": "Profesional",
       "elite": "Élite"
     }
+  },
+  "months": {
+    "january": "Enero",
+    "february": "Febrero",
+    "march": "Marzo",
+    "april": "Abril",
+    "may": "Mayo",
+    "june": "Junio",
+    "july": "Julio",
+    "august": "Agosto",
+    "september": "Septiembre",
+    "october": "Octubre",
+    "november": "Noviembre",
+    "december": "Diciembre"
   },
   "classes": {
     "title": "Gestión de Clases",

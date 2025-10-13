@@ -27,7 +27,41 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
     notes: '',
   });
 
+  // Date of birth selectors state
+  const [birthDay, setBirthDay] = useState('');
+  const [birthMonth, setBirthMonth] = useState('');
+  const [birthYear, setBirthYear] = useState('');
+
   const belts = BELT_RANKINGS[newStudent.discipline as Discipline] || [];
+
+  // Generate arrays for date selectors
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const months = [
+    { value: '01', label: t('months.january') || 'January' },
+    { value: '02', label: t('months.february') || 'February' },
+    { value: '03', label: t('months.march') || 'March' },
+    { value: '04', label: t('months.april') || 'April' },
+    { value: '05', label: t('months.may') || 'May' },
+    { value: '06', label: t('months.june') || 'June' },
+    { value: '07', label: t('months.july') || 'July' },
+    { value: '08', label: t('months.august') || 'August' },
+    { value: '09', label: t('months.september') || 'September' },
+    { value: '10', label: t('months.october') || 'October' },
+    { value: '11', label: t('months.november') || 'November' },
+    { value: '12', label: t('months.december') || 'December' },
+  ];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+
+  // Update date_of_birth when day, month, or year changes
+  const handleDateChange = (day: string, month: string, year: string) => {
+    if (day && month && year) {
+      const formattedDate = `${year}-${month}-${day.padStart(2, '0')}`;
+      setNewStudent({ ...newStudent, date_of_birth: formattedDate });
+    } else {
+      setNewStudent({ ...newStudent, date_of_birth: '' });
+    }
+  };
 
   const handleSubmit = async () => {
     if (!newStudent.name || !newStudent.email) {
@@ -50,6 +84,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
     const result = await onSubmit(studentData);
     if (result) {
       onClose();
+      // Reset form
       setNewStudent({
         name: '',
         email: '',
@@ -61,6 +96,10 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
         emergency_contact_phone: '',
         notes: '',
       });
+      // Reset date selectors
+      setBirthDay('');
+      setBirthMonth('');
+      setBirthYear('');
     } else {
       alert(t('studentForm.addFailed'));
     }
@@ -162,15 +201,72 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {t('studentForm.dateOfBirth')}
                   </label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="date"
-                      className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      value={newStudent.date_of_birth}
-                      onChange={(e) => setNewStudent({...newStudent, date_of_birth: e.target.value})}
-                    />
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Day Selector */}
+                    <div className="relative">
+                      <select
+                        className="w-full px-3 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none"
+                        value={birthDay}
+                        onChange={(e) => {
+                          setBirthDay(e.target.value);
+                          handleDateChange(e.target.value, birthMonth, birthYear);
+                        }}
+                      >
+                        <option value="">{t('studentForm.day') || 'Day'}</option>
+                        {days.map(day => (
+                          <option key={day} value={day.toString().padStart(2, '0')}>
+                            {day}
+                          </option>
+                        ))}
+                      </select>
+                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                    </div>
+
+                    {/* Month Selector */}
+                    <div className="relative">
+                      <select
+                        className="w-full px-3 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none"
+                        value={birthMonth}
+                        onChange={(e) => {
+                          setBirthMonth(e.target.value);
+                          handleDateChange(birthDay, e.target.value, birthYear);
+                        }}
+                      >
+                        <option value="">{t('studentForm.month') || 'Month'}</option>
+                        {months.map(month => (
+                          <option key={month.value} value={month.value}>
+                            {month.label}
+                          </option>
+                        ))}
+                      </select>
+                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                    </div>
+
+                    {/* Year Selector */}
+                    <div className="relative">
+                      <select
+                        className="w-full px-3 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none"
+                        value={birthYear}
+                        onChange={(e) => {
+                          setBirthYear(e.target.value);
+                          handleDateChange(birthDay, birthMonth, e.target.value);
+                        }}
+                      >
+                        <option value="">{t('studentForm.year') || 'Year'}</option>
+                        {years.map(year => (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        ))}
+                      </select>
+                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                    </div>
                   </div>
+                  {newStudent.date_of_birth && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {t('studentForm.selectedDate') || 'Selected date'}: {new Date(newStudent.date_of_birth).toLocaleDateString()}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
