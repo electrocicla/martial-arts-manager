@@ -179,6 +179,26 @@
     "subtitle": "Gestiona el registro y perfiles de estudiantes de tu dojo",
     "totalStudents": "estudiantes totales",
     "active": "activos",
+    "belt": "Cinturón",
+    "phone": "Teléfono",
+    "joinDate": "Fecha de Ingreso",
+    "dateOfBirth": "Fecha de Nacimiento",
+    "contactName": "Nombre del Contacto",
+    "contactPhone": "Teléfono del Contacto",
+    "notes": "Notas",
+    "editStudent": "Editar Estudiante",
+    "deleteStudent": "Eliminar Estudiante",
+    "updateStudent": "Actualizar Estudiante",
+    "updateStudentInfo": "Actualizar información del estudiante",
+    "deleteConfirmTitle": "¿Eliminar Estudiante?",
+    "deleteConfirmMessage": "Esta acción no se puede deshacer. Para confirmar, por favor escriba",
+    "deleteConfirmPlaceholder": "Escriba aquí...",
+    "deleteConfirmError": "Por favor escriba 'delete' o 'borrar' para confirmar",
+    "confirmDelete": "Confirmar Eliminación",
+    "invalidImageType": "Por favor seleccione un archivo de imagen",
+    "imageTooLarge": "La imagen debe ser menor a 5MB",
+    "avatarUploadSuccess": "¡Foto de perfil subida exitosamente!",
+    "avatarUploadError": "Error al subir la foto de perfil",
     "stats": {
       "totalStudents": "Total de Estudiantes",
       "active": "Activos",
@@ -202,6 +222,12 @@
     "viewModes": {
       "grid": "Vista de Cuadrícula",
       "list": "Vista de Lista"
+    },
+    "details": {
+      "title": "Detalles del Estudiante",
+      "contactInfo": "Información de Contacto",
+      "trainingInfo": "Información de Entrenamiento",
+      "emergencyContact": "Contacto de Emergencia"
     }
   },
   "studentForm": {
@@ -236,6 +262,7 @@
     "addStudent": "Añadir Alumno",
     "requiredField": "Por favor complete los campos requeridos",
     "addFailed": "Error al añadir el estudiante",
+    "updateFailed": "Error al actualizar el estudiante",
     "belts": {
       "white": "Blanco",
       "blue": "Azul",
@@ -398,6 +425,7 @@
     "appName": "Gerente del Dojo",
     "navigation": "Navegación",
     "account": "Cuenta",
-    "searchPlaceholder": "Buscar estudiantes, clases..."
+    "searchPlaceholder": "Buscar estudiantes, clases...",
+    "or": "o"
   }
 }
