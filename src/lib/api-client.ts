@@ -44,15 +44,40 @@ export class ApiClient {
   ): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseURL}${endpoint}`;
+      
+      // Get token from localStorage
+      const token = localStorage.getItem('accessToken');
+      
+      // Build headers with authentication
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add Authorization header if token exists
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      // Merge with any additional headers from options
+      if (options.headers) {
+        Object.assign(headers, options.headers);
+      }
+      
       const response = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
         ...options,
+        headers,
       });
 
       if (!response.ok) {
+        // If 401, token might be expired - trigger logout
+        if (response.status === 401) {
+          localStorage.removeItem('accessToken');
+          // Redirect to login if not already on login page
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
+        }
+        
         throw new ApiError(
           `HTTP ${response.status}: ${response.statusText}`,
           response.status
