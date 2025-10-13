@@ -300,7 +300,7 @@ export default function PaymentManager() {
                           {student?.name || 'Unknown Student'}
                         </span>
                         <Badge variant={getTypeBadgeVariant(payment.type)}>
-                          {t(`payments.type.${payment.type.replace('-', '')}`)}
+                          {t(`payments.type.${payment.type?.replace('-', '') || 'other'}`)}
                         </Badge>
                         <Badge variant={getStatusBadgeVariant((payment as Payment & { status?: string }).status || 'completed')}>
                           {t(`payments.status.${(payment as Payment & { status?: string }).status || 'completed'}`)}

@@ -1,4 +1,5 @@
 import { Env } from '../types/index';
+import { authenticateUser } from '../middleware/auth';
 
 interface ClassRecord {
   id: string;
@@ -35,19 +36,28 @@ interface CreateClassRequest {
   recurrencePattern?: string;
 }
 
-export async function onRequestGet({ env }: { env: Env }) {
+export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
   try {
-    // Get classes with enrolled student count
+    // Authenticate user
+    const auth = await authenticateUser(request, env);
+    if (!auth.authenticated) {
+      return new Response(JSON.stringify({ error: auth.error }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Get classes with enrolled student count (only for this user)
     const { results } = await env.DB.prepare(`
       SELECT 
         c.*,
         COUNT(CASE WHEN a.attended = 1 THEN 1 END) as enrolled_count
       FROM classes c
       LEFT JOIN attendance a ON c.id = a.class_id
-      WHERE c.deleted_at IS NULL
+      WHERE c.deleted_at IS NULL AND c.created_by = ?
       GROUP BY c.id
       ORDER BY c.date ASC, c.time ASC
-    `).all<ClassRecord>();
+    `).bind(auth.user.id).all<ClassRecord>();
     
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
@@ -62,19 +72,29 @@ export async function onRequestGet({ env }: { env: Env }) {
 
 export async function onRequestPost({ request, env }: { request: Request; env: Env }) {
   try {
+    // Authenticate user
+    const auth = await authenticateUser(request, env);
+    if (!auth.authenticated) {
+      return new Response(JSON.stringify({ error: auth.error }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     const body = await request.json() as CreateClassRequest;
     const { id, name, discipline, date, time, location, instructor, maxStudents, description, isRecurring, recurrencePattern } = body;
 
     const now = new Date().toISOString();
 
+    // Insert with created_by
     await env.DB.prepare(`
       INSERT INTO classes (
         id, name, discipline, date, time, location, instructor, max_students,
-        description, is_recurring, recurrence_pattern, is_active, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+        description, is_recurring, recurrence_pattern, is_active, created_by, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
     `).bind(
       id, name, discipline, date, time, location, instructor, maxStudents,
-      description || null, isRecurring ? 1 : 0, recurrencePattern || null, now, now
+      description || null, isRecurring ? 1 : 0, recurrencePattern || null, auth.user.id, now, now
     ).run();
 
     // Fetch and return the created class
