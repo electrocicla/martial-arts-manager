@@ -1,6 +1,7 @@
 name = "martial-arts-manager"
 pages_build_output_dir = "dist"
-compatibility_date = "2023-12-01"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
 
 # JWT_SECRET is now securely stored as an encrypted secret via:
 # wrangler pages secret put JWT_SECRET
