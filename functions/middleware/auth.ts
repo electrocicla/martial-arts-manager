@@ -17,24 +17,39 @@ export async function authenticateUser(
   try {
     // Get token from Authorization header
     const authHeader = request.headers.get('Authorization');
+    console.log('[Backend Auth] Authorization header:', authHeader ? `Bearer ${authHeader.substring(7, 27)}...` : 'MISSING');
+    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('[Backend Auth] Missing or invalid authorization header');
       return { authenticated: false, error: 'Missing or invalid authorization header' };
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    console.log('[Backend Auth] Token extracted, length:', token.length);
     
     // Verify JWT token
+    console.log('[Backend Auth] Verifying JWT...');
     const payload = await verifyJWT(token, env.JWT_SECRET);
+    console.log('[Backend Auth] JWT verification result:', payload ? 'VALID' : 'INVALID');
+    
     if (!payload) {
+      console.error('[Backend Auth] Invalid or expired token');
       return { authenticated: false, error: 'Invalid or expired token' };
     }
 
+    console.log('[Backend Auth] Token payload sub (user ID):', payload.sub);
+
     // Check if user still exists and is active
     const user = await findUserById(env.DB, payload.sub);
+    console.log('[Backend Auth] User found in DB:', user ? 'YES' : 'NO');
+    console.log('[Backend Auth] User active:', user?.is_active ? 'YES' : 'NO');
+    
     if (!user || !user.is_active) {
+      console.error('[Backend Auth] User not found or inactive');
       return { authenticated: false, error: 'User not found or inactive' };
     }
 
+    console.log('[Backend Auth] Authentication successful for user:', user.email);
     return {
       authenticated: true,
       user: {
@@ -45,7 +60,7 @@ export async function authenticateUser(
       },
     };
   } catch (error) {
-    console.error('Authentication error:', error);
+    console.error('[Backend Auth] Authentication error:', error);
     return { authenticated: false, error: 'Authentication failed' };
   }
 }
