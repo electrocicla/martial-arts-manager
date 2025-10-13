@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { studentService, classService, paymentService } from '../services';
 import type { Student, Payment, Class } from '../types/index';
 
 export interface DashboardStats {
@@ -41,22 +42,20 @@ export function useDashboardData(): DashboardData {
       try {
         setData(prev => ({ ...prev, isLoading: true, error: null }));
 
-        // Fetch all data in parallel
+        // Fetch all data in parallel using services
         const [studentsRes, classesRes, paymentsRes] = await Promise.all([
-          fetch('/api/students'),
-          fetch('/api/classes'),
-          fetch('/api/payments'),
+          studentService.getAll(),
+          classService.getAll(),
+          paymentService.getAll(),
         ]);
 
-        if (!studentsRes.ok || !classesRes.ok || !paymentsRes.ok) {
+        const students = studentsRes.data;
+        const classes = classesRes.data;
+        const payments = paymentsRes.data;
+
+        if (!students || !classes || !payments) {
           throw new Error('Failed to fetch dashboard data');
         }
-
-        const [students, classes, payments] = await Promise.all([
-          studentsRes.json() as Promise<Student[]>,
-          classesRes.json() as Promise<Class[]>,
-          paymentsRes.json() as Promise<Payment[]>,
-        ]);
 
         // Calculate stats
         const now = new Date();
