@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import type { Student } from '../types/index';
-import { Users, Search, Download, Upload, UserPlus, TrendingUp, Calendar, DollarSign, Mail, Phone, Eye, Edit } from 'lucide-react';
+import type { Student, StudentFormData } from '../types/index';
+import { Users, Search, Download, Upload, UserPlus, TrendingUp, Calendar, DollarSign, Eye, Mail, Phone, Edit } from 'lucide-react';
 import { useStudents } from '../hooks/useStudents';
 import { getBeltColor } from '../lib/studentUtils';
-import { StudentFormModal } from './students';
+import { StudentFormModal, StudentDetailsModal, StudentEditModal } from './students';
 import { useTranslation } from 'react-i18next';
 
 export default function StudentManager() {
@@ -12,12 +12,15 @@ export default function StudentManager() {
     students,
     stats: studentStats,
     createStudent,
+    updateStudent,
+    deleteStudent,
   } = useStudents();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterBelt, setFilterBelt] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const belts = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'];
@@ -336,124 +339,36 @@ export default function StudentManager() {
         onSubmit={createStudent}
       />
 
-      {/* View Student Modal */}
+      {/* View Student Details Modal */}
       {selectedStudent && (
-        <div className="modal modal-open">
-          <div className="modal-box max-w-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg">Student Details</h3>
-              <button 
-                className="btn btn-ghost btn-sm btn-circle"
-                onClick={() => setSelectedStudent(null)}
-              >
-                ✕
-              </button>
-            </div>
+        <StudentDetailsModal
+          student={selectedStudent}
+          onClose={() => setSelectedStudent(null)}
+          onEdit={(student) => {
+            setSelectedStudent(null);
+            setEditingStudent(student);
+          }}
+          onDelete={async (studentId) => {
+            await deleteStudent(studentId);
+          }}
+        />
+      )}
 
-            <div className="flex items-center gap-4 mb-6">
-              <div className="avatar">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold">
-                  {selectedStudent.name?.charAt(0)?.toUpperCase() || '?'}
-                </div>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">{selectedStudent.name || 'N/A'}</h2>
-                <div className="flex items-center gap-2 mt-2">
-                  <div className={`badge ${getBeltColor(selectedStudent.belt)}`}>
-                    {selectedStudent.belt || 'N/A'} Belt
-                  </div>
-                  <div className={`badge ${selectedStudent.is_active ? 'badge-success' : 'badge-error'}`}>
-                    {selectedStudent.is_active ? 'Active' : 'Inactive'}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-bold mb-2">Contact Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-base-content/60">Email:</span>
-                    <p className="font-medium">{selectedStudent.email}</p>
-                  </div>
-                  {selectedStudent.phone && (
-                    <div>
-                      <span className="text-base-content/60">Phone:</span>
-                      <p className="font-medium">{selectedStudent.phone}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-bold mb-2">Training Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-base-content/60">Discipline:</span>
-                    <p className="font-medium">{selectedStudent.discipline}</p>
-                  </div>
-                  <div>
-                    <span className="text-base-content/60">Joined:</span>
-                    <p className="font-medium">{new Date(selectedStudent.join_date).toLocaleDateString()}</p>
-                  </div>
-                </div>
-              </div>
-
-              {(selectedStudent.emergency_contact_name || selectedStudent.emergency_contact_phone) && (
-                <div>
-                  <h4 className="font-bold mb-2">Emergency Contact</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                    {selectedStudent.emergency_contact_name && (
-                      <div>
-                        <span className="text-base-content/60">Name:</span>
-                        <p className="font-medium">{selectedStudent.emergency_contact_name}</p>
-                      </div>
-                    )}
-                    {selectedStudent.emergency_contact_phone && (
-                      <div>
-                        <span className="text-base-content/60">Phone:</span>
-                        <p className="font-medium">{selectedStudent.emergency_contact_phone}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedStudent.notes && (
-                <div>
-                  <h4 className="font-bold mb-2">Notes</h4>
-                  <p className="text-sm text-base-content/70">{selectedStudent.notes}</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-3 gap-3 pt-4">
-                <div className="stat bg-base-200 rounded-lg p-3">
-                  <div className="stat-title text-xs">Classes Attended</div>
-                  <div className="stat-value text-xl">45</div>
-                </div>
-                <div className="stat bg-base-200 rounded-lg p-3">
-                  <div className="stat-title text-xs">Last Payment</div>
-                  <div className="stat-value text-xl">Current</div>
-                </div>
-                <div className="stat bg-base-200 rounded-lg p-3">
-                  <div className="stat-title text-xs">Next Test</div>
-                  <div className="stat-value text-xl">Jan 15</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-action">
-              <button className="btn btn-ghost rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200" onClick={() => setSelectedStudent(null)}>
-                Close
-              </button>
-              <button className="btn btn-primary rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-                <Edit className="w-4 h-4" />
-                Edit Student
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Edit Student Modal */}
+      {editingStudent && (
+        <StudentEditModal
+          isOpen={true}
+          student={editingStudent}
+          onClose={() => setEditingStudent(null)}
+          onSubmit={async (studentId, data) => {
+            const result = await updateStudent(studentId, data as Partial<StudentFormData>);
+            if (result) {
+              setEditingStudent(null);
+              return true;
+            }
+            return false;
+          }}
+        />
       )}
     </div>
   );
