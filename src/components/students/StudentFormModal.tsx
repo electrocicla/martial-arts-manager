@@ -167,7 +167,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
 
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('studentForm.emailAddress')} <span className="text-red-500">*</span>
+                    {t('studentForm.email')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />

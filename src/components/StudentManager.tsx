@@ -106,14 +106,14 @@ export default function StudentManager() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, idx) => (
-            <div key={idx} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-200">
+            <div key={idx} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700 shadow-2xl hover:shadow-red-500/20 hover:border-red-500/50 transition-all duration-300 group">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stat.value}</p>
+                  <p className="text-sm font-medium text-gray-400 group-hover:text-red-300 transition-colors">{stat.label}</p>
+                  <p className="text-3xl font-bold text-white mt-2">{stat.value}</p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg">
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                <div className="p-3 bg-gradient-to-br from-red-500/20 to-red-600/20 rounded-xl shadow-lg group-hover:from-red-500/30 group-hover:to-red-600/30 transition-all duration-300">
+                  <stat.icon className="w-7 h-7 text-red-400 group-hover:text-red-300 transition-colors" />
                 </div>
               </div>
             </div>
@@ -121,7 +121,7 @@ export default function StudentManager() {
         </div>
 
         {/* Search and Filters Section */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg mb-6">
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700 shadow-2xl mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search Input */}
             <div className="flex-1">
@@ -132,7 +132,7 @@ export default function StudentManager() {
                 <input
                   type="text"
                   placeholder={t('students.filters.search')}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -142,7 +142,7 @@ export default function StudentManager() {
             {/* Filters */}
             <div className="flex gap-3">
               <select 
-                className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                 value={filterBelt}
                 onChange={(e) => setFilterBelt(e.target.value)}
               >
@@ -153,7 +153,7 @@ export default function StudentManager() {
               </select>
 
               <select 
-                className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
               >
@@ -163,12 +163,12 @@ export default function StudentManager() {
               </select>
 
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+              <div className="flex bg-gray-900/50 border border-gray-600 rounded-lg p-1">
                                 <button 
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     viewMode === 'grid' 
-                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-500/50' 
+                      : 'text-gray-400 hover:text-white'
                   }`}
                   onClick={() => setViewMode('grid')}
                 >
@@ -177,8 +177,8 @@ export default function StudentManager() {
                 <button 
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     viewMode === 'list' 
-                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' 
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-500/50' 
+                      : 'text-gray-400 hover:text-white'
                   }`}
                   onClick={() => setViewMode('list')}
                 >

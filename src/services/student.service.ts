@@ -49,10 +49,10 @@ export class StudentService {
       phone: data.phone || undefined,
       belt: data.belt,
       discipline: data.discipline,
-      join_date: new Date().toISOString().split('T')[0],
-      date_of_birth: data.dateOfBirth || undefined,
-      emergency_contact_name: data.emergencyContactName || undefined,
-      emergency_contact_phone: data.emergencyContactPhone || undefined,
+      joinDate: new Date().toISOString().split('T')[0],
+      dateOfBirth: data.dateOfBirth || undefined,
+      emergencyContactName: data.emergencyContactName || undefined,
+      emergencyContactPhone: data.emergencyContactPhone || undefined,
       notes: data.notes || undefined,
     };
 
