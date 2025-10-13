@@ -1,8 +1,18 @@
-import { Save } from 'lucide-react';
+import { Save, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ProfileSettings() {
   const { user } = useAuth();
+
+  // Get user initials for avatar
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <div className="card bg-base-200">
@@ -11,9 +21,19 @@ export default function ProfileSettings() {
 
         <div className="space-y-4">
           <div className="flex items-center gap-4">
-            <div className="avatar">
-              <div className="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" alt="Profile" />
+            <div className="avatar placeholder">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-600 to-red-800 ring ring-red-500/50 ring-offset-base-100 ring-offset-2">
+                {user?.avatar_url ? (
+                  <img 
+                    src={user.avatar_url} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <span className="text-3xl font-bold text-white">
+                    {user?.name ? getInitials(user.name) : <UserIcon className="w-12 h-12" />}
+                  </span>
+                )}
               </div>
             </div>
             <div>
@@ -32,7 +52,8 @@ export default function ProfileSettings() {
               <input
                 type="text"
                 className="input input-bordered"
-                defaultValue={user?.name || 'Sensei Yamamoto'}
+                defaultValue={user?.name || ''}
+                placeholder="Enter your full name"
               />
             </div>
 
@@ -43,7 +64,8 @@ export default function ProfileSettings() {
               <input
                 type="email"
                 className="input input-bordered"
-                defaultValue={user?.email || 'sensei@dojo.com'}
+                defaultValue={user?.email || ''}
+                placeholder="your.email@example.com"
               />
             </div>
 
@@ -62,10 +84,10 @@ export default function ProfileSettings() {
               <label className="label">
                 <span className="label-text">Role</span>
               </label>
-              <select className="select select-bordered">
-                <option>Admin</option>
-                <option>Instructor</option>
-                <option>Staff</option>
+              <select className="select select-bordered" disabled defaultValue={user?.role || 'admin'}>
+                <option value="admin">Admin</option>
+                <option value="instructor">Instructor</option>
+                <option value="student">Student</option>
               </select>
             </div>
           </div>

@@ -18,7 +18,7 @@ export default function DashboardHeader({ greeting }: DashboardHeaderProps) {
       <div className="relative max-w-7xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-base-content leading-tight">
-            {greeting}, <span className="text-primary font-black">Sensei {user?.name?.split(' ')[0] || 'Master'}!</span>
+            {greeting}, <span className="text-primary font-black">{user?.name?.split(' ')[0] || 'User'}!</span>
           </h1>
           <p className="text-base-content/70 text-sm sm:text-base">
             {t('dashboard.header.description')}
