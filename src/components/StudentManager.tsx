@@ -37,9 +37,13 @@ export default function StudentManager() {
     }).length, icon: Calendar, color: 'text-info' },
     { label: t('students.stats.inactive'), value: (studentStats?.total || students.length) - (studentStats?.active || students.filter((s: Student) => s.is_active).length), icon: DollarSign, color: 'text-warning' },
   ];  const filteredStudents = useMemo(() => {
+    if (!Array.isArray(students)) {
+      return [];
+    }
+    
     return students.filter((student: Student) => {
-      const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           student.email.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (student.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                           (student.email?.toLowerCase() || '').includes(searchQuery.toLowerCase());
       const matchesBelt = filterBelt === 'all' || student.belt === filterBelt;
       const matchesStatus = filterStatus === 'all' ||
                            (filterStatus === 'active' && student.is_active) ||
@@ -199,16 +203,16 @@ export default function StudentManager() {
                     <div className="flex items-center gap-3">
                       <div className="avatar">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-                          {student.name.charAt(0).toUpperCase()}
+                          {student.name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
                       </div>
                       <div>
-                        <h3 className="font-bold text-base-content">{student.name}</h3>
-                        <p className="text-xs text-base-content/60">{student.discipline}</p>
+                        <h3 className="font-bold text-base-content">{student.name || 'N/A'}</h3>
+                        <p className="text-xs text-base-content/60">{student.discipline || 'N/A'}</p>
                       </div>
                     </div>
                     <div className={`badge ${getBeltColor(student.belt)} badge-sm`}>
-                      {student.belt}
+                      {student.belt || 'N/A'}
                     </div>
                   </div>
 
@@ -217,7 +221,7 @@ export default function StudentManager() {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2 text-base-content/70">
                       <Mail className="w-3 h-3" />
-                      <span className="truncate">{student.email}</span>
+                      <span className="truncate">{student.email || 'N/A'}</span>
                     </div>
                     {student.phone && (
                       <div className="flex items-center gap-2 text-base-content/70">
@@ -272,23 +276,23 @@ export default function StudentManager() {
                       <div className="flex items-center gap-3">
                         <div className="avatar">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-sm">
-                            {student.name.charAt(0).toUpperCase()}
+                            {student.name?.charAt(0)?.toUpperCase() || '?'}
                           </div>
                         </div>
                         <div>
-                          <div className="font-bold">{student.name}</div>
-                          <div className="text-xs opacity-60">{student.discipline}</div>
+                          <div className="font-bold">{student.name || 'N/A'}</div>
+                          <div className="text-xs opacity-60">{student.discipline || 'N/A'}</div>
                         </div>
                       </div>
                     </td>
                     <td>
                       <div className={`badge ${getBeltColor(student.belt)}`}>
-                        {student.belt}
+                        {student.belt || 'N/A'}
                       </div>
                     </td>
-                    <td>{student.discipline}</td>
+                    <td>{student.discipline || 'N/A'}</td>
                     <td>
-                      <div className="text-sm">{student.email}</div>
+                      <div className="text-sm">{student.email || 'N/A'}</div>
                       {student.phone && <div className="text-xs opacity-60">{student.phone}</div>}
                     </td>
                     <td className="text-sm">
@@ -349,14 +353,14 @@ export default function StudentManager() {
             <div className="flex items-center gap-4 mb-6">
               <div className="avatar">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold">
-                  {selectedStudent.name.charAt(0).toUpperCase()}
+                  {selectedStudent.name?.charAt(0)?.toUpperCase() || '?'}
                 </div>
               </div>
               <div>
-                <h2 className="text-2xl font-bold">{selectedStudent.name}</h2>
+                <h2 className="text-2xl font-bold">{selectedStudent.name || 'N/A'}</h2>
                 <div className="flex items-center gap-2 mt-2">
                   <div className={`badge ${getBeltColor(selectedStudent.belt)}`}>
-                    {selectedStudent.belt} Belt
+                    {selectedStudent.belt || 'N/A'} Belt
                   </div>
                   <div className={`badge ${selectedStudent.is_active ? 'badge-success' : 'badge-error'}`}>
                     {selectedStudent.is_active ? 'Active' : 'Inactive'}
