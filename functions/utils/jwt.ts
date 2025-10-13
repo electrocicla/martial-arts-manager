@@ -115,6 +115,8 @@ export async function verifyJWT(token: string, secret: string): Promise<JWTPaylo
     if (parts.length !== 3) return null;
 
     const [encodedHeader, encodedPayload, encodedSignature] = parts;
+    
+    // Decode header
     const header = JSON.parse(base64urlDecode(encodedHeader));
     
     if (header.alg !== 'HS256') return null;
@@ -129,10 +131,9 @@ export async function verifyJWT(token: string, secret: string): Promise<JWTPaylo
       ['verify']
     );
 
-    const signature = Uint8Array.from(
-      atob(base64urlUnescape(encodedSignature)),
-      c => c.charCodeAt(0)
-    );
+    // Properly decode the base64url signature
+    const signatureString = base64urlDecode(encodedSignature);
+    const signature = Uint8Array.from(signatureString, c => c.charCodeAt(0));
 
     const isValid = await crypto.subtle.verify(
       'HMAC',
@@ -141,7 +142,10 @@ export async function verifyJWT(token: string, secret: string): Promise<JWTPaylo
       new TextEncoder().encode(unsignedToken)
     );
 
-    if (!isValid) return null;
+    if (!isValid) {
+      console.error('[JWT] Signature verification failed');
+      return null;
+    }
 
     // Decode payload
     const payload: JWTPayload = JSON.parse(base64urlDecode(encodedPayload));
