@@ -1,4 +1,5 @@
 import { Env } from '../../types/index';
+import { authenticateUser } from '../../middleware/auth';
 
 interface MetadataResponse {
   disciplines: string[];
@@ -6,8 +7,17 @@ interface MetadataResponse {
   instructors: string[];
 }
 
-export async function onRequestGet({ env }: { env: Env }) {
+export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
   try {
+    // Authenticate user
+    const auth = await authenticateUser(request, env);
+    if (!auth.authenticated) {
+      return new Response(JSON.stringify({ error: auth.error }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     // Get unique disciplines from classes
     const disciplinesResult = await env.DB.prepare(
       "SELECT DISTINCT discipline FROM classes WHERE deleted_at IS NULL ORDER BY discipline"
