@@ -175,7 +175,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.5 }}
                 >
-                  HAMMAR
+                  HAMARR
                 </motion.div>
                 
                 <motion.div 
@@ -348,7 +348,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ duration: 0.8, delay: 0.5 }}
                     >
-                      HAMMAR
+                      HAMARR
                     </motion.div>
                     
                     <motion.div 
