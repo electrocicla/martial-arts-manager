@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import type { Student, StudentFormData } from '../types/index';
+import type { Student, StudentFormData, Discipline } from '../types/index';
 import { Users, Search, Download, Upload, UserPlus, TrendingUp, Calendar, DollarSign, Eye, Mail, Phone, Edit } from 'lucide-react';
 import { useStudents } from '../hooks/useStudents';
 import { getBeltColor } from '../lib/studentUtils';
+import { DISCIPLINES, BELT_RANKINGS } from '../lib/constants';
 import { StudentFormModal, StudentDetailsModal, StudentEditModal } from './students';
 import { useTranslation } from 'react-i18next';
 
@@ -16,6 +17,7 @@ export default function StudentManager() {
     deleteStudent,
   } = useStudents();
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterDiscipline, setFilterDiscipline] = useState('all');
   const [filterBelt, setFilterBelt] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -23,7 +25,64 @@ export default function StudentManager() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const belts = ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Brown', 'Black'];
+  // Calculate student counts by discipline
+  const disciplineCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    students.forEach((student) => {
+      counts[student.discipline] = (counts[student.discipline] || 0) + 1;
+    });
+    return counts;
+  }, [students]);
+
+  // Calculate student counts by belt rank (considering all disciplines)
+  const beltCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    students.forEach((student) => {
+      const belt = student.belt || 'Unknown';
+      counts[belt] = (counts[belt] || 0) + 1;
+    });
+    return counts;
+  }, [students]);
+
+  // Get all unique belt ranks from all disciplines
+  const allBeltRanks = useMemo(() => {
+    const belts = new Set<string>();
+    Object.values(BELT_RANKINGS).forEach((ranks) => {
+      ranks.forEach((belt) => belts.add(belt));
+    });
+    return Array.from(belts).sort();
+  }, []);
+
+  // Get belt ranks for selected discipline (or all if no discipline selected)
+  const availableBelts = useMemo(() => {
+    if (filterDiscipline === 'all') {
+      return allBeltRanks;
+    }
+    return BELT_RANKINGS[filterDiscipline as Discipline] || [];
+  }, [filterDiscipline, allBeltRanks]);
+
+  // Filter students
+  const filteredStudents = useMemo(() => {
+    return students.filter((student) => {
+      const matchesSearch =
+        searchQuery === '' ||
+        student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.email?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesDiscipline =
+        filterDiscipline === 'all' || student.discipline === filterDiscipline;
+
+      const matchesBelt =
+        filterBelt === 'all' || student.belt === filterBelt;
+
+      const matchesStatus =
+        filterStatus === 'all' ||
+        (filterStatus === 'active' && student.is_active) ||
+        (filterStatus === 'inactive' && !student.is_active);
+
+      return matchesSearch && matchesDiscipline && matchesBelt && matchesStatus;
+    });
+  }, [students, searchQuery, filterDiscipline, filterBelt, filterStatus]);
 
   const stats = [
     { label: t('students.stats.totalStudents'), value: studentStats?.total || students.length, icon: Users, color: 'text-primary' },
@@ -39,22 +98,7 @@ export default function StudentManager() {
       }
     }).length, icon: Calendar, color: 'text-info' },
     { label: t('students.stats.inactive'), value: (studentStats?.total || students.length) - (studentStats?.active || students.filter((s: Student) => s.is_active).length), icon: DollarSign, color: 'text-warning' },
-  ];  const filteredStudents = useMemo(() => {
-    if (!Array.isArray(students)) {
-      return [];
-    }
-    
-    return students.filter((student: Student) => {
-      const matchesSearch = (student.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-                           (student.email?.toLowerCase() || '').includes(searchQuery.toLowerCase());
-      const matchesBelt = filterBelt === 'all' || student.belt === filterBelt;
-      const matchesStatus = filterStatus === 'all' ||
-                           (filterStatus === 'active' && student.is_active) ||
-                           (filterStatus === 'inactive' && !student.is_active);
-
-      return matchesSearch && matchesBelt && matchesStatus;
-    });
-  }, [students, searchQuery, filterBelt, filterStatus]);
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-red-900/10 to-black">
@@ -147,18 +191,45 @@ export default function StudentManager() {
             </div>
 
             {/* Filters */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
+              {/* Discipline Filter with Counts */}
+              <select 
+                className="px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                value={filterDiscipline}
+                onChange={(e) => {
+                  setFilterDiscipline(e.target.value);
+                  // Reset belt filter when changing discipline
+                  setFilterBelt('all');
+                }}
+              >
+                <option value="all">{t('students.filters.allDisciplines')} ({students.length})</option>
+                {DISCIPLINES.map(discipline => (
+                  <option key={discipline} value={discipline}>
+                    {discipline} ({disciplineCounts[discipline] || 0})
+                  </option>
+                ))}
+              </select>
+
+              {/* Belt Filter with Counts - Dynamic based on discipline */}
               <select 
                 className="px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                 value={filterBelt}
                 onChange={(e) => setFilterBelt(e.target.value)}
               >
-                <option value="all">{t('students.filters.allBelts')}</option>
-                {belts.map(belt => (
-                  <option key={belt} value={belt}>{belt} Belt</option>
+                <option value="all">
+                  {filterDiscipline === 'all' 
+                    ? t('students.filters.allBelts') 
+                    : t('students.filters.allBeltsInDiscipline', { discipline: filterDiscipline })} 
+                  ({filteredStudents.length})
+                </option>
+                {availableBelts.map(belt => (
+                  <option key={belt} value={belt}>
+                    {belt} ({beltCounts[belt] || 0})
+                  </option>
                 ))}
               </select>
 
+              {/* Status Filter */}
               <select 
                 className="px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                 value={filterStatus}

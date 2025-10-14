@@ -194,7 +194,9 @@
       "search": "Search students...",
       "filterByBelt": "Filter by belt",
       "filterByStatus": "Filter by status",
+      "allDisciplines": "All disciplines",
       "allBelts": "All belts",
+      "allBeltsInDiscipline": "All belts in {{discipline}}",
       "allStatuses": "All statuses",
       "active": "Active",
       "inactive": "Inactive"

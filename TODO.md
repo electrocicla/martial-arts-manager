@@ -49,6 +49,21 @@
 - [x] Grid responsive (1/2/3/4 columnas)
 - [x] Soporte para avatar_url desde R2
 
+### ✅ Sistema de filtrado avanzado (COMPLETADO 2025-01-26)
+- [x] Filtro por disciplina con conteos de estudiantes
+- [x] Filtro completo de cinturones de todas las disciplinas
+- [x] Conteos de estudiantes por cinturón
+- [x] Filtrado dinámico: cinturones se actualizan según disciplina seleccionada
+- [x] Traducciones EN/ES agregadas
+- [x] Optimización de rendimiento con useMemo
+- [x] Interfaz responsive y accesible
+- [x] Investigación completa de sistemas de cinturones:
+  * Karate: White, Yellow, Orange, Green, Blue, Purple, Brown, Black
+  * BJJ: White, Blue, Purple, Brown, Black, Red/White (Coral 7th), Red/White (Coral 8th), Red (9th-10th)
+  * Taekwondo: White, Yellow, Green, Blue, Red, Black
+  * Judo: Similar to BJJ with dans and kyus
+  * Otros estilos documentados en constants.ts
+
 ### ✅ Integración de Cloudflare R2
 - [x] Bucket creado: `martial-arts-manager-bucket`
 - [x] Endpoint POST /api/students/avatar
