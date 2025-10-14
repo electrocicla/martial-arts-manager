@@ -29,13 +29,35 @@ export const getClassStatus = (date: string, time: string) => {
 };
 
 /**
- * Calculate class statistics
+ * Calculate class statistics from real data
  */
 export const calculateClassStats = (classes: Class[]) => {
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+  startOfWeek.setHours(0, 0, 0, 0);
+  
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 7); // End of week
+  
+  // Calculate real stats
   const totalClasses = classes.length;
-  const totalCapacity = classes.reduce((acc: number, c: Class) => acc + c.max_students, 0);
-  const thisWeek = 24; // This would be calculated based on current week
-  const avgAttendance = '89%'; // This would be calculated from attendance data
+  const totalCapacity = classes.reduce((acc: number, c: Class) => acc + (c.max_students || 0), 0);
+  
+  // Classes this week
+  const thisWeek = classes.filter(c => {
+    const classDate = new Date(c.date);
+    return classDate >= startOfWeek && classDate < endOfWeek;
+  }).length;
+  
+  // Calculate average attendance from enrolled_count
+  const classesWithStudents = classes.filter(c => c.max_students > 0);
+  const avgAttendanceValue = classesWithStudents.length > 0
+    ? Math.round(
+        (classesWithStudents.reduce((acc, c) => acc + ((c.enrolled_count || 0) / c.max_students), 0) / classesWithStudents.length) * 100
+      )
+    : 0;
+  const avgAttendance = `${avgAttendanceValue}%`;
 
   return [
     { labelKey: 'totalClasses', value: totalClasses, iconName: 'BookOpen', color: 'text-primary' },

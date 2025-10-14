@@ -237,71 +237,124 @@ export default function ClassManager() {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>{t('classes.table.headers.class')}</th>
-                  <th>{t('classes.table.headers.dateTime')}</th>
-                  <th>{t('classes.table.headers.location')}</th>
-                  <th>{t('classes.table.headers.instructor')}</th>
-                  <th>{t('classes.table.headers.students')}</th>
-                  <th>{t('classes.table.headers.status')}</th>
-                  <th>{t('classes.table.headers.actions')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredClasses.map((cls) => {
-                  const status = getClassStatus(cls.date, cls.time);
-                  return (
-                    <tr key={cls.id} className="hover">
-                      <td>
-                        <div>
-                          <div className="font-bold">{cls.name}</div>
-                          <div className={`badge ${getDisciplineColor(cls.discipline)} badge-sm mt-1`}>
+          /* List View - Modern Grid Cards Layout */
+          <div className="grid grid-cols-1 gap-4">
+            {filteredClasses.map((cls) => {
+              const status = getClassStatus(cls.date, cls.time);
+              return (
+                <div 
+                  key={cls.id} 
+                  className="card bg-gradient-to-br from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all border border-gray-700/50 hover:border-red-500/30 shadow-lg hover:shadow-red-500/10"
+                >
+                  <div className="card-body p-5">
+                    {/* Header Row - Class Name & Status */}
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-lg text-white mb-2">{cls.name}</h3>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className={`badge ${getDisciplineColor(cls.discipline)} badge-md font-semibold`}>
                             {cls.discipline}
                           </div>
+                          <div className={`badge ${status.color} badge-md`}>
+                            {t(`classes.status.${status.labelKey}`)}
+                          </div>
                         </div>
-                      </td>
-                      <td>
-                        <div className="text-sm">
-                          {new Date(cls.date).toLocaleDateString()}
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                        <button 
+                          className="btn btn-primary btn-sm gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 border-none"
+                          onClick={() => navigate(`/attendance/${cls.id}`)}
+                        >
+                          <Users className="w-4 h-4" />
+                          <span>{t('classes.actions.attendance')}</span>
+                        </button>
+                        <button className="btn btn-ghost btn-sm gap-2 border border-gray-600 hover:border-gray-500">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Info Grid - Responsive 2x2 Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {/* Date & Time */}
+                      <div className="flex items-center gap-2.5 p-3 bg-gray-800/60 rounded-lg border border-gray-700/50">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/10">
+                          <Calendar className="w-5 h-5 text-blue-400" />
                         </div>
-                        <div className="text-xs opacity-60">{cls.time}</div>
-                      </td>
-                      <td>{cls.location}</td>
-                      <td>{cls.instructor}</td>
-                      <td>
-                        <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {cls.enrolled_count || 0}/{cls.max_students}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[10px] text-gray-400 uppercase font-medium tracking-wide">Fecha</div>
+                          <div className="text-sm font-semibold text-white truncate">
+                            {new Date(cls.date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
+                          </div>
                         </div>
-                      </td>
-                      <td>
-                        <div className={`badge ${status.color}`}>
-                          {t(`classes.status.${status.labelKey}`)}
+                      </div>
+                      
+                      {/* Time */}
+                      <div className="flex items-center gap-2.5 p-3 bg-gray-800/60 rounded-lg border border-gray-700/50">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-500/10">
+                          <Clock className="w-5 h-5 text-green-400" />
                         </div>
-                      </td>
-                      <td>
-                        <div className="flex gap-1">
-                          <button 
-                            className="btn btn-ghost btn-xs"
-                            onClick={() => navigate(`/attendance/${cls.id}`)}
-                          >
-                            {t('classes.actions.attendance')}
-                          </button>
-                          <button className="btn btn-ghost btn-xs">
-                            {t('classes.actions.edit')}
-                          </button>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[10px] text-gray-400 uppercase font-medium tracking-wide">Hora</div>
+                          <div className="text-sm font-semibold text-white">{cls.time}</div>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </div>
+                      
+                      {/* Location */}
+                      <div className="flex items-center gap-2.5 p-3 bg-gray-800/60 rounded-lg border border-gray-700/50">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-500/10">
+                          <MapPin className="w-5 h-5 text-purple-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[10px] text-gray-400 uppercase font-medium tracking-wide">Ubicación</div>
+                          <div className="text-sm font-semibold text-white truncate">{cls.location}</div>
+                        </div>
+                      </div>
+                      
+                      {/* Students */}
+                      <div className="flex items-center gap-2.5 p-3 bg-gray-800/60 rounded-lg border border-gray-700/50">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-yellow-500/10">
+                          <Users className="w-5 h-5 text-yellow-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[10px] text-gray-400 uppercase font-medium tracking-wide">Estudiantes</div>
+                          <div className="text-sm font-semibold text-white">
+                            {cls.enrolled_count || 0}/{cls.max_students}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Instructor */}
+                    <div className="mt-4 pt-4 border-t border-gray-700/50">
+                      <div className="flex items-center gap-2 text-sm">
+                        <User className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-400">Instructor:</span>
+                        <span className="font-semibold text-white">{cls.instructor}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            
+            {/* Empty State for List View */}
+            {filteredClasses.length === 0 && (
+              <div className="text-center py-16 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-gray-700/50">
+                <div className="max-w-md mx-auto px-4">
+                  <div className="p-4 bg-red-500/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                    <Calendar className="w-10 h-10 text-red-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">No se encontraron clases</h3>
+                  <p className="text-base-content/60 mb-6">Intenta cambiar los filtros</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
+
       </div>
 
       <ClassFormModal
