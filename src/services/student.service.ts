@@ -73,7 +73,20 @@ export class StudentService {
     if (data.emergencyContactPhone !== undefined) payload.emergency_contact_phone = data.emergencyContactPhone;
     if (data.notes !== undefined) payload.notes = data.notes;
     
-    return apiClient.put<Student>(`${this.endpoint}/${id}`, payload);
+    const response = await apiClient.put<{ message: string; student: Student }>(`${this.endpoint}/${id}`, payload);
+    
+    // Extract student from wrapper response
+    if (response.success && response.data) {
+      return {
+        success: true,
+        data: response.data.student
+      };
+    }
+    
+    return {
+      success: false,
+      error: response.error
+    };
   }
 
   async delete(id: string): Promise<ApiResponse<void>> {
