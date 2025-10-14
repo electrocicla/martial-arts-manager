@@ -198,63 +198,101 @@ export default function StudentManager() {
 
         {/* Students Grid/List */}
         {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredStudents.map((student: Student) => (
-              <div key={student.id} className="card bg-base-200 hover:shadow-xl transition-all duration-300">
-                <div className="card-body p-4">
+              <div 
+                key={student.id} 
+                className="group relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-red-500/50 shadow-xl hover:shadow-red-500/20 transition-all duration-300 hover:scale-105"
+              >
+                {/* Avatar y Badge de Estado */}
+                <div className="relative mb-4">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="avatar">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-                          {student.name?.charAt(0)?.toUpperCase() || '?'}
-                        </div>
+                    {/* Avatar */}
+                    <div className="relative">
+                      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-red-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg ring-4 ring-gray-800 group-hover:ring-red-500/30 transition-all duration-300">
+                        {student.avatar_url ? (
+                          <img 
+                            src={student.avatar_url} 
+                            alt={student.name} 
+                            className="w-full h-full rounded-2xl object-cover"
+                          />
+                        ) : (
+                          student.name?.charAt(0)?.toUpperCase() || '?'
+                        )}
                       </div>
-                      <div>
-                        <h3 className="font-bold text-base-content">{student.name || 'N/A'}</h3>
-                        <p className="text-xs text-base-content/60">{student.discipline || 'N/A'}</p>
-                      </div>
+                      {/* Status Indicator */}
+                      <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-gray-800 ${
+                        student.is_active ? 'bg-green-500' : 'bg-red-500'
+                      } shadow-lg`} />
                     </div>
-                    <div className={`badge ${getBeltColor(student.belt)} badge-sm`}>
+
+                    {/* Belt Badge */}
+                    <div className={`px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg ${getBeltColor(student.belt)}`}>
                       {student.belt || 'N/A'}
                     </div>
                   </div>
+                </div>
 
-                  <div className="divider my-2"></div>
+                {/* Student Info */}
+                <div className="space-y-3 mb-5">
+                  {/* Name */}
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-1 truncate group-hover:text-red-400 transition-colors">
+                      {student.name || 'N/A'}
+                    </h3>
+                    <p className="text-sm text-gray-400 font-medium truncate">
+                      {student.discipline || 'N/A'}
+                    </p>
+                  </div>
 
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-base-content/70">
-                      <Mail className="w-3 h-3" />
+                  {/* Contact Info */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                        <Mail className="w-4 h-4 text-blue-400" />
+                      </div>
                       <span className="truncate">{student.email || 'N/A'}</span>
                     </div>
+                    
                     {student.phone && (
-                      <div className="flex items-center gap-2 text-base-content/70">
-                        <Phone className="w-3 h-3" />
+                      <div className="flex items-center gap-2 text-sm text-gray-300">
+                        <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                          <Phone className="w-4 h-4 text-green-400" />
+                        </div>
                         <span>{student.phone}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2 text-base-content/70">
-                      <Calendar className="w-3 h-3" />
-                      <span>Joined {new Date(student.join_date).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-
-                  <div className="card-actions justify-between mt-4">
-                    <div className={`badge ${student.is_active ? 'badge-success' : 'badge-error'} badge-sm`}>
-                      {student.is_active ? 'Active' : 'Inactive'}
-                    </div>
-                    <div className="flex gap-1">
-                      <button 
-                        className="btn btn-ghost btn-xs rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
-                        onClick={() => setSelectedStudent(student)}
-                      >
-                        <Eye className="w-3 h-3" />
-                      </button>
-                      <button className="btn btn-ghost btn-xs rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200">
-                        <Edit className="w-3 h-3" />
-                      </button>
+                    
+                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                      <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                        <Calendar className="w-4 h-4 text-purple-400" />
+                      </div>
+                      <span>{new Date(student.join_date).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setSelectedStudent(student)}
+                    className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm shadow-lg hover:shadow-blue-500/50 transition-all duration-200 flex items-center justify-center gap-2 group/btn"
+                  >
+                    <Eye className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                    <span>Ver</span>
+                  </button>
+                  
+                  <button 
+                    onClick={() => setEditingStudent(student)}
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-medium text-sm shadow-lg hover:shadow-purple-500/50 transition-all duration-200 flex items-center justify-center gap-2 group/btn"
+                  >
+                    <Edit className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                    <span>Editar</span>
+                  </button>
+                </div>
+
+                {/* Hover Overlay Effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-purple-500/0 group-hover:from-red-500/5 group-hover:to-purple-500/5 rounded-2xl pointer-events-none transition-all duration-300" />
               </div>
             ))}
           </div>
