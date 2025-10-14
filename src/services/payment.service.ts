@@ -49,13 +49,13 @@ export class PaymentService {
   async create(data: PaymentFormData): Promise<ApiResponse<Payment>> {
     const payload = {
       id: crypto.randomUUID(),
-      studentId: data.studentId,
+      student_id: data.studentId,
       amount: data.amount,
       date: data.date,
       type: data.type,
       notes: data.notes || undefined,
-      status: 'completed', // Default status
-      paymentMethod: data.paymentMethod || undefined,
+      status: data.status || 'completed',
+      payment_method: data.paymentMethod || undefined,
     };
 
     return apiClient.post<Payment>(this.endpoint, payload);

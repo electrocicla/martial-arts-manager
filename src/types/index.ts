@@ -211,6 +211,7 @@ export interface PaymentFormData {
   amount: number;
   date: string;
   type: string;
+  status?: string;
   paymentMethod?: string;
   notes?: string;
 }

@@ -25,7 +25,7 @@ export default function PaymentManager() {
 
   const { t } = useTranslation();
 
-  const toast = useToast();
+  const { success: showSuccess, error: showError } = useToast();
 
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -69,15 +69,22 @@ export default function PaymentManager() {
   }, [payments, students, debouncedSearchTerm, statusFilter, typeFilter]);
 
   const addPayment = async (data: PaymentFormData) => {
-    const result = await createPayment(data);
-    if (result) {
-      reset();
-      toast.success('Payment added successfully', {
-        description: 'The payment has been recorded in the system.'
-      });
-    } else {
-      toast.error('Failed to add payment', {
-        description: 'Please try again later.'
+    try {
+      const result = await createPayment(data);
+      if (result) {
+        reset();
+        showSuccess('Pago agregado exitosamente', {
+          description: 'El pago ha sido registrado en el sistema.'
+        });
+      } else {
+        showError('Error al agregar pago', {
+          description: 'Por favor intenta nuevamente.'
+        });
+      }
+    } catch (error) {
+      console.error('Error adding payment:', error);
+      showError('Error al agregar pago', {
+        description: 'Ocurrió un error inesperado.'
       });
     }
   };
@@ -289,21 +296,25 @@ export default function PaymentManager() {
         ) : (
           filteredPayments.map((payment: Payment) => {
             const student = students.find((s: Student) => s.id === payment.student_id);
+            const paymentAmount = typeof payment.amount === 'number' ? payment.amount : 0;
+            const paymentStatus = payment.status || 'completed';
+            const paymentType = payment.type || 'other';
+            
             return (
               <Card key={payment.id}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
                         <User className="h-5 w-5 text-gray-400" />
                         <span className="font-medium text-gray-900">
-                          {student?.name || 'Unknown Student'}
+                          {student?.name || 'Estudiante Desconocido'}
                         </span>
-                        <Badge variant={getTypeBadgeVariant(payment.type)}>
-                          {t(`payments.type.${payment.type?.replace('-', '') || 'other'}`)}
+                        <Badge variant={getTypeBadgeVariant(paymentType)}>
+                          {t(`payments.type.${paymentType.replace('-', '')}`)}
                         </Badge>
-                        <Badge variant={getStatusBadgeVariant((payment as Payment & { status?: string }).status || 'completed')}>
-                          {t(`payments.status.${(payment as Payment & { status?: string }).status || 'completed'}`)}
+                        <Badge variant={getStatusBadgeVariant(paymentStatus)}>
+                          {t(`payments.status.${paymentStatus}`)}
                         </Badge>
                       </div>
 
@@ -311,12 +322,14 @@ export default function PaymentManager() {
                         <div className="flex items-center gap-1">
                           <DollarSign className="h-4 w-4" />
                           <span className="font-semibold text-lg text-gray-900">
-                            ${payment.amount.toFixed(2)}
+                            ${paymentAmount.toFixed(2)}
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          <span>{new Date(payment.date).toLocaleDateString()}</span>
+                          <span>
+                            {payment.date ? new Date(payment.date).toLocaleDateString('es-ES') : 'Sin fecha'}
+                          </span>
                         </div>
                       </div>
 
