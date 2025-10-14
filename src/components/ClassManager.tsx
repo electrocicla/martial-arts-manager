@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import React from 'react';
-import { BookOpen, Plus, Calendar, Users, Copy, List, Clock, MapPin, User, Edit, TrendingUp } from 'lucide-react';
+import { BookOpen, Plus, Calendar, Users, Copy, List, Clock, MapPin, User, Edit, TrendingUp, UserPlus } from 'lucide-react';
 import { useClasses } from '../hooks/useClasses';
 import { useClassMetadata } from '../hooks/useClassMetadata';
 import { useNavigate } from 'react-router-dom';
 import { useClassFilters } from '../hooks/useClassFilters';
 import { useClassStats } from '../hooks/useClassStats';
 import { getDisciplineColor, getClassStatus } from '../lib/classUtils';
-import { ClassFormModal } from './classes';
+import { ClassFormModal, EnrollStudentsModal } from './classes';
 import { useTranslation } from 'react-i18next';
 
 export default function ClassManager() {
@@ -19,6 +19,8 @@ export default function ClassManager() {
   const { disciplines } = useClassMetadata();
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEnrollModal, setShowEnrollModal] = useState(false);
+  const [selectedClass, setSelectedClass] = useState<any>(null);
   const [filterDiscipline, setFilterDiscipline] = useState('all');
   const [filterDay, setFilterDay] = useState('all');
   const [viewMode, setViewMode] = useState<'schedule' | 'list'>('schedule');
@@ -195,6 +197,16 @@ export default function ClassManager() {
 
                             <div className="flex flex-col sm:flex-row gap-2 shrink-0">
                               <button 
+                                className="btn btn-success btn-sm gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 border-none shadow-md hover:shadow-lg transition-all"
+                                onClick={() => {
+                                  setSelectedClass(cls);
+                                  setShowEnrollModal(true);
+                                }}
+                                title="Gestionar estudiantes"
+                              >
+                                <UserPlus className="w-4 h-4" />
+                              </button>
+                              <button 
                                 className="btn btn-primary btn-sm gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 border-none shadow-md hover:shadow-lg transition-all"
                                 onClick={() => navigate(`/attendance/${cls.id}`)}
                               >
@@ -263,6 +275,16 @@ export default function ClassManager() {
                       
                       {/* Actions */}
                       <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                        <button 
+                          className="btn btn-success btn-sm gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 border-none"
+                          onClick={() => {
+                            setSelectedClass(cls);
+                            setShowEnrollModal(true);
+                          }}
+                        >
+                          <UserPlus className="w-4 h-4" />
+                          <span>Estudiantes</span>
+                        </button>
                         <button 
                           className="btn btn-primary btn-sm gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 border-none"
                           onClick={() => navigate(`/attendance/${cls.id}`)}
@@ -362,6 +384,20 @@ export default function ClassManager() {
         onClose={() => setShowAddModal(false)}
         onSubmit={createClass}
       />
+      
+      {selectedClass && (
+        <EnrollStudentsModal
+          isOpen={showEnrollModal}
+          onClose={() => {
+            setShowEnrollModal(false);
+            setSelectedClass(null);
+          }}
+          classId={selectedClass.id}
+          className={selectedClass.name}
+          maxStudents={selectedClass.max_students}
+          currentEnrollment={selectedClass.enrolled_count || 0}
+        />
+      )}
     </div>
   );
 }
