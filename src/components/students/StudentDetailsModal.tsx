@@ -49,14 +49,38 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
 
     setIsUploading(true);
     try {
-      // TODO: Implement R2 upload
-      // For now, we'll use a placeholder
-      console.log('Uploading file:', file.name);
-      
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      alert(t('students.avatarUploadSuccess') || 'Profile photo uploaded successfully!');
+      // Create form data
+      const formData = new FormData();
+      formData.append('avatar', file);
+      formData.append('studentId', student.id);
+
+      // Get auth token
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        alert('Authentication required');
+        return;
+      }
+
+      // Upload to R2 via API
+      const response = await fetch('/api/students/avatar', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Update local student object with new avatar URL
+        student.avatar_url = data.avatarUrl;
+        alert(t('students.avatarUploadSuccess') || 'Profile photo uploaded successfully!');
+        // Force re-render by closing and reopening modal or refreshing data
+        window.location.reload();
+      } else {
+        alert(data.error || t('students.avatarUploadError') || 'Failed to upload profile photo');
+      }
     } catch (error) {
       console.error('Upload error:', error);
       alert(t('students.avatarUploadError') || 'Failed to upload profile photo');

@@ -31,10 +31,80 @@ export interface D1Result<T = unknown> {
   };
 }
 
+// Cloudflare R2 types
+export interface R2Bucket {
+  put(key: string, value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob, options?: R2PutOptions): Promise<R2Object>;
+  get(key: string, options?: R2GetOptions): Promise<R2Object | null>;
+  delete(keys: string | string[]): Promise<void>;
+  head(key: string): Promise<R2Object | null>;
+  list(options?: R2ListOptions): Promise<R2Objects>;
+}
+
+export interface R2PutOptions {
+  httpMetadata?: R2HTTPMetadata;
+  customMetadata?: Record<string, string>;
+}
+
+export interface R2GetOptions {
+  onlyIf?: R2Conditional;
+  range?: R2Range;
+}
+
+export interface R2HTTPMetadata {
+  contentType?: string;
+  contentEncoding?: string;
+  contentDisposition?: string;
+  contentLanguage?: string;
+  cacheControl?: string;
+}
+
+export interface R2Object {
+  key: string;
+  size: number;
+  etag: string;
+  httpEtag: string;
+  uploaded: Date;
+  httpMetadata?: R2HTTPMetadata;
+  customMetadata?: Record<string, string>;
+  body?: ReadableStream;
+  arrayBuffer(): Promise<ArrayBuffer>;
+  text(): Promise<string>;
+  json<T = unknown>(): Promise<T>;
+  blob(): Promise<Blob>;
+}
+
+export interface R2Conditional {
+  etagMatches?: string;
+  etagDoesNotMatch?: string;
+  uploadedBefore?: Date;
+  uploadedAfter?: Date;
+}
+
+export interface R2Range {
+  offset?: number;
+  length?: number;
+  suffix?: number;
+}
+
+export interface R2ListOptions {
+  limit?: number;
+  prefix?: string;
+  cursor?: string;
+  delimiter?: string;
+}
+
+export interface R2Objects {
+  objects: R2Object[];
+  truncated: boolean;
+  cursor?: string;
+  delimitedPrefixes: string[];
+}
+
 // Environment interface for Cloudflare Pages Functions
 export interface Env {
   DB: D1Database;
   JWT_SECRET: string;
+  AVATARS: R2Bucket;
 }
 
 // Student types
