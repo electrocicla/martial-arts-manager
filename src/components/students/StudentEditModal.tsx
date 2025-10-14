@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Student, Discipline } from '../../types/index';
+import type { Student, Discipline, StudentFormData } from '../../types/index';
 import { UserPlus, Mail, Phone, Calendar, X } from 'lucide-react';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
 import { useTranslation } from 'react-i18next';
@@ -79,15 +79,16 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
       return;
     }
 
-    const updateData = {
+    // Transform to StudentFormData format (camelCase)
+    const updateData: Partial<StudentFormData> = {
       name: editStudent.name,
       email: editStudent.email,
       phone: editStudent.phone || undefined,
       belt: editStudent.belt,
-      discipline: editStudent.discipline,
-      date_of_birth: editStudent.date_of_birth || undefined,
-      emergency_contact_name: editStudent.emergency_contact_name || undefined,
-      emergency_contact_phone: editStudent.emergency_contact_phone || undefined,
+      discipline: editStudent.discipline as Discipline,
+      dateOfBirth: editStudent.date_of_birth || undefined,
+      emergencyContactName: editStudent.emergency_contact_name || undefined,
+      emergencyContactPhone: editStudent.emergency_contact_phone || undefined,
       notes: editStudent.notes || undefined,
     };
 

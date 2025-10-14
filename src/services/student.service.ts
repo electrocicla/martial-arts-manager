@@ -60,7 +60,20 @@ export class StudentService {
   }
 
   async update(id: string, data: Partial<StudentFormData>): Promise<ApiResponse<Student>> {
-    return apiClient.put<Student>(`${this.endpoint}/${id}`, data);
+    // Transform camelCase to snake_case for database
+    const payload: any = {};
+    
+    if (data.name !== undefined) payload.name = data.name;
+    if (data.email !== undefined) payload.email = data.email;
+    if (data.phone !== undefined) payload.phone = data.phone;
+    if (data.belt !== undefined) payload.belt = data.belt;
+    if (data.discipline !== undefined) payload.discipline = data.discipline;
+    if (data.dateOfBirth !== undefined) payload.date_of_birth = data.dateOfBirth;
+    if (data.emergencyContactName !== undefined) payload.emergency_contact_name = data.emergencyContactName;
+    if (data.emergencyContactPhone !== undefined) payload.emergency_contact_phone = data.emergencyContactPhone;
+    if (data.notes !== undefined) payload.notes = data.notes;
+    
+    return apiClient.put<Student>(`${this.endpoint}/${id}`, payload);
   }
 
   async delete(id: string): Promise<ApiResponse<void>> {
