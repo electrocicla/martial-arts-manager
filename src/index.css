@@ -295,6 +295,30 @@ p, span, div {
   background: rgba(239, 68, 68, 0.7);
 }
 
+/* Custom scrollbar for modals */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(220, 38, 38, 0.4) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(220, 38, 38, 0.4);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(220, 38, 38, 0.6);
+}
+
 /* Gradient text utilities */
 .gradient-text {
   background: linear-gradient(to right, var(--tw-gradient-stops));
