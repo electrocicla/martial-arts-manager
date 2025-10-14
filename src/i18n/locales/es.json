@@ -128,8 +128,12 @@
       "filters": "Búsqueda y Filtros"
     },
     "filters": {
+      "all": "Todos",
       "allStatuses": "Todos los Estados",
       "allTypes": "Todos los Tipos",
+      "completed": "Completados",
+      "pending": "Pendientes",
+      "failed": "Fallidos",
       "status": {
         "completed": "Completado",
         "pending": "Pendiente",
@@ -144,6 +148,18 @@
         "other": "Otro"
       }
     },
+    "stats": {
+      "totalInvested": "Total Invertido",
+      "totalPayments": "Pagos Totales",
+      "completed": "Completados",
+      "pending": "Pendientes",
+      "payments": "pagos",
+      "lastPayment": "Último Pago",
+      "nextPayment": "Próximo Pago",
+      "noPayments": "Sin pagos aún"
+    },
+    "noPayments": "No hay pagos registrados",
+    "noPaymentsDescription": "Este estudiante no tiene historial de pagos",
     "form": {
       "title": "Agregar Nuevo Pago",
       "student": "Estudiante",
@@ -230,6 +246,15 @@
       "contactInfo": "Información de Contacto",
       "trainingInfo": "Información de Entrenamiento",
       "emergencyContact": "Contacto de Emergencia"
+    },
+    "table": {
+      "student": "Estudiante",
+      "belt": "Cinturón",
+      "discipline": "Disciplina",
+      "contact": "Contacto",
+      "joined": "Fecha de Ingreso",
+      "status": "Estado",
+      "actions": "Acciones"
     }
   },
   "studentForm": {

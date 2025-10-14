@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { Student } from '../../types/index';
-import { X, Edit2, Trash2, Mail, Phone, Calendar, User, AlertTriangle, Camera } from 'lucide-react';
+import { X, Edit2, Trash2, Mail, Phone, Calendar, User, AlertTriangle, Camera, DollarSign } from 'lucide-react';
 import { getBeltColor } from '../../lib/studentUtils';
 import { useTranslation } from 'react-i18next';
+import StudentPaymentHistory from './StudentPaymentHistory';
 
 interface StudentDetailsModalProps {
   student: Student;
@@ -282,6 +283,16 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
                 </p>
               </div>
             )}
+
+            {/* Payment History */}
+            <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-gray-700 shadow-xl">
+              <h4 className="text-lg font-bold text-white mb-4 flex items-center">
+                <div className="w-1 h-6 bg-gradient-to-b from-red-500 to-purple-600 rounded-full mr-3" />
+                <DollarSign className="w-6 h-6 mr-2 text-red-400" />
+                {t('payments.title') || 'Payment History'}
+              </h4>
+              <StudentPaymentHistory studentId={student.id} />
+            </div>
           </div>
 
           {/* Footer Actions */}

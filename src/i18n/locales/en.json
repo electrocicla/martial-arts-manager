@@ -128,8 +128,12 @@
       "filters": "Search & Filters"
     },
     "filters": {
+      "all": "All",
       "allStatuses": "All Statuses",
       "allTypes": "All Types",
+      "completed": "Completed",
+      "pending": "Pending",
+      "failed": "Failed",
       "status": {
         "completed": "Completed",
         "pending": "Pending",
@@ -144,6 +148,18 @@
         "other": "Other"
       }
     },
+    "stats": {
+      "totalInvested": "Total Invested",
+      "totalPayments": "Total Payments",
+      "completed": "Completed",
+      "pending": "Pending",
+      "payments": "payments",
+      "lastPayment": "Last Payment",
+      "nextPayment": "Next Payment",
+      "noPayments": "No payments yet"
+    },
+    "noPayments": "No payments recorded",
+    "noPaymentsDescription": "This student has no payment history",
     "form": {
       "title": "Add New Payment",
       "student": "Student",
@@ -204,6 +220,21 @@
     "viewModes": {
       "grid": "Grid View",
       "list": "List View"
+    },
+    "details": {
+      "title": "Student Details",
+      "contactInfo": "Contact Information",
+      "trainingInfo": "Training Information",
+      "emergencyContact": "Emergency Contact"
+    },
+    "table": {
+      "student": "Student",
+      "belt": "Belt",
+      "discipline": "Discipline",
+      "contact": "Contact",
+      "joined": "Joined",
+      "status": "Status",
+      "actions": "Actions"
     }
   },
   "studentForm": {

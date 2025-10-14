@@ -368,68 +368,134 @@ export default function StudentManager() {
             ))}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="table table-zebra">
-              <thead>
-                <tr>
-                  <th>Student</th>
-                  <th>Belt</th>
-                  <th>Discipline</th>
-                  <th>Contact</th>
-                  <th>Joined</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredStudents.map((student: Student) => (
-                  <tr key={student.id} className="hover">
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <div className="avatar">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-sm">
-                            {student.name?.charAt(0)?.toUpperCase() || '?'}
+          // OPTIMIZED LIST VIEW
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-gray-700 shadow-2xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gradient-to-r from-red-900/30 to-purple-900/30 border-b border-gray-700">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      {t('students.table.student')}
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      {t('students.table.belt')}
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      {t('students.table.discipline')}
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      {t('students.table.contact')}
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      {t('students.table.joined')}
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      {t('students.table.status')}
+                    </th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                      {t('students.table.actions')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {filteredStudents.map((student: Student, index: number) => (
+                    <tr 
+                      key={student.id} 
+                      className={`hover:bg-gray-700/30 transition-colors duration-200 ${
+                        index % 2 === 0 ? 'bg-gray-800/20' : 'bg-gray-800/40'
+                      }`}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-4">
+                          <div className="relative flex-shrink-0">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-gray-700">
+                              {student.avatar_url ? (
+                                <img 
+                                  src={student.avatar_url} 
+                                  alt={student.name} 
+                                  className="w-full h-full rounded-xl object-cover"
+                                />
+                              ) : (
+                                student.name?.charAt(0)?.toUpperCase() || '?'
+                              )}
+                            </div>
+                            {/* Status Indicator */}
+                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-gray-800 ${
+                              student.is_active ? 'bg-green-500' : 'bg-red-500'
+                            }`} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-semibold text-white truncate">
+                              {student.name || 'N/A'}
+                            </div>
+                            <div className="text-sm text-gray-400 truncate">
+                              {student.email || 'N/A'}
+                            </div>
                           </div>
                         </div>
-                        <div>
-                          <div className="font-bold">{student.name || 'N/A'}</div>
-                          <div className="text-xs opacity-60">{student.discipline || 'N/A'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold shadow-lg ${getBeltColor(student.belt)}`}>
+                          {student.belt || 'N/A'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-300 font-medium">
+                          {student.discipline || 'N/A'}
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className={`badge ${getBeltColor(student.belt)}`}>
-                        {student.belt || 'N/A'}
-                      </div>
-                    </td>
-                    <td>{student.discipline || 'N/A'}</td>
-                    <td>
-                      <div className="text-sm">{student.email || 'N/A'}</div>
-                      {student.phone && <div className="text-xs opacity-60">{student.phone}</div>}
-                    </td>
-                    <td className="text-sm">
-                      {new Date(student.join_date).toLocaleDateString()}
-                    </td>
-                    <td>
-                      <div className={`badge ${student.is_active ? 'badge-success' : 'badge-error'}`}>
-                        {student.is_active ? 'Active' : 'Inactive'}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex gap-1">
-                        <button 
-                          className="btn btn-ghost btn-xs rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
-                          onClick={() => setSelectedStudent(student)}
-                        >
-                          View
-                        </button>
-                        <button className="btn btn-ghost btn-xs rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200">Edit</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-300">
+                          {student.email || 'N/A'}
+                        </div>
+                        {student.phone && (
+                          <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            {student.phone}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2 text-sm text-gray-300">
+                          <Calendar className="w-4 h-4 text-purple-400" />
+                          {new Date(student.join_date).toLocaleDateString()}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${
+                          student.is_active 
+                            ? 'bg-green-500/20 text-green-300 ring-1 ring-green-500/50' 
+                            : 'bg-red-500/20 text-red-300 ring-1 ring-red-500/50'
+                        }`}>
+                          {student.is_active ? t('students.filters.active') : t('students.filters.inactive')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex gap-2 justify-end">
+                          <button 
+                            onClick={() => setSelectedStudent(student)}
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-lg hover:shadow-blue-500/50 transition-all duration-200 flex items-center gap-1.5"
+                            title={t('students.actions.viewDetails')}
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">{t('students.actions.view')}</span>
+                          </button>
+                          
+                          <button 
+                            onClick={() => setEditingStudent(student)}
+                            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium shadow-lg hover:shadow-purple-500/50 transition-all duration-200 flex items-center gap-1.5"
+                            title={t('students.actions.editStudent')}
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">{t('students.actions.edit')}</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
