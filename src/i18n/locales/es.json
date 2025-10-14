@@ -453,6 +453,17 @@
     "navigation": "Navegación",
     "account": "Cuenta",
     "searchPlaceholder": "Buscar estudiantes, clases...",
-    "or": "o"
+    "or": "o",
+    "back": "Volver"
+  },
+  "attendance": {
+    "title": "Marcar Asistencia",
+    "present": "Presente",
+    "absent": "Ausente",
+    "rate": "Tasa de Asistencia",
+    "searchStudents": "Buscar estudiantes...",
+    "noStudentsEnrolled": "Sin Estudiantes Inscritos",
+    "enrollStudentsFirst": "Agrega estudiantes a esta clase para comenzar a seguir la asistencia",
+    "enrollStudents": "Inscribir Estudiantes"
   }
 }

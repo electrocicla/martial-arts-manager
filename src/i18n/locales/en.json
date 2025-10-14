@@ -431,6 +431,17 @@
     "appName": "Dojo Manager",
     "navigation": "Navigation",
     "account": "Account",
-    "searchPlaceholder": "Search students, classes..."
+    "searchPlaceholder": "Search students, classes...",
+    "back": "Back"
+  },
+  "attendance": {
+    "title": "Mark Attendance",
+    "present": "Present",
+    "absent": "Absent",
+    "rate": "Attendance Rate",
+    "searchStudents": "Search students...",
+    "noStudentsEnrolled": "No Students Enrolled",
+    "enrollStudentsFirst": "Add students to this class to start tracking attendance",
+    "enrollStudents": "Enroll Students"
   }
 }

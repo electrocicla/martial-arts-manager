@@ -114,6 +114,22 @@ CREATE TABLE payments (
   FOREIGN KEY (updated_by) REFERENCES users(id)
 );
 
+-- Create class enrollments table (many-to-many relationship)
+CREATE TABLE class_enrollments (
+  id TEXT PRIMARY KEY,
+  class_id TEXT NOT NULL,
+  student_id TEXT NOT NULL,
+  enrolled_at TEXT NOT NULL,
+  enrollment_status TEXT NOT NULL DEFAULT 'active' CHECK(enrollment_status IN ('active', 'dropped', 'completed')),
+  created_by TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  UNIQUE(class_id, student_id)
+);
+
 -- Create attendance table
 CREATE TABLE attendance (
   id TEXT PRIMARY KEY,
