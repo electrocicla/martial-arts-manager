@@ -57,10 +57,10 @@ export class ClassService {
       time: data.time,
       location: data.location,
       instructor: data.instructor,
-      max_students: data.maxStudents,
+      maxStudents: data.maxStudents,  // ✅ Keep camelCase as backend expects
       description: data.description || undefined,
-      is_recurring: data.isRecurring || false,
-      recurrence_pattern: data.recurrencePattern ? JSON.stringify(data.recurrencePattern) : undefined,
+      isRecurring: data.isRecurring || false,  // ✅ Keep camelCase as backend expects
+      recurrencePattern: data.recurrencePattern ? JSON.stringify(data.recurrencePattern) : undefined,  // ✅ Keep camelCase as backend expects
     };
 
     return apiClient.post<Class>(this.endpoint, payload);
