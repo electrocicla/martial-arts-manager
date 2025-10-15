@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/layout/Header';
 import MobileNav from './components/layout/MobileNav';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './components/ui/ToastProvider';
 
 // Lazy load components
 const LandingPage = lazy(() => import('./components/LandingPage'));
@@ -117,9 +118,11 @@ function AppWrapper() {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <AppWrapper />
-      </Router>
+      <ToastProvider>
+        <Router>
+          <AppWrapper />
+        </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }

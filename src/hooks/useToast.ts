@@ -1,92 +1,16 @@
-import { toast as sonnerToast } from 'sonner';
+import { useToastContext } from '../components/ui/ToastProvider';
 
-type ToastType = 'success' | 'error' | 'warning' | 'info';
+export const useToast = () => {
+  const ctx = useToastContext();
 
-interface ToastOptions {
-  description?: string;
-  duration?: number;
-  action?: {
-    label: string;
-    onClick: () => void;
+  return {
+    success: (message: string, title?: string, duration?: number) => ctx.push({ type: 'success', message, title, duration }),
+    error: (message: string, title?: string, duration?: number) => ctx.push({ type: 'error', message, title, duration }),
+    info: (message: string, title?: string, duration?: number) => ctx.push({ type: 'info', message, title, duration }),
+    warn: (message: string, title?: string, duration?: number) => ctx.push({ type: 'warning', message, title, duration }),
+    dismiss: (id: string) => ctx.dismiss(id),
   };
-}
+};
 
-export function useToast() {
-  const toast = {
-    success: (message: string, options?: ToastOptions) => {
-      return sonnerToast.success(message, {
-        description: options?.description,
-        duration: options?.duration ?? 4000,
-        action: options?.action ? {
-          label: options.action.label,
-          onClick: options.action.onClick,
-        } : undefined,
-      });
-    },
-
-    error: (message: string, options?: ToastOptions) => {
-      return sonnerToast.error(message, {
-        description: options?.description,
-        duration: options?.duration ?? 5000,
-        action: options?.action ? {
-          label: options.action.label,
-          onClick: options.action.onClick,
-        } : undefined,
-      });
-    },
-
-    warning: (message: string, options?: ToastOptions) => {
-      return sonnerToast.warning(message, {
-        description: options?.description,
-        duration: options?.duration ?? 4000,
-        action: options?.action ? {
-          label: options.action.label,
-          onClick: options.action.onClick,
-        } : undefined,
-      });
-    },
-
-    info: (message: string, options?: ToastOptions) => {
-      return sonnerToast.info(message, {
-        description: options?.description,
-        duration: options?.duration ?? 4000,
-        action: options?.action ? {
-          label: options.action.label,
-          onClick: options.action.onClick,
-        } : undefined,
-      });
-    },
-
-    // Generic toast method
-    show: (message: string, type: ToastType = 'info', options?: ToastOptions) => {
-      return toast[type](message, options);
-    },
-
-    // Dismiss all toasts
-    dismiss: () => {
-      sonnerToast.dismiss();
-    },
-
-    // Promise-based toast for async operations
-    promise: async <T>(
-      promise: Promise<T>,
-      {
-        loading = 'Loading...',
-        success = 'Success!',
-        error = 'Something went wrong',
-      }: {
-        loading?: string;
-        success?: string | ((data: T) => string);
-        error?: string | ((error: unknown) => string);
-      } = {}
-    ) => {
-      return sonnerToast.promise(promise, {
-        loading,
-        success,
-        error,
-      });
-    },
-  };
-
-  return toast;
-}
+export default useToast;
+// End of file - custom hook exported above

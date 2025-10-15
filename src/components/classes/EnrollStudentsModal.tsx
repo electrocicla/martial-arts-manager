@@ -3,6 +3,7 @@ import { X, UserPlus, Search, Check, Loader2, Users, AlertCircle } from 'lucide-
 import { useStudents } from '../../hooks/useStudents';
 import { apiClient } from '../../lib/api-client';
 import type { Student } from '../../types';
+import { useToast } from '../../hooks/useToast';
 
 interface EnrollStudentsModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function EnrollStudentsModal({
   onEnrollmentUpdated,
 }: EnrollStudentsModalProps) {
   const { students } = useStudents();
+  const { success: toastSuccess, error: toastError } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [enrolledStudents, setEnrolledStudents] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -53,10 +55,11 @@ export function EnrollStudentsModal({
     } catch (err) {
       console.error('Error fetching enrolled students:', err);
       setError('Error al cargar estudiantes inscritos');
+  toastError('No se pudo cargar los estudiantes inscritos');
     } finally {
       setLoading(false);
     }
-  }, [classId]);
+  }, [classId, toastError]);
 
   // Fetch enrolled students when modal opens
   useEffect(() => {
@@ -82,9 +85,12 @@ export function EnrollStudentsModal({
       setEnrolledStudents(prev => new Set([...prev, studentId]));
       // inform parent to refresh counts/state
       onEnrollmentUpdated?.();
+  toastSuccess('Estudiante inscrito correctamente');
     } catch (err: unknown) {
       console.error('Error enrolling student:', err);
-      setError(err instanceof Error ? err.message : 'Error al inscribir estudiante');
+  const msg = err instanceof Error ? err.message : 'Error al inscribir estudiante';
+      setError(msg);
+  toastError(msg);
     } finally {
       setActionLoading(null);
     }
@@ -104,9 +110,12 @@ export function EnrollStudentsModal({
         return newSet;
       });
       onEnrollmentUpdated?.();
+  toastSuccess('Estudiante desinscrito correctamente');
     } catch (err: unknown) {
       console.error('Error unenrolling student:', err);
-      setError(err instanceof Error ? err.message : 'Error al desinscribir estudiante');
+  const msg = err instanceof Error ? err.message : 'Error al desinscribir estudiante';
+      setError(msg);
+  toastError(msg);
     } finally {
       setActionLoading(null);
     }
