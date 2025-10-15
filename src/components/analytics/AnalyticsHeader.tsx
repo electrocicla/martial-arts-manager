@@ -1,4 +1,5 @@
 import { BarChart3, Calendar, Filter, RefreshCw, Download, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AnalyticsHeaderProps {
   timeRange: string;
@@ -6,6 +7,7 @@ interface AnalyticsHeaderProps {
 }
 
 export default function AnalyticsHeader({ timeRange, onTimeRangeChange }: AnalyticsHeaderProps) {
+  const { t } = useTranslation();
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-900 to-black border-b border-gray-800 px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-7xl mx-auto">
@@ -20,10 +22,10 @@ export default function AnalyticsHeader({ timeRange, onTimeRangeChange }: Analyt
             </div>
             <div>
               <h1 className="text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-300">
-                Analytics Dashboard
+                {t('analytics.dashboardTitle')}
               </h1>
               <p className="text-sm text-gray-400 mt-1 font-medium">
-                Track performance and growth metrics
+                {t('analytics.dashboardSubtitle')}
               </p>
             </div>
           </div>
@@ -35,12 +37,13 @@ export default function AnalyticsHeader({ timeRange, onTimeRangeChange }: Analyt
               <label 
                 tabIndex={0} 
                 className="btn btn-sm bg-gray-800 hover:bg-gray-700 border-gray-700 hover:border-gray-600 text-gray-200 gap-2 shadow-lg"
+                aria-label={t('analytics.timeRange')}
               >
                 <Calendar className="w-4 h-4" />
                 <span className="hidden sm:inline">
-                  {timeRange === 'week' && 'This Week'}
-                  {timeRange === 'month' && 'This Month'}
-                  {timeRange === 'year' && 'This Year'}
+                  {timeRange === 'week' && t('analytics.timeOptions.week')}
+                  {timeRange === 'month' && t('analytics.timeOptions.month')}
+                  {timeRange === 'year' && t('analytics.timeOptions.year')}
                 </span>
                 <ChevronDown className="w-4 h-4" />
               </label>
@@ -53,7 +56,7 @@ export default function AnalyticsHeader({ timeRange, onTimeRangeChange }: Analyt
                     onClick={() => onTimeRangeChange('week')}
                     className="text-gray-200 hover:bg-gray-700 hover:text-white rounded-lg"
                   >
-                    This Week
+                    {t('analytics.timeOptions.week')}
                   </a>
                 </li>
                 <li>
@@ -61,7 +64,7 @@ export default function AnalyticsHeader({ timeRange, onTimeRangeChange }: Analyt
                     onClick={() => onTimeRangeChange('month')}
                     className="text-gray-200 hover:bg-gray-700 hover:text-white rounded-lg"
                   >
-                    This Month
+                    {t('analytics.timeOptions.month')}
                   </a>
                 </li>
                 <li>
@@ -69,7 +72,7 @@ export default function AnalyticsHeader({ timeRange, onTimeRangeChange }: Analyt
                     onClick={() => onTimeRangeChange('year')}
                     className="text-gray-200 hover:bg-gray-700 hover:text-white rounded-lg"
                   >
-                    This Year
+                    {t('analytics.timeOptions.year')}
                   </a>
                 </li>
               </ul>
@@ -78,7 +81,7 @@ export default function AnalyticsHeader({ timeRange, onTimeRangeChange }: Analyt
             {/* Filter Button */}
             <button className="btn btn-sm bg-gray-800 hover:bg-gray-700 border-gray-700 hover:border-gray-600 text-gray-200 shadow-lg">
               <Filter className="w-4 h-4" />
-              <span className="hidden sm:inline">Filter</span>
+              <span className="hidden sm:inline">{t('analytics.filter')}</span>
             </button>
 
             {/* Refresh Button */}
@@ -89,7 +92,7 @@ export default function AnalyticsHeader({ timeRange, onTimeRangeChange }: Analyt
             {/* Export Button */}
             <button className="btn btn-sm bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 border-0 text-white shadow-lg shadow-red-900/50 hover:shadow-xl hover:shadow-red-900/60 transition-all">
               <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Export</span>
+              <span className="hidden sm:inline">{t('analytics.export')}</span>
             </button>
           </div>
         </div>

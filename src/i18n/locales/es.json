@@ -467,4 +467,43 @@
     "enrollStudentsFirst": "Agrega estudiantes a esta clase para comenzar a seguir la asistencia",
     "enrollStudents": "Inscribir Estudiantes"
   }
+  ,
+  "analytics": {
+    "dashboardTitle": "Panel de Análisis",
+    "dashboardSubtitle": "Rastrea métricas de rendimiento y crecimiento",
+    "loading": "Cargando datos de análisis...",
+    "timeRange": "Rango de Tiempo",
+    "timeOptions": {
+      "week": "Esta Semana",
+      "month": "Este Mes",
+      "year": "Este Año"
+    },
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "tabs": {
+      "overview": "Resumen",
+      "revenue": "Ingresos",
+      "students": "Estudiantes",
+      "classes": "Clases"
+    },
+    "revenue": {
+      "title": "Análisis de Ingresos",
+      "subtitle": "Desglose de ingresos y perspectivas",
+      "byClassSubtitle": "Distribución de ingresos por disciplina",
+      "comingSoon": "📊 Desglose detallado de ingresos pronto...",
+      "description": "Rastrea tus fuentes de ingresos, tendencias de pago y crecimiento financiero a lo largo del tiempo."
+    },
+    "students": {
+      "title": "Análisis de Estudiantes",
+      "subtitle": "Métricas de rendimiento y participación",
+      "comingSoon": "👥 Métricas de rendimiento de estudiantes pronto...",
+      "description": "Monitorea el progreso estudiantil, patrones de asistencia y hitos de logro."
+    },
+    "classes": {
+      "title": "Análisis de Clases",
+      "subtitle": "Datos de rendimiento y optimización de clases",
+      "comingSoon": "🥋 Análisis de rendimiento de clases pronto...",
+      "description": "Analiza la capacidad de las clases, franjas horarias populares y efectividad de los instructores."
+    }
+  }
 }

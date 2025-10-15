@@ -377,4 +377,43 @@
     "account": "Conta",
     "searchPlaceholder": "Buscar estudantes, aulas..."
   }
+  ,
+  "analytics": {
+    "dashboardTitle": "Painel de Análises",
+    "dashboardSubtitle": "Acompanhe métricas de desempenho e crescimento",
+    "loading": "Carregando dados de análises...",
+    "timeRange": "Intervalo de Tempo",
+    "timeOptions": {
+      "week": "Esta Semana",
+      "month": "Este Mês",
+      "year": "Este Ano"
+    },
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "tabs": {
+      "overview": "Visão Geral",
+      "revenue": "Receita",
+      "students": "Estudantes",
+      "classes": "Aulas"
+    },
+    "revenue": {
+      "title": "Análises de Receita",
+      "subtitle": "Desdobramento abrangente de receita e insights",
+      "byClassSubtitle": "Distribuição de receita por disciplina",
+      "comingSoon": "📊 Desdobramento detalhado de receita em breve...",
+      "description": "Acompanhe suas fontes de receita, tendências de pagamento e crescimento financeiro ao longo do tempo."
+    },
+    "students": {
+      "title": "Análises de Estudantes",
+      "subtitle": "Métricas de desempenho e insights de engajamento",
+      "comingSoon": "👥 Métricas de desempenho dos estudantes em breve...",
+      "description": "Monitore o progresso dos estudantes, padrões de presença e marcos de realização."
+    },
+    "classes": {
+      "title": "Análises de Aulas",
+      "subtitle": "Dados de desempenho e otimização de aulas",
+      "comingSoon": "🥋 Análises de desempenho de aulas em breve...",
+      "description": "Analise a capacidade das aulas, horários populares e a eficácia dos instrutores."
+    }
+  }
 }

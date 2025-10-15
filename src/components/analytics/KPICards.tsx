@@ -10,7 +10,7 @@ export default function KPICards({ kpis }: KPICardsProps) {
       {kpis.map((kpi, idx) => (
         <div 
           key={idx} 
-          className="group relative bg-gray-900 rounded-xl shadow-xl border border-gray-800 hover:border-gray-700 transition-all duration-300 overflow-hidden"
+          className="group relative bg-gray-900 rounded-xl shadow-xl border border-gray-800 hover:border-gray-700 transition-all duration-300 motion-safe:transition-all overflow-hidden"
         >
           {/* Gradient overlay on hover */}
           <div className="absolute inset-0 bg-gradient-to-br from-red-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -30,10 +30,10 @@ export default function KPICards({ kpis }: KPICardsProps) {
             </div>
             
             <div className="space-y-2">
-              <h3 className="text-3xl lg:text-4xl font-black text-gray-100 group-hover:text-white transition-colors">
+              <h3 className="text-3xl lg:text-4xl font-black text-gray-100 group-hover:text-white motion-safe:transition-colors">
                 {kpi.value}
               </h3>
-              <p className="text-sm font-medium text-gray-400 group-hover:text-gray-300 transition-colors">
+              <p className="text-sm font-medium text-gray-400 group-hover:text-gray-300 motion-safe:transition-colors">
                 {kpi.title}
               </p>
             </div>

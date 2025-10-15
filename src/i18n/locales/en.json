@@ -445,4 +445,43 @@
     "enrollStudentsFirst": "Add students to this class to start tracking attendance",
     "enrollStudents": "Enroll Students"
   }
+  ,
+  "analytics": {
+    "dashboardTitle": "Analytics Dashboard",
+    "dashboardSubtitle": "Track performance and growth metrics",
+    "loading": "Loading analytics data...",
+    "timeRange": "Time Range",
+    "timeOptions": {
+      "week": "This Week",
+      "month": "This Month",
+      "year": "This Year"
+    },
+    "filter": "Filter",
+    "export": "Export",
+    "tabs": {
+      "overview": "Overview",
+      "revenue": "Revenue",
+      "students": "Students",
+      "classes": "Classes"
+    },
+    "revenue": {
+      "title": "Revenue Analytics",
+      "subtitle": "Comprehensive revenue breakdown and insights",
+      "byClassSubtitle": "Income distribution across disciplines",
+      "comingSoon": "📊 Detailed revenue breakdown coming soon...",
+      "description": "Track your revenue streams, payment trends, and financial growth over time."
+    },
+    "students": {
+      "title": "Student Analytics",
+      "subtitle": "Performance metrics and engagement insights",
+      "comingSoon": "👥 Student performance metrics coming soon...",
+      "description": "Monitor student progress, attendance patterns, and achievement milestones."
+    },
+    "classes": {
+      "title": "Class Analytics",
+      "subtitle": "Class performance and optimization data",
+      "comingSoon": "🥋 Class performance analytics coming soon...",
+      "description": "Analyze class capacity, popular time slots, and instructor effectiveness."
+    }
+  }
 }

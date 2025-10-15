@@ -1,5 +1,6 @@
 import type { RevenueByClass, StudentProgress, MonthlyTrend } from '../../lib/analyticsUtils';
 import { TrendingUp, TrendingDown, Activity, Target } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AnalyticsOverviewProps {
   revenueByClass: RevenueByClass[];
@@ -12,6 +13,7 @@ export default function AnalyticsOverview({
   studentProgress,
   monthlyTrends
 }: AnalyticsOverviewProps) {
+  const { t } = useTranslation();
   // Calculate dynamic max values for charts
   const maxRevenue = Math.max(...revenueByClass.map(item => item.revenue), 1);
   const maxMonthlyRevenue = Math.max(...monthlyTrends.map(item => item.revenue), 1);
@@ -30,8 +32,8 @@ export default function AnalyticsOverview({
         {/* Revenue by Class */}
         <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800">
-            <h3 className="text-xl font-bold text-gray-100">Revenue by Class</h3>
-            <p className="text-sm text-gray-400 mt-1">Income distribution across disciplines</p>
+            <h3 className="text-xl font-bold text-gray-100">{t('analytics.revenue.title')}</h3>
+            <p className="text-sm text-gray-400 mt-1">{t('analytics.revenue.byClassSubtitle')}</p>
           </div>
           <div className="p-6 space-y-5">
             {revenueByClass.map((item, idx) => (

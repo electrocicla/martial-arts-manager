@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnalyticsHeader, KPICards, AnalyticsOverview } from '../components/analytics';
 import { useAnalyticsKPIs, useRevenueAnalytics, useStudentProgressAnalytics, useMonthlyTrendsAnalytics } from '../hooks/useAnalytics';
 
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState('month');
   const [selectedMetric, setSelectedMetric] = useState('overview');
+  const { t } = useTranslation();
 
   const { kpis, isLoading: kpisLoading } = useAnalyticsKPIs();
   const { revenueByClass, isLoading: revenueLoading } = useRevenueAnalytics();
@@ -19,10 +21,10 @@ export default function Analytics() {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-800 border-t-red-600 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-800 border-t-red-600 mx-auto mb-4 motion-safe:animate-spin"></div>
               <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-red-500 animate-pulse mx-auto"></div>
             </div>
-            <p className="text-gray-400 font-medium animate-pulse">Loading analytics data...</p>
+            <p className="text-gray-400 font-medium animate-pulse">{t('analytics.loading')}</p>
           </div>
         </div>
       ) : (
@@ -33,53 +35,61 @@ export default function Analytics() {
             <KPICards kpis={kpis} />
 
             {/* Enhanced Tabs */}
-            <div className="bg-gray-900 rounded-xl p-1.5 shadow-xl border border-gray-800">
+            <div className="bg-gray-900 rounded-xl p-1.5 shadow-xl border border-gray-800" role="tablist" aria-label={t('analytics.dashboardTitle')}>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                 <button
-                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                  role="tab"
+                  aria-pressed={selectedMetric === 'overview'}
+                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 motion-safe:transition-all ${
                     selectedMetric === 'overview'
                       ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-lg shadow-red-900/50'
                       : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
                   }`}
                   onClick={() => setSelectedMetric('overview')}
                 >
-                  Overview
+                  {t('analytics.tabs.overview')}
                 </button>
                 <button
-                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                  role="tab"
+                  aria-pressed={selectedMetric === 'revenue'}
+                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 motion-safe:transition-all ${
                     selectedMetric === 'revenue'
                       ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-lg shadow-red-900/50'
                       : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
                   }`}
                   onClick={() => setSelectedMetric('revenue')}
                 >
-                  Revenue
+                  {t('analytics.tabs.revenue')}
                 </button>
                 <button
-                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                  role="tab"
+                  aria-pressed={selectedMetric === 'students'}
+                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 motion-safe:transition-all ${
                     selectedMetric === 'students'
                       ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-lg shadow-red-900/50'
                       : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
                   }`}
                   onClick={() => setSelectedMetric('students')}
                 >
-                  Students
+                  {t('analytics.tabs.students')}
                 </button>
                 <button
-                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                  role="tab"
+                  aria-pressed={selectedMetric === 'classes'}
+                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 motion-safe:transition-all ${
                     selectedMetric === 'classes'
                       ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-lg shadow-red-900/50'
                       : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
                   }`}
                   onClick={() => setSelectedMetric('classes')}
                 >
-                  Classes
+                  {t('analytics.tabs.classes')}
                 </button>
               </div>
             </div>
 
             {/* Content with fade-in animation */}
-            <div className="animate-fade-in">
+            <div className="motion-safe:transition-opacity motion-safe:duration-300">
               {selectedMetric === 'overview' && (
                 <AnalyticsOverview
                   revenueByClass={revenueByClass}
@@ -89,7 +99,7 @@ export default function Analytics() {
               )}
 
               {selectedMetric === 'revenue' && (
-                <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden animate-slide-up">
+                <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden motion-safe:animate-slide-up">
                   <div className="p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="p-3 bg-green-500/10 rounded-lg">
@@ -98,20 +108,20 @@ export default function Analytics() {
                         </svg>
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold text-gray-100">Revenue Analytics</h3>
-                        <p className="text-gray-400 text-sm">Comprehensive revenue breakdown and insights</p>
+                        <h3 className="text-2xl font-bold text-gray-100">{t('analytics.revenue.title')}</h3>
+                        <p className="text-gray-400 text-sm">{t('analytics.revenue.subtitle')}</p>
                       </div>
                     </div>
                     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
-                      <p className="text-gray-400">📊 Detailed revenue breakdown coming soon...</p>
-                      <p className="text-gray-500 text-sm mt-2">Track your revenue streams, payment trends, and financial growth over time.</p>
+                      <p className="text-gray-400">{t('analytics.revenue.comingSoon')}</p>
+                      <p className="text-gray-500 text-sm mt-2">{t('analytics.revenue.description')}</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {selectedMetric === 'students' && (
-                <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden animate-slide-up">
+                <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden motion-safe:animate-slide-up">
                   <div className="p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="p-3 bg-blue-500/10 rounded-lg">
@@ -120,20 +130,20 @@ export default function Analytics() {
                         </svg>
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold text-gray-100">Student Analytics</h3>
-                        <p className="text-gray-400 text-sm">Performance metrics and engagement insights</p>
+                        <h3 className="text-2xl font-bold text-gray-100">{t('analytics.students.title')}</h3>
+                        <p className="text-gray-400 text-sm">{t('analytics.students.subtitle')}</p>
                       </div>
                     </div>
                     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
-                      <p className="text-gray-400">👥 Student performance metrics coming soon...</p>
-                      <p className="text-gray-500 text-sm mt-2">Monitor student progress, attendance patterns, and achievement milestones.</p>
+                      <p className="text-gray-400">{t('analytics.students.comingSoon')}</p>
+                      <p className="text-gray-500 text-sm mt-2">{t('analytics.students.description')}</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {selectedMetric === 'classes' && (
-                <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden animate-slide-up">
+                <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden motion-safe:animate-slide-up">
                   <div className="p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="p-3 bg-purple-500/10 rounded-lg">
@@ -142,13 +152,13 @@ export default function Analytics() {
                         </svg>
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold text-gray-100">Class Analytics</h3>
-                        <p className="text-gray-400 text-sm">Class performance and optimization data</p>
+                        <h3 className="text-2xl font-bold text-gray-100">{t('analytics.classes.title')}</h3>
+                        <p className="text-gray-400 text-sm">{t('analytics.classes.subtitle')}</p>
                       </div>
                     </div>
                     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6">
-                      <p className="text-gray-400">🥋 Class performance analytics coming soon...</p>
-                      <p className="text-gray-500 text-sm mt-2">Analyze class capacity, popular time slots, and instructor effectiveness.</p>
+                      <p className="text-gray-400">{t('analytics.classes.comingSoon')}</p>
+                      <p className="text-gray-500 text-sm mt-2">{t('analytics.classes.description')}</p>
                     </div>
                   </div>
                 </div>
