@@ -1,4 +1,4 @@
-import { useToastContext } from '../components/ui/ToastProvider';
+import { useToastContext } from '../components/ui/toastContext';
 
 export const useToast = () => {
   const ctx = useToastContext();

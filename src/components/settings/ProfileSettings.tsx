@@ -1,8 +1,17 @@
 import { Save, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import useSettings from '../../hooks/useSettings';
+import { useState } from 'react';
 
 export default function ProfileSettings() {
   const { user } = useAuth();
+  const { saveSection } = useSettings();
+  const [form, setForm] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: '',
+    bio: ''
+  });
 
   // Get user initials for avatar
   const getInitials = (name: string) => {
@@ -15,102 +24,76 @@ export default function ProfileSettings() {
   };
 
   return (
-    <div className="card bg-base-200">
-      <div className="card-body">
-        <h2 className="card-title mb-4">Profile Settings</h2>
+    <section className="bg-white dark:bg-slate-900 rounded-lg shadow-sm p-4 sm:p-6">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Profile Settings</h2>
+        <div className="flex items-center gap-3">
+          <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-400">
+            <Save className="w-4 h-4" />
+            Save
+          </button>
+        </div>
+      </header>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="avatar placeholder">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-600 to-red-800 ring ring-red-500/50 ring-offset-base-100 ring-offset-2">
-                {user?.avatar_url ? (
-                  <img 
-                    src={user.avatar_url} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  <span className="text-3xl font-bold text-white">
-                    {user?.name ? getInitials(user.name) : <UserIcon className="w-12 h-12" />}
-                  </span>
-                )}
+      <div className="space-y-6">
+        <div className="flex items-start sm:items-center gap-4">
+          <div className="flex-none w-20 h-20 rounded-full overflow-hidden bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white text-2xl font-bold">
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <span>{user?.name ? getInitials(user.name) : <UserIcon className="w-8 h-8" />}</span>
+            )}
+          </div>
+          <div className="flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="text-sm text-slate-700 dark:text-slate-300">Update your profile photo and public details.</div>
+              <div className="flex items-center gap-3">
+                <button className="px-3 py-1 rounded-md border border-slate-200 dark:border-slate-700 text-sm hover:bg-slate-50 dark:hover:bg-slate-800">Change Photo</button>
+                <div className="text-xs text-slate-500">JPG, PNG up to 5MB</div>
               </div>
             </div>
-            <div>
-              <button className="btn btn-primary btn-sm">Change Photo</button>
-              <p className="text-xs text-base-content/60 mt-2">JPG, PNG up to 5MB</p>
-            </div>
           </div>
+        </div>
 
-          <div className="divider"></div>
+        <form className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label className="flex flex-col">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Full name</span>
+            <input value={form.name} onChange={(e) => setForm(prev => ({...prev, name: e.target.value}))} className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 bg-transparent text-sm focus:ring-2 focus:ring-sky-300" placeholder="Enter your full name" />
+          </label>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Full Name</span>
-              </label>
-              <input
-                type="text"
-                className="input input-bordered"
-                defaultValue={user?.name || ''}
-                placeholder="Enter your full name"
-              />
-            </div>
+          <label className="flex flex-col">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Email</span>
+            <input value={form.email} onChange={(e) => setForm(prev => ({...prev, email: e.target.value}))} type="email" className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm focus:ring-2 focus:ring-sky-300" placeholder="your.email@example.com" />
+          </label>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Email</span>
-              </label>
-              <input
-                type="email"
-                className="input input-bordered"
-                defaultValue={user?.email || ''}
-                placeholder="your.email@example.com"
-              />
-            </div>
+          <label className="flex flex-col">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone</span>
+            <input value={form.phone} onChange={(e) => setForm(prev => ({...prev, phone: e.target.value}))} type="tel" className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm focus:ring-2 focus:ring-sky-300" placeholder="(555) 123-4567" />
+          </label>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Phone</span>
-              </label>
-              <input
-                type="tel"
-                className="input input-bordered"
-                placeholder="(555) 123-4567"
-              />
-            </div>
+          <label className="flex flex-col">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Role</span>
+            <select disabled defaultValue={user?.role || 'admin'} className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm bg-transparent">
+              <option value="admin">Admin</option>
+              <option value="instructor">Instructor</option>
+              <option value="student">Student</option>
+            </select>
+          </label>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Role</span>
-              </label>
-              <select className="select select-bordered" disabled defaultValue={user?.role || 'admin'}>
-                <option value="admin">Admin</option>
-                <option value="instructor">Instructor</option>
-                <option value="student">Student</option>
-              </select>
-            </div>
-          </div>
+          <label className="flex flex-col sm:col-span-2">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Bio</span>
+            <textarea value={form.bio} onChange={(e) => setForm(prev => ({...prev, bio: e.target.value}))} className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm min-h-[96px]" placeholder="Tell us about yourself..."></textarea>
+          </label>
 
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Bio</span>
-            </label>
-            <textarea
-              className="textarea textarea-bordered h-24"
-              placeholder="Tell us about yourself..."
-            ></textarea>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <button className="btn btn-ghost">Cancel</button>
-            <button className="btn btn-primary">
+          <div className="sm:col-span-2 flex justify-end gap-3">
+            <button type="button" className="px-3 py-1 rounded-md text-sm border">Cancel</button>
+            <button type="button" onClick={async () => { await saveSection('profile', form); }} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700">
               <Save className="w-4 h-4" />
               Save Changes
             </button>
           </div>
-        </div>
+        </form>
       </div>
-    </div>
+    </section>
   );
 }

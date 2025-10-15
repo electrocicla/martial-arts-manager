@@ -1,15 +1,17 @@
 import { useState } from 'react';
+import useSettings from '../../hooks/useSettings';
 import { Save } from 'lucide-react';
 
 export default function DojoSettings() {
-  const [dojoInfo, setDojoInfo] = useState({
+  const { saveSection } = useSettings();
+  const [dojoInfo, setDojoInfo] = useState(() => ({
     name: 'Elite Martial Arts Academy',
     address: '123 Main Street, Springfield',
     phone: '(555) 123-4567',
     email: 'info@elitemartialarts.com',
     website: 'www.elitemartialarts.com',
     timezone: 'America/New_York',
-  });
+  }));
 
   const beltRanks = [
     { name: 'White', color: 'badge-ghost', classes: 0 },
@@ -30,148 +32,86 @@ export default function DojoSettings() {
   ];
 
   return (
-    <div className="card bg-base-200">
-      <div className="card-body">
-        <h2 className="card-title mb-4">Dojo Information</h2>
+    <section className="bg-white dark:bg-slate-900 rounded-lg shadow-sm p-4 sm:p-6">
+      <header className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Dojo Information</h2>
+        <div className="flex items-center gap-2">
+          <button className="px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700">Save</button>
+        </div>
+      </header>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Dojo Name</span>
-              </label>
-              <input
-                type="text"
-                className="input input-bordered"
-                value={dojoInfo.name}
-                onChange={(e) => setDojoInfo({...dojoInfo, name: e.target.value})}
-              />
-            </div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label className="flex flex-col">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Dojo name</span>
+            <input value={dojoInfo.name} onChange={(e) => setDojoInfo({...dojoInfo, name: e.target.value})} className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm" />
+          </label>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Phone</span>
-              </label>
-              <input
-                type="tel"
-                className="input input-bordered"
-                value={dojoInfo.phone}
-                onChange={(e) => setDojoInfo({...dojoInfo, phone: e.target.value})}
-              />
-            </div>
-          </div>
+          <label className="flex flex-col">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone</span>
+            <input value={dojoInfo.phone} onChange={(e) => setDojoInfo({...dojoInfo, phone: e.target.value})} className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm" />
+          </label>
+        </div>
 
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Address</span>
-            </label>
-            <input
-              type="text"
-              className="input input-bordered"
-              value={dojoInfo.address}
-              onChange={(e) => setDojoInfo({...dojoInfo, address: e.target.value})}
-            />
-          </div>
+        <label className="flex flex-col">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Address</span>
+          <input value={dojoInfo.address} onChange={(e) => setDojoInfo({...dojoInfo, address: e.target.value})} className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm" />
+        </label>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Email</span>
-              </label>
-              <input
-                type="email"
-                className="input input-bordered"
-                value={dojoInfo.email}
-                onChange={(e) => setDojoInfo({...dojoInfo, email: e.target.value})}
-              />
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label className="flex flex-col">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Email</span>
+            <input value={dojoInfo.email} onChange={(e) => setDojoInfo({...dojoInfo, email: e.target.value})} className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm" />
+          </label>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Website</span>
-              </label>
-              <input
-                type="url"
-                className="input input-bordered"
-                value={dojoInfo.website}
-                onChange={(e) => setDojoInfo({...dojoInfo, website: e.target.value})}
-              />
-            </div>
-          </div>
+          <label className="flex flex-col">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Website</span>
+            <input value={dojoInfo.website} onChange={(e) => setDojoInfo({...dojoInfo, website: e.target.value})} className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm" />
+          </label>
+        </div>
 
-          <div className="divider">Belt Rank Configuration</div>
-
-          <div className="overflow-x-auto">
-            <table className="table table-compact">
-              <thead>
-                <tr>
-                  <th>Belt</th>
-                  <th>Required Classes</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {beltRanks.map((belt) => (
-                  <tr key={belt.name}>
-                    <td>
-                      <div className={`badge ${belt.color}`}>{belt.name}</div>
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        className="input input-bordered input-sm w-20"
-                        defaultValue={belt.classes}
-                      />
-                    </td>
-                    <td>
-                      <button className="btn btn-ghost btn-xs">Edit</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="divider">Class Types</div>
-
-          <div className="overflow-x-auto">
-            <table className="table table-compact">
-              <thead>
-                <tr>
-                  <th>Class Type</th>
-                  <th>Duration</th>
-                  <th>Monthly Price</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {classTypes.map((cls) => (
-                  <tr key={cls.name}>
-                    <td className="font-medium">{cls.name}</td>
-                    <td>{cls.duration} min</td>
-                    <td>${cls.price}</td>
-                    <td>
-                      <button className="btn btn-ghost btn-xs">Edit</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <button className="btn btn-outline btn-sm">
-            Add Class Type
-          </button>
-
-          <div className="flex justify-end gap-2">
-            <button className="btn btn-ghost">Cancel</button>
-            <button className="btn btn-primary">
-              <Save className="w-4 h-4" />
-              Save Changes
-            </button>
+        <div>
+          <h3 className="text-sm font-semibold mb-2">Belt rank configuration</h3>
+          <div className="space-y-2">
+            {beltRanks.map((belt) => (
+              <div key={belt.name} className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="px-2 py-0.5 rounded-md text-sm text-slate-700 dark:text-slate-200">{belt.name}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="number" defaultValue={belt.classes} className="w-20 rounded-md border px-2 py-1 text-sm" />
+                  <button className="text-sm text-sky-600">Edit</button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+
+        <div>
+          <h3 className="text-sm font-semibold mb-2">Class types</h3>
+          <div className="space-y-2">
+            {classTypes.map((cls) => (
+              <div key={cls.name} className="flex items-center justify-between">
+                <div className="text-sm font-medium">{cls.name}</div>
+                <div className="text-sm text-slate-600">{cls.duration} min • ${cls.price}</div>
+                <div>
+                  <button className="text-sm text-sky-600">Edit</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3">
+            <button className="px-3 py-1 rounded-md border text-sm">Add Class Type</button>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button className="px-3 py-1 rounded-md border text-sm">Cancel</button>
+          <button className="px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm" onClick={async () => { await saveSection('dojo', dojoInfo); }}>
+            <Save className="w-4 h-4 inline-block mr-1" /> Save Changes
+          </button>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
