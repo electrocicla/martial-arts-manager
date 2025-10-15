@@ -304,7 +304,7 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
                     value={editStudent.belt}
                     onChange={(e) => setEditStudent({...editStudent, belt: e.target.value})}
                   >
-                    {belts.map(belt => (
+                    {belts.map((belt: string) => (
                       <option key={belt} value={belt} className="bg-white dark:bg-gray-700">
                         {isWeightlifting
                           ? belt

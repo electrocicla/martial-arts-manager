@@ -1,11 +1,9 @@
-import type { Discipline } from '../types';
-
 /**
  * Application Constants
  */
 
 // Martial Arts Disciplines
-export const DISCIPLINES: Discipline[] = [
+export const DISCIPLINES: string[] = [
   'Brazilian Jiu-Jitsu',
   'Karate',
   'Taekwondo',
@@ -16,10 +14,11 @@ export const DISCIPLINES: Discipline[] = [
   'Boxing',
   'Kenpo Karate',
   'Weightlifting',
+  'Brazilian Jiu-Jitsu Kids',
 ];
 
 // Belt Rankings by Discipline
-export const BELT_RANKINGS: Record<Discipline, string[]> = {
+export const BELT_RANKINGS: Record<string, string[]> = {
   'Brazilian Jiu-Jitsu': ['White', 'Blue', 'Purple', 'Brown', 'Black', 'Red/White', 'Red', 'Black/Red'],
   Karate: ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Purple', 'Brown', 'Black'],
   Taekwondo: ['White', 'Yellow', 'Green', 'Blue', 'Red', 'Black'],
@@ -30,6 +29,7 @@ export const BELT_RANKINGS: Record<Discipline, string[]> = {
   Boxing: ['Beginner', 'Intermediate', 'Advanced', 'Professional'],
   'Kenpo Karate': ['White', 'Yellow', 'Orange', 'Purple', 'Blue', 'Green', 'Brown', 'Black'],
   Weightlifting: ['Beginner', 'Intermediate', 'Advanced', 'Elite'],
+  'Brazilian Jiu-Jitsu Kids': ['White', 'Gray', 'Yellow', 'Orange', 'Green'],
 };
 
 // User Roles

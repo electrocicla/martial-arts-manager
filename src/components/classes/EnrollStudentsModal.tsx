@@ -7,10 +7,11 @@ import type { Student } from '../../types';
 interface EnrollStudentsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  classId: number;
+  classId: string;
   className: string;
   maxStudents: number;
-  currentEnrollment: number;
+  // optional callback so parent can refresh counts after enroll/unenroll
+  onEnrollmentUpdated?: () => void;
 }
 
 export function EnrollStudentsModal({
@@ -19,6 +20,7 @@ export function EnrollStudentsModal({
   classId,
   className,
   maxStudents,
+  onEnrollmentUpdated,
 }: EnrollStudentsModalProps) {
   const { students } = useStudents();
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,9 +33,21 @@ export function EnrollStudentsModal({
     setLoading(true);
     setError(null);
     try {
-      const response = await apiClient.get<{ students: Student[] }>(`/classes/${classId}/students`);
-      if (response.data?.students) {
-        const enrolledIds = new Set(response.data.students.map((s: Student) => s.id));
+  const response = await apiClient.get<Student[] | { students: Student[] }>(`/api/classes/${classId}/students`);
+      // server currently returns an array (see functions/api/classes/[classId]/students.ts) but keep compatibility
+      const respData = response.data as unknown;
+      let payload: Student[] | undefined;
+      if (Array.isArray(respData)) {
+        payload = respData as Student[];
+      } else if (respData && typeof respData === 'object') {
+        const maybe = respData as { students?: unknown };
+        if (Array.isArray(maybe.students)) {
+          payload = maybe.students as Student[];
+        }
+      }
+
+      if (Array.isArray(payload)) {
+        const enrolledIds = new Set(payload.map((s: Student) => s.id));
         setEnrolledStudents(enrolledIds);
       }
     } catch (err) {
@@ -60,8 +74,14 @@ export function EnrollStudentsModal({
     setActionLoading(studentId);
     setError(null);
     try {
-      await apiClient.post(`/classes/${classId}/students`, { student_id: studentId });
+      // server expects { studentId }
+  const res = await apiClient.post(`/api/classes/${classId}/students`, { studentId });
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to enroll');
+      }
       setEnrolledStudents(prev => new Set([...prev, studentId]));
+      // inform parent to refresh counts/state
+      onEnrollmentUpdated?.();
     } catch (err: unknown) {
       console.error('Error enrolling student:', err);
       setError(err instanceof Error ? err.message : 'Error al inscribir estudiante');
@@ -74,12 +94,16 @@ export function EnrollStudentsModal({
     setActionLoading(studentId);
     setError(null);
     try {
-      await apiClient.delete(`/classes/${classId}/students/${studentId}`);
+  const res = await apiClient.delete(`/api/classes/${classId}/students/${studentId}`);
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to unenroll');
+      }
       setEnrolledStudents(prev => {
         const newSet = new Set(prev);
         newSet.delete(studentId);
         return newSet;
       });
+      onEnrollmentUpdated?.();
     } catch (err: unknown) {
       console.error('Error unenrolling student:', err);
       setError(err instanceof Error ? err.message : 'Error al desinscribir estudiante');
@@ -97,9 +121,11 @@ export function EnrollStudentsModal({
 
   if (!isOpen) return null;
 
+  // note: enrollment updates call the API immediately and inform parent via onEnrollmentUpdated
+
   return (
-    <div className="modal modal-open">
-      <div className="modal-box max-w-4xl w-full mx-4 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-950 border border-gray-700/50 shadow-2xl p-0 max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-3xl sm:max-w-4xl mx-auto bg-gradient-to-br from-gray-900 via-gray-900 to-gray-950 border border-gray-700/50 shadow-2xl p-0 max-h-[90vh] overflow-hidden rounded-lg">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700/50 backdrop-blur-xl p-4 sm:p-6">
           <div className="flex items-start justify-between gap-4">
@@ -136,9 +162,10 @@ export function EnrollStudentsModal({
             {/* Close Button */}
             <button
               onClick={onClose}
+              aria-label="Cerrar"
               className="
-                btn btn-ghost btn-sm btn-circle shrink-0
-                hover:bg-gray-700/50 hover:rotate-90 transition-all duration-200
+                btn btn-sm btn-circle btn-ghost shrink-0
+                hover:bg-gray-700/40 transition-all duration-150
               "
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -244,7 +271,7 @@ export function EnrollStudentsModal({
                       className={`
                         btn btn-sm shrink-0 gap-1.5 sm:gap-2 transition-all duration-200
                         ${isEnrolled 
-                          ? 'btn-error hover:btn-error shadow-lg shadow-red-500/20' 
+                          ? 'bg-gradient-to-r from-green-600 to-green-700 text-white border border-green-500/30 shadow-md hover:shadow-lg' 
                           : 'btn-success hover:btn-success shadow-lg shadow-green-500/20'
                         }
                         ${isProcessing ? 'loading' : ''}
@@ -255,7 +282,7 @@ export function EnrollStudentsModal({
                         <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                       ) : isEnrolled ? (
                         <>
-                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                           <span className="text-xs sm:text-sm">Inscrito</span>
                         </>
                       ) : (
@@ -279,16 +306,28 @@ export function EnrollStudentsModal({
               {filteredStudents.length} estudiante{filteredStudents.length !== 1 ? 's' : ''} 
               {searchTerm && ' encontrado(s)'}
             </div>
-            <button 
-              onClick={onClose} 
-              className="
-                btn btn-ghost gap-2 hover:bg-gray-700/50 transition-all
-                text-sm sm:text-base
-              "
-            >
-              <X className="w-4 h-4" />
-              Cerrar
-            </button>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => {
+                  // Save explicitly (ensures parent refreshes and modal closes)
+                  onEnrollmentUpdated?.();
+                  onClose();
+                }}
+                className="btn btn-primary btn-sm bg-gradient-to-r from-red-600 to-red-700 border-none"
+              >
+                Guardar
+              </button>
+              <button 
+                onClick={onClose} 
+                className="
+                  btn btn-ghost gap-2 hover:bg-gray-700/50 transition-all
+                  text-sm sm:text-base
+                "
+              >
+                <X className="w-4 h-4" />
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       </div>

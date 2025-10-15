@@ -16,6 +16,7 @@ export default function ClassManager() {
   const {
     classes,
     createClass,
+    refresh,
   } = useClasses();
   const { disciplines } = useClassMetadata();
   const navigate = useNavigate();
@@ -477,10 +478,14 @@ export default function ClassManager() {
             setShowEnrollModal(false);
             setSelectedClass(null);
           }}
-          classId={parseInt(selectedClass.id)}
+          // API expects classId as string
+          classId={selectedClass.id}
           className={selectedClass.name}
           maxStudents={selectedClass.max_students}
-          currentEnrollment={(selectedClass as any).enrolled_count ?? 0}
+          onEnrollmentUpdated={async () => {
+            // refresh class list so enrolled_count updates
+            await refresh();
+          }}
         />
       )}
     </div>

@@ -310,7 +310,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
                     value={newStudent.belt}
                     onChange={(e) => setNewStudent({...newStudent, belt: e.target.value})}
                   >
-                    {belts.map(belt => (
+                    {belts.map((belt: string) => (
                       <option key={belt} value={belt} className="bg-white dark:bg-gray-700">
                         {isWeightlifting
                           ? belt

@@ -222,7 +222,7 @@ export default function StudentManager() {
                     : t('students.filters.allBeltsInDiscipline', { discipline: filterDiscipline })} 
                   ({filteredStudents.length})
                 </option>
-                {availableBelts.map(belt => (
+                {availableBelts.map((belt: string) => (
                   <option key={belt} value={belt}>
                     {belt} ({beltCounts[belt] || 0})
                   </option>
