@@ -20,7 +20,7 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 }
 
 // Disciplines
-export type Discipline = 'Brazilian Jiu-Jitsu' | 'Kickboxing' | 'Muay Thai' | 'MMA' | 'Karate' | 'Jiujitsu' | 'Taekwondo' | 'Boxing' | 'Kenpo Karate';
+export type Discipline = 'Brazilian Jiu-Jitsu' | 'Kickboxing' | 'Muay Thai' | 'MMA' | 'Karate' | 'Jiujitsu' | 'Taekwondo' | 'Boxing' | 'Kenpo Karate' | 'Weightlifting';
 
 // User Roles
 export type UserRole = 'admin' | 'instructor' | 'student';

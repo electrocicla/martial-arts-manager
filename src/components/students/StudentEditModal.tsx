@@ -4,6 +4,7 @@ import { UserPlus, Mail, Phone, Calendar, X } from 'lucide-react';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
 import { useTranslation } from 'react-i18next';
 import { BELT_RANKINGS } from '../../lib/constants';
+import { DISCIPLINES } from '../../lib/constants';
 
 interface StudentEditModalProps {
   isOpen: boolean;
@@ -15,13 +16,19 @@ interface StudentEditModalProps {
 export default function StudentEditModal({ isOpen, onClose, student, onSubmit }: StudentEditModalProps) {
   const { t } = useTranslation();
   const { disciplines } = useClassMetadata();
-  
+
+  // Combine metadata with static disciplines so the dropdown contains everything.
+  const availableDisciplines = Array.from(new Set([...(disciplines || []), ...DISCIPLINES]));
+
+  const defaultDiscipline = student.discipline || (availableDisciplines[0] || 'Brazilian Jiu-Jitsu');
+  const defaultBelt = student.belt || BELT_RANKINGS[defaultDiscipline as Discipline]?.[0] || 'White';
+
   const [editStudent, setEditStudent] = useState({
     name: student.name || '',
     email: student.email || '',
     phone: student.phone || '',
-    belt: student.belt || 'White',
-    discipline: student.discipline || (disciplines[0] || 'Brazilian Jiu-Jitsu'),
+    belt: defaultBelt,
+    discipline: defaultDiscipline,
     date_of_birth: student.date_of_birth || '',
     emergency_contact_name: student.emergency_contact_name || '',
     emergency_contact_phone: student.emergency_contact_phone || '',
@@ -42,7 +49,20 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
     }
   }, [student.date_of_birth]);
 
+  useEffect(() => {
+    // Ensure the edit form discipline remains valid if availableDisciplines updates
+    if (!availableDisciplines || availableDisciplines.length === 0) return;
+    if (!availableDisciplines.includes(editStudent.discipline as string)) {
+      const newDiscipline = availableDisciplines[0];
+      const newBelts = BELT_RANKINGS[newDiscipline as Discipline] || [];
+      setEditStudent(prev => ({ ...prev, discipline: newDiscipline, belt: newBelts[0] || prev.belt }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableDisciplines]);
+
   const belts = BELT_RANKINGS[editStudent.discipline as Discipline] || [];
+  const isWeightlifting = String(editStudent.discipline).toLowerCase().includes('weight') || String(editStudent.discipline).toLowerCase().includes('weightlifting');
+  const secondaryLabel = isWeightlifting ? (t('studentForm.expertise') || 'Expertise') : (t('studentForm.beltRank') || 'Belt rank');
 
   // Generate arrays for date selectors
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -277,7 +297,7 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('studentForm.beltRank')}
+                    {secondaryLabel}
                   </label>
                   <select
                     className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
@@ -286,8 +306,11 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
                   >
                     {belts.map(belt => (
                       <option key={belt} value={belt} className="bg-white dark:bg-gray-700">
-                        {t(`studentForm.belts.${belt.toLowerCase().replace(/\//g, '').replace(/\s/g, '')}`)}
-                        {!t(`studentForm.belts.${belt.toLowerCase().replace(/\//g, '').replace(/\s/g, '')}`).includes('studentForm.belts') ? '' : ` ${belt}`}
+                        {isWeightlifting
+                          ? belt
+                          : t(`studentForm.belts.${belt.toLowerCase().replace(/\//g, '').replace(/\s/g, '')}`)
+                        }
+                        {!isWeightlifting && !t(`studentForm.belts.${belt.toLowerCase().replace(/\//g, '').replace(/\s/g, '')}`).includes('studentForm.belts') ? '' : ` ${belt}`}
                       </option>
                     ))}
                   </select>
@@ -310,7 +333,7 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
                       });
                     }}
                   >
-                    {disciplines.map(disc => (
+                    {availableDisciplines.map(disc => (
                       <option key={disc} value={disc} className="bg-white dark:bg-gray-700">
                         {disc}
                       </option>

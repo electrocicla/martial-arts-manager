@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Student, StudentFormData, Discipline } from '../../types/index';
 import { UserPlus, Mail, Phone, Calendar } from 'lucide-react';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
 import { useTranslation } from 'react-i18next';
 import { BELT_RANKINGS } from '../../lib/constants';
+import { DISCIPLINES } from '../../lib/constants';
 
 interface StudentFormModalProps {
   isOpen: boolean;
@@ -14,18 +15,38 @@ interface StudentFormModalProps {
 export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentFormModalProps) {
   const { t } = useTranslation();
   const { disciplines } = useClassMetadata();
-  
+
+  // Combine metadata disciplines (from API) with the static list to ensure all options are available.
+  // Preserve order: metadata first (if present), then any remaining static disciplines.
+  const availableDisciplines = Array.from(new Set([...(disciplines || []), ...DISCIPLINES]));
+
+  const defaultDiscipline = availableDisciplines[0] || 'Brazilian Jiu-Jitsu';
+  const defaultBelt = BELT_RANKINGS[defaultDiscipline as Discipline]?.[0] || 'White';
+
   const [newStudent, setNewStudent] = useState({
     name: '',
     email: '',
     phone: '',
-    belt: 'White',
-    discipline: disciplines[0] || 'Brazilian Jiu-Jitsu',
+    belt: defaultBelt,
+    discipline: defaultDiscipline,
     date_of_birth: '',
     emergency_contact_name: '',
     emergency_contact_phone: '',
     notes: '',
   });
+
+  // When metadata loads, ensure the form discipline is in sync with availableDisciplines
+  useEffect(() => {
+    // If availableDisciplines changed and the current discipline is no longer valid,
+    // update the form discipline and default belt to the first available option.
+    if (!availableDisciplines || availableDisciplines.length === 0) return;
+    if (!availableDisciplines.includes(newStudent.discipline as string)) {
+      const newDiscipline = availableDisciplines[0];
+      const newBelts = BELT_RANKINGS[newDiscipline as Discipline] || [];
+      setNewStudent(prev => ({ ...prev, discipline: newDiscipline, belt: newBelts[0] || prev.belt }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableDisciplines]);
 
   // Date of birth selectors state
   const [birthDay, setBirthDay] = useState('');
@@ -33,6 +54,8 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
   const [birthYear, setBirthYear] = useState('');
 
   const belts = BELT_RANKINGS[newStudent.discipline as Discipline] || [];
+  const isWeightlifting = String(newStudent.discipline).toLowerCase().includes('weight') || String(newStudent.discipline).toLowerCase().includes('weightlifting');
+  const secondaryLabel = isWeightlifting ? (t('studentForm.expertise') || 'Expertise') : (t('studentForm.beltRank') || 'Belt rank');
 
   // Generate arrays for date selectors
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -89,8 +112,8 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
         name: '',
         email: '',
         phone: '',
-        belt: 'White',
-        discipline: disciplines[0] || 'Brazilian Jiu-Jitsu',
+        belt: BELT_RANKINGS[availableDisciplines[0] as Discipline]?.[0] || 'White',
+        discipline: availableDisciplines[0] || 'Brazilian Jiu-Jitsu',
         date_of_birth: '',
         emergency_contact_name: '',
         emergency_contact_phone: '',
@@ -280,7 +303,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('studentForm.beltRank')}
+                    {secondaryLabel}
                   </label>
                   <select
                     className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
@@ -289,7 +312,10 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
                   >
                     {belts.map(belt => (
                       <option key={belt} value={belt} className="bg-white dark:bg-gray-700">
-                        {t(`studentForm.belts.${belt.toLowerCase().replace(/\//g, '').replace(/\s/g, '')}`)}
+                        {isWeightlifting
+                          ? belt
+                          : t(`studentForm.belts.${belt.toLowerCase().replace(/\//g, '').replace(/\s/g, '')}`)
+                        }
                       </option>
                     ))}
                   </select>
@@ -312,7 +338,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
                       });
                     }}
                   >
-                    {disciplines.map(disc => (
+                    {availableDisciplines.map(disc => (
                       <option key={disc} value={disc} className="bg-white dark:bg-gray-700">
                         {disc}
                       </option>

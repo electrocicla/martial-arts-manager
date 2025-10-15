@@ -43,12 +43,13 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     if (metadata.disciplines.length === 0) {
       metadata.disciplines = [
         'Brazilian Jiu-Jitsu',
-        'Karate', 
+        'Karate',
         'Kenpo Karate',
         'Kickboxing',
         'MMA',
         'Muay Thai',
-        'Taekwondo'
+        'Taekwondo',
+        'Weightlifting',
       ];
     }
     if (metadata.locations.length === 0) {
