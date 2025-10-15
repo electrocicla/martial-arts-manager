@@ -75,7 +75,7 @@ export interface Student {
   deleted_at?: string;
 }
 
-export interface Class {
+export interface ClassEntity {
   id: string;
   name: string;
   discipline: string;
@@ -95,6 +95,9 @@ export interface Class {
   updated_at: string;
   deleted_at?: string;
 }
+
+// Alias for backward compatibility
+export type Class = ClassEntity;
 
 export interface RecurrencePattern {
   frequency: 'daily' | 'weekly' | 'monthly';

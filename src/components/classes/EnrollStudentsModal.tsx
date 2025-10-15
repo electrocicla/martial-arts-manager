@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, UserPlus, Search, Check, Loader2, Users, AlertCircle } from 'lucide-react';
 import { useStudents } from '../../hooks/useStudents';
 import { apiClient } from '../../lib/api-client';
@@ -27,14 +27,7 @@ export function EnrollStudentsModal({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch enrolled students when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      fetchEnrolledStudents();
-    }
-  }, [isOpen, classId]);
-
-  const fetchEnrolledStudents = async () => {
+  const fetchEnrolledStudents = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -49,7 +42,14 @@ export function EnrollStudentsModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [classId]);
+
+  // Fetch enrolled students when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchEnrolledStudents();
+    }
+  }, [isOpen, fetchEnrolledStudents]);
 
   const handleEnroll = async (studentId: string) => {
     if (enrolledStudents.size >= maxStudents) {
@@ -62,9 +62,9 @@ export function EnrollStudentsModal({
     try {
       await apiClient.post(`/classes/${classId}/students`, { student_id: studentId });
       setEnrolledStudents(prev => new Set([...prev, studentId]));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error enrolling student:', err);
-      setError(err.message || 'Error al inscribir estudiante');
+      setError(err instanceof Error ? err.message : 'Error al inscribir estudiante');
     } finally {
       setActionLoading(null);
     }
@@ -80,9 +80,9 @@ export function EnrollStudentsModal({
         newSet.delete(studentId);
         return newSet;
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error unenrolling student:', err);
-      setError(err.message || 'Error al desinscribir estudiante');
+      setError(err instanceof Error ? err.message : 'Error al desinscribir estudiante');
     } finally {
       setActionLoading(null);
     }

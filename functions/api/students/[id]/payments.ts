@@ -1,20 +1,6 @@
 import { Env } from '../../../types';
 import { authenticateUser } from '../../../middleware/auth';
 
-interface PaymentRecord {
-  id: string;
-  student_id: string;
-  amount: number;
-  date: string;
-  type: string;
-  notes?: string;
-  status: string;
-  payment_method?: string;
-  receipt_url?: string;
-  created_at: string;
-  updated_at: string;
-}
-
 interface PaymentStats {
   total: number;
   completed: number;
@@ -27,7 +13,7 @@ interface PaymentStats {
 }
 
 // GET /api/students/:id/payments - Get all payments for a student
-export async function onRequestGet({ request, env, params }: { request: Request; env: Env; params: any }) {
+export async function onRequestGet({ request, env, params }: { request: Request; env: Env; params: { id: string } }) {
   try {
     // Authenticate user
     const auth = await authenticateUser(request, env);
@@ -82,7 +68,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
         AND deleted_at IS NULL
     `;
 
-    const queryParams: any[] = [studentId];
+    const queryParams: (string | null)[] = [studentId];
 
     if (status) {
       query += ' AND status = ?';
@@ -93,7 +79,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
 
     const { results: payments } = await env.DB.prepare(query)
       .bind(...queryParams)
-      .all();
+      .all() as { results: { amount: string; status: string; date: string }[] | null };
 
     // Calculate payment statistics
     const stats: PaymentStats = {
@@ -110,7 +96,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     if (payments && payments.length > 0) {
       stats.total = payments.length;
       
-      payments.forEach((payment: any) => {
+      payments.forEach((payment: { amount: string; status: string; date: string }) => {
         const amount = parseFloat(payment.amount) || 0;
         
         if (payment.status === 'completed') {

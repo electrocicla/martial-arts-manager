@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { DollarSign, Calendar, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../lib/api-client';
@@ -35,11 +35,7 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'failed'>('all');
 
-  useEffect(() => {
-    fetchPayments();
-  }, [studentId]);
-
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiClient.get<{ payments: Payment[]; stats: PaymentStats }>(`/api/students/${studentId}/payments`);
@@ -53,7 +49,11 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
     } finally {
       setLoading(false);
     }
-  };
+  }, [studentId]);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
 
   const filteredPayments = payments.filter(payment => {
     if (filter === 'all') return true;

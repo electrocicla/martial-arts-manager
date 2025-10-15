@@ -1,8 +1,23 @@
 import { Env } from '../../types';
 import { authenticateUser } from '../../middleware/auth';
 
+interface StudentUpdateRequest {
+  name?: string;
+  email?: string;
+  phone?: string;
+  date_of_birth?: string;
+  belt?: string;
+  discipline?: string;
+  join_date?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  notes?: string;
+  is_active?: number;
+  avatar_url?: string;
+}
+
 // GET /api/students/:id - Get a specific student
-export async function onRequestGet({ request, env, params }: { request: Request; env: Env; params: any }) {
+export async function onRequestGet({ request, env, params }: { request: Request; env: Env; params: { id: string } }) {
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
@@ -44,7 +59,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
 }
 
 // PUT /api/students/:id - Update a student
-export async function onRequestPut({ request, env, params }: { request: Request; env: Env; params: any }) {
+export async function onRequestPut({ request, env, params }: { request: Request; env: Env; params: { id: string } }) {
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
@@ -54,8 +69,8 @@ export async function onRequestPut({ request, env, params }: { request: Request;
       });
     }
 
-    const studentId = params.id as string;
-    const body = await request.json() as any;
+    const studentId = params.id;
+    const body: StudentUpdateRequest = await request.json();
 
     // Verify student exists and belongs to user
     const existingStudent = await env.DB.prepare(
@@ -73,9 +88,9 @@ export async function onRequestPut({ request, env, params }: { request: Request;
 
     // Build update query dynamically based on provided fields
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number | null)[] = [];
 
-    const allowedFields = [
+    const allowedFields: (keyof StudentUpdateRequest)[] = [
       'name',
       'email',
       'phone',
@@ -93,7 +108,7 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     allowedFields.forEach(field => {
       if (body[field] !== undefined) {
         updates.push(`${field} = ?`);
-        values.push(body[field]);
+        values.push(body[field] as string | number | null);
       }
     });
 
@@ -146,7 +161,7 @@ export async function onRequestPut({ request, env, params }: { request: Request;
 }
 
 // DELETE /api/students/:id - Soft delete a student
-export async function onRequestDelete({ request, env, params }: { request: Request; env: Env; params: any }) {
+export async function onRequestDelete({ request, env, params }: { request: Request; env: Env; params: { id: string } }) {
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {

@@ -8,6 +8,7 @@ import { useClassFilters } from '../hooks/useClassFilters';
 import { useClassStats } from '../hooks/useClassStats';
 import { getDisciplineColor, getClassStatus } from '../lib/classUtils';
 import { ClassFormModal, EnrollStudentsModal } from './classes';
+import type { Class } from '../types';
 import { useTranslation } from 'react-i18next';
 
 export default function ClassManager() {
@@ -20,7 +21,7 @@ export default function ClassManager() {
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
-  const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [filterDiscipline, setFilterDiscipline] = useState('all');
   const [filterDay, setFilterDay] = useState('all');
   const [viewMode, setViewMode] = useState<'schedule' | 'list'>('schedule');
@@ -476,10 +477,10 @@ export default function ClassManager() {
             setShowEnrollModal(false);
             setSelectedClass(null);
           }}
-          classId={selectedClass.id}
+          classId={parseInt(selectedClass.id)}
           className={selectedClass.name}
           maxStudents={selectedClass.max_students}
-          currentEnrollment={selectedClass.enrolled_count || 0}
+          currentEnrollment={(selectedClass as any).enrolled_count ?? 0}
         />
       )}
     </div>

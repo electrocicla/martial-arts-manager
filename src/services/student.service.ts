@@ -61,8 +61,8 @@ export class StudentService {
 
   async update(id: string, data: Partial<StudentFormData>): Promise<ApiResponse<Student>> {
     // Transform camelCase to snake_case for database
-    const payload: any = {};
-    
+    const payload: Record<string, string | number | null> = {};
+
     if (data.name !== undefined) payload.name = data.name;
     if (data.email !== undefined) payload.email = data.email;
     if (data.phone !== undefined) payload.phone = data.phone;
