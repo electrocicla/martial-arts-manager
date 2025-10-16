@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, UserPlus, Search, Check, Loader2, Users, AlertCircle } from 'lucide-react';
 import { useStudents } from '../../hooks/useStudents';
 import { apiClient } from '../../lib/api-client';
@@ -31,6 +31,9 @@ export function EnrollStudentsModal({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Keep a ref to toastError so we don't have to include it in deps
+  const toastErrorRef = useRef(toastError);
+
   const fetchEnrolledStudents = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -55,11 +58,12 @@ export function EnrollStudentsModal({
     } catch (err) {
       console.error('Error fetching enrolled students:', err);
       setError('Error al cargar estudiantes inscritos');
-  toastError('No se pudo cargar los estudiantes inscritos');
+      // read from ref to avoid re-creating callback
+      toastErrorRef.current?.('No se pudo cargar los estudiantes inscritos');
     } finally {
       setLoading(false);
     }
-  }, [classId, toastError]);
+  }, [classId]);
 
   // Fetch enrolled students when modal opens
   useEffect(() => {

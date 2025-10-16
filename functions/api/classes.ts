@@ -48,12 +48,13 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     }
 
     // Get classes with enrolled student count (only for this user)
+    // Use class_enrollments to calculate enrolled_count so it reflects enroll/unenroll actions
     const { results } = await env.DB.prepare(`
       SELECT 
         c.*,
-        COUNT(CASE WHEN a.attended = 1 THEN 1 END) as enrolled_count
+        COUNT(ce.student_id) as enrolled_count
       FROM classes c
-      LEFT JOIN attendance a ON c.id = a.class_id
+      LEFT JOIN class_enrollments ce ON c.id = ce.class_id AND ce.enrollment_status = 'active'
       WHERE c.deleted_at IS NULL AND c.created_by = ?
       GROUP BY c.id
       ORDER BY c.date ASC, c.time ASC
