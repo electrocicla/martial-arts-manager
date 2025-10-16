@@ -1,13 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
-import type { RevenueByClass, MonthlyTrend } from '../../lib/analyticsUtils';
+import type { RevenueByClass, MonthlyTrend, RevenueByDiscipline } from '../../lib/analyticsUtils';
+import DisciplineRevenue from './DisciplineRevenue';
 
 interface RevenueAnalyticsProps {
   revenueByClass: RevenueByClass[];
   monthlyTrends: MonthlyTrend[];
+  revenueByDiscipline?: RevenueByDiscipline[];
 }
 
-export default function RevenueAnalytics({ revenueByClass, monthlyTrends }: RevenueAnalyticsProps) {
+export default function RevenueAnalytics({ revenueByClass, monthlyTrends, revenueByDiscipline }: RevenueAnalyticsProps) {
   const { t } = useTranslation();
 
   return (
@@ -61,7 +63,7 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends }: Reve
       </div>
 
       {/* Revenue Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue by Class */}
         <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800">
@@ -97,6 +99,11 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends }: Reve
               );
             })}
           </div>
+        </div>
+
+        {/* Discipline Revenue */}
+        <div>
+          <DisciplineRevenue data={revenueByDiscipline || []} />
         </div>
 
         {/* Monthly Revenue Trend */}

@@ -18,7 +18,7 @@ export default function Analytics() {
   const { classes } = useClasses();
   const { attendance } = useAttendance();
   const { kpis, isLoading: kpisLoading } = useAnalyticsKPIs();
-  const { revenueByClass, isLoading: revenueLoading } = useRevenueAnalytics();
+  const { revenueByClass, revenueByDiscipline, isLoading: revenueLoading } = useRevenueAnalytics();
   const { studentProgress, isLoading: progressLoading } = useStudentProgressAnalytics();
   const { monthlyTrends, isLoading: trendsLoading } = useMonthlyTrendsAnalytics();
 
@@ -108,7 +108,7 @@ export default function Analytics() {
               )}
 
               {selectedMetric === 'revenue' && (
-                <RevenueAnalytics revenueByClass={revenueByClass} monthlyTrends={monthlyTrends} />
+                <RevenueAnalytics revenueByClass={revenueByClass} monthlyTrends={monthlyTrends} revenueByDiscipline={revenueByDiscipline} />
               )}
 
               {selectedMetric === 'students' && (

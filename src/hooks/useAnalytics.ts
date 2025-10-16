@@ -6,6 +6,7 @@ import { useAttendance } from './useAttendance';
 import {
   calculateKPIs,
   calculateRevenueByClass,
+  calculateRevenueByDiscipline,
   calculateStudentProgress,
   calculateMonthlyTrends,
   type KPIMetric,
@@ -34,6 +35,7 @@ export function useAnalyticsKPIs(): {
 
 export function useRevenueAnalytics(): {
   revenueByClass: RevenueByClass[];
+  revenueByDiscipline: import('../lib/analyticsUtils').RevenueByDiscipline[];
   isLoading: boolean;
 } {
   const { classes, isLoading: classesLoading } = useClasses();
@@ -47,7 +49,12 @@ export function useRevenueAnalytics(): {
     return calculateRevenueByClass(classes, payments, attendance);
   }, [classes, payments, attendance, isLoading]);
 
-  return { revenueByClass, isLoading };
+  const revenueByDiscipline = useMemo(() => {
+    if (isLoading) return [];
+    return calculateRevenueByDiscipline(classes, payments, attendance);
+  }, [classes, payments, attendance, isLoading]);
+
+  return { revenueByClass, revenueByDiscipline, isLoading };
 }
 
 export function useStudentProgressAnalytics(): {

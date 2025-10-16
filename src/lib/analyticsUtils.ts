@@ -13,7 +13,17 @@ export interface KPIMetric {
 
 export interface RevenueByClass {
   class: string;
+  classId?: string;
+  discipline?: string;
   revenue: number;
+  students: number;
+  color: string;
+}
+
+export interface RevenueByDiscipline {
+  discipline: string;
+  revenue: number;
+  courses: number;
   students: number;
   color: string;
 }
@@ -116,11 +126,42 @@ export function calculateRevenueByClass(
 
     return {
       class: cls.name,
+      classId: cls.id,
+      discipline: cls.discipline,
       revenue: Math.round(revenue),
       students: uniqueStudents,
       color: colors[index % colors.length]
     };
   });
+}
+
+export function calculateRevenueByDiscipline(
+  classes: Class[],
+  payments: Payment[],
+  attendance: Attendance[]
+): RevenueByDiscipline[] {
+  // Build per-class revenue first (reuse logic)
+  const byClass = calculateRevenueByClass(classes, payments, attendance);
+
+  const map: Record<string, { revenue: number; courses: Set<string>; students: number }> = {};
+
+  byClass.forEach(item => {
+    const discipline = item.discipline || 'General';
+    if (!map[discipline]) map[discipline] = { revenue: 0, courses: new Set(), students: 0 };
+    map[discipline].revenue += item.revenue;
+    if (item.class) map[discipline].courses.add(item.class);
+    map[discipline].students += item.students || 0;
+  });
+
+  const colors = ['bg-primary', 'bg-secondary', 'bg-accent', 'bg-info', 'bg-success', 'bg-warning', 'bg-error'];
+
+  return Object.entries(map).map(([discipline, data], idx) => ({
+    discipline,
+    revenue: Math.round(data.revenue),
+    courses: data.courses.size,
+    students: data.students,
+    color: colors[idx % colors.length]
+  }));
 }
 
 export function calculateStudentProgress(students: Student[]): StudentProgress[] {
