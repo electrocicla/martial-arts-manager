@@ -67,8 +67,8 @@ export default function AnalyticsOverview({
         {/* Belt Distribution */}
         <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800">
-            <h3 className="text-xl font-bold text-gray-100">Belt Distribution</h3>
-            <p className="text-sm text-gray-400 mt-1">Student ranking across belt levels</p>
+            <h3 className="text-xl font-bold text-gray-100">{label(t, 'analytics.students.beltDistribution', 'Belt distribution')}</h3>
+            <p className="text-sm text-gray-400 mt-1">{label(t, 'analytics.students.beltDistributionSubtitle', 'Student ranking across belt levels')}</p>
           </div>
           <div className="p-6 space-y-4">
             {studentProgress.map((belt, idx) => (
@@ -107,21 +107,21 @@ export default function AnalyticsOverview({
         <div className="p-6 border-b border-gray-800">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-xl font-bold text-gray-100">Monthly Trends</h3>
-              <p className="text-sm text-gray-400 mt-1">Performance metrics over time</p>
+              <h3 className="text-xl font-bold text-gray-100">{label(t, 'analytics.revenue.monthlyTrend', 'Monthly trend')}</h3>
+              <p className="text-sm text-gray-400 mt-1">{label(t, 'analytics.revenue.monthlyTrendSubtitle', 'Performance metrics over time')}</p>
             </div>
             <div className="flex flex-wrap gap-4 text-xs font-medium">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-gradient-to-r from-red-600 to-red-500 rounded shadow-md"></div>
-                <span className="text-gray-300">Revenue</span>
+                <span className="text-gray-300">{label(t, 'analytics.revenue.legend.revenue', 'Revenue')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-gradient-to-r from-blue-600 to-blue-500 rounded shadow-md"></div>
-                <span className="text-gray-300">Students</span>
+                <span className="text-gray-300">{label(t, 'analytics.revenue.legend.students', 'Students')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-gradient-to-r from-purple-600 to-purple-500 rounded shadow-md"></div>
-                <span className="text-gray-300">Attendance</span>
+                <span className="text-gray-300">{label(t, 'analytics.revenue.legend.attendance', 'Attendance')}</span>
               </div>
             </div>
           </div>
@@ -138,21 +138,21 @@ export default function AnalyticsOverview({
                       <div
                         className="bg-gradient-to-t from-red-700 to-red-500 rounded-t-lg transition-all duration-700 hover:from-red-600 hover:to-red-400 shadow-lg group-hover:shadow-red-900/50 cursor-pointer"
                         style={{ height: `${(month.revenue / maxMonthlyRevenue) * 100}%` }}
-                        title={`Revenue: $${month.revenue}`}
+                        title={`${label(t, 'analytics.revenue.totalRevenue', 'Revenue')}: $${month.revenue}`}
                       ></div>
                     </div>
                     <div className="relative flex-1 flex flex-col justify-end">
                       <div
                         className="bg-gradient-to-t from-blue-700 to-blue-500 rounded-t-lg transition-all duration-700 hover:from-blue-600 hover:to-blue-400 shadow-lg group-hover:shadow-blue-900/50 cursor-pointer"
                         style={{ height: `${(month.students / maxMonthlyStudents) * 100}%` }}
-                        title={`Students: ${month.students}`}
+                        title={`${label(t, 'analytics.students.totalStudents', 'Students')}: ${month.students}`}
                       ></div>
                     </div>
                     <div className="relative flex-1 flex flex-col justify-end">
                       <div
                         className="bg-gradient-to-t from-purple-700 to-purple-500 rounded-t-lg transition-all duration-700 hover:from-purple-600 hover:to-purple-400 shadow-lg group-hover:shadow-purple-900/50 cursor-pointer"
                         style={{ height: `${month.attendance}%` }}
-                        title={`Attendance: ${month.attendance}%`}
+                        title={`${label(t, 'analytics.revenue.attendanceRate', 'Attendance')}: ${month.attendance}%`}
                       ></div>
                     </div>
                   </div>
@@ -181,9 +181,9 @@ export default function AnalyticsOverview({
             )}
             <div>
               <p className={`text-sm font-bold ${revenueChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                Revenue {revenueChange >= 0 ? 'up' : 'down'} {Math.abs(revenueChange).toFixed(1)}%
+                {label(t, `analytics.revenue.${revenueChange >= 0 ? 'up' : 'down'}`, revenueChange >= 0 ? 'up' : 'down')} {Math.abs(revenueChange).toFixed(1)}%
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">vs. last month</p>
+              <p className="text-xs text-gray-400 mt-0.5">{label(t, 'analytics.revenue.vsLastMonth', 'vs. last month')}</p>
             </div>
           </div>
         </div>
@@ -197,9 +197,9 @@ export default function AnalyticsOverview({
             <Activity className={`w-6 h-6 ${studentChange >= 0 ? 'text-blue-500' : 'text-orange-500'}`} />
             <div>
               <p className={`text-sm font-bold ${studentChange >= 0 ? 'text-blue-400' : 'text-orange-400'}`}>
-                {studentChange >= 0 ? 'Gained' : 'Lost'} {Math.abs(studentChange).toFixed(1)}% students
+                {label(t, `analytics.students.${studentChange >= 0 ? 'gained' : 'lost'}`, studentChange >= 0 ? 'Gained' : 'Lost')} {Math.abs(studentChange).toFixed(1)}% {label(t, 'analytics.students.thisMonth', 'students')}
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">this month</p>
+              <p className="text-xs text-gray-400 mt-0.5">{label(t, 'analytics.students.thisMonth', 'this month')}</p>
             </div>
           </div>
         </div>
@@ -227,9 +227,9 @@ export default function AnalyticsOverview({
                     ? 'text-yellow-400' 
                     : 'text-red-400'
               }`}>
-                {currentMonth.attendance}% attendance rate
+                {currentMonth.attendance}% {label(t, 'analytics.revenue.attendanceRate', 'attendance rate')}
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">average this month</p>
+              <p className="text-xs text-gray-400 mt-0.5">{label(t, 'analytics.revenue.averageThisMonth', 'average this month')}</p>
             </div>
           </div>
         </div>

@@ -513,10 +513,29 @@
     },
     "revenue": {
       "title": "Análisis de Ingresos",
-      "subtitle": "Desglose de ingresos y perspectivas",
-      "byClassSubtitle": "Distribución de ingresos por disciplina",
+  "subtitle": "Desglose de ingresos y perspectivas",
       "comingSoon": "📊 Desglose detallado de ingresos pronto...",
       "description": "Rastrea tus fuentes de ingresos, tendencias de pago y crecimiento financiero a lo largo del tiempo."
+      ,"totalRevenue": "Ingresos Totales",
+      "averagePerClass": "Promedio por curso",
+      "growthRate": "Tasa de crecimiento",
+      "byClass": "Por curso",
+      "byClassSubtitle": "Distribución de ingresos por disciplina",
+      "monthlyTrend": "Tendencia mensual",
+      "monthlyTrendSubtitle": "Tendencias de ingresos y estudiantes por mes",
+      "studentsEnrolled": "estudiantes inscritos",
+      "byDiscipline": "Por disciplina",
+      "byDisciplineSubtitle": "Ingresos agregados por disciplina",
+      "legend": {
+        "revenue": "Ingresos",
+        "students": "Estudiantes",
+        "attendance": "Asistencia"
+      },
+      "vsLastMonth": "vs. mes anterior",
+      "up": "subieron",
+      "down": "bajaron",
+      "attendanceRate": "Tasa de asistencia",
+      "averageThisMonth": "promedio este mes"
     },
     "students": {
       "title": "Análisis de Estudiantes",
