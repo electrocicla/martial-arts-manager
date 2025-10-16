@@ -2,7 +2,7 @@
   "nav": {
     "dashboard": "Panel de Control",
     "students": "Estudiantes",
-    "classes": "Clases",
+  "classes": "Cursos",
     "payments": "Pagos",
     "attendance": "Asistencia",
     "analytics": "Análisis",
@@ -59,13 +59,13 @@
     "stats": {
       "totalStudents": "Total de Estudiantes",
       "activeStudents": "Estudiantes Activos",
-      "todayClasses": "Clases de Hoy",
+  "todayClasses": "Cursos de Hoy",
       "monthlyRevenue": "Ingresos Mensuales",
       "active": "activos",
       "registeredMembers": "miembros registrados",
-      "classesThisWeek": "Clases Esta Semana",
+  "classesThisWeek": "Cursos Esta Semana",
       "sessionsThisWeek": "sesiones esta semana",
-      "noClasses": "Sin clases",
+  "noClasses": "Sin cursos",
       "scheduled": "programadas",
       "revenueThisMonth": "Ingresos Este Mes",
       "noRevenue": "Sin ingresos",
@@ -79,7 +79,7 @@
     "quickActions": {
       "title": "Acciones Rápidas",
       "addStudent": "Agregar Estudiante",
-      "scheduleClass": "Programar Clase",
+  "scheduleClass": "Programar Curso",
       "recordPayment": "Registrar Pago",
       "markAttendance": "Marcar Asistencia",
       "checkInOut": "Registrar entrada/salida estudiantes",
@@ -98,7 +98,7 @@
       "welcomeMessage": "👋 ¡Bienvenido! Comienza agregando tu primer estudiante para poner en marcha la gestión de tu dojo.",
       "totalStudents": "Total de Estudiantes",
       "monthlyRevenue": "Ingresos Mensuales",
-      "totalClasses": "Total de Clases",
+  "totalClasses": "Total de Cursos",
       "earning": "Ganando",
       "scheduled": "Programadas"
     },
@@ -357,7 +357,7 @@
     },
     "table": {
       "headers": {
-        "class": "Clase",
+  "class": "Curso",
         "dateTime": "Fecha y Hora",
         "location": "Ubicación",
         "instructor": "Instructor",
@@ -367,12 +367,12 @@
       }
     },
     "empty": {
-      "noClassesScheduled": "Sin clases programadas"
+      "noClassesScheduled": "Sin cursos programados"
     }
   },
   "classForm": {
-    "title": "Programar Nueva Clase",
-    "className": "Nombre de la Clase",
+    "title": "Programar Nuevo Curso",
+    "className": "Nombre del Curso",
     "classNamePlaceholder": "ej., BJJ Adultos",
     "discipline": "Disciplina",
     "date": "Fecha",
@@ -380,14 +380,14 @@
     "location": "Ubicación",
     "instructor": "Instructor",
     "maxStudents": "Máximo de Estudiantes",
-    "recurringClass": "Clase Recurrente",
-    "recurringSetupMessage": "Configurar horario recurrente para esta clase",
+  "recurringClass": "Curso Recurrente",
+  "recurringSetupMessage": "Configurar horario recurrente para este curso",
     "description": "Descripción",
-    "descriptionPlaceholder": "Descripción de la clase...",
+  "descriptionPlaceholder": "Descripción del curso...",
     "cancel": "Cancelar",
-    "scheduleClass": "Programar Clase",
+  "scheduleClass": "Programar Curso",
     "requiredField": "Por favor complete los campos requeridos",
-    "addFailed": "Error al agregar la clase"
+    "addFailed": "Error al agregar el curso"
   },
   "landing": {
     "hero": {
