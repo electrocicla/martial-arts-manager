@@ -381,6 +381,16 @@ pnpm build
 - Ensured all components compile cleanly via `tsc --noEmit` and lint cleanly via `eslint --max-warnings 0`.
   
 All tests and checks are now passing. Ready for deployment!
+ 
+### 2025-10-16: i18n Analytics Sweep & Infinity% Fix ✅
+
+- Translated remaining analytics UI strings to use the i18n system (Spanish keys added to `src/i18n/locales/es.json`).
+- Fixed an issue where percent-change values displayed as `Infinity%` when the previous month value was zero by returning `null` for undefined change and showing a localized "No data" label instead.
+- Added defensive null-checks and type-safety guards in `src/components/analytics/AnalyticsOverview.tsx` to satisfy TypeScript and avoid runtime NaN/Infinity cases.
+- Updated chart tooltips and labels in analytics components to use `label(t, ...)` so the UI displays Spanish translations.
+- Deployed the updated build to Cloudflare Pages (preview): https://001a9898.martial-arts-manager.pages.dev
+
+If you want these changes on a feature branch instead of `main`, tell me and I will move the commits to a branch and open a PR.
 # Preview production build locally
 pnpm preview
 

@@ -119,7 +119,7 @@ export default function StudentAnalytics({ studentProgress, monthlyTrends, stude
                       <div
                         className="bg-gradient-to-t from-blue-600 to-blue-500 rounded-t-lg transition-all duration-700 hover:from-blue-500 hover:to-blue-400 shadow-lg group-hover:shadow-blue-900/50 cursor-pointer min-h-[10px]"
                         style={{ height: `${height}%`, width: '80%' }}
-                        title={`${month.students} students`}
+                        title={`${month.students} ${label(t, 'analytics.students.totalStudents', 'students')}`}
                       ></div>
                     </div>
                     <span className="text-xs font-bold text-gray-300 group-hover:text-white transition-colors">

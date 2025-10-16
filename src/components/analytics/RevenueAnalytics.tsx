@@ -123,7 +123,7 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends, revenu
                       <div
                         className="bg-gradient-to-t from-green-600 to-green-500 rounded-t-lg transition-all duration-700 hover:from-green-500 hover:to-green-400 shadow-lg group-hover:shadow-green-900/50 cursor-pointer min-h-[10px]"
                         style={{ height: `${height}%`, width: '80%' }}
-                        title={`$${month.revenue.toLocaleString()}`}
+                        title={`${label(t, 'analytics.revenue.totalRevenue', 'Revenue')}: $${month.revenue.toLocaleString()}`}
                       ></div>
                     </div>
                     <span className="text-xs font-bold text-gray-300 group-hover:text-white transition-colors">

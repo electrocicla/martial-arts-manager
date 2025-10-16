@@ -23,8 +23,15 @@ export default function AnalyticsOverview({
   // Calculate real insights
   const currentMonth = monthlyTrends[monthlyTrends.length - 1];
   const previousMonth = monthlyTrends[monthlyTrends.length - 2];
-  const revenueChange = previousMonth ? ((currentMonth.revenue - previousMonth.revenue) / previousMonth.revenue * 100) : 0;
-  const studentChange = previousMonth ? ((currentMonth.students - previousMonth.students) / previousMonth.students * 100) : 0;
+  const revenueChange = (previousMonth && previousMonth.revenue !== 0)
+    ? ((currentMonth.revenue - previousMonth.revenue) / previousMonth.revenue * 100)
+    : null;
+  const studentChange = (previousMonth && previousMonth.students !== 0)
+    ? ((currentMonth.students - previousMonth.students) / previousMonth.students * 100)
+    : null;
+
+  const revenueIsUp = revenueChange !== null && revenueChange >= 0;
+  const studentIsUp = studentChange !== null && studentChange >= 0;
 
   return (
     <div className="space-y-8">
@@ -169,37 +176,49 @@ export default function AnalyticsOverview({
       {/* Quick Insights */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className={`rounded-xl p-5 border-2 ${
-          revenueChange >= 0 
+          (revenueChange !== null && revenueChange >= 0) 
             ? 'bg-green-500/10 border-green-500/30' 
             : 'bg-red-500/10 border-red-500/30'
         } shadow-lg`}>
           <div className="flex items-center gap-3">
-            {revenueChange >= 0 ? (
+            {revenueIsUp ? (
               <TrendingUp className="w-6 h-6 text-green-500" />
             ) : (
               <TrendingDown className="w-6 h-6 text-red-500" />
             )}
             <div>
-              <p className={`text-sm font-bold ${revenueChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {label(t, `analytics.revenue.${revenueChange >= 0 ? 'up' : 'down'}`, revenueChange >= 0 ? 'up' : 'down')} {Math.abs(revenueChange).toFixed(1)}%
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">{label(t, 'analytics.revenue.vsLastMonth', 'vs. last month')}</p>
+              {revenueChange === null ? (
+                <p className="text-sm font-bold text-gray-400">{t('common.noData')}</p>
+              ) : (
+                <>
+                  <p className={`text-sm font-bold ${revenueIsUp ? 'text-green-400' : 'text-red-400'}`}>
+                    {label(t, `analytics.revenue.${revenueIsUp ? 'up' : 'down'}`, revenueIsUp ? 'up' : 'down')} {Math.abs(revenueChange as number).toFixed(1)}%
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">{label(t, 'analytics.revenue.vsLastMonth', 'vs. last month')}</p>
+                </>
+              )}
             </div>
           </div>
         </div>
 
         <div className={`rounded-xl p-5 border-2 ${
-          studentChange >= 0 
+          (studentChange !== null && studentChange >= 0) 
             ? 'bg-blue-500/10 border-blue-500/30' 
             : 'bg-orange-500/10 border-orange-500/30'
         } shadow-lg`}>
-          <div className="flex items-center gap-3">
-            <Activity className={`w-6 h-6 ${studentChange >= 0 ? 'text-blue-500' : 'text-orange-500'}`} />
+            <div className="flex items-center gap-3">
+            <Activity className={`w-6 h-6 ${studentIsUp ? 'text-blue-500' : 'text-orange-500'}`} />
             <div>
-              <p className={`text-sm font-bold ${studentChange >= 0 ? 'text-blue-400' : 'text-orange-400'}`}>
-                {label(t, `analytics.students.${studentChange >= 0 ? 'gained' : 'lost'}`, studentChange >= 0 ? 'Gained' : 'Lost')} {Math.abs(studentChange).toFixed(1)}% {label(t, 'analytics.students.thisMonth', 'students')}
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">{label(t, 'analytics.students.thisMonth', 'this month')}</p>
+              {studentChange === null ? (
+                <p className="text-sm font-bold text-gray-400">{t('common.noData')}</p>
+              ) : (
+                <>
+                  <p className={`text-sm font-bold ${studentIsUp ? 'text-blue-400' : 'text-orange-400'}`}>
+                    {label(t, `analytics.students.${studentIsUp ? 'gained' : 'lost'}`, studentIsUp ? 'Gained' : 'Lost')} {Math.abs(studentChange as number).toFixed(1)}% {label(t, 'analytics.students.thisMonth', 'students')}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">{label(t, 'analytics.students.thisMonth', 'this month')}</p>
+                </>
+              )}
             </div>
           </div>
         </div>
