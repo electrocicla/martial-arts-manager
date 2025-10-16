@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { label } from '../../lib/i18nUtils';
 import type { Class, Attendance } from '../../types';
 
 interface ClassAnalyticsProps {
@@ -43,7 +44,7 @@ export default function ClassAnalytics({ classes, attendance }: ClassAnalyticsPr
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-400">{t('analytics.classes.totalClasses')}</p>
+              <p className="text-sm text-gray-400">{label(t, 'analytics.classes.totalClasses', 'Total classes')}</p>
               <p className="text-2xl font-bold text-gray-100">{totalClasses}</p>
             </div>
           </div>
@@ -56,7 +57,7 @@ export default function ClassAnalytics({ classes, attendance }: ClassAnalyticsPr
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-400">{t('analytics.classes.averageAttendance')}</p>
+              <p className="text-sm text-gray-400">{label(t, 'analytics.classes.averageAttendance', 'Average attendance')}</p>
               <p className="text-2xl font-bold text-gray-100">{averageAttendance.toFixed(1)}%</p>
             </div>
           </div>
@@ -69,7 +70,7 @@ export default function ClassAnalytics({ classes, attendance }: ClassAnalyticsPr
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-400">{t('analytics.classes.averageCapacity')}</p>
+              <p className="text-sm text-gray-400">{label(t, 'analytics.classes.averageCapacity', 'Average capacity')}</p>
               <p className="text-2xl font-bold text-gray-100">{averageCapacity.toFixed(1)}</p>
             </div>
           </div>
@@ -81,8 +82,8 @@ export default function ClassAnalytics({ classes, attendance }: ClassAnalyticsPr
         {/* Class Attendance Rates */}
         <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800">
-            <h3 className="text-xl font-bold text-gray-100">{t('analytics.classes.attendanceRates')}</h3>
-            <p className="text-sm text-gray-400 mt-1">{t('analytics.classes.attendanceRatesSubtitle')}</p>
+            <h3 className="text-xl font-bold text-gray-100">{label(t, 'analytics.classes.attendanceRates', 'Attendance rates')}</h3>
+            <p className="text-sm text-gray-400 mt-1">{label(t, 'analytics.classes.attendanceRatesSubtitle', 'Percentage of sessions attended per class')}</p>
           </div>
           <div className="p-6 space-y-4">
             {classMetrics.map((cls, idx) => (
@@ -109,7 +110,7 @@ export default function ClassAnalytics({ classes, attendance }: ClassAnalyticsPr
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                   </svg>
-                  {cls.uniqueStudents} {t('analytics.classes.studentsAttended')}
+                  {cls.uniqueStudents} {label(t, 'analytics.classes.studentsAttended', 'students attended')}
                 </p>
               </div>
             ))}
@@ -119,8 +120,8 @@ export default function ClassAnalytics({ classes, attendance }: ClassAnalyticsPr
         {/* Class Capacity Utilization */}
         <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800">
-            <h3 className="text-xl font-bold text-gray-100">{t('analytics.classes.capacityUtilization')}</h3>
-            <p className="text-sm text-gray-400 mt-1">{t('analytics.classes.capacityUtilizationSubtitle')}</p>
+            <h3 className="text-xl font-bold text-gray-100">{label(t, 'analytics.classes.capacityUtilization', 'Capacity utilization')}</h3>
+            <p className="text-sm text-gray-400 mt-1">{label(t, 'analytics.classes.capacityUtilizationSubtitle', 'How well class capacity is being used')}</p>
           </div>
           <div className="p-6 space-y-4">
             {classMetrics.map((cls, idx) => {
@@ -146,7 +147,7 @@ export default function ClassAnalytics({ classes, attendance }: ClassAnalyticsPr
                     ></div>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    {cls.uniqueStudents} / {cls.max_students} {t('analytics.classes.capacity')}
+                    {cls.uniqueStudents} / {cls.max_students} {label(t, 'analytics.classes.capacity', 'capacity')}
                   </p>
                 </div>
               );
@@ -158,8 +159,8 @@ export default function ClassAnalytics({ classes, attendance }: ClassAnalyticsPr
       {/* Discipline Performance */}
       <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
         <div className="p-6 border-b border-gray-800">
-          <h3 className="text-xl font-bold text-gray-100">{t('analytics.classes.disciplinePerformance')}</h3>
-          <p className="text-sm text-gray-400 mt-1">{t('analytics.classes.disciplinePerformanceSubtitle')}</p>
+          <h3 className="text-xl font-bold text-gray-100">{label(t, 'analytics.classes.disciplinePerformance', 'Discipline performance')}</h3>
+          <p className="text-sm text-gray-400 mt-1">{label(t, 'analytics.classes.disciplinePerformanceSubtitle', 'Performance metrics grouped by discipline')}</p>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -181,12 +182,12 @@ export default function ClassAnalytics({ classes, attendance }: ClassAnalyticsPr
                   <div key={discipline} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold text-gray-200">{discipline}</span>
-                      <span className="text-sm font-bold text-gray-100">{stats.classes} {t('analytics.classes.classes')}</span>
+                      <span className="text-sm font-bold text-gray-100">{stats.classes} {label(t, 'analytics.classes.classes', 'classes')}</span>
                     </div>
                     <div className="space-y-2">
                       <div>
                         <div className="flex justify-between text-xs text-gray-400 mb-1">
-                          <span>{t('analytics.classes.avgAttendance')}</span>
+                          <span>{label(t, 'analytics.classes.avgAttendance', 'Avg. attendance')}</span>
                           <span>{avgAttendance.toFixed(1)}%</span>
                         </div>
                         <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
@@ -196,7 +197,7 @@ export default function ClassAnalytics({ classes, attendance }: ClassAnalyticsPr
                           ></div>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-400">{stats.totalStudents} {t('analytics.classes.totalStudents')}</p>
+                      <p className="text-xs text-gray-400">{stats.totalStudents} {label(t, 'analytics.classes.totalStudents', 'Total students')}</p>
                     </div>
                   </div>
                 );

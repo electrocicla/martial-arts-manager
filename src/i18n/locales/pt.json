@@ -367,44 +367,74 @@
     "export": "Exportar",
     "import": "Importar",
     "yes": "Sim",
-    "no": "Não",
-    "confirm": "Confirmar",
-    "close": "Fechar",
-    "details": "Detalhes",
-    "noData": "Sem dados",
-    "appName": "Gerente do Dojo",
-    "navigation": "Navegação",
-    "account": "Conta",
-    "searchPlaceholder": "Buscar estudantes, aulas..."
-  }
-  ,
-  "analytics": {
-    "dashboardTitle": "Painel de Análises",
-    "dashboardSubtitle": "Acompanhe métricas de desempenho e crescimento",
-    "loading": "Carregando dados de análises...",
-    "timeRange": "Intervalo de Tempo",
-    "timeOptions": {
-      "week": "Esta Semana",
-      "month": "Este Mês",
-      "year": "Este Ano"
-    },
-    "filter": "Filtrar",
-    "export": "Exportar",
-    "tabs": {
-      "overview": "Visão Geral",
-      "revenue": "Receita",
-      "students": "Estudantes",
-      "classes": "Aulas"
-    },
-    "revenue": {
-      "title": "Análises de Receita",
-      "subtitle": "Desdobramento abrangente de receita e insights",
-      "byClassSubtitle": "Distribuição de receita por disciplina",
-      "comingSoon": "📊 Desdobramento detalhado de receita em breve...",
-      "description": "Acompanhe suas fontes de receita, tendências de pagamento e crescimento financeiro ao longo do tempo."
-    },
-    "students": {
-      "title": "Análises de Estudantes",
+    "analytics": {
+      "dashboardTitle": "Painel de Análises",
+      "dashboardSubtitle": "Rastreie métricas de desempenho e crescimento",
+      "loading": "Carregando dados de análises...",
+      "timeRange": "Intervalo de tempo",
+      "timeOptions": {
+        "week": "Esta semana",
+        "month": "Este mês",
+        "year": "Este ano"
+      },
+      "filter": "Filtrar",
+      "export": "Exportar",
+      "tabs": {
+        "overview": "Resumo",
+        "revenue": "Receita",
+        "students": "Estudantes",
+        "classes": "Aulas"
+      },
+      "revenue": {
+        "title": "Análise de Receita",
+        "subtitle": "Detalhamento abrangente de receita e insights",
+        "byClassSubtitle": "Distribuição de renda por disciplina",
+        "comingSoon": "📊 Detalhes de receita em breve...",
+        "description": "Acompanhe suas fontes de receita, tendências de pagamento e crescimento financeiro ao longo do tempo.",
+        "totalRevenue": "Receita total",
+        "averagePerClass": "Promedio por clase",
+        "growthRate": "Tasa de crecimiento",
+        "byClass": "Por clase",
+        "monthlyTrend": "Tendencia mensual",
+        "monthlyTrendSubtitle": "Tendencias de ingresos y estudiantes por mes",
+        "studentsEnrolled": "estudantes inscritos"
+      },
+      "students": {
+        "title": "Análise de Estudantes",
+        "subtitle": "Métricas de desempenho e engajamento",
+        "comingSoon": "👥 Métricas de desempenho de estudantes em breve...",
+        "description": "Monitore o progresso dos alunos, padrões de presença e marcos de realização.",
+        "totalStudents": "Total de estudantes",
+        "activeStudents": "Estudantes activos",
+        "newThisMonth": "Nuevos este mes",
+        "beltDistribution": "Distribución de cinturones",
+        "beltDistributionSubtitle": "Clasificación de estudiantes por niveles de cinturón",
+        "growthTrend": "Tendencia de crecimiento",
+        "growthTrendSubtitle": "Crecimiento de estudiantes con el tiempo",
+        "disciplineDistribution": "Distribución por disciplina",
+        "disciplineDistributionSubtitle": "Estudiantes por disciplina"
+      },
+      "classes": {
+        "title": "Análise de Aulas",
+        "subtitle": "Desempenho da turma e dados de otimização",
+        "comingSoon": "🥋 Análise de desempenho de aulas em breve...",
+        "description": "Analise a capacidade das turmas, horários populares e eficácia dos instrutores.",
+        "totalClasses": "Total de aulas",
+        "averageAttendance": "Assiduidade média",
+        "averageCapacity": "Capacidad promedio",
+        "attendanceRates": "Taxas de assiduidade",
+        "attendanceRatesSubtitle": "Porcentaje de sesiones asistidas por clase",
+        "studentsAttended": "estudantes asistidos",
+        "capacityUtilization": "Utilização de capacidade",
+        "capacityUtilizationSubtitle": "Cómo se está usando la capacidad de la clase",
+        "capacity": "capacidad",
+        "disciplinePerformance": "Desempenho por disciplina",
+        "disciplinePerformanceSubtitle": "Métricas de desempenho agrupadas por disciplina",
+        "classes": "clases",
+        "avgAttendance": "Asistencia promedio",
+        "totalStudents": "Total de estudiantes"
+      }
+    }
       "subtitle": "Métricas de desempenho e insights de engajamento",
       "comingSoon": "👥 Métricas de desempenho dos estudantes em breve...",
       "description": "Monitore o progresso dos estudantes, padrões de presença e marcos de realização."

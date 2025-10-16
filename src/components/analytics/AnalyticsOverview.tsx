@@ -1,6 +1,7 @@
 import type { RevenueByClass, StudentProgress, MonthlyTrend } from '../../lib/analyticsUtils';
 import { TrendingUp, TrendingDown, Activity, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { label } from '../../lib/i18nUtils';
 
 interface AnalyticsOverviewProps {
   revenueByClass: RevenueByClass[];
@@ -32,8 +33,8 @@ export default function AnalyticsOverview({
         {/* Revenue by Class */}
         <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800">
-            <h3 className="text-xl font-bold text-gray-100">{t('analytics.revenue.title')}</h3>
-            <p className="text-sm text-gray-400 mt-1">{t('analytics.revenue.byClassSubtitle')}</p>
+            <h3 className="text-xl font-bold text-gray-100">{label(t, 'analytics.revenue.title', 'Revenue Analytics')}</h3>
+            <p className="text-sm text-gray-400 mt-1">{label(t, 'analytics.revenue.byClassSubtitle', 'Income distribution across disciplines')}</p>
           </div>
           <div className="p-6 space-y-5">
             {revenueByClass.map((item, idx) => (

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { label } from '../../lib/i18nUtils';
 import type { RevenueByClass, MonthlyTrend } from '../../lib/analyticsUtils';
 
 interface RevenueAnalyticsProps {
@@ -21,7 +22,7 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends }: Reve
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-400">{t('analytics.revenue.totalRevenue')}</p>
+              <p className="text-sm text-gray-400">{label(t, 'analytics.revenue.totalRevenue', 'Total Revenue')}</p>
               <p className="text-2xl font-bold text-gray-100">${revenueByClass.reduce((sum, item) => sum + item.revenue, 0).toLocaleString()}</p>
             </div>
           </div>
@@ -34,7 +35,7 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends }: Reve
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-400">{t('analytics.revenue.averagePerClass')}</p>
+              <p className="text-sm text-gray-400">{label(t, 'analytics.revenue.averagePerClass', 'Average per class')}</p>
               <p className="text-2xl font-bold text-gray-100">${revenueByClass.length > 0 ? Math.round(revenueByClass.reduce((sum, item) => sum + item.revenue, 0) / revenueByClass.length).toLocaleString() : 0}</p>
             </div>
           </div>
@@ -47,7 +48,7 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends }: Reve
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-400">{t('analytics.revenue.growthRate')}</p>
+              <p className="text-sm text-gray-400">{label(t, 'analytics.revenue.growthRate', 'Growth rate')}</p>
               <p className="text-2xl font-bold text-gray-100">
                 {monthlyTrends.length > 1 ?
                   `${((monthlyTrends[monthlyTrends.length - 1].revenue - monthlyTrends[monthlyTrends.length - 2].revenue) / monthlyTrends[monthlyTrends.length - 2].revenue * 100).toFixed(1)}%` :
@@ -64,8 +65,8 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends }: Reve
         {/* Revenue by Class */}
         <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800">
-            <h3 className="text-xl font-bold text-gray-100">{t('analytics.revenue.byClass')}</h3>
-            <p className="text-sm text-gray-400 mt-1">{t('analytics.revenue.byClassSubtitle')}</p>
+            <h3 className="text-xl font-bold text-gray-100">{label(t, 'analytics.revenue.byClass', 'By class')}</h3>
+            <p className="text-sm text-gray-400 mt-1">{label(t, 'analytics.revenue.byClassSubtitle', 'Income distribution across disciplines')}</p>
           </div>
           <div className="p-6 space-y-4">
             {revenueByClass.map((item, idx) => {
@@ -90,7 +91,7 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends }: Reve
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                     </svg>
-                    {item.students} {t('analytics.revenue.studentsEnrolled')}
+                    {item.students} {label(t, 'analytics.revenue.studentsEnrolled', 'students enrolled')}
                   </p>
                 </div>
               );

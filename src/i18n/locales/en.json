@@ -469,19 +469,49 @@
       "subtitle": "Comprehensive revenue breakdown and insights",
       "byClassSubtitle": "Income distribution across disciplines",
       "comingSoon": "📊 Detailed revenue breakdown coming soon...",
-      "description": "Track your revenue streams, payment trends, and financial growth over time."
+      "description": "Track your revenue streams, payment trends, and financial growth over time.",
+      "totalRevenue": "Total Revenue",
+      "averagePerClass": "Average per class",
+      "growthRate": "Growth rate",
+      "byClass": "By class",
+      "monthlyTrend": "Monthly trend",
+      "monthlyTrendSubtitle": "Revenue and students trends over months",
+      "studentsEnrolled": "students enrolled"
     },
     "students": {
       "title": "Student Analytics",
       "subtitle": "Performance metrics and engagement insights",
       "comingSoon": "👥 Student performance metrics coming soon...",
-      "description": "Monitor student progress, attendance patterns, and achievement milestones."
+      "description": "Monitor student progress, attendance patterns, and achievement milestones.",
+      "totalStudents": "Total students",
+      "activeStudents": "Active students",
+      "newThisMonth": "New this month",
+      "beltDistribution": "Belt distribution",
+      "beltDistributionSubtitle": "Student ranking across belt levels",
+      "growthTrend": "Growth trend",
+      "growthTrendSubtitle": "Student growth over time",
+      "disciplineDistribution": "Discipline distribution",
+      "disciplineDistributionSubtitle": "Students by discipline"
     },
     "classes": {
       "title": "Class Analytics",
       "subtitle": "Class performance and optimization data",
       "comingSoon": "🥋 Class performance analytics coming soon...",
-      "description": "Analyze class capacity, popular time slots, and instructor effectiveness."
+      "description": "Analyze class capacity, popular time slots, and instructor effectiveness.",
+      "totalClasses": "Total classes",
+      "averageAttendance": "Average attendance",
+      "averageCapacity": "Average capacity",
+      "attendanceRates": "Attendance rates",
+      "attendanceRatesSubtitle": "Percentage of sessions attended per class",
+      "studentsAttended": "students attended",
+      "capacityUtilization": "Capacity utilization",
+      "capacityUtilizationSubtitle": "How well class capacity is being used",
+      "capacity": "capacity",
+      "disciplinePerformance": "Discipline performance",
+      "disciplinePerformanceSubtitle": "Performance metrics grouped by discipline",
+      "classes": "classes",
+      "avgAttendance": "Avg. attendance",
+      "totalStudents": "Total students"
     }
   }
 }

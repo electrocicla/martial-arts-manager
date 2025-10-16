@@ -503,7 +503,21 @@
       "title": "Análisis de Clases",
       "subtitle": "Datos de rendimiento y optimización de clases",
       "comingSoon": "🥋 Análisis de rendimiento de clases pronto...",
-      "description": "Analiza la capacidad de las clases, franjas horarias populares y efectividad de los instructores."
+      "description": "Analiza la capacidad de las clases, franjas horarias populares y efectividad de los instructores.",
+      "totalClasses": "Total de clases",
+      "averageAttendance": "Asistencia promedio",
+      "averageCapacity": "Capacidad promedio",
+      "attendanceRates": "Tasas de asistencia",
+      "attendanceRatesSubtitle": "Porcentaje de sesiones asistidas por clase",
+      "studentsAttended": "estudiantes asistidos",
+      "capacityUtilization": "Utilización de la capacidad",
+      "capacityUtilizationSubtitle": "Qué tan bien se está usando la capacidad de la clase",
+      "capacity": "capacidad",
+      "disciplinePerformance": "Desempeño por disciplina",
+      "disciplinePerformanceSubtitle": "Métricas de desempeño agrupadas por disciplina",
+      "classes": "clases",
+      "avgAttendance": "Asistencia promedio",
+      "totalStudents": "Total de estudiantes"
     }
   }
 }

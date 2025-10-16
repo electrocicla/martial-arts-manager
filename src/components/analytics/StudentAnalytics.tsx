@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { label } from '../../lib/i18nUtils';
 import type { StudentProgress, MonthlyTrend } from '../../lib/analyticsUtils';
 import type { Student } from '../../types';
 
@@ -23,7 +24,7 @@ export default function StudentAnalytics({ studentProgress, monthlyTrends, stude
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-400">{t('analytics.students.totalStudents')}</p>
+              <p className="text-sm text-gray-400">{label(t, 'analytics.students.totalStudents', 'Total students')}</p>
               <p className="text-2xl font-bold text-gray-100">{students.length}</p>
             </div>
           </div>
@@ -36,7 +37,7 @@ export default function StudentAnalytics({ studentProgress, monthlyTrends, stude
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-400">{t('analytics.students.activeStudents')}</p>
+              <p className="text-sm text-gray-400">{label(t, 'analytics.students.activeStudents', 'Active students')}</p>
               <p className="text-2xl font-bold text-gray-100">{students.filter((s: Student) => s.is_active).length}</p>
             </div>
           </div>
@@ -49,7 +50,7 @@ export default function StudentAnalytics({ studentProgress, monthlyTrends, stude
               </svg>
             </div>
             <div>
-              <p className="text-sm text-gray-400">{t('analytics.students.newThisMonth')}</p>
+              <p className="text-sm text-gray-400">{label(t, 'analytics.students.newThisMonth', 'New this month')}</p>
               <p className="text-2xl font-bold text-gray-100">
                 {students.filter((s: Student) => {
                   const joinDate = new Date(s.join_date);
@@ -67,8 +68,8 @@ export default function StudentAnalytics({ studentProgress, monthlyTrends, stude
         {/* Belt Distribution */}
         <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800">
-            <h3 className="text-xl font-bold text-gray-100">{t('analytics.students.beltDistribution')}</h3>
-            <p className="text-sm text-gray-400 mt-1">{t('analytics.students.beltDistributionSubtitle')}</p>
+            <h3 className="text-xl font-bold text-gray-100">{label(t, 'analytics.students.beltDistribution', 'Belt distribution')}</h3>
+            <p className="text-sm text-gray-400 mt-1">{label(t, 'analytics.students.beltDistributionSubtitle', 'Student ranking across belt levels')}</p>
           </div>
           <div className="p-6 space-y-4">
             {studentProgress.map((belt, idx) => (
@@ -104,8 +105,8 @@ export default function StudentAnalytics({ studentProgress, monthlyTrends, stude
         {/* Student Growth Trend */}
         <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
           <div className="p-6 border-b border-gray-800">
-            <h3 className="text-xl font-bold text-gray-100">{t('analytics.students.growthTrend')}</h3>
-            <p className="text-sm text-gray-400 mt-1">{t('analytics.students.growthTrendSubtitle')}</p>
+            <h3 className="text-xl font-bold text-gray-100">{label(t, 'analytics.students.growthTrend', 'Growth trend')}</h3>
+            <p className="text-sm text-gray-400 mt-1">{label(t, 'analytics.students.growthTrendSubtitle', 'Student growth over time')}</p>
           </div>
           <div className="p-6">
             <div className="h-64 flex items-end justify-between gap-2">
@@ -135,8 +136,8 @@ export default function StudentAnalytics({ studentProgress, monthlyTrends, stude
       {/* Discipline Distribution */}
       <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-800 overflow-hidden">
         <div className="p-6 border-b border-gray-800">
-          <h3 className="text-xl font-bold text-gray-100">{t('analytics.students.disciplineDistribution')}</h3>
-          <p className="text-sm text-gray-400 mt-1">{t('analytics.students.disciplineDistributionSubtitle')}</p>
+          <h3 className="text-xl font-bold text-gray-100">{label(t, 'analytics.students.disciplineDistribution', 'Discipline distribution')}</h3>
+          <p className="text-sm text-gray-400 mt-1">{label(t, 'analytics.students.disciplineDistributionSubtitle', 'Students by discipline')}</p>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
