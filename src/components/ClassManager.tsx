@@ -184,7 +184,7 @@ export default function ClassManager() {
                     </span>
                   </h3>
                   <span className="badge badge-ghost bg-gray-800 border-gray-700 font-semibold text-xs sm:text-sm shrink-0">
-                    {dayClasses.length} {dayClasses.length === 1 ? 'clase' : 'clases'}
+                    {dayClasses.length} {dayClasses.length === 1 ? t('classes.singular') : t('classes.plural')}
                   </span>
                 </div>
                 
@@ -258,7 +258,7 @@ export default function ClassManager() {
                                 title="Gestionar estudiantes"
                               >
                                 <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                                <span className="hidden sm:inline">Estudiantes</span>
+                                <span className="hidden sm:inline">{t('classes.actions.students')}</span>
                               </button>
                               <button 
                                 className="
@@ -300,7 +300,7 @@ export default function ClassManager() {
                     <Calendar className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
                   </div>
                   <h3 className="text-lg sm:text-xl font-bold text-white mb-2">{t('classes.empty.noClassesScheduled')}</h3>
-                  <p className="text-sm sm:text-base text-base-content/60 mb-6">Comienza a crear tu horario de clases</p>
+                  <p className="text-sm sm:text-base text-base-content/60 mb-6">{t('classes.empty.startCreateSchedule')}</p>
                   <button 
                     className="
                       btn btn-primary gap-2 bg-gradient-to-r from-red-600 to-red-700 
@@ -356,7 +356,7 @@ export default function ClassManager() {
                           }}
                         >
                           <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                          <span>Estudiantes</span>
+                          <span>{t('classes.actions.students')}</span>
                         </button>
                         <button 
                           className="
@@ -369,7 +369,7 @@ export default function ClassManager() {
                         >
                           <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                           <span className="hidden sm:inline">{t('classes.actions.attendance')}</span>
-                          <span className="sm:hidden">Asistencia</span>
+                          <span className="sm:hidden">{t('classes.actions.attendanceShort')}</span>
                         </button>
                         <button 
                           className="
@@ -439,7 +439,7 @@ export default function ClassManager() {
                     <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-700/50">
                       <div className="flex items-center gap-2 text-xs sm:text-sm">
                         <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
-                        <span className="text-gray-400">Instructor:</span>
+                        <span className="text-gray-400">{t('classes.labels.instructor')}</span>
                         <span className="font-semibold text-white truncate">{cls.instructor}</span>
                       </div>
                     </div>
@@ -455,7 +455,7 @@ export default function ClassManager() {
                   <div className="p-3 sm:p-4 bg-red-500/10 rounded-full w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 flex items-center justify-center">
                     <Calendar className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-white mb-2">No se encontraron clases</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-2">{t('classes.empty.noClassesFound')}</h3>
                   <p className="text-sm sm:text-base text-base-content/60 mb-6">Intenta cambiar los filtros</p>
                 </div>
               </div>

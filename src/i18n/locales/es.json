@@ -326,8 +326,10 @@
     "december": "Diciembre"
   },
   "classes": {
-    "title": "Gestión de Clases",
-    "subtitle": "clases programadas esta semana",
+    "title": "Gestión de Cursos",
+    "subtitle": "Cursos programados esta semana",
+    "singular": "curso",
+    "plural": "cursos",
     "actions": {
       "duplicateWeek": "Duplicar Semana",
       "addClass": "Agregar Clase",
@@ -357,7 +359,7 @@
     },
     "table": {
       "headers": {
-  "class": "Curso",
+        "class": "Curso",
         "dateTime": "Fecha y Hora",
         "location": "Ubicación",
         "instructor": "Instructor",
@@ -367,7 +369,30 @@
       }
     },
     "empty": {
-      "noClassesScheduled": "Sin cursos programados"
+      "noClassesScheduled": "Sin cursos programados",
+      "startCreateSchedule": "Comienza a crear tu horario de cursos",
+      "noClassesFound": "No se encontraron cursos"
+    },
+    "enrollModal": {
+      "fetchError": "Error al cargar estudiantes inscritos",
+      "fetchLoadError": "No se pudo cargar los estudiantes inscritos",
+      "maxCapacity": "El curso ha alcanzado su capacidad máxima",
+      "enrolledSuccess": "Estudiante inscrito correctamente",
+      "enrollError": "Error al inscribir estudiante",
+      "unenrolledSuccess": "Estudiante desinscrito correctamente",
+      "unenrollError": "Error al desinscribir estudiante",
+      "searchPlaceholder": "Buscar estudiante por nombre o email...",
+      "loadingStudents": "Cargando estudiantes...",
+      "noStudentsFound": "No se encontraron estudiantes",
+      "tryDifferentSearch": "Intenta con otro término de búsqueda",
+      "noStudentsRegistered": "No hay estudiantes registrados",
+      "inscribed": "Inscritos",
+      "slot": "cupo",
+      "slots": "cupos",
+      "fullClass": "Curso lleno",
+      "enroll": "Inscribir",
+      "searchResults": "{{count}} estudiante(s)",
+      "inscribedLabel": "Inscrito"
     }
   },
   "classForm": {

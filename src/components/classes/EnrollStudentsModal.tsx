@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, UserPlus, Search, Check, Loader2, Users, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useStudents } from '../../hooks/useStudents';
 import { apiClient } from '../../lib/api-client';
 import type { Student } from '../../types';
@@ -23,6 +24,7 @@ export function EnrollStudentsModal({
   maxStudents,
   onEnrollmentUpdated,
 }: EnrollStudentsModalProps) {
+  const { t } = useTranslation();
   const { students } = useStudents();
   const { success: toastSuccess, error: toastError } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,13 +59,13 @@ export function EnrollStudentsModal({
       }
     } catch (err) {
       console.error('Error fetching enrolled students:', err);
-      setError('Error al cargar estudiantes inscritos');
+        setError(t('classes.enrollModal.fetchError'));
       // read from ref to avoid re-creating callback
-      toastErrorRef.current?.('No se pudo cargar los estudiantes inscritos');
+  toastErrorRef.current?.(t('classes.enrollModal.fetchLoadError'));
     } finally {
       setLoading(false);
     }
-  }, [classId]);
+  }, [classId, t]);
 
   // Fetch enrolled students when modal opens
   useEffect(() => {
@@ -74,7 +76,7 @@ export function EnrollStudentsModal({
 
   const handleEnroll = async (studentId: string) => {
     if (enrolledStudents.size >= maxStudents) {
-      setError('La clase ha alcanzado su capacidad máxima');
+      setError(t('classes.enrollModal.maxCapacity'));
       return;
     }
 
@@ -89,10 +91,10 @@ export function EnrollStudentsModal({
       setEnrolledStudents(prev => new Set([...prev, studentId]));
       // inform parent to refresh counts/state
       onEnrollmentUpdated?.();
-  toastSuccess('Estudiante inscrito correctamente');
+      toastSuccess(t('classes.enrollModal.enrolledSuccess'));
     } catch (err: unknown) {
       console.error('Error enrolling student:', err);
-  const msg = err instanceof Error ? err.message : 'Error al inscribir estudiante';
+  const msg = err instanceof Error ? err.message : t('classes.enrollModal.enrollError');
       setError(msg);
   toastError(msg);
     } finally {
@@ -114,10 +116,10 @@ export function EnrollStudentsModal({
         return newSet;
       });
       onEnrollmentUpdated?.();
-  toastSuccess('Estudiante desinscrito correctamente');
+      toastSuccess(t('classes.enrollModal.unenrolledSuccess'));
     } catch (err: unknown) {
       console.error('Error unenrolling student:', err);
-  const msg = err instanceof Error ? err.message : 'Error al desinscribir estudiante';
+  const msg = err instanceof Error ? err.message : t('classes.enrollModal.unenrollError');
       setError(msg);
   toastError(msg);
     } finally {
@@ -157,16 +159,16 @@ export function EnrollStudentsModal({
               <div className="flex flex-wrap items-center gap-2 sm:gap-4 ml-0 sm:ml-11">
                 <div className="flex items-center gap-2 bg-gray-800/60 px-3 py-1.5 rounded-lg border border-gray-700/50">
                   <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400 shrink-0" />
-                  <span className="text-xs sm:text-sm text-gray-400">Inscritos:</span>
+                  <span className="text-xs sm:text-sm text-gray-400">{t('classes.enrollModal.inscribed')}:</span>
                   <span className="text-xs sm:text-sm font-bold text-white">{enrolledStudents.size}/{maxStudents}</span>
                 </div>
                 {availableSlots > 0 ? (
                   <div className={`badge ${availableSlots <= 3 ? 'badge-warning' : 'badge-success'} badge-sm sm:badge-md font-semibold`}>
-                    {availableSlots} {availableSlots === 1 ? 'cupo' : 'cupos'}
+                    {availableSlots} {availableSlots === 1 ? t('classes.enrollModal.slot') : t('classes.enrollModal.slots')}
                   </div>
                 ) : (
                   <div className="badge badge-error badge-sm sm:badge-md font-semibold">
-                    Clase llena
+                    {t('classes.enrollModal.fullClass')}
                   </div>
                 )}
               </div>
@@ -208,7 +210,7 @@ export function EnrollStudentsModal({
               <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Buscar estudiante por nombre o email..."
+                placeholder={t('classes.enrollModal.searchPlaceholder')}
                 className="
                   input input-bordered w-full pl-10 sm:pl-12 pr-4 
                   bg-gray-800/50 border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20
@@ -225,16 +227,16 @@ export function EnrollStudentsModal({
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
                 <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin text-red-500 mb-3" />
-                <p className="text-sm text-gray-400">Cargando estudiantes...</p>
+                <p className="text-sm text-gray-400">{t('classes.enrollModal.loadingStudents')}</p>
               </div>
             ) : filteredStudents.length === 0 ? (
               <div className="text-center py-16 bg-gray-800/30 rounded-xl border border-gray-700/50">
                 <div className="p-4 bg-gray-700/30 rounded-full w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 flex items-center justify-center">
                   <Users className="w-8 h-8 sm:w-10 sm:h-10 text-gray-500" />
                 </div>
-                <p className="text-sm sm:text-base text-gray-400 mb-1">No se encontraron estudiantes</p>
+                <p className="text-sm sm:text-base text-gray-400 mb-1">{t('classes.enrollModal.noStudentsFound')}</p>
                 <p className="text-xs text-gray-500">
-                  {searchTerm ? 'Intenta con otro término de búsqueda' : 'No hay estudiantes registrados'}
+                  {searchTerm ? t('classes.enrollModal.tryDifferentSearch') : t('classes.enrollModal.noStudentsRegistered')}
                 </p>
               </div>
             ) : (
@@ -296,12 +298,12 @@ export function EnrollStudentsModal({
                       ) : isEnrolled ? (
                         <>
                           <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                          <span className="text-xs sm:text-sm">Inscrito</span>
+                          <span className="text-xs sm:text-sm">{t('classes.enrollModal.inscribed')}</span>
                         </>
                       ) : (
                         <>
                           <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          <span className="text-xs sm:text-sm">Inscribir</span>
+                          <span className="text-xs sm:text-sm">{t('classes.enrollModal.enroll')}</span>
                         </>
                       )}
                     </button>
@@ -316,8 +318,7 @@ export function EnrollStudentsModal({
         <div className="sticky bottom-0 bg-gradient-to-t from-gray-900 via-gray-900 to-transparent border-t border-gray-700/50 backdrop-blur-xl p-4 sm:p-6">
           <div className="flex items-center justify-between gap-4">
             <div className="text-xs sm:text-sm text-gray-400">
-              {filteredStudents.length} estudiante{filteredStudents.length !== 1 ? 's' : ''} 
-              {searchTerm && ' encontrado(s)'}
+              {t('classes.enrollModal.searchResults', { count: filteredStudents.length })}
             </div>
             <div className="flex items-center gap-3">
               <button 
@@ -328,7 +329,7 @@ export function EnrollStudentsModal({
                 }}
                 className="btn btn-primary btn-sm bg-gradient-to-r from-red-600 to-red-700 border-none"
               >
-                Guardar
+                {t('common.save')}
               </button>
               <button 
                 onClick={onClose} 
@@ -338,7 +339,7 @@ export function EnrollStudentsModal({
                 "
               >
                 <X className="w-4 h-4" />
-                Cerrar
+                {t('common.close')}
               </button>
             </div>
           </div>

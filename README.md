@@ -5,11 +5,25 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.0-06B6D4?logo=tailwindcss)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![Status](https://img.shields.io/badge/Status-Deployed%20(Preview)-orange)
 
-**Production-Ready Martial Arts School Management System** built with React 19, TypeScript 5.9, Tailwind CSS 4, and Cloudflare Workers. Features complete JWT authentication, real-time database integration, professional UI components, advanced analytics, and **40%+ mobile performance optimization**. Enterprise-grade with full type safety, comprehensive testing, and production deployment.
+This repository contains a working Martial Arts management web application (React + TypeScript) backed by Cloudflare Pages + Functions and D1. The project is deployed to a preview Pages URL and many core features are implemented and usable, but a few translations and optional server-side analytics refinements remain.
 
-🌐 **Live Demo:** [https://518daffa.martial-arts-manager.pages.dev](https://518daffa.martial-arts-manager.pages.dev)
+🌐 Preview (latest deploy): https://eddcc1ca.martial-arts-manager.pages.dev
+
+## Current status (short)
+
+- Core app functionality: students, classes, payments, attendance, settings and analytics is implemented and wired to Cloudflare Pages + Functions and D1.
+- Authentication (JWT), services, and most UI flows are functional and type-checked.
+- Analytics: a client-side "by-discipline" revenue aggregation and UI were added (uses attendance-based revenue allocation). This is live in the preview and is a pragmatic solution; server-side aggregation can be added if you want higher accuracy.
+- Translations: English and Spanish coverage were updated; Portuguese (`src/i18n/locales/pt.json`) was temporarily replaced with English content to ensure a clean build. I can reapply or correct pt translations on request.
+- Deployment: preview URL above is current and reflects the latest pushed changes.
+
+What's left (non-blocking):
+- Reconcile and restore Portuguese translations (safe, low-effort).
+- Optional: implement server-side discipline revenue aggregation in a Worker for absolute accuracy.
+- Optional: add charts/exports and sorting to the discipline revenue UI.
+
 
 ## ✨ Features
 
@@ -63,6 +77,7 @@
 - **Form Validation**: Comprehensive error messages in all supported languages
 - **Professional Polish**: Removed UI inconsistencies and improved overall user experience
 - **Production Ready**: All components tested and optimized for production deployment
+  NOTE: The app is currently deployed to a Pages preview. Several production-grade features are implemented, but a small number of polish tasks remain (see "Current status" below).
 
 ## ✨ Features
 
