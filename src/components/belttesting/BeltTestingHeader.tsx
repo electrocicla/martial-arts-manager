@@ -1,4 +1,6 @@
 import { Award, Calendar, Users, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { label } from '../../lib/i18nUtils';
 
 interface BeltTestingHeaderProps {
   selectedTab: string;
@@ -6,6 +8,7 @@ interface BeltTestingHeaderProps {
 }
 
 export default function BeltTestingHeader({ selectedTab, onTabChange }: BeltTestingHeaderProps) {
+  const { t } = useTranslation();
   return (
     <div className="bg-gradient-to-br from-base-200 to-base-300 px-4 py-6">
       <div className="max-w-7xl mx-auto">
@@ -16,10 +19,10 @@ export default function BeltTestingHeader({ selectedTab, onTabChange }: BeltTest
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-black text-base-content">
-                Belt Testing Management
+                {label(t, 'beltTesting.title', 'Belt Testing Management')}
               </h1>
               <p className="text-sm text-base-content/70">
-                Track student progress and manage belt examinations
+                {label(t, 'beltTesting.subtitle', 'Track student progress and manage belt examinations')}
               </p>
             </div>
           </div>
@@ -32,21 +35,21 @@ export default function BeltTestingHeader({ selectedTab, onTabChange }: BeltTest
             onClick={() => onTabChange('upcoming')}
           >
             <Calendar className="w-4 h-4 mr-2" />
-            Upcoming Tests
+            {label(t, 'beltTesting.tabs.upcoming', 'Upcoming Tests')}
           </button>
           <button
             className={`tab ${selectedTab === 'eligible' ? 'tab-active' : ''}`}
             onClick={() => onTabChange('eligible')}
           >
             <Users className="w-4 h-4 mr-2" />
-            Eligible Students
+            {label(t, 'beltTesting.tabs.eligible', 'Eligible Students')}
           </button>
           <button
             className={`tab ${selectedTab === 'history' ? 'tab-active' : ''}`}
             onClick={() => onTabChange('history')}
           >
             <TrendingUp className="w-4 h-4 mr-2" />
-            Test History
+            {label(t, 'beltTesting.tabs.history', 'Test History')}
           </button>
         </div>
       </div>

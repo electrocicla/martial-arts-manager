@@ -564,4 +564,41 @@
       "totalStudents": "Total de estudiantes"
     }
   }
+  ,
+  "beltTesting": {
+    "title": "Gestión de Exámenes de Cinturón",
+    "subtitle": "Rastrea el progreso de los estudiantes y gestiona los exámenes de cinturón",
+    "tabs": {
+      "upcoming": "Próximos Exámenes",
+      "eligible": "Estudiantes Elegibles",
+      "history": "Historial"
+    },
+    "upcoming": {
+      "emptyTitle": "No hay exámenes programados",
+      "emptyMessage": "No hay exámenes de cinturón programados en este momento."
+    },
+    "status": {
+      "scheduled": "Programado",
+      "completed": "Completado",
+      "cancelled": "Cancelado"
+    },
+    "candidates": "candidatos",
+    "at": "a las",
+    "actions": {
+      "view": "Ver Detalles",
+      "edit": "Editar Examen",
+      "schedule": "Programar Examen"
+    },
+    "ready": {
+      "title": "Listos para Evaluación",
+      "empty": "No hay estudiantes listos para la evaluación de cinturón."
+    },
+    "needsPractice": {
+      "title": "Necesitan Más Práctica",
+      "empty": "¡Todos los estudiantes están listos para la evaluación!"
+    },
+    "classesCompleted": "clases completadas",
+    "classesCompletedShort": "clases",
+    "moreNeeded": "más necesarias"
+  }
 }

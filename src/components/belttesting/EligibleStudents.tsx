@@ -1,5 +1,7 @@
 import { Award, CheckCircle, Clock } from 'lucide-react';
 import { getBeltColor } from '../../lib/beltTestingUtils';
+import { useTranslation } from 'react-i18next';
+import { label } from '../../lib/i18nUtils';
 import type { EligibleStudent } from '../../lib/beltTestingUtils';
 
 interface EligibleStudentsProps {
@@ -7,6 +9,7 @@ interface EligibleStudentsProps {
 }
 
 export default function EligibleStudents({ students }: EligibleStudentsProps) {
+  const { t } = useTranslation();
   const readyStudents = students.filter(s => s.readyStatus === 'ready');
   const needsPracticeStudents = students.filter(s => s.readyStatus === 'needs-more-practice');
 
@@ -17,11 +20,11 @@ export default function EligibleStudents({ students }: EligibleStudentsProps) {
         <div className="card-body">
           <div className="flex items-center gap-3 mb-4">
             <CheckCircle className="w-6 h-6 text-success" />
-            <h3 className="card-title text-success">Ready for Testing ({readyStudents.length})</h3>
+            <h3 className="card-title text-success">{label(t, 'beltTesting.ready.title', 'Ready for Testing')} ({readyStudents.length})</h3>
           </div>
 
           {readyStudents.length === 0 ? (
-            <p className="text-base-content/70">No students are currently ready for belt testing.</p>
+            <p className="text-base-content/70">{label(t, 'beltTesting.ready.empty', 'No students are currently ready for belt testing.')}</p>
           ) : (
             <div className="space-y-3">
               {readyStudents.map((student) => (
@@ -32,16 +35,16 @@ export default function EligibleStudents({ students }: EligibleStudentsProps) {
                     </div>
                     <div>
                       <p className="font-semibold text-base-content">{student.name}</p>
-                      <p className="text-sm text-base-content/70">
-                        {student.discipline} • {student.classesAttended}/{student.requiredClasses} classes completed
-                      </p>
+                        <p className="text-sm text-base-content/70">
+                          {student.discipline} • {student.classesAttended}/{student.requiredClasses} {label(t, 'beltTesting.classesCompleted', 'classes completed')}
+                        </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Award className="w-4 h-4 text-warning" />
                     <span className="text-sm font-medium">{student.targetBelt}</span>
                     <button className="btn btn-success btn-xs">
-                      Schedule Test
+                      {label(t, 'beltTesting.actions.schedule', 'Schedule Test')}
                     </button>
                   </div>
                 </div>
@@ -56,11 +59,11 @@ export default function EligibleStudents({ students }: EligibleStudentsProps) {
         <div className="card-body">
           <div className="flex items-center gap-3 mb-4">
             <Clock className="w-6 h-6 text-warning" />
-            <h3 className="card-title text-warning">Needs More Practice ({needsPracticeStudents.length})</h3>
+            <h3 className="card-title text-warning">{label(t, 'beltTesting.needsPractice.title', 'Needs More Practice')} ({needsPracticeStudents.length})</h3>
           </div>
 
           {needsPracticeStudents.length === 0 ? (
-            <p className="text-base-content/70">All students are ready for testing!</p>
+            <p className="text-base-content/70">{label(t, 'beltTesting.needsPractice.empty', 'All students are ready for testing!')}</p>
           ) : (
             <div className="space-y-3">
               {needsPracticeStudents.map((student) => (
@@ -72,8 +75,8 @@ export default function EligibleStudents({ students }: EligibleStudentsProps) {
                     <div>
                       <p className="font-semibold text-base-content">{student.name}</p>
                       <p className="text-sm text-base-content/70">
-                        {student.classesAttended}/{student.requiredClasses} classes completed
-                        ({student.requiredClasses - student.classesAttended} more needed)
+                        {student.classesAttended}/{student.requiredClasses} {label(t, 'beltTesting.classesCompletedShort', 'classes completed')}
+                        ({student.requiredClasses - student.classesAttended} {label(t, 'beltTesting.moreNeeded', 'more needed')})
                       </p>
                     </div>
                   </div>

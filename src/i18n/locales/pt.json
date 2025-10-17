@@ -513,4 +513,41 @@
       "totalStudents": "Total students"
     }
   }
+  ,
+  "beltTesting": {
+    "title": "Gerenciamento de Exames de Faixa",
+    "subtitle": "Acompanhe o progresso dos alunos e gerencie os exames de faixa",
+    "tabs": {
+      "upcoming": "Próximos Exames",
+      "eligible": "Alunos Elegíveis",
+      "history": "Histórico"
+    },
+    "upcoming": {
+      "emptyTitle": "Nenhum exame agendado",
+      "emptyMessage": "Não há exames de faixa agendados no momento."
+    },
+    "status": {
+      "scheduled": "Agendado",
+      "completed": "Concluído",
+      "cancelled": "Cancelado"
+    },
+    "candidates": "candidatos",
+    "at": "às",
+    "actions": {
+      "view": "Ver Detalhes",
+      "edit": "Editar Exame",
+      "schedule": "Agendar Exame"
+    },
+    "ready": {
+      "title": "Prontos para Avaliação",
+      "empty": "Não há alunos prontos para a avaliação de faixa."
+    },
+    "needsPractice": {
+      "title": "Precisam de Mais Prática",
+      "empty": "Todos os alunos estão prontos para a avaliação!"
+    },
+    "classesCompleted": "aulas concluídas",
+    "classesCompletedShort": "aulas",
+    "moreNeeded": "mais necessárias"
+  }
 }
