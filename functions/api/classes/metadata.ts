@@ -23,41 +23,37 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       "SELECT DISTINCT discipline FROM classes WHERE deleted_at IS NULL ORDER BY discipline"
     ).all<{ discipline: string }>();
 
-    // Get unique locations from classes
+    // Get unique locations from classes scoped to this user
     const locationsResult = await env.DB.prepare(
-      "SELECT DISTINCT location FROM classes WHERE deleted_at IS NULL ORDER BY location"
-    ).all<{ location: string }>();
+      "SELECT DISTINCT location FROM classes WHERE deleted_at IS NULL AND created_by = ? ORDER BY location"
+    ).bind(auth.user.id).all<{ location: string }>();
 
-    // Get unique instructors from classes
+    // Get unique instructors from classes scoped to this user
     const instructorsResult = await env.DB.prepare(
-      "SELECT DISTINCT instructor FROM classes WHERE deleted_at IS NULL ORDER BY instructor"
-    ).all<{ instructor: string }>();
+      "SELECT DISTINCT instructor FROM classes WHERE deleted_at IS NULL AND created_by = ? ORDER BY instructor"
+    ).bind(auth.user.id).all<{ instructor: string }>();
+
+    const dbDisciplines = disciplinesResult.results?.map(r => r.discipline) || [];
+    const dbLocations = locationsResult.results?.map(r => r.location) || [];
+    const dbInstructors = instructorsResult.results?.map(r => r.instructor) || [];
+
+    const allDisciplines = Array.from(new Set([
+      'Brazilian Jiu-Jitsu',
+      'Karate',
+      'Kenpo Karate',
+      'Kickboxing',
+      'MMA',
+      'Muay Thai',
+      'Taekwondo',
+      'Weightlifting',
+      ...dbDisciplines,
+    ]));
 
     const metadata: MetadataResponse = {
-      disciplines: disciplinesResult.results?.map(r => r.discipline) || [],
-      locations: locationsResult.results?.map(r => r.location) || [],
-      instructors: instructorsResult.results?.map(r => r.instructor) || [],
+      disciplines: allDisciplines,
+      locations: dbLocations.length > 0 ? dbLocations : ['Main Dojo'],
+      instructors: dbInstructors.length > 0 ? dbInstructors : ['Instructor'],
     };
-
-    // If no data exists, provide defaults with all available disciplines
-    if (metadata.disciplines.length === 0) {
-      metadata.disciplines = [
-        'Brazilian Jiu-Jitsu',
-        'Karate',
-        'Kenpo Karate',
-        'Kickboxing',
-        'MMA',
-        'Muay Thai',
-        'Taekwondo',
-        'Weightlifting',
-      ];
-    }
-    if (metadata.locations.length === 0) {
-      metadata.locations = ['Main Dojo'];
-    }
-    if (metadata.instructors.length === 0) {
-      metadata.instructors = ['Instructor'];
-    }
 
     return new Response(JSON.stringify(metadata), {
       headers: { 'Content-Type': 'application/json' },

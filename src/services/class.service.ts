@@ -61,6 +61,7 @@ export class ClassService {
       description: data.description || undefined,
       isRecurring: data.isRecurring || false,  // ✅ Keep camelCase as backend expects
       recurrencePattern: data.recurrencePattern ? JSON.stringify(data.recurrencePattern) : undefined,  // ✅ Keep camelCase as backend expects
+      parentCourseId: (data as { parentCourseId?: string }).parentCourseId, // optional idempotency key
     };
 
     return apiClient.post<Class>(this.endpoint, payload);
@@ -132,11 +133,11 @@ export class ClassService {
 
   // Fetch comments for a specific class (generated session)
   async getComments(classId: string): Promise<ApiResponse<Array<{id:string;comment:string;author_id:string;created_at:string}>>> {
-    return apiClient.get(`/api/classes/${classId}/comments`);
+    return apiClient.get<Array<{id:string;comment:string;author_id:string;created_at:string}>>(`/api/classes/${classId}/comments`);
   }
 
-  async addComment(classId: string, comment: string): Promise<ApiResponse<Record<string, any>>> {
-    return apiClient.post(`/api/classes/${classId}/comments`, { comment });
+  async addComment(classId: string, comment: string): Promise<ApiResponse<{id:string;comment:string;author_id:string;created_at:string}>> {
+    return apiClient.post<{id:string;comment:string;author_id:string;created_at:string}>(`/api/classes/${classId}/comments`, { comment });
   }
 }
 

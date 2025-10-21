@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, AlertCircle, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
@@ -8,6 +8,9 @@ interface ClassFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (classData: ClassFormData) => Promise<Class | null>;
+  // initialData may come from DB and can include strings; use unknown-safe mapping
+  initialData?: (Partial<Record<keyof ClassFormData, unknown>> & { id?: string }) | null;
+  onUpdate?: (id: string, data: Partial<ClassFormData>) => Promise<Class | null>;
 }
 
 interface NewClassState {
@@ -37,7 +40,7 @@ const DAYS_OF_WEEK = [
   { id: 0, label: 'Dom', fullLabel: 'Domingo' },
 ];
 
-export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormModalProps) {
+export default function ClassFormModal({ isOpen, onClose, onSubmit, initialData, onUpdate }: ClassFormModalProps) {
   const { t } = useTranslation();
   const { disciplines, locations, instructors } = useClassMetadata();
   
@@ -62,6 +65,47 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
   const [customInstructor, setCustomInstructor] = useState('');
   const [showCustomLocation, setShowCustomLocation] = useState(false);
   const [showCustomInstructor, setShowCustomInstructor] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: number[]; endDate?: string };
+
+  // prefill when initialData is provided (edit mode)
+  useEffect(() => {
+    if (!isOpen || !initialData) return;
+    setNewClass(prev => {
+      // Safely extract recurrence pattern from initialData and ensure days is number[]
+      const incoming = (initialData.recurrencePattern && typeof initialData.recurrencePattern === 'object') ? (initialData.recurrencePattern as RecurrencePattern) : undefined;
+      const days: number[] = Array.isArray(incoming?.days) ? incoming!.days as number[] : prev.recurrence_pattern.days;
+
+      return {
+        ...prev,
+        name: typeof initialData.name === 'string' ? initialData.name : prev.name,
+        discipline: typeof initialData.discipline === 'string' ? (initialData.discipline as string) : prev.discipline,
+        date: typeof initialData.date === 'string' ? initialData.date : prev.date,
+        time: typeof initialData.time === 'string' ? initialData.time : prev.time,
+        location: typeof initialData.location === 'string' ? initialData.location : prev.location,
+        instructor: typeof initialData.instructor === 'string' ? initialData.instructor : prev.instructor,
+        max_students: typeof initialData.maxStudents === 'number' ? initialData.maxStudents : prev.max_students,
+        description: typeof initialData.description === 'string' ? initialData.description : prev.description,
+        is_recurring: typeof initialData.isRecurring === 'boolean' ? initialData.isRecurring : prev.is_recurring,
+        recurrence_pattern: incoming ? {
+          frequency: incoming.frequency || prev.recurrence_pattern.frequency,
+          days,
+          endDate: incoming.endDate || prev.recurrence_pattern.endDate,
+        } : prev.recurrence_pattern,
+      };
+    });
+  }, [isOpen, initialData]);
+
+  // When metadata loads, ensure form has sensible defaults if not in edit mode
+  useEffect(() => {
+    if (!isOpen || initialData) return;
+    setNewClass(prev => ({
+      ...prev,
+      discipline: prev.discipline || (disciplines[0] || 'Brazilian Jiu-Jitsu'),
+      location: prev.location || (locations[0] || 'Main Dojo'),
+      instructor: prev.instructor || (instructors[0] || ''),
+    }));
+  }, [isOpen, disciplines, locations, instructors, initialData]);
 
   const toggleDay = (dayId: number) => {
     setNewClass(prev => {
@@ -111,32 +155,44 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
       } : undefined,
     };
 
-    const result = await onSubmit(classData);
-    if (result) {
-      onClose();
-      // Reset form
-      setNewClass({
-        name: '',
-        discipline: disciplines[0] || 'Brazilian Jiu-Jitsu',
-        date: new Date().toISOString().split('T')[0],
-        time: '18:00',
-        location: locations[0] || 'Main Dojo',
-        instructor: instructors[0] || '',
-        max_students: 20,
-        description: '',
-        is_recurring: false,
-        recurrence_pattern: {
-          frequency: 'weekly',
-          days: [1, 3, 5],
-          endDate: '',
-        },
-      });
-      setCustomLocation('');
-      setCustomInstructor('');
-      setShowCustomLocation(false);
-      setShowCustomInstructor(false);
-    } else {
-      alert(t('classForm.addFailed'));
+    if (isSubmitting) return; // guard double submit
+    setIsSubmitting(true);
+    try {
+      let result: Class | null = null;
+      if (initialData && initialData.id && onUpdate) {
+        result = await onUpdate(initialData.id, classData);
+      } else {
+        result = await onSubmit(classData);
+      }
+
+      if (result) {
+        onClose();
+        // Reset form
+        setNewClass({
+          name: '',
+          discipline: disciplines[0] || 'Brazilian Jiu-Jitsu',
+          date: new Date().toISOString().split('T')[0],
+          time: '18:00',
+          location: locations[0] || 'Main Dojo',
+          instructor: instructors[0] || '',
+          max_students: 20,
+          description: '',
+          is_recurring: false,
+          recurrence_pattern: {
+            frequency: 'weekly',
+            days: [1, 3, 5],
+            endDate: '',
+          },
+        });
+        setCustomLocation('');
+        setCustomInstructor('');
+        setShowCustomLocation(false);
+        setShowCustomInstructor(false);
+      } else {
+        alert(t('classForm.addFailed'));
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -497,11 +553,12 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit }: ClassFormM
             {t('classForm.cancel')}
           </button>
           <button 
-            className="btn bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-none rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-out transform hover:scale-105 gap-2 px-6" 
+            className={`btn bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-none rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-out transform hover:scale-105 gap-2 px-6 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
             onClick={handleSubmit}
+            disabled={isSubmitting}
           >
             <Plus className="w-5 h-5 transition-transform duration-300 hover:rotate-90" />
-            {t('classForm.scheduleClass')}
+            {isSubmitting ? (initialData ? t('classForm.updating') : t('classForm.scheduling')) : (initialData ? t('classForm.updateClass') : t('classForm.scheduleClass'))}
           </button>
         </div>
       </div>

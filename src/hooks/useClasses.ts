@@ -71,7 +71,14 @@ export function useClasses(initialFilters?: ClassFilters): UseClassesReturn {
       setIsCreating(true);
       setError(null);
 
-      const response = await classService.create(data);
+      // If this is a recurring creation, attach a parentCourseId so server can be idempotent
+      type PayloadWithParent = ClassFormData & { parentCourseId?: string };
+      const payload: PayloadWithParent = { ...data } as PayloadWithParent;
+      if (data.isRecurring) {
+        payload.parentCourseId = payload.parentCourseId || crypto.randomUUID();
+      }
+
+      const response = await classService.create(payload);
       if (response.success && response.data) {
         setClasses(prev => [...prev, response.data!]);
         return response.data;

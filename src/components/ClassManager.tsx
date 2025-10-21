@@ -8,6 +8,8 @@ import { useClassFilters } from '../hooks/useClassFilters';
 import { useClassStats } from '../hooks/useClassStats';
 import { getDisciplineColor, getClassStatus } from '../lib/classUtils';
 import { ClassFormModal, EnrollStudentsModal, ClassDetailsModal } from './classes';
+import ConfirmModal from './ui/ConfirmModal';
+import { useToast } from '../hooks/useToast';
 import type { Class } from '../types';
 import { useTranslation } from 'react-i18next';
 
@@ -17,13 +19,20 @@ export default function ClassManager() {
     classes,
     createClass,
     refresh,
+    updateClass,
+    deleteClass,
   } = useClasses();
   const { disciplines } = useClassMetadata();
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingClass, setEditingClass] = useState<Class | null>(null);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingClassId, setDeletingClassId] = useState<string | null>(null);
+  const [deleteProcessing, setDeleteProcessing] = useState(false);
+  const toast = useToast();
   const [filterDiscipline, setFilterDiscipline] = useState('all');
   const [filterDay, setFilterDay] = useState('all');
   const [viewMode, setViewMode] = useState<'schedule' | 'list'>('schedule');
@@ -286,8 +295,16 @@ export default function ClassManager() {
                                   transition-all duration-200 text-white text-xs sm:text-sm flex-1 sm:flex-none
                                 "
                                 title={t('classes.actions.edit')}
+                                onClick={() => { setEditingClass(cls); setShowAddModal(true); }}
                               >
                                 <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              </button>
+                              <button
+                                className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-red-800 hover:bg-red-700 text-white text-xs sm:text-sm"
+                                onClick={() => { setDeletingClassId(cls.id); setShowDeleteConfirm(true); }}
+                                title={t('common.delete')}
+                              >
+                                {t('common.delete')}
                               </button>
                             </div>
                           </div>
@@ -474,8 +491,26 @@ export default function ClassManager() {
 
       <ClassFormModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => { setShowAddModal(false); setEditingClass(null); }}
         onSubmit={createClass}
+        initialData={editingClass ? {
+          id: editingClass.id,
+          name: editingClass.name,
+          discipline: editingClass.discipline as unknown as string,
+          date: editingClass.date,
+          time: editingClass.time,
+          location: editingClass.location,
+          instructor: editingClass.instructor,
+          maxStudents: editingClass.max_students,
+          description: editingClass.description || undefined,
+          isRecurring: !!editingClass.is_recurring,
+          recurrencePattern: editingClass.recurrence_pattern ? JSON.parse(editingClass.recurrence_pattern) : undefined,
+        } : null}
+        onUpdate={async (id, data) => {
+          const updated = await updateClass(id, data);
+          await refresh();
+          return updated;
+        }}
       />
       
       {selectedClass && (
@@ -503,6 +538,36 @@ export default function ClassManager() {
           cls={selectedClass}
         />
       )}
+
+      {/* Delete confirmation modal */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title={t('classes.deleteConfirmTitle') || 'Eliminar curso?'}
+        message={t('classes.deleteConfirmMessage') || 'Esta acción eliminará el curso. ¿Deseas continuar?'}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        isProcessing={deleteProcessing}
+        onCancel={() => { setShowDeleteConfirm(false); setDeletingClassId(null); }}
+        onConfirm={async () => {
+          if (!deletingClassId) return;
+          try {
+            setDeleteProcessing(true);
+            const success = await deleteClass(deletingClassId);
+            if (success) {
+              toast.success(t('classes.deleteSuccess') || 'Curso eliminado');
+              await refresh();
+              setShowDeleteConfirm(false);
+              setDeletingClassId(null);
+            } else {
+              toast.error(t('classes.deleteError') || 'Error al eliminar');
+            }
+          } catch {
+            toast.error(t('classes.deleteError') || 'Error al eliminar');
+          } finally {
+            setDeleteProcessing(false);
+          }
+        }}
+      />
     </div>
   );
 }

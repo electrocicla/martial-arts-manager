@@ -4,6 +4,9 @@ import type { Class as ClassType } from '../../types';
 import { classService } from '../../services/class.service';
 import { useTranslation } from 'react-i18next';
 
+type CommentRecord = { id: string; comment: string; author_id: string; created_at: string };
+type RecurrencePattern = { frequency?: string; days?: number[]; endDate?: string };
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -12,14 +15,14 @@ interface Props {
 
 export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
   const { t } = useTranslation();
-  const [comments, setComments] = useState<Array<{id:string;comment:string;author_id:string;created_at:string}>>([]);
+  const [comments, setComments] = useState<CommentRecord[]>([]);
   const [newComment, setNewComment] = useState('');
 
   useEffect(() => {
     if (!isOpen || !cls) return;
     (async () => {
       const res = await classService.getComments(cls.id);
-      if (res.success && res.data) setComments(res.data as any);
+      if (res.success && res.data) setComments(res.data as CommentRecord[]);
     })();
   }, [isOpen, cls]);
 
@@ -27,7 +30,7 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
     if (!cls || !newComment.trim()) return;
     const res = await classService.addComment(cls.id, newComment.trim());
     if (res.success && res.data) {
-      setComments(prev => [res.data as any, ...prev]);
+      setComments(prev => [res.data as CommentRecord, ...prev]);
       setNewComment('');
     } else {
       alert('Failed to add comment');
@@ -40,11 +43,11 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
   let recurrence: string | null = null;
   try {
     if (cls.recurrence_pattern) {
-      const parsed = JSON.parse(cls.recurrence_pattern);
-      recurrence = `${parsed.frequency} ${parsed.days ? `days:${parsed.days.join(',')}` : ''} ${parsed.endDate ? `until ${parsed.endDate}` : ''}`;
+      const parsed = JSON.parse(cls.recurrence_pattern) as RecurrencePattern;
+      recurrence = `${parsed.frequency ?? ''} ${parsed.days ? `days:${parsed.days.join(',')}` : ''} ${parsed.endDate ? `until ${parsed.endDate}` : ''}`.trim();
     }
-  } catch (e) {
-    recurrence = cls.recurrence_pattern as string | null;
+  } catch {
+    recurrence = typeof cls.recurrence_pattern === 'string' ? cls.recurrence_pattern : null;
   }
 
   return (
