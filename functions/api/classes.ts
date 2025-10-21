@@ -87,7 +87,55 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     const now = new Date().toISOString();
 
-    // Insert with created_by
+    // If recurrence is provided, expand weekly occurrences and insert one row per occurrence
+    if (isRecurring && recurrencePattern) {
+      let pattern: { frequency?: string; days?: number[]; endDate?: string } = {};
+      try {
+        pattern = JSON.parse(recurrencePattern);
+      } catch (e) {
+        // ignore parse error and treat as single instance
+      }
+
+      if (pattern.frequency === 'weekly' && Array.isArray(pattern.days) && pattern.days.length > 0) {
+        // Determine range: from provided date up to endDate or default 12 weeks
+        const startDate = new Date(date);
+        const endDate = pattern.endDate ? new Date(pattern.endDate) : new Date(new Date(date).getTime() + 1000 * 60 * 60 * 24 * 7 * 12);
+
+        const toInsert: Array<{ id: string; dateStr: string }> = [];
+
+        // iterate from startDate to endDate by days
+        const cur = new Date(startDate);
+        while (cur <= endDate) {
+          const dow = cur.getDay();
+          if (pattern.days.includes(dow)) {
+            toInsert.push({ id: crypto.randomUUID(), dateStr: cur.toISOString().split('T')[0] });
+          }
+          cur.setDate(cur.getDate() + 1);
+        }
+
+        // Bulk insert all occurrences
+        const insertStmt = env.DB.prepare(`
+          INSERT INTO classes (
+            id, name, discipline, date, time, location, instructor, max_students,
+            description, is_recurring, recurrence_pattern, is_active, created_by, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+        `);
+
+        for (const occ of toInsert) {
+          await insertStmt.bind(
+            occ.id, name, discipline, occ.dateStr, time, location, instructor, maxStudents,
+            description || null, 1, recurrencePattern, auth.user.id, now, now
+          ).run();
+        }
+
+        // Return the first inserted occurrence as a representative
+        const created = toInsert[0];
+        const { results } = await env.DB.prepare("SELECT * FROM classes WHERE id = ?").bind(created.id).all<ClassRecord>();
+        return new Response(JSON.stringify(results?.[0] || {}), { status: 201, headers: { 'Content-Type': 'application/json' } });
+      }
+    }
+
+    // Fallback: single insert
     await env.DB.prepare(`
       INSERT INTO classes (
         id, name, discipline, date, time, location, instructor, max_students,

@@ -129,6 +129,15 @@ export class ClassService {
   async getMetadata(): Promise<ApiResponse<ClassMetadata>> {
     return apiClient.get<ClassMetadata>('/api/classes/metadata');
   }
+
+  // Fetch comments for a specific class (generated session)
+  async getComments(classId: string): Promise<ApiResponse<Array<{id:string;comment:string;author_id:string;created_at:string}>>> {
+    return apiClient.get(`/api/classes/${classId}/comments`);
+  }
+
+  async addComment(classId: string, comment: string): Promise<ApiResponse<Record<string, any>>> {
+    return apiClient.post(`/api/classes/${classId}/comments`, { comment });
+  }
 }
 
 // Create singleton instance

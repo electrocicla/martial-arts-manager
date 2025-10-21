@@ -332,7 +332,7 @@
     "plural": "cursos",
     "actions": {
       "duplicateWeek": "Duplicar Semana",
-      "addClass": "Agregar Clase",
+  "addClass": "Agregar Curso",
       "attendance": "Asistencia",
       "edit": "Editar",
       "scheduleFirstClass": "Programar Primera Clase"

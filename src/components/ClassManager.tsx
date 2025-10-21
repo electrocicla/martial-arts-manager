@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useClassFilters } from '../hooks/useClassFilters';
 import { useClassStats } from '../hooks/useClassStats';
 import { getDisciplineColor, getClassStatus } from '../lib/classUtils';
-import { ClassFormModal, EnrollStudentsModal } from './classes';
+import { ClassFormModal, EnrollStudentsModal, ClassDetailsModal } from './classes';
 import type { Class } from '../types';
 import { useTranslation } from 'react-i18next';
 
@@ -23,6 +23,7 @@ export default function ClassManager() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [filterDiscipline, setFilterDiscipline] = useState('all');
   const [filterDay, setFilterDay] = useState('all');
   const [viewMode, setViewMode] = useState<'schedule' | 'list'>('schedule');
@@ -190,7 +191,7 @@ export default function ClassManager() {
                 
                 {/* Classes Grid */}
                 <div className="grid gap-3 sm:gap-4">
-                  {dayClasses.sort((a, b) => a.time.localeCompare(b.time)).map((cls) => {
+                      {dayClasses.sort((a, b) => a.time.localeCompare(b.time)).map((cls) => {
                     const status = getClassStatus(cls.date, cls.time);
                     return (
                       <div 
@@ -240,6 +241,12 @@ export default function ClassManager() {
                               {cls.description && (
                                 <p className="text-xs text-base-content/60 mt-3 line-clamp-2">{cls.description}</p>
                               )}
+                              {/* clicking card opens details modal */}
+                              <div className="mt-2">
+                                <button className="text-xs text-gray-400 underline" onClick={() => { setSelectedClass(cls); setShowDetailsModal(true); }}>
+                                  Ver Detalles
+                                </button>
+                              </div>
                             </div>
 
                             {/* Actions */}
@@ -486,6 +493,14 @@ export default function ClassManager() {
             // refresh class list so enrolled_count updates
             await refresh();
           }}
+        />
+      )}
+      {/* Details Modal */}
+      {selectedClass && (
+        <ClassDetailsModal
+          isOpen={showDetailsModal}
+          onClose={() => { setShowDetailsModal(false); setSelectedClass(null); }}
+          cls={selectedClass}
         />
       )}
     </div>

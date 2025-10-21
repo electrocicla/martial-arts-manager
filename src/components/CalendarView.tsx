@@ -3,10 +3,13 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { useClasses } from '../hooks/useClasses';
 import type { Class } from '../types';
+import ClassDetailsModal from './classes/ClassDetailsModal';
 
 export default function CalendarView() {
   const { classes } = useClasses();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   const classesOnDate = selectedDate ? classes.filter((c: Class) => c.date === selectedDate.toISOString().split('T')[0]) : [];
 
@@ -40,7 +43,8 @@ export default function CalendarView() {
               {classesOnDate.map((c: Class) => (
                 <li 
                   key={c.id} 
-                  className="border border-gray-700 p-4 rounded-lg bg-gray-900 hover:bg-gray-750 hover:border-red-600 transition-all duration-200"
+                  className="border border-gray-700 p-4 rounded-lg bg-gray-900 hover:bg-gray-750 hover:border-red-600 transition-all duration-200 cursor-pointer"
+                  onClick={() => { setSelectedClass(c); setShowDetails(true); }}
                 >
                   <div className="font-semibold text-lg text-gray-100">
                     {c.name} - <span className="text-red-500">{c.discipline}</span>
@@ -55,6 +59,10 @@ export default function CalendarView() {
             <p className="text-gray-400 text-center py-4">No classes scheduled for this day</p>
           )}
         </div>
+      )}
+
+      {selectedClass && (
+        <ClassDetailsModal isOpen={showDetails} onClose={() => { setShowDetails(false); setSelectedClass(null); }} cls={selectedClass} />
       )}
     </div>
   );
