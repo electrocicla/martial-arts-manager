@@ -336,7 +336,7 @@
   "addClass": "Agregar Curso",
       "attendance": "Asistencia",
       "edit": "Editar",
-      "scheduleFirstClass": "Programar Primera Clase"
+  "scheduleFirstClass": "Programar Primer Curso"
     },
     "stats": {
       "totalClasses": "Total de Clases",
