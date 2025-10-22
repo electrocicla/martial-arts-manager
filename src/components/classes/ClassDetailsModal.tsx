@@ -3,6 +3,7 @@ import { X, Clock, MapPin, User } from 'lucide-react';
 import type { Class as ClassType } from '../../types';
 import { classService } from '../../services/class.service';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 
 type CommentRecord = { id: string; comment: string; author_id: string; created_at: string };
 type RecurrencePattern = { frequency?: string; days?: number[]; endDate?: string };
@@ -17,6 +18,7 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
   const { t } = useTranslation();
   const [comments, setComments] = useState<CommentRecord[]>([]);
   const [newComment, setNewComment] = useState('');
+  const { isAuthenticated, refreshAuth } = useAuth();
 
   useEffect(() => {
     if (!isOpen || !cls) return;
@@ -28,12 +30,36 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
 
   const handleAdd = async () => {
     if (!cls || !newComment.trim()) return;
-    const res = await classService.addComment(cls.id, newComment.trim());
-    if (res.success && res.data) {
-      setComments(prev => [res.data as CommentRecord, ...prev]);
-      setNewComment('');
-    } else {
-      alert('Failed to add comment');
+
+    // Require authentication
+    if (!isAuthenticated) {
+      alert(t('classDetails.loginRequired') || 'Please log in to add comments');
+      // Optionally redirect to login
+      window.location.href = '/login';
+      return;
+    }
+
+    try {
+      let res = await classService.addComment(cls.id, newComment.trim());
+      // If auth error, try refresh once and retry
+      if (!res.success && res.error && (res.error.includes('401') || /authorization/i.test(res.error))) {
+        const refreshed = await refreshAuth();
+        if (refreshed) {
+          res = await classService.addComment(cls.id, newComment.trim());
+        }
+      }
+
+      if (res.success && res.data) {
+        setComments(prev => [res.data as CommentRecord, ...prev]);
+        setNewComment('');
+      } else {
+        // Show server error
+        const msg = res.error || t('classDetails.addFailed') || 'Failed to add comment';
+        alert(msg);
+      }
+    } catch (error) {
+      console.error('[Add Comment Error]', error);
+      alert(t('classDetails.addFailed') || 'Failed to add comment');
     }
   };
 

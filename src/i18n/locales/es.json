@@ -432,7 +432,9 @@
     "comments": "Comentarios",
     "addComment": "Agregar",
     "noComments": "No hay comentarios",
-    "commentPlaceholder": "Escribe un comentario..."
+    "commentPlaceholder": "Escribe un comentario...",
+    "addFailed": "Error al agregar comentario",
+    "loginRequired": "Por favor inicia sesión para agregar comentarios"
   },
   "landing": {
     "hero": {
