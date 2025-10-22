@@ -417,13 +417,20 @@
     "description": "Descripción",
   "descriptionPlaceholder": "Descripción del curso...",
     "cancel": "Cancelar",
-  "scheduleClass": "Programar Curso",
+    "scheduleClass": "Programar Curso",
+    "scheduling": "Agregando curso...",
     "requiredField": "Por favor complete los campos requeridos",
     "addFailed": "Error al agregar el curso"
     ,
     "applyTo": "Aplicar cambios a",
     "applyToSingle": "Sólo esta sesión",
     "applyToAll": "Todas las sesiones del curso"
+  },
+  "classDetails": {
+    "comments": "Comentarios",
+    "addComment": "Agregar",
+    "noComments": "No hay comentarios",
+    "commentPlaceholder": "Escribe un comentario..."
   },
   "landing": {
     "hero": {

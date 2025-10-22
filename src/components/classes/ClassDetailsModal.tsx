@@ -82,16 +82,16 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
         )}
 
         <div className="mb-4">
-          <h4 className="font-semibold text-white mb-2">Comentarios</h4>
+          <h4 className="font-semibold text-white mb-2">{t('classDetails.comments') || 'Comentarios'}</h4>
           <div className="space-y-2 mb-3">
-            <textarea value={newComment} onChange={(e)=>setNewComment(e.target.value)} className="textarea textarea-bordered w-full bg-gray-800 border-gray-700 text-white" rows={3} />
+            <textarea placeholder={t('classDetails.commentPlaceholder') || ''} value={newComment} onChange={(e)=>setNewComment(e.target.value)} className="textarea textarea-bordered w-full bg-gray-800 border-gray-700 text-white" rows={3} />
             <div className="flex justify-end gap-2">
-              <button onClick={handleAdd} className="btn btn-primary">Agregar</button>
+              <button onClick={handleAdd} className="btn btn-primary">{t('classDetails.addComment') || 'Agregar'}</button>
             </div>
           </div>
 
           <div className="space-y-2">
-            {comments.length === 0 && <div className="text-sm text-gray-400">No hay comentarios</div>}
+            {comments.length === 0 && <div className="text-sm text-gray-400">{t('classDetails.noComments') || 'No hay comentarios'}</div>}
             {comments.map(c => (
               <div key={c.id} className="p-3 bg-gray-800/50 rounded-lg border border-gray-700/40">
                 <div className="text-sm text-gray-200 whitespace-pre-wrap">{c.comment}</div>
