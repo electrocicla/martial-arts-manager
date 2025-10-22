@@ -207,6 +207,7 @@ export interface ClassFormData {
   description?: string;
   isRecurring?: boolean;
   recurrencePattern?: RecurrencePattern;
+  applyTo?: 'single' | 'all';
 }
 
 export interface PaymentFormData {

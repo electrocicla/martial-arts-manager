@@ -186,11 +186,11 @@ export default function ClassManager() {
                   <h3 className="font-black text-base sm:text-lg md:text-xl text-white flex items-center gap-2">
                     <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 shrink-0" />
                     <span className="truncate">
-                      {new Date(day).toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })}
+                      {new Date(`${day}T00:00:00`).toLocaleDateString('en-US', { 
+                          weekday: 'long', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
                     </span>
                   </h3>
                   <span className="badge badge-ghost bg-gray-800 border-gray-700 font-semibold text-xs sm:text-sm shrink-0">

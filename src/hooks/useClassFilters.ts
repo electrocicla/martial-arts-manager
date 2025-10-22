@@ -18,7 +18,8 @@ export const useClassFilters = (classes: Class[], filterDiscipline: string, filt
   const groupedByDay = useMemo(() => {
     const grouped: Record<string, typeof classes> = {};
     filteredClasses.forEach((cls) => {
-      const day = new Date(cls.date).toLocaleDateString();
+      // Use ISO date (YYYY-MM-DD) as the grouping key to ensure stable parsing
+      const day = cls.date;
       if (!grouped[day]) grouped[day] = [];
       grouped[day].push(cls);
     });

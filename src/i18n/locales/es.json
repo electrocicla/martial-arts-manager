@@ -8,7 +8,7 @@
     "analytics": "Análisis",
     "settings": "Configuración",
     "beltTesting": "Exámenes de Cinturón",
-    "calendar": "Vista de Calendario",
+  "calendar": "Calendario de Clases",
     "markAttendance": "Marcar Asistencia"
   },
   "auth": {
@@ -119,6 +119,7 @@
       "scheduleNewClass": "Programar Nueva Clase"
     }
   },
+
   "payments": {
     "title": "Gestión de Pagos",
     "subtitle": "Rastrea y gestiona los pagos de estudiantes",
@@ -419,6 +420,10 @@
   "scheduleClass": "Programar Curso",
     "requiredField": "Por favor complete los campos requeridos",
     "addFailed": "Error al agregar el curso"
+    ,
+    "applyTo": "Aplicar cambios a",
+    "applyToSingle": "Sólo esta sesión",
+    "applyToAll": "Todas las sesiones del curso"
   },
   "landing": {
     "hero": {

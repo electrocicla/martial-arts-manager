@@ -67,8 +67,11 @@ export class ClassService {
     return apiClient.post<Class>(this.endpoint, payload);
   }
 
-  async update(id: string, data: Partial<ClassFormData>): Promise<ApiResponse<Class>> {
-    return apiClient.put<Class>(`${this.endpoint}/${id}`, data);
+  async update(id: string, data: Partial<ClassFormData>): Promise<ApiResponse<Class | Class[]>> {
+    // Serialize recurrencePattern if provided to match backend expectations
+    const payload: Record<string, unknown> = { ...data };
+    if (data.recurrencePattern) payload.recurrencePattern = JSON.stringify(data.recurrencePattern);
+    return apiClient.put<Class | Class[]>(`${this.endpoint}/${id}`, payload);
   }
 
   async delete(id: string): Promise<ApiResponse<void>> {

@@ -101,10 +101,23 @@ export function useClasses(initialFilters?: ClassFilters): UseClassesReturn {
 
       const response = await classService.update(id, data);
       if (response.success && response.data) {
+        // If API returned array (applyTo='all'), replace children accordingly
+        if (Array.isArray(response.data)) {
+          const updatedArray = response.data as Class[];
+          // Remove existing children with the same parent_course_id and add updated ones
+          // We'll match by id for replacement
+          setClasses(prev => {
+            const ids = new Set(updatedArray.map(u => u.id));
+            const filtered = prev.filter(p => !ids.has(p.id));
+            return [...filtered, ...updatedArray].sort((a,b)=> a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+          });
+          return updatedArray[0] || null;
+        }
+
         setClasses(prev => prev.map(cls =>
-          cls.id === id ? response.data! : cls
+          cls.id === id ? response.data as Class : cls
         ));
-        return response.data;
+        return response.data as Class;
       } else {
         setError(response.error || 'Failed to update class');
         return null;

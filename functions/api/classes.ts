@@ -90,7 +90,20 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // If recurrence is provided, expand weekly occurrences and insert one row per occurrence
     // Use or generate a parent_course_id to group recurring occurrences and enable idempotency
-    const parentId = parentCourseId || (isRecurring ? crypto.randomUUID() : null);
+    let parentId = parentCourseId || null;
+    // If not provided, create a deterministic parent id from payload so retries don't create duplicates
+    async function computeDeterministicId(input: string) {
+      const enc = new TextEncoder();
+      const data = enc.encode(input);
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      const arr = Array.from(new Uint8Array(hash));
+      return arr.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    if (!parentId && isRecurring) {
+      const seed = `${auth.user.id}|${name}|${discipline}|${time}|${date}|${recurrencePattern}`;
+      // prefix to avoid purely numeric ids
+      parentId = 'pc_' + await computeDeterministicId(seed);
+    }
 
     if (isRecurring && recurrencePattern) {
       let pattern: { frequency?: string; days?: number[]; endDate?: string } = {};
@@ -100,18 +113,30 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         // ignore parse error and treat as single instance
       }
 
-        if (pattern.frequency === 'weekly' && Array.isArray(pattern.days) && pattern.days.length > 0) {
-          // If parentId provided (idempotent key), check if occurrences already exist for this parent
-          if (parentId) {
-            const existing = await env.DB.prepare(`SELECT * FROM classes WHERE parent_course_id = ? AND created_by = ? AND deleted_at IS NULL LIMIT 1`).bind(parentId, auth.user.id).all<ClassRecord>();
-            if (existing && existing.results && existing.results.length > 0) {
-              // Return the first existing occurrence to indicate idempotent success
-              return new Response(JSON.stringify(existing.results[0]), { status: 200, headers: { 'Content-Type': 'application/json' } });
-            }
+      if (pattern.frequency === 'weekly' && Array.isArray(pattern.days) && pattern.days.length > 0) {
+        // Ensure there is a parent course row representing this recurring course
+        if (parentId) {
+          const { results: parentExisting } = await env.DB.prepare('SELECT * FROM classes WHERE id = ? AND created_by = ?').bind(parentId, auth.user.id).all<ClassRecord>();
+          if (!parentExisting || parentExisting.length === 0) {
+            // Insert parent course row (represents the course grouping). parent_course_id is NULL for the parent itself.
+            await env.DB.prepare(`
+              INSERT INTO classes (
+                id, name, discipline, date, time, location, instructor, max_students,
+                description, is_recurring, recurrence_pattern, is_active, parent_course_id, created_by, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NULL, ?, ?, ?)
+            `).bind(parentId, name, discipline, date, time, location, instructor, maxStudents, description || null, 1, recurrencePattern, auth.user.id, now, now).run();
           }
+
+          // If children already exist for this parent, return first child to indicate idempotent success
+          const existing = await env.DB.prepare('SELECT * FROM classes WHERE parent_course_id = ? AND created_by = ? AND deleted_at IS NULL LIMIT 1').bind(parentId, auth.user.id).all<ClassRecord>();
+          if (existing && existing.results && existing.results.length > 0) {
+            return new Response(JSON.stringify(existing.results[0]), { status: 200, headers: { 'Content-Type': 'application/json' } });
+          }
+        }
+
         // Determine range: from provided date up to endDate or default 12 weeks
         const startDate = new Date(date);
-        const endDate = pattern.endDate ? new Date(pattern.endDate) : new Date(new Date(date).getTime() + 1000 * 60 * 60 * 24 * 7 * 12);
+        const endDate = pattern.endDate ? new Date(pattern.endDate) : new Date(startDate.getTime() + 1000 * 60 * 60 * 24 * 7 * 12);
 
         const toInsert: Array<{ id: string; dateStr: string }> = [];
 
@@ -125,24 +150,23 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
           cur.setDate(cur.getDate() + 1);
         }
 
-        // Bulk insert all occurrences
+        // Bulk insert all child session occurrences referencing parent_course_id
         const insertStmt = env.DB.prepare(`
           INSERT INTO classes (
             id, name, discipline, date, time, location, instructor, max_students,
-            description, is_recurring, recurrence_pattern, is_active, created_by, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+            description, is_recurring, recurrence_pattern, is_active, parent_course_id, created_by, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
         `);
 
         for (const occ of toInsert) {
           await insertStmt.bind(
             occ.id, name, discipline, occ.dateStr, time, location, instructor, maxStudents,
-            description || null, 1, recurrencePattern, 1, parentId, auth.user.id, now, now
+            description || null, 0, null, 1, parentId, auth.user.id, now, now
           ).run();
         }
 
-        // Return the first inserted occurrence as a representative
-        const created = toInsert[0];
-        const { results } = await env.DB.prepare("SELECT * FROM classes WHERE id = ?").bind(created.id).all<ClassRecord>();
+        // Return the parent course as representative
+        const { results } = await env.DB.prepare('SELECT * FROM classes WHERE id = ?').bind(parentId).all<ClassRecord>();
         return new Response(JSON.stringify(results?.[0] || {}), { status: 201, headers: { 'Content-Type': 'application/json' } });
       }
     }
@@ -237,6 +261,29 @@ export async function onRequestPut(context: { request: Request; env: Env, params
 
     const { results } = await env.DB.prepare('SELECT * FROM classes WHERE id = ?').bind(id).all<ClassRecord>();
     return new Response(JSON.stringify(results?.[0] || {}), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
+}
+
+export async function onRequestDelete(context: { request: Request; env: Env, params?: Record<string,string> }) {
+  const { request, env, params } = context;
+  try {
+    const auth = await authenticateUser(request, env);
+    if (!auth.authenticated) {
+      return new Response(JSON.stringify({ error: auth.error }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    const id = params?.id;
+    if (!id) return new Response(JSON.stringify({ error: 'Missing class id' }), { status: 400 });
+
+    // Soft delete: set deleted_at and updated_by
+    const now = new Date().toISOString();
+    await env.DB.prepare('UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ? AND created_by = ?')
+      .bind(now, now, auth.user.id, id, auth.user.id).run();
+
+    // Check affected rows if available (D1 may provide 'success' without rowcount)
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }

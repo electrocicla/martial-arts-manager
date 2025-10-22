@@ -66,6 +66,7 @@ export default function ClassFormModal({ isOpen, onClose, onSubmit, initialData,
   const [showCustomLocation, setShowCustomLocation] = useState(false);
   const [showCustomInstructor, setShowCustomInstructor] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [applyTo, setApplyTo] = useState<'single' | 'all'>('single');
 type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: number[]; endDate?: string };
 
   // prefill when initialData is provided (edit mode)
@@ -94,6 +95,8 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
         } : prev.recurrence_pattern,
       };
     });
+    // If editing an existing recurring course, default applyTo to 'single'
+    setApplyTo('single');
   }, [isOpen, initialData]);
 
   // When metadata loads, ensure form has sensible defaults if not in edit mode
@@ -160,7 +163,10 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
     try {
       let result: Class | null = null;
       if (initialData && initialData.id && onUpdate) {
-        result = await onUpdate(initialData.id, classData);
+        // If user chose to apply to all occurrences, include applyTo flag
+        const updatePayload: Partial<ClassFormData> = { ...classData };
+        if (applyTo === 'all') updatePayload.applyTo = 'all';
+        result = await onUpdate(initialData.id, updatePayload);
       } else {
         result = await onSubmit(classData);
       }
@@ -308,6 +314,25 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                 </div>
               </div>
             </div>
+
+            {/* Apply changes to (when editing recurring course) */}
+            {initialData && (newClass.is_recurring || (initialData.isRecurring as boolean)) && (
+              <div className="space-y-2">
+                <label className="label">
+                  <span className="label-text text-gray-300 font-medium tracking-wide">{t('classForm.applyTo')}</span>
+                </label>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="radio" name="applyTo" value="single" checked={applyTo === 'single'} onChange={() => setApplyTo('single')} />
+                    <span className="ml-1">{t('classForm.applyToSingle')}</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="radio" name="applyTo" value="all" checked={applyTo === 'all'} onChange={() => setApplyTo('all')} />
+                    <span className="ml-1">{t('classForm.applyToAll')}</span>
+                  </label>
+                </div>
+              </div>
+            )}
 
             {/* Location & Instructor Section */}
             <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>

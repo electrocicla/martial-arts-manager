@@ -4,8 +4,10 @@ import 'react-calendar/dist/Calendar.css';
 import { useClasses } from '../hooks/useClasses';
 import type { Class } from '../types';
 import ClassDetailsModal from './classes/ClassDetailsModal';
+import { useTranslation } from 'react-i18next';
 
 export default function CalendarView() {
+  const { t } = useTranslation();
   const { classes } = useClasses();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
@@ -15,7 +17,7 @@ export default function CalendarView() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-50">Class Calendar</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-50">{t('nav.calendar')}</h2>
       
       {/* Calendar Container with Dark Theme */}
       <div className="bg-gray-800 rounded-xl shadow-2xl p-6 mb-6 border border-gray-700">
