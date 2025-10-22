@@ -422,6 +422,8 @@
     "requiredField": "Por favor complete los campos requeridos",
     "addFailed": "Error al agregar el curso"
     ,
+  "noDescription": "Sin descripción",
+  "recurrence": "Recurrencia",
     "applyTo": "Aplicar cambios a",
     "applyToSingle": "Sólo esta sesión",
     "applyToAll": "Todas las sesiones del curso"
