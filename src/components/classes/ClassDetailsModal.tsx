@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [comments, setComments] = useState<CommentRecord[]>([]);
   const [newComment, setNewComment] = useState('');
   const { isAuthenticated, refreshAuth } = useAuth();
@@ -65,14 +65,30 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
 
   if (!isOpen || !cls) return null;
 
-  // parse recurrence pattern if present
+  // parse recurrence pattern if present and format it into human-friendly text
   let recurrence: string | null = null;
   try {
     if (cls.recurrence_pattern) {
       const parsed = JSON.parse(cls.recurrence_pattern) as RecurrencePattern;
-      recurrence = `${parsed.frequency ?? ''} ${parsed.days ? `days:${parsed.days.join(',')}` : ''} ${parsed.endDate ? `until ${parsed.endDate}` : ''}`.trim();
+
+      const locale = i18n?.language || navigator.language || 'en-US';
+
+      function weekdayName(dayNum: number) {
+        // Use a fixed week where Sunday is day 0 (2022-01-02 is a Sunday)
+        const base = new Date(Date.UTC(2022, 0, 2)); // Sunday
+        const d = new Date(base.getTime() + dayNum * 24 * 60 * 60 * 1000);
+        return d.toLocaleDateString(locale, { weekday: 'short' });
+      }
+
+      if (parsed.frequency === 'weekly' && Array.isArray(parsed.days) && parsed.days.length > 0) {
+        const dayNames = parsed.days.map(d => weekdayName(d));
+        const until = parsed.endDate ? ` — ${new Date(parsed.endDate).toLocaleDateString(locale)}` : '';
+        recurrence = `${t('classForm.recurrence') || 'Recurrencia'}: ${dayNames.join(', ')}${until}`;
+      } else {
+        recurrence = typeof cls.recurrence_pattern === 'string' ? cls.recurrence_pattern : null;
+      }
     }
-  } catch {
+  } catch (err) {
     recurrence = typeof cls.recurrence_pattern === 'string' ? cls.recurrence_pattern : null;
   }
 

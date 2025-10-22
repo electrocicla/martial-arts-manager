@@ -119,6 +119,7 @@
       "scheduleNewClass": "Programar Nueva Clase"
     }
   },
+  "classesOnDate": "Cursos el {{date}}",
 
   "payments": {
     "title": "Gestión de Pagos",

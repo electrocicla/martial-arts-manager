@@ -11,6 +11,8 @@ interface ClassFormModalProps {
   // initialData may come from DB and can include strings; use unknown-safe mapping
   initialData?: (Partial<Record<keyof ClassFormData, unknown>> & { id?: string }) | null;
   onUpdate?: (id: string, data: Partial<ClassFormData>) => Promise<Class | null>;
+  // optionally preselect whether updates should apply to 'single' or 'all' occurrences
+  initialApplyTo?: 'single' | 'all';
 }
 
 interface NewClassState {
@@ -40,7 +42,7 @@ const DAYS_OF_WEEK = [
   { id: 0, label: 'Dom', fullLabel: 'Domingo' },
 ];
 
-export default function ClassFormModal({ isOpen, onClose, onSubmit, initialData, onUpdate }: ClassFormModalProps) {
+export default function ClassFormModal({ isOpen, onClose, onSubmit, initialData, onUpdate, initialApplyTo }: ClassFormModalProps) {
   const { t } = useTranslation();
   const { disciplines, locations, instructors } = useClassMetadata();
   
@@ -96,7 +98,7 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
       };
     });
     // If editing an existing recurring course, default applyTo to 'single'
-    setApplyTo('single');
+    setApplyTo((initialApplyTo as 'single' | 'all') || 'single');
   }, [isOpen, initialData]);
 
   // When metadata loads, ensure form has sensible defaults if not in edit mode
