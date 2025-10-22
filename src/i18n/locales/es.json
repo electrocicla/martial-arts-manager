@@ -373,6 +373,12 @@
       "startCreateSchedule": "Comienza a crear tu horario de cursos",
       "noClassesFound": "No se encontraron cursos"
     },
+    "deleteConfirmTitle": "¿Eliminar Curso?",
+    "deleteConfirmMessage": "Esta acción eliminará el curso. Para confirmar, escriba 'delete' o 'borrar'",
+    "deleteConfirmPlaceholder": "Escriba aquí...",
+    "deleteConfirmError": "Por favor escriba 'delete' o 'borrar' para confirmar",
+    "deleteSuccess": "Curso eliminado correctamente",
+    "deleteError": "Error al eliminar el curso",
     "enrollModal": {
       "fetchError": "Error al cargar estudiantes inscritos",
       "fetchLoadError": "No se pudo cargar los estudiantes inscritos",

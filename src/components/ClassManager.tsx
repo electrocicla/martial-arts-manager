@@ -301,7 +301,24 @@ export default function ClassManager() {
                               </button>
                               <button
                                 className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-red-800 hover:bg-red-700 text-white text-xs sm:text-sm"
-                                onClick={() => { setDeletingClassId(cls.id); setShowDeleteConfirm(true); }}
+                                onClick={async () => {
+                                  // If no students are enrolled, delete immediately without confirmation modal
+                                  const enrolled = cls.enrolled_count || 0;
+                                  if (enrolled === 0) {
+                                    const success = await deleteClass(cls.id);
+                                    if (success) {
+                                      toast.success(t('classes.deleteSuccess') || 'Curso eliminado correctamente');
+                                      await refresh();
+                                    } else {
+                                      toast.error(t('classes.deleteError') || 'Error al eliminar');
+                                    }
+                                    return;
+                                  }
+
+                                  // Otherwise show typed confirmation modal
+                                  setDeletingClassId(cls.id);
+                                  setShowDeleteConfirm(true);
+                                }}
                                 title={t('common.delete')}
                               >
                                 {t('common.delete')}
@@ -547,6 +564,7 @@ export default function ClassManager() {
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         isProcessing={deleteProcessing}
+        requireTyping={[ 'delete', 'borrar', 'DELETE', 'BORRAR' ]}
         onCancel={() => { setShowDeleteConfirm(false); setDeletingClassId(null); }}
         onConfirm={async () => {
           if (!deletingClassId) return;

@@ -190,6 +190,8 @@ export async function onRequestPut(context: { request: Request; env: Env, params
     if (!id) return new Response(JSON.stringify({ error: 'Missing class id' }), { status: 400 });
 
     const body = await request.json();
+    const url = new URL(request.url);
+    const applyTo = (body.applyTo as string) || url.searchParams.get('applyTo') || 'single';
 
   // Build update set dynamically (only allow a restricted set)
   const sets: string[] = [];
@@ -207,7 +209,7 @@ export async function onRequestPut(context: { request: Request; env: Env, params
     if (body.recurrencePattern) { sets.push('recurrence_pattern = ?'); values.push(JSON.stringify(body.recurrencePattern)); }
     if (typeof body.isActive === 'boolean') { sets.push('is_active = ?'); values.push(body.isActive ? 1 : 0); }
 
-    if (sets.length === 0) return new Response(JSON.stringify({ error: 'Nothing to update' }), { status: 400 });
+  if (sets.length === 0) return new Response(JSON.stringify({ error: 'Nothing to update' }), { status: 400 });
 
     // Append updated metadata
     sets.push('updated_at = ?'); values.push(new Date().toISOString());
@@ -215,6 +217,21 @@ export async function onRequestPut(context: { request: Request; env: Env, params
 
     const sql = `UPDATE classes SET ${sets.join(', ')} WHERE id = ? AND created_by = ?`;
     values.push(id, auth.user.id);
+
+    // If updating all occurrences for a recurring parent, apply update to all children
+    if (applyTo === 'all') {
+      // Find the parent_course_id for this class
+      const { results: parentRes } = await env.DB.prepare('SELECT parent_course_id FROM classes WHERE id = ? AND created_by = ?').bind(id, auth.user.id).all<{ parent_course_id?: string }>();
+      const parentId = parentRes?.[0]?.parent_course_id;
+      if (parentId) {
+        // Update all classes with same parent_course_id and created_by
+        const updateSql = `UPDATE classes SET ${sets.join(', ')} WHERE parent_course_id = ? AND created_by = ?`;
+        const updateValues = [...values, parentId, auth.user.id];
+        await env.DB.prepare(updateSql).bind(...updateValues).run();
+        const { results } = await env.DB.prepare('SELECT * FROM classes WHERE parent_course_id = ? AND created_by = ? ORDER BY date, time').bind(parentId, auth.user.id).all<ClassRecord>();
+        return new Response(JSON.stringify(results || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+    }
 
     await env.DB.prepare(sql).bind(...values).run();
 
