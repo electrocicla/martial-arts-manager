@@ -10,9 +10,10 @@ interface StudentDetailsModalProps {
   onClose: () => void;
   onEdit: (student: Student) => void;
   onDelete: (studentId: string) => void;
+  onAvatarUpdate?: () => void;
 }
 
-export default function StudentDetailsModal({ student, onClose, onEdit, onDelete }: StudentDetailsModalProps) {
+export default function StudentDetailsModal({ student, onClose, onEdit, onDelete, onAvatarUpdate }: StudentDetailsModalProps) {
   const { t } = useTranslation();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -77,8 +78,10 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
         // Update local student object with new avatar URL
         student.avatar_url = data.avatarUrl;
         alert(t('students.avatarUploadSuccess') || 'Profile photo uploaded successfully!');
-        // Force re-render by closing and reopening modal or refreshing data
-        window.location.reload();
+        
+        if (onAvatarUpdate) {
+          onAvatarUpdate();
+        }
       } else {
         alert(data.error || t('students.avatarUploadError') || 'Failed to upload profile photo');
       }

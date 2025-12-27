@@ -22,9 +22,9 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function StudentProfile() {
-  const { profile, isLoading, error: loadError } = useStudentDashboardData();
+  const { profile, isLoading, error: loadError, refresh } = useStudentDashboardData();
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, refreshAuth } = useAuth();
   void user; // Acknowledge unused variable
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -127,8 +127,12 @@ export default function StudentProfile() {
         throw new Error(errorData.error || 'Failed to upload avatar');
       }
 
-      // Reload page to show new avatar (simple way)
-      window.location.reload();
+      // Refresh dashboard data (profile)
+      await refresh();
+      
+      // Refresh auth context to update header avatar
+      await refreshAuth();
+      
     } catch (err) {
       setSaveError((err as Error).message);
     } finally {

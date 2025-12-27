@@ -51,6 +51,8 @@
 - [x] **Security**: Ensure students can only access their own data (RLS-like logic in API).
 - [x] **UX**: Add success feedback after registration and redirection to the correct dashboard.
 - [x] **Performance**: Optimize `useStudents` and `useClasses` hooks to avoid over-fetching.
+- [x] **UX**: Implement User Menu with Logout and Profile links.
+- [x] **UX**: Remove `window.location.reload()` from avatar upload flows.
 
 ## 6. Testing & Deployment
 - [x] **Test**: Manual testing of the full registration flow.
@@ -63,3 +65,4 @@
 - **2025-12-27**: Implemented Student Profile page with avatar upload, updated navigation, and verified class enrollment permissions.
 - **2025-12-27**: Fixed linting and typecheck errors, removed `any` types, and prepared for deployment.
 - **2025-12-27**: Committed changes, pushed to repository, and successfully deployed to Cloudflare Pages.
+- **2025-12-27**: Implemented User Menu with Logout, improved avatar upload UX, and verified email validation.

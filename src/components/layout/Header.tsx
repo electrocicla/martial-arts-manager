@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, Menu, User, LogOut, 
-  Settings, Clock, Users, Calendar, Home
+  Settings, Clock, Users, Calendar, Home, ChevronDown
 } from 'lucide-react';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ export default function Header() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
 
@@ -242,20 +243,73 @@ export default function Header() {
           {/* Language Switcher */}
           <LanguageSwitcher />
           
-          {/* Simple User Info - No Dropdown */}
-          <div className="flex items-center gap-2">
-            <div className="avatar">
-              <div className="w-8 rounded-full">
-                {user?.avatar_url ? (
-                  <img src={user.avatar_url} alt={user.name} />
-                ) : (
-                  <div className="bg-base-300 flex items-center justify-center">
-                    <User className="w-4 h-4" />
-                  </div>
-                )}
+          {/* User Dropdown */}
+          <div className="relative">
+            <button 
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-3 hover:bg-gray-700/50 p-2 rounded-lg transition-colors focus:outline-none"
+            >
+              <div className="avatar">
+                <div className="w-8 h-8 rounded-full ring-2 ring-gray-700 overflow-hidden">
+                  {user?.avatar_url ? (
+                    <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="bg-gray-600 flex items-center justify-center w-full h-full">
+                      <User className="w-4 h-4 text-gray-300" />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            <span className="font-bold hidden sm:inline">{user?.name || 'User'}</span>
+              <div className="hidden md:block text-left">
+                <p className="text-sm font-semibold text-gray-200 leading-none">{user?.name || 'User'}</p>
+                <p className="text-xs text-gray-400 capitalize mt-1">{user?.role || 'Member'}</p>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {dropdownOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setDropdownOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-56 bg-gray-800 border border-gray-700 rounded-xl shadow-xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="px-4 py-3 border-b border-gray-700 mb-2">
+                    <p className="text-sm text-white font-medium truncate">{user?.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+                  </div>
+                  
+                  {user?.role === 'student' && (
+                    <button
+                      onClick={() => { navigate('/profile'); setDropdownOpen(false); }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      {t('nav.profile') || 'My Profile'}
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => { navigate('/settings'); setDropdownOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    {t('nav.settings')}
+                  </button>
+
+                  <div className="border-t border-gray-700 my-2 pt-2">
+                    <button
+                      onClick={() => { handleLogout(); setDropdownOpen(false); }}
+                      className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300 flex items-center gap-2 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {t('auth.logout')}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </header>

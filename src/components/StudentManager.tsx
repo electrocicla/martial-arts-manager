@@ -15,6 +15,7 @@ export default function StudentManager() {
     createStudent,
     updateStudent,
     deleteStudent,
+    refresh,
   } = useStudents();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDiscipline, setFilterDiscipline] = useState('all');
@@ -525,6 +526,9 @@ export default function StudentManager() {
           }}
           onDelete={async (studentId) => {
             await deleteStudent(studentId);
+          }}
+          onAvatarUpdate={() => {
+            refresh();
           }}
         />
       )}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import type { Student, Class, Payment } from '../types';
 
@@ -20,47 +20,47 @@ export function useStudentDashboardData() {
     error: null,
   });
 
-  useEffect(() => {
-    async function fetchData() {
-      if (!user?.studentId) return;
+  const fetchData = useCallback(async () => {
+    if (!user?.studentId) return;
 
-      try {
-        setData(prev => ({ ...prev, isLoading: true, error: null }));
+    try {
+      setData(prev => ({ ...prev, isLoading: true, error: null }));
 
-        const [profileRes, classesRes, paymentsRes] = await Promise.all([
-          fetch('/api/student/profile'),
-          fetch('/api/student/classes'),
-          fetch('/api/student/payments')
-        ]);
+      const [profileRes, classesRes, paymentsRes] = await Promise.all([
+        fetch('/api/student/profile'),
+        fetch('/api/student/classes'),
+        fetch('/api/student/payments')
+      ]);
 
-        if (!profileRes.ok || !classesRes.ok || !paymentsRes.ok) {
-          throw new Error('Failed to fetch dashboard data');
-        }
-
-        const [profile, classes, payments] = await Promise.all([
-          profileRes.json(),
-          classesRes.json(),
-          paymentsRes.json()
-        ]);
-
-        setData({
-          profile,
-          classes,
-          payments,
-          isLoading: false,
-          error: null
-        });
-      } catch (err) {
-        setData(prev => ({
-          ...prev,
-          isLoading: false,
-          error: (err as Error).message
-        }));
+      if (!profileRes.ok || !classesRes.ok || !paymentsRes.ok) {
+        throw new Error('Failed to fetch dashboard data');
       }
-    }
 
-    fetchData();
+      const [profile, classes, payments] = await Promise.all([
+        profileRes.json(),
+        classesRes.json(),
+        paymentsRes.json()
+      ]);
+
+      setData({
+        profile,
+        classes,
+        payments,
+        isLoading: false,
+        error: null
+      });
+    } catch (err) {
+      setData(prev => ({
+        ...prev,
+        isLoading: false,
+        error: (err as Error).message
+      }));
+    }
   }, [user?.studentId]);
 
-  return data;
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { ...data, refresh: fetchData };
 }
