@@ -48,6 +48,9 @@ export interface Class {
   description?: string;
   is_recurring: number;
   recurrence_pattern?: string;
+  parent_course_id?: string | null;
+  enrolled_student_ids?: string[];
+  enrolled_count?: number;
   is_active: number;
   created_by?: string;
   updated_by?: string;

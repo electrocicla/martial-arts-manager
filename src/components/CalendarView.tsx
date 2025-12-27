@@ -26,9 +26,9 @@ export default function CalendarView() {
     if (user.role === 'instructor') return (c.instructor === user.name || c.instructor === user.id);
     if (user.role === 'student') {
       // prefer explicit enrolled ids if present, otherwise fall back to enrolled_count > 0 (best-effort)
-      const enrolledIds = (c as any).enrolled_student_ids as string[] | undefined;
+      const enrolledIds = c.enrolled_student_ids;
       if (Array.isArray(enrolledIds)) return enrolledIds.includes(user.id);
-      return (c as any).enrolled_count > 0 ? true : false;
+      return (c.enrolled_count ?? 0) > 0 ? true : false;
     }
     return false;
   });
@@ -36,7 +36,7 @@ export default function CalendarView() {
   // Only show session rows (child occurrences). Parent course rows have parent_course_id === null and is_recurring === 1
   const classesOnDate = selectedDate ? visibleClasses
     .filter((c: Class) => c.date === selectedDate.toISOString().split('T')[0])
-    .filter((c: Class) => (c as any).parent_course_id !== null || c.is_recurring === 0)
+    .filter((c: Class) => (c.parent_course_id !== undefined && c.parent_course_id !== null) || c.is_recurring === 0)
     .sort((a: Class, b: Class) => a.time.localeCompare(b.time))
     : [];
 

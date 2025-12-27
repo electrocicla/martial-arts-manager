@@ -60,12 +60,14 @@ CREATE TABLE students (
   emergency_contact_phone TEXT,
   avatar_url TEXT,
   notes TEXT,
+  instructor_id TEXT,
   is_active INTEGER NOT NULL DEFAULT 1,
   created_by TEXT,
   updated_by TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   deleted_at TEXT,
+  FOREIGN KEY (instructor_id) REFERENCES users(id),
   FOREIGN KEY (created_by) REFERENCES users(id),
   FOREIGN KEY (updated_by) REFERENCES users(id)
 );

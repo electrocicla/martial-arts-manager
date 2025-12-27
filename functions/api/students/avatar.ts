@@ -42,10 +42,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       });
     }
 
-    // Verify the student belongs to the current user
+    // Verify the student belongs to the current user OR is the current user's student profile
     const { results } = await env.DB.prepare(
-      "SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(studentId, auth.user.id).all();
+      "SELECT id FROM students WHERE id = ? AND (created_by = ? OR id = ?) AND deleted_at IS NULL"
+    ).bind(studentId, auth.user.id, auth.user.student_id || '').all();
 
     if (!results || results.length === 0) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
@@ -73,13 +73,20 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     });
 
     // Generate public URL (adjust domain as needed)
+    // Note: In a real app, you'd use a custom domain or worker to serve R2 files
+    // For now we assume a public bucket or worker route
     const avatarUrl = `https://avatars.martial-arts-manager.pages.dev/${fileName}`;
 
     // Update student record with avatar URL
     const now = new Date().toISOString();
     await env.DB.prepare(
-      "UPDATE students SET avatar_url = ?, updated_at = ?, updated_by = ? WHERE id = ? AND created_by = ?"
-    ).bind(avatarUrl, now, auth.user.id, studentId, auth.user.id).run();
+      "UPDATE students SET avatar_url = ?, updated_at = ?, updated_by = ? WHERE id = ?"
+    ).bind(avatarUrl, now, auth.user.id, studentId).run();
+
+    // Also update users table if this student is linked to a user
+    await env.DB.prepare(
+      "UPDATE users SET avatar_url = ?, updated_at = ? WHERE student_id = ?"
+    ).bind(avatarUrl, now, studentId).run();
 
     return new Response(JSON.stringify({ 
       success: true, 

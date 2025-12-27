@@ -1,102 +1,14 @@
 # TODO List - Martial Arts Manager
 
-## 🐛 Bugs Pendientes
-
-### 🔴 CRÍTICO: Error al actualizar datos de estudiante
-**Fecha reportado**: 13 de Octubre, 2025  
-**Ubicación**: StudentEditModal → PUT /api/students  
-**Descripción**: Al intentar actualizar los datos de un estudiante, el sistema arroja un error.
-
-**Errores en consola**:
-```
-[Detalles del error a verificar en la próxima sesión]
-```
-
-**Archivos involucrados**:
-- `src/components/students/StudentEditModal.tsx`
-- `functions/api/students.ts` (onRequestPut)
-- `src/hooks/useStudents.ts` (updateStudent)
-
-**Posibles causas**:
-1. Discrepancia entre tipos de datos enviados y esperados
-2. Campo `joinDate` vs `join_date` (camelCase vs snake_case)
-3. Formato de fecha incorrecto
-4. Validación de campos faltante en el backend
-5. Problema con la conversión de tipos Discipline
-
-**Pasos para reproducir**:
-1. Abrir modal de detalles de un estudiante
-2. Hacer clic en "Editar Estudiante"
-3. Modificar cualquier campo
-4. Hacer clic en "Actualizar Estudiante"
-5. Error aparece
-
-**Prioridad**: 🔴 ALTA  
-**Asignado**: Pendiente  
-**Estado**: 🔍 Investigación requerida
-
----
-
-## ✨ Mejoras Completadas
-
-### ✅ Diseño de tarjetas de estudiantes mejorado
-- [x] Tarjetas más grandes y legibles
-- [x] Avatar de 20x20 con gradiente
-- [x] Botones "Ver" y "Editar" con tamaño adecuado
-- [x] Indicador de estado activo/inactivo
-- [x] Iconos con fondos de color
-- [x] Hover effects y animaciones
-- [x] Grid responsive (1/2/3/4 columnas)
-- [x] Soporte para avatar_url desde R2
-
-### ✅ Sistema de filtrado avanzado (COMPLETADO 2025-01-26)
-- [x] Filtro por disciplina con conteos de estudiantes
-- [x] Filtro completo de cinturones de todas las disciplinas
-- [x] Conteos de estudiantes por cinturón
-- [x] Filtrado dinámico: cinturones se actualizan según disciplina seleccionada
-- [x] Traducciones EN/ES agregadas
-- [x] Optimización de rendimiento con useMemo
-- [x] Interfaz responsive y accesible
-- [x] Investigación completa de sistemas de cinturones:
-  * Karate: White, Yellow, Orange, Green, Blue, Purple, Brown, Black
-  * BJJ: White, Blue, Purple, Brown, Black, Red/White (Coral 7th), Red/White (Coral 8th), Red (9th-10th)
-  * Taekwondo: White, Yellow, Green, Blue, Red, Black
-  * Judo: Similar to BJJ with dans and kyus
-  * Otros estilos documentados en constants.ts
-
-### ✅ Integración de Cloudflare R2
-- [x] Bucket creado: `martial-arts-manager-bucket`
-- [x] Endpoint POST /api/students/avatar
-- [x] Endpoint DELETE /api/students/avatar
-- [x] Validaciones de tipo y tamaño
-- [x] Columna avatar_url en tabla students
-
-### ✅ CRUD Completo de Estudiantes
-- [x] Create (POST)
-- [x] Read (GET)
-- [x] Update (PUT) - ⚠️ Con bug
-- [x] Delete (DELETE) - Soft delete
-
-### ✅ Modal de Detalles
-- [x] Diseño profesional con Tailwind
-- [x] Secciones organizadas
-- [x] Botones de acción (Editar/Eliminar)
-- [x] Confirmación de eliminación
-- [x] Upload de avatar
-
----
-
-## 📋 Tareas Pendientes
-
-### 🔧 Correcciones Necesarias
-
-#### 1. Fix: Error al actualizar estudiante
-- [ ] Investigar error específico en consola
-- [ ] Verificar tipos de datos en StudentEditModal
-- [ ] Revisar transformación de datos antes de enviar
-- [ ] Comprobar validación en backend
-- [ ] Agregar logging detallado en onRequestPut
-- [ ] Probar con diferentes campos modificados
+### ✅ Fix: Error al actualizar datos de estudiante (COMPLETADO 2025-12-27)
+- [x] Investigar error específico en consola
+- [x] Verificar tipos de datos en StudentEditModal
+- [x] Revisar transformación de datos antes de enviar
+- [x] Comprobar validación en backend
+- [x] Agregar logging detallado en onRequestPut
+- [x] Probar con diferentes campos modificados
+- [x] Corregido: Discrepancia entre camelCase y snake_case en el payload del servicio.
+- [x] Corregido: Permisos de instructor para editar estudiantes vinculados.
 
 #### 2. Mejoras de UX para Upload de Avatar
 - [ ] Eliminar `window.location.reload()` 

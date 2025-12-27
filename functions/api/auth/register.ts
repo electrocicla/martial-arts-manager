@@ -14,6 +14,7 @@ interface RegisterRequest {
   password: string;
   name: string;
   role?: 'admin' | 'instructor' | 'student';
+  instructorId?: string;
 }
 
 interface RegisterResponse {
@@ -23,6 +24,7 @@ interface RegisterResponse {
     email: string;
     name: string;
     role: string;
+    studentId?: string;
   };
   accessToken: string;
 }
@@ -34,12 +36,20 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
   try {
     // Parse request body
     const body = await request.json() as RegisterRequest;
-    const { email, password, name, role = 'student' } = body;
+    const { email, password, name, role = 'student', instructorId } = body;
 
     // Validate input
     if (!email || !password || !name) {
       return new Response(
         JSON.stringify({ error: 'Email, password, and name are required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate instructor for students
+    if (role === 'student' && !instructorId) {
+      return new Response(
+        JSON.stringify({ error: 'Please select an instructor' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -100,6 +110,41 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       role,
     });
 
+    let studentId: string | undefined;
+
+    // If registering as a student, create student record and link to instructor
+    if (role === 'student' && instructorId) {
+      studentId = generateUserId();
+      const now = new Date().toISOString();
+      
+      // Create student record
+      await env.DB.prepare(`
+        INSERT INTO students (
+          id, name, email, belt, discipline, join_date, 
+          is_active, created_by, instructor_id, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
+      `).bind(
+        studentId, 
+        name.trim(), 
+        email.toLowerCase(), 
+        'White', 
+        'Brazilian Jiu-Jitsu', 
+        now,
+        userId, // Created by themselves
+        instructorId, 
+        now, 
+        now
+      ).run();
+
+      // Link student to user
+      await env.DB.prepare('UPDATE users SET student_id = ? WHERE id = ?')
+        .bind(studentId, userId)
+        .run();
+      
+      // Update local user object for response (if needed, though user object here is likely just the DB result)
+      // We'll include it in the response below
+    }
+
     // Create JWT tokens
     const { accessToken, refreshToken } = await createTokens(
       user.id,
@@ -139,6 +184,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         email: user.email,
         name: user.name,
         role: user.role,
+        studentId: studentId
       },
       accessToken,
     };

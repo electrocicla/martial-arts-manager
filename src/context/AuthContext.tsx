@@ -13,6 +13,7 @@ interface User {
   name: string;
   role: 'admin' | 'instructor' | 'student';
   avatar_url?: string;
+  studentId?: string;
 }
 
 interface LoginData {
@@ -25,6 +26,7 @@ interface RegisterData {
   password: string;
   name: string;
   role?: 'admin' | 'instructor' | 'student';
+  instructorId?: string;
 }
 
 interface AuthContextType {

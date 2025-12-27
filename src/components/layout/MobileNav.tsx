@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, Users, Calendar, DollarSign, BookOpen, 
-  Award, Clock, BarChart3, Settings, Plus, X
+  Award, Clock, BarChart3, Settings, Plus, X, User
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
@@ -15,8 +15,16 @@ const navigationItems = [
     nameKey: 'nav.dashboard',
     href: '/dashboard',
     icon: Home,
-    roles: ['admin', 'instructor'],
+    roles: ['admin', 'instructor', 'student'],
     color: 'text-blue-500'
+  },
+  {
+    id: 'profile',
+    nameKey: 'nav.profile',
+    href: '/profile',
+    icon: User,
+    roles: ['student'],
+    color: 'text-pink-500'
   },
   {
     id: 'students',

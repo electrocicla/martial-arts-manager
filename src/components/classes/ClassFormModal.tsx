@@ -99,7 +99,7 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
     });
     // If editing an existing recurring course, default applyTo to 'single'
     setApplyTo((initialApplyTo as 'single' | 'all') || 'single');
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, initialApplyTo]);
 
   // When metadata loads, ensure form has sensible defaults if not in edit mode
   useEffect(() => {

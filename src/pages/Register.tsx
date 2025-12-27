@@ -6,6 +6,7 @@ import { Eye, EyeOff, UserPlus, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
+import { InstructorSelect } from '../components/ui/InstructorSelect';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
 import { registerSchema, type RegisterFormData } from '../lib/validation';
@@ -27,10 +28,13 @@ export default function Register() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
+
+  const selectedRole = watch('role');
 
   const onSubmit = async (data: RegisterFormData) => {
     clearError();
@@ -98,7 +102,16 @@ export default function Register() {
                 disabled={isLoading}
               />
             </div>
-
+            {selectedRole === 'student' && (
+              <div>
+                <InstructorSelect
+                  {...register('instructorId')}
+                  label={t('registerPage.selectInstructor')}
+                  error={errors.instructorId?.message}
+                  disabled={isLoading}
+                />
+              </div>
+            )}
             <div>
               <Input
                 {...register('password')}

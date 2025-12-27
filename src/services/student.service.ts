@@ -60,20 +60,20 @@ export class StudentService {
   }
 
   async update(id: string, data: Partial<StudentFormData>): Promise<ApiResponse<Student>> {
-    // Transform camelCase to snake_case for database
-    const payload: Record<string, string | number | null> = {};
+    // Transform to camelCase for backend (which expects camelCase in body)
+    const payload: Record<string, string | number | null> = { id };
 
     if (data.name !== undefined) payload.name = data.name;
     if (data.email !== undefined) payload.email = data.email;
     if (data.phone !== undefined) payload.phone = data.phone;
     if (data.belt !== undefined) payload.belt = data.belt;
     if (data.discipline !== undefined) payload.discipline = data.discipline;
-    if (data.dateOfBirth !== undefined) payload.date_of_birth = data.dateOfBirth;
-    if (data.emergencyContactName !== undefined) payload.emergency_contact_name = data.emergencyContactName;
-    if (data.emergencyContactPhone !== undefined) payload.emergency_contact_phone = data.emergencyContactPhone;
+    if (data.dateOfBirth !== undefined) payload.dateOfBirth = data.dateOfBirth;
+    if (data.emergencyContactName !== undefined) payload.emergencyContactName = data.emergencyContactName;
+    if (data.emergencyContactPhone !== undefined) payload.emergencyContactPhone = data.emergencyContactPhone;
     if (data.notes !== undefined) payload.notes = data.notes;
     
-    const response = await apiClient.put<{ message: string; student: Student }>(`${this.endpoint}/${id}`, payload);
+    const response = await apiClient.put<{ success: boolean; student: Student }>(`${this.endpoint}/${id}`, payload);
     
     // Extract student from wrapper response
     if (response.success && response.data) {

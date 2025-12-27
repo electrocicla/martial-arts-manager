@@ -15,12 +15,21 @@ export const registerSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string(),
   role: z.enum(['admin', 'instructor', 'student']),
+  instructorId: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 }).refine((data) => data.role, {
   message: "Please select a role",
   path: ["role"],
+}).refine((data) => {
+  if (data.role === 'student' && !data.instructorId) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Please select an instructor",
+  path: ["instructorId"],
 });
 
 // =====================================

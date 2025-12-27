@@ -33,10 +33,19 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       });
     }
 
-    // Get only students created by this user
-    const { results } = await env.DB.prepare(
-      "SELECT * FROM students WHERE deleted_at IS NULL AND created_by = ? ORDER BY created_at DESC"
-    ).bind(auth.user.id).all<StudentRecord>();
+    // Get students based on role
+    let query = "SELECT * FROM students WHERE deleted_at IS NULL";
+    const params: string[] = [];
+
+    // If not admin, filter by creator or instructor
+    if (auth.user.role !== 'admin') {
+      query += " AND (created_by = ? OR instructor_id = ?)";
+      params.push(auth.user.id, auth.user.id);
+    }
+
+    query += " ORDER BY created_at DESC";
+
+    const { results } = await env.DB.prepare(query).bind(...params).all<StudentRecord>();
     
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
@@ -111,7 +120,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       phone?: string;
       belt: string;
       discipline: string;
-      joinDate: string;
+      joinDate?: string;
       dateOfBirth?: string;
       emergencyContactName?: string;
       emergencyContactPhone?: string;
@@ -120,12 +129,18 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     const { id, name, email, phone, belt, discipline, joinDate, dateOfBirth, emergencyContactName, emergencyContactPhone, notes } = body;
 
-    // Verify the student belongs to the current user
-    const { results } = await env.DB.prepare(
-      "SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(id, auth.user.id).all();
+    // Verify the student belongs to the current user or is bonded to them
+    let checkQuery = "SELECT id, join_date FROM students WHERE id = ? AND deleted_at IS NULL";
+    const checkParams: string[] = [id];
 
-    if (!results || results.length === 0) {
+    if (auth.user.role !== 'admin') {
+      checkQuery += " AND (created_by = ? OR instructor_id = ?)";
+      checkParams.push(auth.user.id, auth.user.id);
+    }
+
+    const student = await env.DB.prepare(checkQuery).bind(...checkParams).first<{ id: string; join_date: string }>();
+
+    if (!student) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
         status: 404,
         headers: { 'Content-Type': 'application/json' }
@@ -133,6 +148,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     }
 
     const now = new Date().toISOString();
+    const finalJoinDate = joinDate || student.join_date;
 
     // Update with updated_by set to current user
     await env.DB.prepare(`
@@ -140,14 +156,17 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       SET name = ?, email = ?, phone = ?, belt = ?, discipline = ?, 
           join_date = ?, date_of_birth = ?, emergency_contact_name = ?, 
           emergency_contact_phone = ?, notes = ?, updated_by = ?, updated_at = ?
-      WHERE id = ? AND created_by = ?
+      WHERE id = ?
     `).bind(
-      name, email, phone || null, belt, discipline, joinDate,
+      name, email, phone || null, belt, discipline, finalJoinDate,
       dateOfBirth || null, emergencyContactName || null, emergencyContactPhone || null,
-      notes || null, auth.user.id, now, id, auth.user.id
+      notes || null, auth.user.id, now, id
     ).run();
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    // Fetch the updated student to return it
+    const updatedStudent = await env.DB.prepare("SELECT * FROM students WHERE id = ?").bind(id).first();
+
+    return new Response(JSON.stringify({ success: true, student: updatedStudent }), { status: 200 });
   } catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
   }

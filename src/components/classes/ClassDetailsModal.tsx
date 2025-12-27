@@ -88,7 +88,7 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
         recurrence = typeof cls.recurrence_pattern === 'string' ? cls.recurrence_pattern : null;
       }
     }
-  } catch (err) {
+  } catch {
     recurrence = typeof cls.recurrence_pattern === 'string' ? cls.recurrence_pattern : null;
   }
 

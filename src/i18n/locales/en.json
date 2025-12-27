@@ -1,6 +1,7 @@
 {
   "nav": {
     "dashboard": "Dashboard",
+    "profile": "My Profile",
     "students": "Students",
     "classes": "Classes",
     "payments": "Payments",
@@ -37,6 +38,7 @@
     "emailPlaceholder": "Enter your email",
     "role": "Role",
     "rolePlaceholder": "Select your role",
+    "selectInstructor": "Select your Instructor",
     "password": "Password",
     "passwordPlaceholder": "Create a password",
     "confirmPassword": "Confirm Password",
@@ -412,6 +414,7 @@
   },
   "common": {
     "loading": "Loading...",
+    "errorLoadingInstructors": "Error loading instructors",
     "error": "Error",
     "success": "Success",
     "cancel": "Cancel",

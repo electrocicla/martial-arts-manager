@@ -47,10 +47,10 @@ export async function onRequestPost({ request, env, params }: { request: Request
       });
     }
 
-    // Verify student exists and belongs to user
+    // Verify student exists and belongs to user (created by OR assigned to)
     const studentCheck = await env.DB.prepare(
-      "SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(studentId, auth.user.id).first();
+      "SELECT id FROM students WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(studentId, auth.user.id, auth.user.id).first();
 
     if (!studentCheck) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 

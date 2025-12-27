@@ -4,20 +4,27 @@ import { useGreeting } from '../hooks/useGreeting';
 import { useDashboardStats } from '../hooks/useDashboardStats';
 import { useQuickActions } from '../hooks/useQuickActions';
 import { useRecentActivity } from '../hooks/useRecentActivity';
+import { useAuth } from '../context/AuthContext';
 import DashboardHeader from './dashboard/DashboardHeader';
 import DashboardStats from './dashboard/DashboardStats';
 import DashboardQuickActions from './dashboard/DashboardQuickActions';
 import DashboardSchedule from './dashboard/DashboardSchedule';
 import DashboardActivity from './dashboard/DashboardActivity';
 import DashboardMetrics from './dashboard/DashboardMetrics';
+import StudentDashboard from './dashboard/StudentDashboard';
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const { stats: dashboardStats, todayClasses, recentPayments, isLoading, error } = useDashboardData();
 
   const { greeting } = useGreeting();
   const stats = useDashboardStats(dashboardStats, isLoading);
   const quickActions = useQuickActions();
   const recentActivity = useRecentActivity(recentPayments, todayClasses);
+
+  if (user?.role === 'student') {
+    return <StudentDashboard />;
+  }
 
   // Show error state if data fetching failed
   if (error) {
