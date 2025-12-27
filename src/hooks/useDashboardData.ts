@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { studentService, classService, paymentService } from '../services';
 import type { Student, Payment, Class } from '../types/index';
 
@@ -21,6 +22,7 @@ interface DashboardData {
 }
 
 export function useDashboardData(): DashboardData {
+  const { user } = useAuth();
   const [data, setData] = useState<DashboardData>({
     stats: {
       totalStudents: 0,
@@ -39,6 +41,11 @@ export function useDashboardData(): DashboardData {
 
   useEffect(() => {
     async function fetchDashboardData() {
+      if (user?.role === 'student') {
+        setData(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+
       try {
         setData(prev => ({ ...prev, isLoading: true, error: null }));
 

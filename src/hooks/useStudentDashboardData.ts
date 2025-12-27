@@ -21,15 +21,33 @@ export function useStudentDashboardData() {
   });
 
   const fetchData = useCallback(async () => {
-    if (!user?.studentId) return;
+    if (!user) {
+      setData(prev => ({ ...prev, isLoading: false, error: 'Not authenticated' }));
+      return;
+    }
+
+    if (!user.student_id) {
+      setData(prev => ({ ...prev, isLoading: false, error: 'Student ID not found' }));
+      return;
+    }
 
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
 
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
       const [profileRes, classesRes, paymentsRes] = await Promise.all([
-        fetch('/api/student/profile'),
-        fetch('/api/student/classes'),
-        fetch('/api/student/payments')
+        fetch('/api/student/profile', { headers }),
+        fetch('/api/student/classes', { headers }),
+        fetch('/api/student/payments', { headers })
       ]);
 
       if (!profileRes.ok || !classesRes.ok || !paymentsRes.ok) {
@@ -56,7 +74,7 @@ export function useStudentDashboardData() {
         error: (err as Error).message
       }));
     }
-  }, [user?.studentId]);
+  }, [user]);
 
   useEffect(() => {
     fetchData();

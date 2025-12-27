@@ -13,7 +13,7 @@ interface User {
   name: string;
   role: 'admin' | 'instructor' | 'student';
   avatar_url?: string;
-  studentId?: string;
+  student_id?: string;
 }
 
 interface LoginData {

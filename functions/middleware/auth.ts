@@ -13,7 +13,7 @@ import { Env } from '../types/index';
 export async function authenticateUser(
   request: Request,
   env: Env
-): Promise<{ authenticated: true; user: { id: string; email: string; name: string; role: string } } | { authenticated: false; error: string }> {
+): Promise<{ authenticated: true; user: { id: string; email: string; name: string; role: string; student_id?: string } } | { authenticated: false; error: string }> {
   try {
     // Get token from Authorization header
     const authHeader = request.headers.get('Authorization');
@@ -57,6 +57,7 @@ export async function authenticateUser(
         email: user.email,
         name: user.name,
         role: user.role,
+        student_id: user.student_id,
       },
     };
   } catch (error) {

@@ -11,11 +11,30 @@ export default function StudentDashboard() {
   const { t } = useTranslation();
 
   if (isLoading) {
-    return <div className="p-8 text-center">{t('common.loading')}</div>;
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+          <p className="text-white font-medium">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-8 text-center text-red-500">{error}</div>;
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="card bg-red-900/20 border border-red-500/30 max-w-md">
+          <div className="card-body text-center">
+            <h2 className="card-title text-error justify-center">{t('common.error')}</h2>
+            <p className="text-error/80">{error}</p>
+            <button onClick={() => window.location.reload()} className="btn btn-error mt-4">
+              {t('common.retry') || 'Retry'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const nextClass = classes.find(c => new Date(c.date + ' ' + c.time) > new Date());
