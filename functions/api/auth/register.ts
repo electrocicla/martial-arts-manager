@@ -88,13 +88,27 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       );
     }
 
-    // Check if email already exists
+    // Check if email already exists in users
     const emailAlreadyExists = await emailExists(env.DB, email.toLowerCase());
     if (emailAlreadyExists) {
       return new Response(
         JSON.stringify({ error: 'An account with this email already exists' }),
         { status: 409, headers: { 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Check if email already exists in students (if registering as student)
+    if (role === 'student') {
+      const studentExists = await env.DB.prepare('SELECT id FROM students WHERE email = ?')
+        .bind(email.toLowerCase())
+        .first();
+      
+      if (studentExists) {
+        return new Response(
+          JSON.stringify({ error: 'A student profile with this email already exists. Please ask your instructor to invite you.' }),
+          { status: 409, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Hash password
@@ -218,7 +232,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     }
 
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: (error as Error).message }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
