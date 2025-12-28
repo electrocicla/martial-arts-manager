@@ -13,7 +13,7 @@ import { Env } from '../types/index';
 export async function authenticateUser(
   request: Request,
   env: Env
-): Promise<{ authenticated: true; user: { id: string; email: string; name: string; role: string; student_id?: string } } | { authenticated: false; error: string }> {
+): Promise<{ authenticated: true; user: { id: string; email: string; name: string; role: string; student_id?: string; avatar_url?: string } } | { authenticated: false; error: string }> {
   try {
     // Get token from Authorization header
     const authHeader = request.headers.get('Authorization');
@@ -49,6 +49,24 @@ export async function authenticateUser(
       return { authenticated: false, error: 'User not found or inactive' };
     }
 
+    // Auto-link student profile if user is a student without student_id
+    let studentId = user.student_id ?? undefined;
+    if (user.role === 'student' && !studentId) {
+      const studentMatch = await env.DB.prepare(
+        'SELECT id FROM students WHERE email = ? AND deleted_at IS NULL'
+      )
+        .bind(user.email)
+        .first<{ id: string }>();
+
+      if (studentMatch?.id) {
+        studentId = studentMatch.id;
+        const now = new Date().toISOString();
+        await env.DB.prepare('UPDATE users SET student_id = ?, updated_at = ? WHERE id = ?')
+          .bind(studentId, now, user.id)
+          .run();
+      }
+    }
+
     console.log('[Backend Auth] Authentication successful for user:', user.email);
     return {
       authenticated: true,
@@ -57,7 +75,8 @@ export async function authenticateUser(
         email: user.email,
         name: user.name,
         role: user.role,
-        student_id: user.student_id,
+        student_id: studentId,
+        avatar_url: user.avatar_url,
       },
     };
   } catch (error) {

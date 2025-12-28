@@ -12,6 +12,8 @@ interface UserResponse {
     email: string;
     name: string;
     role: string;
+    student_id?: string;
+    avatar_url?: string;
   };
 }
 

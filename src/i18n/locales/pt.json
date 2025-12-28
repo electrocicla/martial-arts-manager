@@ -1,6 +1,7 @@
 {
   "nav": {
     "dashboard": "Dashboard",
+    "profile": "Meu Perfil",
     "students": "Students",
     "classes": "Classes",
     "payments": "Payments",
@@ -10,6 +11,34 @@
     "beltTesting": "Belt Testing",
     "calendar": "Calendar View",
     "markAttendance": "Mark Attendance"
+  },
+  "belts": {
+    "white": "Branca",
+    "blue": "Azul",
+    "purple": "Roxa",
+    "brown": "Marrom",
+    "black": "Preta"
+  },
+  "profile": {
+    "title": "Meu Perfil",
+    "subtitle": "Gerencie suas informações pessoais",
+    "martialArtsInfo": "Informações Marciais",
+    "beltRank": "Faixa",
+    "discipline": "Modalidade",
+    "status": "Status",
+    "active": "Ativo",
+    "personalDetails": "Dados Pessoais",
+    "updatedSuccessfully": "Perfil atualizado com sucesso!",
+    "fullName": "Nome completo",
+    "phone": "Telefone",
+    "phonePlaceholder": "(555) 123-4567",
+    "dob": "Data de nascimento",
+    "emergencyContact": "Contato de emergência",
+    "emergencyName": "Nome do contato",
+    "emergencyPhone": "Telefone do contato",
+    "beltSelfReport": "Minha faixa (declarada)",
+    "selectBelt": "Selecione sua faixa",
+    "beltNote": "Seu instrutor pode verificar e ajustar seu grau se necessário."
   },
   "auth": {
     "login": "Login",
@@ -411,10 +440,12 @@
     "addFailed": "Failed to add class"
   },
   "common": {
-    "loading": "Loading...",
-    "error": "Error",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "retry": "Tentar novamente",
     "success": "Success",
     "cancel": "Cancel",
+    "saveChanges": "Salvar alterações",
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",

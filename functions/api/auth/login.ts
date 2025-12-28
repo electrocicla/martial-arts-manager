@@ -21,6 +21,8 @@ interface LoginResponse {
     email: string;
     name: string;
     role: string;
+    student_id?: string;
+    avatar_url?: string;
   };
   accessToken: string;
 }
@@ -77,6 +79,24 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       );
     }
 
+    // Auto-link student_id if missing (legacy users)
+    let studentId = user.student_id;
+    if (user.role === 'student' && !studentId) {
+      const studentMatch = await env.DB.prepare(
+        'SELECT id FROM students WHERE email = ? AND deleted_at IS NULL'
+      )
+        .bind(user.email)
+        .first<{ id: string }>();
+
+      if (studentMatch?.id) {
+        studentId = studentMatch.id;
+        const now = new Date().toISOString();
+        await env.DB.prepare('UPDATE users SET student_id = ?, updated_at = ? WHERE id = ?')
+          .bind(studentId, now, user.id)
+          .run();
+      }
+    }
+
     // Create JWT tokens
     const { accessToken, refreshToken } = await createTokens(
       user.id,
@@ -120,6 +140,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         email: user.email,
         name: user.name,
         role: user.role,
+        student_id: studentId || undefined,
+        avatar_url: user.avatar_url || undefined,
       },
       accessToken,
     };

@@ -1,6 +1,7 @@
 {
   "nav": {
     "dashboard": "Panel de Control",
+    "profile": "Mi Perfil",
     "students": "Estudiantes",
   "classes": "Cursos",
     "payments": "Pagos",
@@ -10,6 +11,34 @@
     "beltTesting": "Exámenes de Cinturón",
   "calendar": "Calendario de Clases",
     "markAttendance": "Marcar Asistencia"
+  },
+  "belts": {
+    "white": "Blanco",
+    "blue": "Azul",
+    "purple": "Morado",
+    "brown": "Marrón",
+    "black": "Negro"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "subtitle": "Administra tu información personal",
+    "martialArtsInfo": "Información Marcial",
+    "beltRank": "Cinturón",
+    "discipline": "Disciplina",
+    "status": "Estado",
+    "active": "Activo",
+    "personalDetails": "Datos Personales",
+    "updatedSuccessfully": "¡Perfil actualizado correctamente!",
+    "fullName": "Nombre completo",
+    "phone": "Teléfono",
+    "phonePlaceholder": "(555) 123-4567",
+    "dob": "Fecha de nacimiento",
+    "emergencyContact": "Contacto de emergencia",
+    "emergencyName": "Nombre del contacto",
+    "emergencyPhone": "Teléfono del contacto",
+    "beltSelfReport": "Mi cinturón (declarado)",
+    "selectBelt": "Selecciona tu cinturón",
+    "beltNote": "Tu instructor puede verificar y ajustar tu grado si es necesario."
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -482,8 +511,10 @@
   "common": {
     "loading": "Cargando...",
     "error": "Error",
+    "retry": "Reintentar",
     "success": "Éxito",
     "cancel": "Cancelar",
+    "saveChanges": "Guardar cambios",
     "save": "Guardar",
     "delete": "Eliminar",
     "edit": "Editar",

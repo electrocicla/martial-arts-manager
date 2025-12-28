@@ -13,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().optional(),
+  belt: z.string().optional(),
   date_of_birth: z.string().optional(),
   emergency_contact_name: z.string().optional(),
   emergency_contact_phone: z.string().optional(),
@@ -46,6 +47,7 @@ export default function StudentProfile() {
       reset({
         name: profile.name,
         phone: profile.phone || '',
+        belt: profile.belt || '',
         date_of_birth: profile.date_of_birth || '',
         emergency_contact_name: profile.emergency_contact_name || '',
         emergency_contact_phone: profile.emergency_contact_phone || '',
@@ -74,6 +76,9 @@ export default function StudentProfile() {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to update profile');
       }
+
+      await refresh();
+      await refreshAuth();
 
       setSaveSuccess(true);
       // Hide success message after 3 seconds
@@ -155,8 +160,8 @@ export default function StudentProfile() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">My Profile</h1>
-            <p className="text-gray-400">Manage your personal information</p>
+            <h1 className="text-2xl font-bold text-white">{t('profile.title')}</h1>
+            <p className="text-gray-400">{t('profile.subtitle')}</p>
           </div>
           <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
             <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xl overflow-hidden border-2 border-transparent group-hover:border-red-400 transition-all">
@@ -189,23 +194,23 @@ export default function StudentProfile() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-red-500" />
-              <h2 className="text-lg font-semibold text-white">Martial Arts Info</h2>
+                  <h2 className="text-lg font-semibold text-white">{t('profile.martialArtsInfo')}</h2>
             </div>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-3 bg-black/40 rounded-lg border border-gray-800">
-              <p className="text-xs text-gray-500 uppercase">Belt Rank</p>
+                  <p className="text-xs text-gray-500 uppercase">{t('profile.beltRank')}</p>
               <p className="text-lg font-bold text-white">{profile?.belt}</p>
             </div>
             <div className="p-3 bg-black/40 rounded-lg border border-gray-800">
-              <p className="text-xs text-gray-500 uppercase">Discipline</p>
+                  <p className="text-xs text-gray-500 uppercase">{t('profile.discipline')}</p>
               <p className="text-lg font-bold text-white">{profile?.discipline}</p>
             </div>
             <div className="p-3 bg-black/40 rounded-lg border border-gray-800">
-              <p className="text-xs text-gray-500 uppercase">Status</p>
+                  <p className="text-xs text-gray-500 uppercase">{t('profile.status')}</p>
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-green-500" />
-                <p className="text-lg font-bold text-white">Active</p>
+                    <p className="text-lg font-bold text-white">{t('profile.active')}</p>
               </div>
             </div>
           </CardContent>
@@ -216,7 +221,7 @@ export default function StudentProfile() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <User className="w-5 h-5 text-red-500" />
-              <h2 className="text-lg font-semibold text-white">Personal Details</h2>
+              <h2 className="text-lg font-semibold text-white">{t('profile.personalDetails')}</h2>
             </div>
           </CardHeader>
           <CardContent>
@@ -231,48 +236,65 @@ export default function StudentProfile() {
               {saveSuccess && (
                 <div className="flex items-center gap-2 p-3 bg-green-900/20 border border-green-800 rounded-lg">
                   <Save className="w-4 h-4 text-green-500" />
-                  <p className="text-sm text-green-400">Profile updated successfully!</p>
+                  <p className="text-sm text-green-400">{t('profile.updatedSuccessfully')}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
                   {...register('name')}
-                  label="Full Name"
+                  label={t('profile.fullName')}
                   error={errors.name?.message}
                   disabled={isSaving}
                 />
                 
                 <Input
                   {...register('phone')}
-                  label="Phone Number"
-                  placeholder="(555) 123-4567"
+                  label={t('profile.phone')}
+                  placeholder={t('profile.phonePlaceholder')}
                   error={errors.phone?.message}
                   disabled={isSaving}
                 />
 
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-200">{t('profile.beltSelfReport')}</label>
+                  <select
+                    {...register('belt')}
+                    disabled={isSaving}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="">{t('profile.selectBelt')}</option>
+                    <option value="White">{t('belts.white')}</option>
+                    <option value="Blue">{t('belts.blue')}</option>
+                    <option value="Purple">{t('belts.purple')}</option>
+                    <option value="Brown">{t('belts.brown')}</option>
+                    <option value="Black">{t('belts.black')}</option>
+                  </select>
+                  <p className="text-xs text-gray-500">{t('profile.beltNote')}</p>
+                </div>
+
                 <Input
                   {...register('date_of_birth')}
                   type="date"
-                  label="Date of Birth"
+                  label={t('profile.dob')}
                   error={errors.date_of_birth?.message}
                   disabled={isSaving}
                 />
               </div>
 
               <div className="border-t border-gray-800 pt-6">
-                <h3 className="text-sm font-medium text-gray-400 mb-4 uppercase tracking-wider">Emergency Contact</h3>
+                <h3 className="text-sm font-medium text-gray-400 mb-4 uppercase tracking-wider">{t('profile.emergencyContact')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
                     {...register('emergency_contact_name')}
-                    label="Contact Name"
+                    label={t('profile.emergencyName')}
                     error={errors.emergency_contact_name?.message}
                     disabled={isSaving}
                   />
                   
                   <Input
                     {...register('emergency_contact_phone')}
-                    label="Contact Phone"
+                    label={t('profile.emergencyPhone')}
                     error={errors.emergency_contact_phone?.message}
                     disabled={isSaving}
                   />
@@ -282,7 +304,7 @@ export default function StudentProfile() {
               <div className="flex justify-end pt-4">
                 <Button type="submit" isLoading={isSaving} className="w-full sm:w-auto">
                   <Save className="w-4 h-4 mr-2" />
-                  Save Changes
+                  {t('common.saveChanges')}
                 </Button>
               </div>
             </form>

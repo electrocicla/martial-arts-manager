@@ -22,6 +22,28 @@ interface StudentRecord {
   deleted_at?: string;
 }
 
+function normalizeAvatarUrl(avatarUrl: unknown): string | undefined {
+  if (typeof avatarUrl !== 'string' || avatarUrl.trim().length === 0) {
+    return undefined;
+  }
+  if (avatarUrl.startsWith('/api/avatars')) {
+    return avatarUrl;
+  }
+  if (avatarUrl.startsWith('avatars/')) {
+    return `/api/avatars?key=${encodeURIComponent(avatarUrl)}`;
+  }
+  try {
+    const parsed = new URL(avatarUrl);
+    const key = parsed.pathname.startsWith('/') ? parsed.pathname.slice(1) : parsed.pathname;
+    if (key.startsWith('avatars/')) {
+      return `/api/avatars?key=${encodeURIComponent(key)}`;
+    }
+  } catch {
+    // ignore
+  }
+  return avatarUrl;
+}
+
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
   try {
     // Authenticate user
@@ -46,8 +68,13 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     query += " ORDER BY created_at DESC";
 
     const { results } = await env.DB.prepare(query).bind(...params).all<StudentRecord>();
-    
-    return new Response(JSON.stringify(results), {
+
+    const normalized = (results || []).map((student) => ({
+      ...student,
+      avatar_url: normalizeAvatarUrl(student.avatar_url),
+    }));
+
+    return new Response(JSON.stringify(normalized), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
@@ -115,19 +142,28 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     const body = await request.json() as {
       id: string;
-      name: string;
-      email: string;
+      name?: string;
+      email?: string;
       phone?: string;
-      belt: string;
-      discipline: string;
+      belt?: string;
+      discipline?: string;
       joinDate?: string;
       dateOfBirth?: string;
       emergencyContactName?: string;
       emergencyContactPhone?: string;
       notes?: string;
+      is_active?: number;
+      avatar_url?: string;
     };
 
-    const { id, name, email, phone, belt, discipline, joinDate, dateOfBirth, emergencyContactName, emergencyContactPhone, notes } = body;
+    const { id, joinDate } = body;
+
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'Student id is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Verify the student belongs to the current user or is bonded to them
     let checkQuery = "SELECT id, join_date FROM students WHERE id = ? AND deleted_at IS NULL";
@@ -150,23 +186,54 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     const now = new Date().toISOString();
     const finalJoinDate = joinDate || student.join_date;
 
-    // Update with updated_by set to current user
-    await env.DB.prepare(`
-      UPDATE students 
-      SET name = ?, email = ?, phone = ?, belt = ?, discipline = ?, 
-          join_date = ?, date_of_birth = ?, emergency_contact_name = ?, 
-          emergency_contact_phone = ?, notes = ?, updated_by = ?, updated_at = ?
-      WHERE id = ?
-    `).bind(
-      name, email, phone || null, belt, discipline, finalJoinDate,
-      dateOfBirth || null, emergencyContactName || null, emergencyContactPhone || null,
-      notes || null, auth.user.id, now, id
-    ).run();
+    // Build dynamic update (prevents binding undefined)
+    const updates: string[] = [];
+    const values: (string | number | null)[] = [];
+
+    if (body.name !== undefined) { updates.push('name = ?'); values.push(body.name); }
+    if (body.email !== undefined) { updates.push('email = ?'); values.push(body.email); }
+    if (body.phone !== undefined) { updates.push('phone = ?'); values.push(body.phone || null); }
+    if (body.belt !== undefined) { updates.push('belt = ?'); values.push(body.belt); }
+    if (body.discipline !== undefined) { updates.push('discipline = ?'); values.push(body.discipline); }
+    if (finalJoinDate !== undefined) { updates.push('join_date = ?'); values.push(finalJoinDate); }
+    if (body.dateOfBirth !== undefined) { updates.push('date_of_birth = ?'); values.push(body.dateOfBirth || null); }
+    if (body.emergencyContactName !== undefined) { updates.push('emergency_contact_name = ?'); values.push(body.emergencyContactName || null); }
+    if (body.emergencyContactPhone !== undefined) { updates.push('emergency_contact_phone = ?'); values.push(body.emergencyContactPhone || null); }
+    if (body.notes !== undefined) { updates.push('notes = ?'); values.push(body.notes || null); }
+    if (body.is_active !== undefined) { updates.push('is_active = ?'); values.push(body.is_active); }
+    if (body.avatar_url !== undefined) { updates.push('avatar_url = ?'); values.push(body.avatar_url || null); }
+
+    if (updates.length === 0) {
+      return new Response(JSON.stringify({ error: 'No fields to update' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    updates.push('updated_by = ?');
+    values.push(auth.user.id);
+    updates.push('updated_at = ?');
+    values.push(now);
+
+    await env.DB.prepare(
+      `UPDATE students SET ${updates.join(', ')} WHERE id = ?`
+    )
+      .bind(...values, id)
+      .run();
 
     // Fetch the updated student to return it
-    const updatedStudent = await env.DB.prepare("SELECT * FROM students WHERE id = ?").bind(id).first();
+    const updatedStudent = await env.DB.prepare('SELECT * FROM students WHERE id = ?').bind(id).first<StudentRecord>();
+    const normalizedStudent = updatedStudent
+      ? { ...updatedStudent, avatar_url: normalizeAvatarUrl(updatedStudent.avatar_url) }
+      : null;
 
-    return new Response(JSON.stringify({ success: true, student: updatedStudent }), { status: 200 });
+    return new Response(
+      JSON.stringify({ success: true, student: normalizedStudent }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
   }

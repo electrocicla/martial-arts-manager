@@ -72,10 +72,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       }
     });
 
-    // Generate public URL (adjust domain as needed)
-    // Note: In a real app, you'd use a custom domain or worker to serve R2 files
-    // For now we assume a public bucket or worker route
-    const avatarUrl = `https://avatars.martial-arts-manager.pages.dev/${fileName}`;
+    // Serve via our Pages Function proxy (avoids needing a separate public avatars domain)
+    const avatarUrl = `/api/avatars?key=${encodeURIComponent(fileName)}`;
 
     // Update student record with avatar URL
     const now = new Date().toISOString();

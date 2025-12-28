@@ -1,6 +1,35 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 
+function normalizeAvatarUrl(avatarUrl: unknown): string | undefined {
+  if (typeof avatarUrl !== 'string' || avatarUrl.trim().length === 0) {
+    return undefined;
+  }
+
+  // If it already points to our proxy endpoint, keep as-is
+  if (avatarUrl.startsWith('/api/avatars')) {
+    return avatarUrl;
+  }
+
+  // If stored as a bare key
+  if (avatarUrl.startsWith('avatars/')) {
+    return `/api/avatars?key=${encodeURIComponent(avatarUrl)}`;
+  }
+
+  // If stored as an absolute URL to a deprecated avatars subdomain, rewrite to proxy
+  try {
+    const parsed = new URL(avatarUrl);
+    const key = parsed.pathname.startsWith('/') ? parsed.pathname.slice(1) : parsed.pathname;
+    if (key.startsWith('avatars/')) {
+      return `/api/avatars?key=${encodeURIComponent(key)}`;
+    }
+  } catch {
+    // ignore
+  }
+
+  return avatarUrl;
+}
+
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
   try {
     const auth = await authenticateUser(request, env);
@@ -16,7 +45,12 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       return new Response(JSON.stringify({ error: 'Student profile not found' }), { status: 404 });
     }
 
-    return new Response(JSON.stringify(student), {
+    const normalized = {
+      ...(student as Record<string, unknown>),
+      avatar_url: normalizeAvatarUrl((student as Record<string, unknown>).avatar_url),
+    };
+
+    return new Response(JSON.stringify(normalized), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
@@ -34,13 +68,14 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     const body = await request.json() as {
       name?: string;
       phone?: string;
+      belt?: string;
       date_of_birth?: string;
       emergency_contact_name?: string;
       emergency_contact_phone?: string;
       notes?: string;
     };
 
-    const { name, phone, date_of_birth, emergency_contact_name, emergency_contact_phone, notes } = body;
+    const { name, phone, belt, date_of_birth, emergency_contact_name, emergency_contact_phone, notes } = body;
     const now = new Date().toISOString();
 
     // Update student record
@@ -50,6 +85,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     if (name !== undefined) { query += ", name = ?"; params.push(name); }
     if (phone !== undefined) { query += ", phone = ?"; params.push(phone); }
+    if (belt !== undefined) { query += ", belt = ?"; params.push(belt); }
     if (date_of_birth !== undefined) { query += ", date_of_birth = ?"; params.push(date_of_birth); }
     if (emergency_contact_name !== undefined) { query += ", emergency_contact_name = ?"; params.push(emergency_contact_name); }
     if (emergency_contact_phone !== undefined) { query += ", emergency_contact_phone = ?"; params.push(emergency_contact_phone); }

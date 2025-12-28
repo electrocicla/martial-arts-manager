@@ -24,7 +24,7 @@ interface RegisterResponse {
     email: string;
     name: string;
     role: string;
-    studentId?: string;
+    student_id?: string;
   };
   accessToken: string;
 }
@@ -97,17 +97,17 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       );
     }
 
-    // Check if email already exists in students (if registering as student)
+    // If registering as student, attempt to claim an existing student profile by email
+    let studentId: string | undefined;
     if (role === 'student') {
-      const studentExists = await env.DB.prepare('SELECT id FROM students WHERE email = ?')
+      const existingStudent = await env.DB.prepare(
+        'SELECT id FROM students WHERE email = ? AND deleted_at IS NULL'
+      )
         .bind(email.toLowerCase())
-        .first();
-      
-      if (studentExists) {
-        return new Response(
-          JSON.stringify({ error: 'A student profile with this email already exists. Please ask your instructor to invite you.' }),
-          { status: 409, headers: { 'Content-Type': 'application/json' } }
-        );
+        .first<{ id: string }>();
+
+      if (existingStudent?.id) {
+        studentId = existingStudent.id;
       }
     }
 
@@ -122,41 +122,47 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       password_hash: passwordHash,
       name: name.trim(),
       role,
+      student_id: studentId,
     });
 
-    let studentId: string | undefined;
-
-    // If registering as a student, create student record and link to instructor
+    // If registering as a student, either link existing student or create a new student record
     if (role === 'student' && instructorId) {
-      studentId = generateUserId();
       const now = new Date().toISOString();
-      
-      // Create student record
-      await env.DB.prepare(`
-        INSERT INTO students (
-          id, name, email, belt, discipline, join_date, 
-          is_active, created_by, instructor_id, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
-      `).bind(
-        studentId, 
-        name.trim(), 
-        email.toLowerCase(), 
-        'White', 
-        'Brazilian Jiu-Jitsu', 
-        now,
-        userId, // Created by themselves
-        instructorId, 
-        now, 
-        now
-      ).run();
 
-      // Link student to user
-      await env.DB.prepare('UPDATE users SET student_id = ? WHERE id = ?')
-        .bind(studentId, userId)
-        .run();
-      
-      // Update local user object for response (if needed, though user object here is likely just the DB result)
-      // We'll include it in the response below
+      if (!studentId) {
+        studentId = generateUserId();
+
+        await env.DB.prepare(`
+          INSERT INTO students (
+            id, name, email, belt, discipline, join_date,
+            is_active, created_by, instructor_id, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
+        `)
+          .bind(
+            studentId,
+            name.trim(),
+            email.toLowerCase(),
+            'White',
+            'Brazilian Jiu-Jitsu',
+            now,
+            userId,
+            instructorId,
+            now,
+            now
+          )
+          .run();
+
+        await env.DB.prepare('UPDATE users SET student_id = ?, updated_at = ? WHERE id = ?')
+          .bind(studentId, now, userId)
+          .run();
+      } else {
+        // Best-effort: attach instructor_id if missing
+        await env.DB.prepare(
+          "UPDATE students SET instructor_id = ?, updated_at = ? WHERE id = ? AND (instructor_id IS NULL OR instructor_id = '')"
+        )
+          .bind(instructorId, now, studentId)
+          .run();
+      }
     }
 
     // Create JWT tokens
@@ -198,7 +204,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         email: user.email,
         name: user.name,
         role: user.role,
-        studentId: studentId
+        student_id: studentId,
       },
       accessToken,
     };
