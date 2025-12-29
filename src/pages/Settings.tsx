@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import {
   Settings as SettingsIcon, User, Bell, Shield, Palette, Database, CreditCard,
   Mail, Building
@@ -13,21 +16,34 @@ import {
 } from '../components/settings';
 
 export default function Settings() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('profile');
 
+  useEffect(() => {
+    if (user && user.role === 'student') {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'dojo', label: 'Dojo Info', icon: Building },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'appearance', label: 'Appearance', icon: Palette },
-    { id: 'payment', label: 'Payment', icon: CreditCard },
-    { id: 'email', label: 'Email/SMS', icon: Mail },
-    { id: 'security', label: 'Security', icon: Shield },
-    { id: 'data', label: 'Data & Backup', icon: Database },
+    { id: 'profile', label: t('settings.tabs.profile', 'Profile'), icon: User },
+    { id: 'dojo', label: t('settings.tabs.dojo', 'Dojo Info'), icon: Building },
+    { id: 'notifications', label: t('settings.tabs.notifications', 'Notifications'), icon: Bell },
+    { id: 'appearance', label: t('settings.tabs.appearance', 'Appearance'), icon: Palette },
+    { id: 'payment', label: t('settings.tabs.payment', 'Payment'), icon: CreditCard },
+    { id: 'email', label: t('settings.tabs.email', 'Email/SMS'), icon: Mail },
+    { id: 'security', label: t('settings.tabs.security', 'Security'), icon: Shield },
+    { id: 'data', label: t('settings.tabs.data', 'Data & Backup'), icon: Database },
   ];
 
+  if (user?.role === 'student') {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-black pb-20 md:pb-8">
+    <div className="min-h-screen bg-black pb-24 md:pb-8">
       {/* Header */}
       <div className="bg-gradient-to-br from-black to-red-900/20 px-4 py-6">
         <div className="max-w-7xl mx-auto">
@@ -37,10 +53,10 @@ export default function Settings() {
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-black text-base-content">
-                Settings
+                {t('nav.settings')}
               </h1>
               <p className="text-sm text-base-content/70">
-                Manage your dojo configuration and preferences
+                {t('settings.subtitle', 'Manage your dojo configuration and preferences')}
               </p>
             </div>
           </div>
@@ -50,8 +66,8 @@ export default function Settings() {
       <div className="px-4 py-6 max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar Navigation */}
-          <div className="lg:w-64">
-            <ul className="menu bg-base-200 rounded-lg p-2">
+          <div className="lg:w-64 overflow-x-auto pb-2 lg:pb-0">
+            <ul className="menu bg-base-200 rounded-lg p-2 flex-row lg:flex-col min-w-max lg:min-w-0">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (

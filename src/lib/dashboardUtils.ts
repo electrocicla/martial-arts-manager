@@ -25,13 +25,13 @@ export const getClassStatus = (date: string, time: string) => {
 export const generateRecentActivity = (recentPayments: Payment[], todayClasses: Class[]) => {
   return [
     ...(recentPayments.slice(0, 2).map(payment => ({
-      icon: '💰',
+      icon: 'DollarSign',
       text: `Payment received: $${payment.amount}`,
       time: new Date(payment.date).toLocaleDateString(),
       type: 'info' as const
     }))),
     ...todayClasses.slice(0, 2).map(cls => ({
-      icon: '🥋',
+      icon: 'BookOpen',
       text: `Class scheduled: ${cls.name}`,
       time: new Date(`${cls.date}T${cls.time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       type: 'warning' as const

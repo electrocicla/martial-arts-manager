@@ -142,6 +142,10 @@ export default function StudentProfile() {
       setSaveError((err as Error).message);
     } finally {
       setAvatarUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 

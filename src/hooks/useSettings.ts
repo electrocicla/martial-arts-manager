@@ -9,14 +9,20 @@ export function useSettings() {
 
   const load = useCallback(async () => {
     setIsLoading(true);
-    const res = await settingsService.getAll();
-    if (res.success && res.data) {
-      setSettings(res.data as Record<string, unknown>);
-    } else {
-      error(res.error || 'Error loading settings');
+    try {
+      const res = await settingsService.getAll();
+      if (res.success && res.data) {
+        setSettings(res.data as Record<string, unknown>);
+      } else {
+        // Only log error, don't show toast for every component load
+        console.error(res.error || 'Error loading settings');
+      }
+    } catch (err) {
+      console.error('Failed to fetch settings:', err);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  }, [error]);
+  }, []);
 
   const saveSection = useCallback(async (section: string, value: unknown) => {
     const res = await settingsService.saveSection(section, value);

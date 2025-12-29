@@ -9,8 +9,21 @@
     "analytics": "Análisis",
     "settings": "Configuración",
     "beltTesting": "Exámenes de Cinturón",
-  "calendar": "Calendario de Clases",
+    "calendar": "Calendario de Clases",
     "markAttendance": "Marcar Asistencia"
+  },
+  "settings": {
+    "subtitle": "Administra la configuración y preferencias de tu dojo",
+    "tabs": {
+      "profile": "Perfil",
+      "dojo": "Info del Dojo",
+      "notifications": "Notificaciones",
+      "appearance": "Apariencia",
+      "payment": "Pagos",
+      "email": "Email/SMS",
+      "security": "Seguridad",
+      "data": "Datos y Backup"
+    }
   },
   "belts": {
     "white": "Blanco",
@@ -80,6 +93,21 @@
     }
   },
   "dashboard": {
+    "student": {
+      "currentBelt": "Cinturón Actual",
+      "nextClass": "Próxima Clase",
+      "attendanceRate": "Tasa de Asistencia",
+      "payments": "Pagos",
+      "noUpcomingClasses": "No hay clases próximas",
+      "upToDate": "Al día",
+      "pending": "Pendiente",
+      "overdue": "Vencido",
+      "viewProfile": "Ver Perfil",
+      "viewSchedule": "Ver Horario",
+      "viewPayments": "Ver Pagos",
+      "myClasses": "Mis Clases",
+      "noClassesEnrolled": "No estás inscrito en ninguna clase."
+    },
     "greeting": {
       "morning": "Buenos días",
       "afternoon": "Buenas tardes",
@@ -124,7 +152,7 @@
       "manageStudents": "Gestionar Estudiantes",
       "scheduleClasses": "Programar Clases",
       "recordPayments": "Registrar Pagos",
-      "welcomeMessage": "👋 ¡Bienvenido! Comienza agregando tu primer estudiante para poner en marcha la gestión de tu dojo.",
+      "welcomeMessage": "¡Bienvenido! Comienza agregando tu primer estudiante para poner en marcha la gestión de tu dojo.",
       "totalStudents": "Total de Estudiantes",
       "monthlyRevenue": "Ingresos Mensuales",
   "totalClasses": "Total de Cursos",
@@ -143,8 +171,8 @@
       "scheduleClass": "Programar una Clase",
       "maxStudents": "máximo de estudiantes",
       "mainStudio": "Estudio Principal",
-      "live": "🔴 En Vivo",
-      "soon": "⏰ Pronto",
+      "live": "En Vivo",
+      "soon": "Pronto",
       "scheduleNewClass": "Programar Nueva Clase"
     }
   },
@@ -529,7 +557,7 @@
     "close": "Cerrar",
     "details": "Detalles",
     "noData": "Sin datos",
-    "appName": "Gerente del Dojo",
+    "appName": "Hamarr",
     "navigation": "Navegación",
     "account": "Cuenta",
     "searchPlaceholder": "Buscar estudiantes, clases...",
@@ -568,7 +596,7 @@
     "revenue": {
       "title": "Análisis de Ingresos",
   "subtitle": "Desglose de ingresos y perspectivas",
-      "comingSoon": "📊 Desglose detallado de ingresos pronto...",
+      "comingSoon": "Desglose detallado de ingresos pronto...",
       "description": "Rastrea tus fuentes de ingresos, tendencias de pago y crecimiento financiero a lo largo del tiempo."
       ,"totalRevenue": "Ingresos Totales",
       "averagePerClass": "Promedio por curso",
@@ -594,7 +622,7 @@
     "students": {
       "title": "Análisis de Estudiantes",
       "subtitle": "Métricas de rendimiento y participación",
-      "comingSoon": "👥 Métricas de rendimiento de estudiantes pronto...",
+      "comingSoon": "Métricas de rendimiento de estudiantes pronto...",
       "description": "Monitorea el progreso estudiantil, patrones de asistencia y hitos de logro."
     },
     "classes": {

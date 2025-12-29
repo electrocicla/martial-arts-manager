@@ -49,7 +49,7 @@ export default function StudentDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <h3 className="text-sm font-medium text-gray-400">Current Belt</h3>
+              <h3 className="text-sm font-medium text-gray-400">{t('dashboard.student.currentBelt')}</h3>
               <User className="w-4 h-4 text-red-500" />
             </CardHeader>
             <CardContent>
@@ -60,12 +60,12 @@ export default function StudentDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <h3 className="text-sm font-medium text-gray-400">Next Class</h3>
+              <h3 className="text-sm font-medium text-gray-400">{t('dashboard.student.nextClass')}</h3>
               <Calendar className="w-4 h-4 text-red-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {nextClass ? nextClass.name : 'No upcoming classes'}
+                {nextClass ? nextClass.name : t('dashboard.student.noUpcomingClasses')}
               </div>
               {nextClass && (
                 <p className="text-xs text-gray-500">
@@ -77,12 +77,12 @@ export default function StudentDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <h3 className="text-sm font-medium text-gray-400">Recent Payment</h3>
+              <h3 className="text-sm font-medium text-gray-400">{t('dashboard.student.payments')}</h3>
               <CreditCard className="w-4 h-4 text-red-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {payments.length > 0 ? `$${payments[0].amount}` : 'No payments'}
+                {payments.length > 0 ? `$${payments[0].amount}` : t('dashboard.student.pending')}
               </div>
               {payments.length > 0 && (
                 <p className="text-xs text-gray-500">
@@ -96,11 +96,11 @@ export default function StudentDashboard() {
         {/* Recent Classes */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-bold text-white">My Classes</h3>
+            <h3 className="text-lg font-bold text-white">{t('dashboard.student.myClasses')}</h3>
           </CardHeader>
           <CardContent>
             {classes.length === 0 ? (
-              <p className="text-gray-500">You are not enrolled in any classes.</p>
+              <p className="text-gray-500">{t('dashboard.student.noClassesEnrolled')}</p>
             ) : (
               <div className="space-y-4">
                 {classes.slice(0, 5).map(cls => (

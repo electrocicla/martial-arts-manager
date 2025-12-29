@@ -7,6 +7,7 @@ import ClassDetailsModal from './classes/ClassDetailsModal';
 import ClassFormModal from './classes/ClassFormModal';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { Clock, MapPin, User } from 'lucide-react';
 
 export default function CalendarView() {
   const { t } = useTranslation();
@@ -73,7 +74,13 @@ export default function CalendarView() {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-semibold text-lg text-gray-100">{c.name} - <span className="text-red-500">{c.discipline}</span></div>
-                      <div className="text-sm text-gray-400 mt-1">🕐 {c.time} • 📍 {c.location} • 👤 {c.instructor}</div>
+                      <div className="text-sm text-gray-400 mt-1 flex items-center gap-3">
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {c.time}</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {c.location}</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1"><User className="w-3 h-3" /> {c.instructor}</span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <input

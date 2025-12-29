@@ -129,7 +129,7 @@ export default function MobileNav() {
   return (
     <>
       {/* Enhanced Mobile Bottom Navigation */}
-      <nav className="btm-nav btm-nav-lg md:hidden bg-gray-900/95 backdrop-blur-xl border-t border-gray-700/50 shadow-2xl shadow-black/40 fixed bottom-0 left-0 right-0 mobile-bottom-nav">
+      <nav className="btm-nav btm-nav-lg md:hidden bg-gray-900/95 backdrop-blur-xl border-t border-gray-700/50 shadow-2xl shadow-black/40 fixed bottom-0 left-0 right-0 mobile-bottom-nav z-50 pb-safe">
         {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
@@ -139,7 +139,7 @@ export default function MobileNav() {
               key={item.id}
               to={item.href}
               className={cn(
-                "relative group transition-all duration-300 flex flex-col items-center justify-center py-2 px-1",
+                "relative group transition-all duration-300 flex flex-col items-center justify-center py-2 px-1 h-full",
                 isActive ? "text-primary" : "text-base-content/60 hover:text-base-content/80"
               )}
             >
@@ -150,10 +150,10 @@ export default function MobileNav() {
               
               {/* Icon with enhanced design */}
               <div className={cn(
-                "relative p-2.5 rounded-2xl transition-all duration-300 mb-1",
-                isActive ? "bg-primary/10 scale-110" : "group-active:scale-95 group-active:bg-base-200/50"
+                "relative p-2 rounded-2xl transition-all duration-300 mb-0.5",
+                isActive ? "bg-primary/10 scale-105" : "group-active:scale-95 group-active:bg-base-200/50"
               )}>
-                <Icon className="w-6 h-6" />
+                <Icon className="w-5 h-5" />
                 {isActive && (
                   <div className="absolute inset-0 bg-primary/20 blur-md rounded-2xl -z-10" />
                 )}
@@ -161,7 +161,7 @@ export default function MobileNav() {
               
               {/* Label */}
               <span className={cn(
-                "text-xs font-semibold transition-all duration-300 text-center leading-tight",
+                "text-[10px] font-semibold transition-all duration-300 text-center leading-tight",
                 isActive ? "text-primary" : "text-base-content/70"
               )}>
                 {t(item.nameKey)}
@@ -171,15 +171,17 @@ export default function MobileNav() {
         })}
         
         {/* Quick Actions Button */}
-        <button
-          onClick={() => setIsQuickActionsOpen(true)}
-          className="relative group transition-all duration-300 text-base-content/70 flex flex-col items-center justify-center py-2 px-1"
-        >
-          <div className="p-2 rounded-xl transition-all duration-300 group-active:scale-95">
-            <Plus className="w-5 h-5" />
-          </div>
-          <span className="text-xs font-bold">Actions</span>
-        </button>
+        {user?.role !== 'student' && (
+          <button
+            onClick={() => setIsQuickActionsOpen(true)}
+            className="relative group transition-all duration-300 text-base-content/70 flex flex-col items-center justify-center py-2 px-1 h-full"
+          >
+            <div className="p-2 rounded-xl transition-all duration-300 group-active:scale-95">
+              <Plus className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] font-bold">Actions</span>
+          </button>
+        )}
       </nav>
 
       {/* Quick Actions Modal - Modern Tailwind Modal Pattern */}
@@ -260,7 +262,7 @@ export default function MobileNav() {
             </div>
             <div className="flex-1">
               <h1 className="text-lg font-black text-white tracking-tight leading-tight">
-                Dojo Manager
+                {t('common.appName')}
               </h1>
               <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
                 Training Hub

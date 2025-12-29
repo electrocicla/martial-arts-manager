@@ -3,7 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, Menu, User, LogOut, 
-  Settings, Clock, Users, Calendar, Home, ChevronDown
+  Settings, Clock, Users, Calendar, Home, ChevronDown,
+  CreditCard, BarChart3, Award
 } from 'lucide-react';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
@@ -28,7 +29,7 @@ export default function Header() {
     <>
       {/* Mobile Header - Static Design */}
       {/* Mobile Header - Optimized Layout */}
-      <header className="flex items-center justify-between px-4 py-3 bg-gray-900 border-b border-gray-700 md:hidden">
+      <header className="flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-gray-700 md:hidden">
         {/* Left: Menu Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -42,9 +43,6 @@ export default function Header() {
           onClick={() => navigate('/dashboard')}
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">🥋</span>
-          </div>
           <h1 className="text-xl font-bold text-white">{t('common.appName')}</h1>
         </button>
 
@@ -126,84 +124,103 @@ export default function Header() {
                     <Home className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0" />
                     <span>{t('nav.dashboard')}</span>
                   </button>
-                  <button 
-                    onClick={() => { navigate('/students'); setMobileMenuOpen(false); }}
-                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    <Users className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span>{t('nav.students')}</span>
-                  </button>
-                  <button 
-                    onClick={() => { navigate('/classes'); setMobileMenuOpen(false); }}
-                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    <Calendar className="w-5 h-5 text-purple-400 mr-3 flex-shrink-0" />
-                    <span>{t('nav.classes')}</span>
-                  </button>
-                  <button 
-                    onClick={() => { navigate('/payments'); setMobileMenuOpen(false); }}
-                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    <div className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
-                      💳
-                    </div>
-                    <span>{t('nav.payments')}</span>
-                  </button>
-                  <button 
-                    onClick={() => { navigate('/analytics'); setMobileMenuOpen(false); }}
-                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    <div className="w-5 h-5 text-orange-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
-                      📊
-                    </div>
-                    <span>{t('nav.analytics')}</span>
-                  </button>
-                  <button 
-                    onClick={() => { navigate('/belt-testing'); setMobileMenuOpen(false); }}
-                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    <div className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
-                      🥋
-                    </div>
-                    <span>{t('nav.beltTesting')}</span>
-                  </button>
+                  
+                  {user?.role !== 'student' && (
+                    <button 
+                      onClick={() => { navigate('/students'); setMobileMenuOpen(false); }}
+                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <Users className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                      <span>{t('nav.students')}</span>
+                    </button>
+                  )}
+
+                  {user?.role !== 'student' && (
+                    <button 
+                      onClick={() => { navigate('/classes'); setMobileMenuOpen(false); }}
+                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <Calendar className="w-5 h-5 text-purple-400 mr-3 flex-shrink-0" />
+                      <span>{t('nav.classes')}</span>
+                    </button>
+                  )}
+
+                  {user?.role === 'admin' && (
+                    <button 
+                      onClick={() => { navigate('/payments'); setMobileMenuOpen(false); }}
+                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <div className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 flex items-center justify-center">
+                        <CreditCard className="w-4 h-4" />
+                      </div>
+                      <span>{t('nav.payments')}</span>
+                    </button>
+                  )}
+
+                  {user?.role === 'admin' && (
+                    <button 
+                      onClick={() => { navigate('/analytics'); setMobileMenuOpen(false); }}
+                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <div className="w-5 h-5 text-orange-400 mr-3 flex-shrink-0 flex items-center justify-center">
+                        <BarChart3 className="w-4 h-4" />
+                      </div>
+                      <span>{t('nav.analytics')}</span>
+                    </button>
+                  )}
+
+                  {user?.role !== 'student' && (
+                    <button 
+                      onClick={() => { navigate('/belt-testing'); setMobileMenuOpen(false); }}
+                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <div className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0 flex items-center justify-center">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <span>{t('nav.beltTesting')}</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
               {/* Quick Actions */}
-              <div>
-                <h3 className="text-sm font-semibold text-white mb-3">{t('dashboard.quickActions.title')}</h3>
-                <div className="space-y-2">
-                  <button 
-                    onClick={() => { navigate('/attendance'); setMobileMenuOpen(false); }}
-                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    <Clock className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0" />
-                    <span>{t('nav.markAttendance')}</span>
-                  </button>
-                  <button 
-                    onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
-                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    <div className="w-5 h-5 text-indigo-400 mr-3 flex-shrink-0 flex items-center justify-center text-xs">
-                      📅
-                    </div>
-                    <span>{t('nav.calendar')}</span>
-                  </button>
+              {user?.role !== 'student' && (
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-3">{t('dashboard.quickActions.title')}</h3>
+                  <div className="space-y-2">
+                    <button 
+                      onClick={() => { navigate('/attendance'); setMobileMenuOpen(false); }}
+                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <Clock className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0" />
+                      <span>{t('nav.markAttendance')}</span>
+                    </button>
+                    <button 
+                      onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
+                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <div className="w-5 h-5 text-indigo-400 mr-3 flex-shrink-0 flex items-center justify-center">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <span>{t('nav.calendar')}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
               
               {/* Account */}
               <div>
                 <h3 className="text-sm font-semibold text-white mb-3">{t('common.account')}</h3>
                 <div className="space-y-2">
-                  <button 
-                    onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
-                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    <Settings className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
-                    <span>{t('nav.settings')}</span>
-                  </button>
+                  {user?.role !== 'student' && (
+                    <button 
+                      onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
+                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <Settings className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
+                      <span>{t('nav.settings')}</span>
+                    </button>
+                  )}
                   <button 
                     onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                     className="flex items-center w-full p-3 text-left text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
@@ -290,13 +307,15 @@ export default function Header() {
                     </button>
                   )}
 
-                  <button
-                    onClick={() => { navigate('/settings'); setDropdownOpen(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
-                  >
-                    <Settings className="w-4 h-4" />
-                    {t('nav.settings')}
-                  </button>
+                  {user?.role !== 'student' && (
+                    <button
+                      onClick={() => { navigate('/settings'); setDropdownOpen(false); }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                      {t('nav.settings')}
+                    </button>
+                  )}
 
                   <div className="border-t border-gray-700 my-2 pt-2">
                     <button

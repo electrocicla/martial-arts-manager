@@ -12,6 +12,19 @@
     "calendar": "Calendar View",
     "markAttendance": "Mark Attendance"
   },
+  "settings": {
+    "subtitle": "Manage your dojo configuration and preferences",
+    "tabs": {
+      "profile": "Profile",
+      "dojo": "Dojo Info",
+      "notifications": "Notifications",
+      "appearance": "Appearance",
+      "payment": "Payment",
+      "email": "Email/SMS",
+      "security": "Security",
+      "data": "Data & Backup"
+    }
+  },
   "belts": {
     "white": "White",
     "blue": "Blue",
@@ -81,6 +94,21 @@
     }
   },
   "dashboard": {
+    "student": {
+      "currentBelt": "Current Belt",
+      "nextClass": "Next Class",
+      "attendanceRate": "Attendance Rate",
+      "payments": "Payments",
+      "noUpcomingClasses": "No upcoming classes",
+      "upToDate": "Up to date",
+      "pending": "Pending",
+      "overdue": "Overdue",
+      "viewProfile": "View Profile",
+      "viewSchedule": "View Schedule",
+      "viewPayments": "View Payments",
+      "myClasses": "My Classes",
+      "noClassesEnrolled": "You are not enrolled in any classes."
+    },
     "greeting": {
       "morning": "Good morning",
       "afternoon": "Good afternoon",
@@ -125,7 +153,7 @@
       "manageStudents": "Manage Students",
       "scheduleClasses": "Schedule Classes",
       "recordPayments": "Record Payments",
-      "welcomeMessage": "👋 Welcome! Start by adding your first student to get your dojo management up and running.",
+      "welcomeMessage": "Welcome! Start by adding your first student to get your dojo management up and running.",
       "totalStudents": "Total Students",
       "monthlyRevenue": "Monthly Revenue",
       "totalClasses": "Total Classes",
@@ -144,8 +172,8 @@
       "scheduleClass": "Schedule a Class",
       "maxStudents": "max students",
       "mainStudio": "Main Studio",
-      "live": "🔴 Live",
-      "soon": "⏰ Soon",
+      "live": "Live",
+      "soon": "Soon",
       "scheduleNewClass": "Schedule New Class"
     }
   },
@@ -462,7 +490,7 @@
     "close": "Close",
     "details": "Details",
     "noData": "No data",
-    "appName": "Dojo Manager",
+    "appName": "Hamarr",
     "navigation": "Navigation",
     "account": "Account",
     "searchPlaceholder": "Search students, classes...",
@@ -501,7 +529,7 @@
       "title": "Revenue Analytics",
       "subtitle": "Comprehensive revenue breakdown and insights",
       "byClassSubtitle": "Income distribution across disciplines",
-      "comingSoon": "📊 Detailed revenue breakdown coming soon...",
+      "comingSoon": "Detailed revenue breakdown coming soon...",
       "description": "Track your revenue streams, payment trends, and financial growth over time.",
       "totalRevenue": "Total Revenue",
       "averagePerClass": "Average per class",
@@ -514,7 +542,7 @@
     "students": {
       "title": "Student Analytics",
       "subtitle": "Performance metrics and engagement insights",
-      "comingSoon": "👥 Student performance metrics coming soon...",
+      "comingSoon": "Student performance metrics coming soon...",
       "description": "Monitor student progress, attendance patterns, and achievement milestones.",
       "totalStudents": "Total students",
       "activeStudents": "Active students",
