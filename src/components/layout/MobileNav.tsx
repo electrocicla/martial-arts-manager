@@ -75,6 +75,14 @@ const navigationItems = [
     color: 'text-yellow-500'
   },
   {
+    id: 'settings',
+    nameKey: 'nav.settings',
+    href: '/settings',
+    icon: Settings,
+    roles: ['admin', 'instructor', 'student'],
+    color: 'text-gray-500'
+  },
+  {
     id: 'analytics',
     nameKey: 'nav.analytics',
     href: '/analytics',
@@ -135,8 +143,8 @@ export default function MobileNav() {
     user?.role && item.roles.includes(user.role)
   );
 
-  // Take only first 4 items for bottom nav (mobile-first design)
-  const visibleItems = allowedItems.slice(0, 4);
+  // Take only first 4 items for bottom nav (mobile-first design), 6 for students
+  const visibleItems = allowedItems.slice(0, user?.role === 'student' ? 6 : 4);
 
   return (
     <>

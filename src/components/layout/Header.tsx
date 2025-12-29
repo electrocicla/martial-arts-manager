@@ -145,6 +145,16 @@ export default function Header() {
                     </button>
                   )}
 
+                  <button 
+                    onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <div className="w-5 h-5 text-indigo-400 mr-3 flex-shrink-0 flex items-center justify-center">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <span>{t('nav.calendar')}</span>
+                  </button>
+
                   {user?.role === 'admin' && (
                     <button 
                       onClick={() => { navigate('/payments'); setMobileMenuOpen(false); }}
@@ -169,17 +179,15 @@ export default function Header() {
                     </button>
                   )}
 
-                  {user?.role !== 'student' && (
-                    <button 
-                      onClick={() => { navigate('/belt-testing'); setMobileMenuOpen(false); }}
-                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                    >
-                      <div className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0 flex items-center justify-center">
-                        <Award className="w-4 h-4" />
-                      </div>
-                      <span>{t('nav.beltTesting')}</span>
-                    </button>
-                  )}
+                  <button 
+                    onClick={() => { navigate('/belt-testing'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <div className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0 flex items-center justify-center">
+                      <Award className="w-4 h-4" />
+                    </div>
+                    <span>{t('nav.beltTesting')}</span>
+                  </button>
                 </div>
               </div>
 
@@ -234,15 +242,13 @@ export default function Header() {
               <div>
                 <h3 className="text-sm font-semibold text-white mb-3">{t('common.account')}</h3>
                 <div className="space-y-2">
-                  {user?.role !== 'student' && (
-                    <button 
-                      onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
-                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                    >
-                      <Settings className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
-                      <span>{t('nav.settings')}</span>
-                    </button>
-                  )}
+                  <button 
+                    onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Settings className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
+                    <span>{t('nav.settings')}</span>
+                  </button>
                   <button 
                     onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                     className="flex items-center w-full p-3 text-left text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
