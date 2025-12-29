@@ -1,13 +1,16 @@
-import { Save, User as UserIcon } from 'lucide-react';
+import { Save, User as UserIcon, Camera } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import useSettings from '../../hooks/useSettings';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function ProfileSettings() {
-  const { user } = useAuth();
+  const { user, refreshAuth } = useAuth();
   const { saveSection } = useSettings();
   const { t } = useTranslation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -23,6 +26,62 @@ export default function ProfileSettings() {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || user.role !== 'student') return;
+
+    // Validate file type
+    if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
+      setSaveError('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setSaveError('File too large. Maximum size is 5MB.');
+      return;
+    }
+
+    setAvatarUploading(true);
+    setSaveError(null);
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+    formData.append('studentId', user.id);
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/students/avatar', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload avatar');
+      }
+
+      // Refresh auth context to update header avatar
+      await refreshAuth();
+      
+    } catch (err) {
+      setSaveError((err as Error).message);
+    } finally {
+      setAvatarUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   return (
@@ -50,10 +109,33 @@ export default function ProfileSettings() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="text-sm text-slate-700 dark:text-slate-300">{t('settings.profile.updatePhoto')}</div>
               <div className="flex items-center gap-3">
-                <button className="px-3 py-1 rounded-md border border-slate-200 dark:border-slate-700 text-sm hover:bg-slate-50 dark:hover:bg-slate-800">{t('settings.profile.changePhoto')}</button>
+                {user?.role === 'student' ? (
+                  <>
+                    <button 
+                      onClick={handleAvatarClick}
+                      disabled={avatarUploading}
+                      className="px-3 py-1 rounded-md border border-slate-200 dark:border-slate-700 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      <Camera className="w-4 h-4" />
+                      {avatarUploading ? t('common.uploading') : t('settings.profile.changePhoto')}
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                    />
+                  </>
+                ) : (
+                  <span className="text-sm text-slate-500">{t('settings.profile.photoNotAvailable')}</span>
+                )}
                 <div className="text-xs text-slate-500">{t('settings.profile.photoRequirements')}</div>
               </div>
             </div>
+            {saveError && (
+              <div className="text-sm text-red-600 dark:text-red-400 mt-2">{saveError}</div>
+            )}
           </div>
         </div>
 
