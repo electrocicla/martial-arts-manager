@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { User, AlertCircle, Save, Shield, Activity, Camera, Loader2, Mail, Phone, Calendar } from 'lucide-react';
-import { useStudentDashboardData } from '../hooks/useStudentDashboardData';
+import { useProfile } from '../hooks/useProfile';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
@@ -23,7 +23,7 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function StudentProfile() {
-  const { profile, isLoading, error: loadError, refresh } = useStudentDashboardData();
+  const { profile, isLoading, error: loadError, refresh } = useProfile();
   const { t } = useTranslation();
   const { user, refreshAuth } = useAuth();
   void user; // Acknowledge unused variable

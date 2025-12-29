@@ -23,24 +23,8 @@ const navigationItems = [
     nameKey: 'nav.profile',
     href: '/profile',
     icon: User,
-    roles: ['student'],
+    roles: ['admin', 'instructor', 'student'],
     color: 'text-pink-500'
-  },
-  {
-    id: 'students',
-    nameKey: 'nav.students',
-    href: '/students',
-    icon: Users,
-    roles: ['admin', 'instructor'],
-    color: 'text-green-500'
-  },
-  {
-    id: 'classes',
-    nameKey: 'nav.classes',
-    href: '/classes',
-    icon: BookOpen,
-    roles: ['admin', 'instructor'],
-    color: 'text-purple-500'
   },
   {
     id: 'calendar',
@@ -59,14 +43,6 @@ const navigationItems = [
     color: 'text-blue-500'
   },
   {
-    id: 'payments',
-    nameKey: 'nav.payments',
-    href: '/payments',
-    icon: DollarSign,
-    roles: ['admin'],
-    color: 'text-emerald-500'
-  },
-  {
     id: 'belt-testing',
     nameKey: 'nav.beltTesting',
     href: '/belt-testing',
@@ -81,6 +57,30 @@ const navigationItems = [
     icon: Settings,
     roles: ['admin', 'instructor', 'student'],
     color: 'text-gray-500'
+  },
+  {
+    id: 'students',
+    nameKey: 'nav.students',
+    href: '/students',
+    icon: Users,
+    roles: ['admin', 'instructor'],
+    color: 'text-green-500'
+  },
+  {
+    id: 'classes',
+    nameKey: 'nav.classes',
+    href: '/classes',
+    icon: BookOpen,
+    roles: ['admin', 'instructor'],
+    color: 'text-purple-500'
+  },
+  {
+    id: 'payments',
+    nameKey: 'nav.payments',
+    href: '/payments',
+    icon: DollarSign,
+    roles: ['admin'],
+    color: 'text-emerald-500'
   },
   {
     id: 'analytics',
