@@ -23,6 +23,19 @@
       "email": "Email/SMS",
       "security": "Segurança",
       "data": "Dados e Backup"
+    },
+    "profile": {
+      "title": "Configurações do Perfil",
+      "fullName": "Nome Completo",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "role": "Função",
+      "bio": "Biografia",
+      "save": "Salvar Alterações",
+      "cancel": "Cancelar",
+      "updatePhoto": "Atualize sua foto de perfil e detalhes públicos.",
+      "changePhoto": "Alterar Foto",
+      "photoRequirements": "JPG, PNG até 5MB"
     }
   },
   "belts": {

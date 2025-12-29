@@ -22,8 +22,19 @@
       "payment": "Pagos",
       "email": "Email/SMS",
       "security": "Seguridad",
-      "data": "Datos y Backup"
-    }
+      "data": "Datos y Backup"    },
+    "profile": {
+      "title": "Configuración del Perfil",
+      "fullName": "Nombre Completo",
+      "email": "Correo Electrónico",
+      "phone": "Teléfono",
+      "role": "Rol",
+      "bio": "Biografía",
+      "save": "Guardar Cambios",
+      "cancel": "Cancelar",
+      "updatePhoto": "Actualiza tu foto de perfil y detalles públicos.",
+      "changePhoto": "Cambiar Foto",
+      "photoRequirements": "JPG, PNG hasta 5MB"    }
   },
   "belts": {
     "white": "Blanco",
