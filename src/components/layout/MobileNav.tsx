@@ -47,8 +47,16 @@ const navigationItems = [
     nameKey: 'nav.calendar',
     href: '/calendar',
     icon: Calendar,
-    roles: ['admin', 'instructor'],
+    roles: ['admin', 'instructor', 'student'],
     color: 'text-indigo-500'
+  },
+  {
+    id: 'attendance',
+    nameKey: 'nav.attendance',
+    href: '/attendance',
+    icon: Clock,
+    roles: ['admin', 'instructor', 'student'],
+    color: 'text-blue-500'
   },
   {
     id: 'payments',
@@ -63,7 +71,7 @@ const navigationItems = [
     nameKey: 'nav.beltTesting',
     href: '/belt-testing',
     icon: Award,
-    roles: ['admin', 'instructor'],
+    roles: ['admin', 'instructor', 'student'],
     color: 'text-yellow-500'
   },
   {
@@ -84,7 +92,8 @@ const quickActions = [
     href: '/attendance',
     icon: Clock,
     descriptionKey: 'dashboard.quickActions.checkInOut',
-    color: 'text-blue-500'
+    color: 'text-blue-500',
+    roles: ['admin', 'instructor', 'student']
   },
   {
     id: 'add-student',
@@ -92,7 +101,8 @@ const quickActions = [
     href: '/students',
     icon: Users,
     descriptionKey: 'dashboard.quickActions.registerMember',
-    color: 'text-green-500'
+    color: 'text-green-500',
+    roles: ['admin', 'instructor']
   },
   {
     id: 'schedule-class',
@@ -100,7 +110,8 @@ const quickActions = [
     href: '/classes',
     icon: Calendar,
     descriptionKey: 'dashboard.quickActions.addNewSession',
-    color: 'text-purple-500'
+    color: 'text-purple-500',
+    roles: ['admin', 'instructor']
   },
   {
     id: 'record-payment',
@@ -108,7 +119,8 @@ const quickActions = [
     href: '/payments',
     icon: DollarSign,
     descriptionKey: 'dashboard.quickActions.processTransaction',
-    color: 'text-emerald-500'
+    color: 'text-emerald-500',
+    roles: ['admin']
   }
 ];
 

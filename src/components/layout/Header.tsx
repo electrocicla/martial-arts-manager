@@ -184,17 +184,17 @@ export default function Header() {
               </div>
 
               {/* Quick Actions */}
-              {user?.role !== 'student' && (
-                <div>
-                  <h3 className="text-sm font-semibold text-white mb-3">{t('dashboard.quickActions.title')}</h3>
-                  <div className="space-y-2">
-                    <button 
-                      onClick={() => { navigate('/attendance'); setMobileMenuOpen(false); }}
-                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
-                    >
-                      <Clock className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0" />
-                      <span>{t('nav.markAttendance')}</span>
-                    </button>
+              <div>
+                <h3 className="text-sm font-semibold text-white mb-3">{t('dashboard.quickActions.title')}</h3>
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => { navigate('/attendance'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Clock className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0" />
+                    <span>{t('nav.markAttendance')}</span>
+                  </button>
+                  {user?.role !== 'student' && (
                     <button 
                       onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
                       className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
@@ -204,9 +204,31 @@ export default function Header() {
                       </div>
                       <span>{t('nav.calendar')}</span>
                     </button>
-                  </div>
+                  )}
+                  {user?.role !== 'student' && (
+                    <button 
+                      onClick={() => { navigate('/classes'); setMobileMenuOpen(false); }}
+                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <div className="w-5 h-5 text-purple-400 mr-3 flex-shrink-0 flex items-center justify-center">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <span>{t('nav.classes')}</span>
+                    </button>
+                  )}
+                  {user?.role === 'admin' && (
+                    <button 
+                      onClick={() => { navigate('/payments'); setMobileMenuOpen(false); }}
+                      className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <div className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 flex items-center justify-center">
+                        <CreditCard className="w-4 h-4" />
+                      </div>
+                      <span>{t('nav.payments')}</span>
+                    </button>
+                  )}
                 </div>
-              )}
+              </div>
               
               {/* Account */}
               <div>

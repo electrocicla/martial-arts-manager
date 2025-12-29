@@ -12,7 +12,7 @@ export default function StudentDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="bg-gray-900 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <span className="loading loading-spinner loading-lg text-primary"></span>
           <p className="text-white font-medium">{t('common.loading')}</p>
@@ -23,7 +23,7 @@ export default function StudentDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="bg-gray-900 flex items-center justify-center">
         <div className="card bg-red-900/20 border border-red-500/30 max-w-md">
           <div className="card-body text-center">
             <h2 className="card-title text-error justify-center">{t('common.error')}</h2>
@@ -40,7 +40,7 @@ export default function StudentDashboard() {
   const nextClass = classes.find(c => new Date(c.date + ' ' + c.time) > new Date());
 
   return (
-    <div className="min-h-screen bg-black mobile-dashboard md:pb-4 md:pt-4">
+    <div className="bg-gray-900 mobile-dashboard md:pb-4 md:pt-4">
       <DashboardHeader greeting={greeting} />
 
       <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto space-y-8 mobile-dashboard-content dashboard-content">
