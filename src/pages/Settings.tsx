@@ -3,16 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import {
-  Settings as SettingsIcon, User, Bell, Shield, Palette, Database, CreditCard,
-  Mail, Building
+  Settings as SettingsIcon, User, Bell, Palette
 } from 'lucide-react';
 import {
   ProfileSettings,
-  DojoSettings,
   NotificationSettings,
-  AppearanceSettings,
-  PaymentSettings,
-  DataBackupSettings
+  AppearanceSettings
 } from '../components/settings';
 
 export default function Settings() {
@@ -29,7 +25,6 @@ export default function Settings() {
     { id: 'profile', label: t('settings.tabs.profile', 'Profile'), icon: User },
     { id: 'notifications', label: t('settings.tabs.notifications', 'Notifications'), icon: Bell },
     { id: 'appearance', label: t('settings.tabs.appearance', 'Appearance'), icon: Palette },
-    { id: 'security', label: t('settings.tabs.security', 'Security'), icon: Shield },
   ];
 
   return (
@@ -80,18 +75,11 @@ export default function Settings() {
             {/* Profile Settings */}
             {activeTab === 'profile' && <ProfileSettings />}
 
-            {/* Dojo Information */}
-            {activeTab === 'dojo' && <DojoSettings />}
-
             {/* Notifications */}
             {activeTab === 'notifications' && <NotificationSettings />}
 
             {/* Appearance */}
             {activeTab === 'appearance' && <AppearanceSettings />}
-
-            {/* Payment Settings */}
-            {activeTab === 'payment' && <PaymentSettings />}            {/* Data & Backup */}
-            {activeTab === 'data' && <DataBackupSettings />}
           </div>
         </div>
       </div>
