@@ -22,25 +22,15 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState('profile');
 
   useEffect(() => {
-    if (user && user.role === 'student') {
-      navigate('/dashboard');
-    }
+    // Removed student redirection
   }, [user, navigate]);
 
   const tabs = [
     { id: 'profile', label: t('settings.tabs.profile', 'Profile'), icon: User },
-    { id: 'dojo', label: t('settings.tabs.dojo', 'Dojo Info'), icon: Building },
     { id: 'notifications', label: t('settings.tabs.notifications', 'Notifications'), icon: Bell },
     { id: 'appearance', label: t('settings.tabs.appearance', 'Appearance'), icon: Palette },
-    { id: 'payment', label: t('settings.tabs.payment', 'Payment'), icon: CreditCard },
-    { id: 'email', label: t('settings.tabs.email', 'Email/SMS'), icon: Mail },
     { id: 'security', label: t('settings.tabs.security', 'Security'), icon: Shield },
-    { id: 'data', label: t('settings.tabs.data', 'Data & Backup'), icon: Database },
   ];
-
-  if (user?.role === 'student') {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-black pb-24 md:pb-8">
