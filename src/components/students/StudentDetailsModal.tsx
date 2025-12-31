@@ -159,9 +159,17 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
                   {student.name}
                 </h3>
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-3">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getBeltColor(student.belt)}`}>
-                    {student.belt} {t('students.belt') || 'Belt'}
-                  </span>
+                  {student.disciplines && student.disciplines.length > 0 ? (
+                    student.disciplines.map((disc, index) => (
+                      <span key={index} className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getBeltColor(disc.belt)}`}>
+                        {disc.belt} {t('students.belt') || 'Belt'} - {disc.discipline}
+                      </span>
+                    ))
+                  ) : (
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getBeltColor(student.belt)}`}>
+                      {student.belt} {t('students.belt') || 'Belt'}
+                    </span>
+                  )}
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
                     student.is_active 
                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
@@ -170,9 +178,11 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
                     {student.is_active ? t('students.active') || 'Active' : t('students.inactive') || 'Inactive'}
                   </span>
                 </div>
-                <p className="text-lg text-gray-600 dark:text-gray-300 font-medium">
-                  {student.discipline}
-                </p>
+                {(!student.disciplines || student.disciplines.length === 0) && (
+                  <p className="text-lg text-gray-600 dark:text-gray-300 font-medium">
+                    {student.discipline}
+                  </p>
+                )}
               </div>
             </div>
 

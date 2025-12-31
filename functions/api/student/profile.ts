@@ -69,13 +69,14 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       name?: string;
       phone?: string;
       belt?: string;
+      disciplines?: { discipline: string; belt: string }[]; // Allow students to update their disciplines
       date_of_birth?: string;
       emergency_contact_name?: string;
       emergency_contact_phone?: string;
       notes?: string;
     };
 
-    const { name, phone, belt, date_of_birth, emergency_contact_name, emergency_contact_phone, notes } = body;
+    const { name, phone, belt, disciplines, date_of_birth, emergency_contact_name, emergency_contact_phone, notes } = body;
     const now = new Date().toISOString();
 
     // Update student record
@@ -86,6 +87,11 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (name !== undefined) { query += ", name = ?"; params.push(name); }
     if (phone !== undefined) { query += ", phone = ?"; params.push(phone); }
     if (belt !== undefined) { query += ", belt = ?"; params.push(belt); }
+    if (disciplines !== undefined) {
+      const disciplinesJson = disciplines && disciplines.length > 0 ? JSON.stringify(disciplines) : null;
+      query += ", disciplines = ?";
+      params.push(disciplinesJson);
+    }
     if (date_of_birth !== undefined) { query += ", date_of_birth = ?"; params.push(date_of_birth); }
     if (emergency_contact_name !== undefined) { query += ", emergency_contact_name = ?"; params.push(emergency_contact_name); }
     if (emergency_contact_phone !== undefined) { query += ", emergency_contact_phone = ?"; params.push(emergency_contact_phone); }

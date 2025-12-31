@@ -13,7 +13,10 @@ import { useAuth } from '../context/AuthContext';
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().optional(),
-  belt: z.string().optional(),
+  disciplines: z.array(z.object({
+    discipline: z.string(),
+    belt: z.string()
+  })).min(1, 'At least one discipline is required'),
   date_of_birth: z.string().optional(),
   emergency_contact_name: z.string().optional(),
   emergency_contact_phone: z.string().optional(),
@@ -30,8 +33,19 @@ export default function StudentProfile() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [disciplines, setDisciplines] = useState<{ discipline: string; belt: string }[]>([{ discipline: '', belt: '' }]);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Get user initials for avatar
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const {
     register,
@@ -44,10 +58,12 @@ export default function StudentProfile() {
 
   useEffect(() => {
     if (profile) {
+      const initialDisciplines = profile.disciplines ? profile.disciplines : (profile.discipline && profile.belt ? [{ discipline: profile.discipline, belt: profile.belt }] : [{ discipline: '', belt: '' }]);
+      setDisciplines(initialDisciplines);
       reset({
         name: profile.name,
         phone: profile.phone || '',
-        belt: profile.belt || '',
+        disciplines: initialDisciplines,
         date_of_birth: profile.date_of_birth || '',
         emergency_contact_name: profile.emergency_contact_name || '',
         emergency_contact_phone: profile.emergency_contact_phone || '',
@@ -69,7 +85,7 @@ export default function StudentProfile() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, disciplines }),
       });
 
       if (!response.ok) {
@@ -149,14 +165,20 @@ export default function StudentProfile() {
     }
   };
 
-  // Get user initials for avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  const addDiscipline = () => {
+    setDisciplines([...disciplines, { discipline: '', belt: '' }]);
+  };
+
+  const removeDiscipline = (index: number) => {
+    if (disciplines.length > 1) {
+      setDisciplines(disciplines.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateDiscipline = (index: number, field: 'discipline' | 'belt', value: string) => {
+    const newDisciplines = [...disciplines];
+    newDisciplines[index][field] = value;
+    setDisciplines(newDisciplines);
   };
 
   if (isLoading) {
@@ -237,7 +259,11 @@ export default function StudentProfile() {
 
                   {/* Profile Info */}
                   <h2 className="text-2xl font-bold text-white mb-1">{profile?.name}</h2>
-                  <p className="text-gray-400 mb-4">{profile?.discipline} - {profile?.belt} Belt</p>
+                  <div className="text-gray-400 mb-4">
+                    {disciplines.length > 0 ? disciplines.map((d, i) => (
+                      <div key={i}>{d.discipline} - {d.belt}</div>
+                    )) : 'No disciplines set'}
+                  </div>
 
                   {/* Quick Stats */}
                   <div className="w-full space-y-3">
@@ -315,38 +341,82 @@ export default function StudentProfile() {
                       />
                     </div>
 
-                    <div>
+                    <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        {t('profile.belt', 'Belt Rank')}
+                        {t('profile.disciplines', 'Disciplines')}
                       </label>
-                      <Input
-                        {...register('belt')}
-                        className="bg-gray-700 border-gray-600 text-white focus:border-primary"
-                        placeholder="White Belt"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {t('profile.dateOfBirth', 'Date of Birth')}
-                      </label>
-                      <Input
-                        {...register('date_of_birth')}
-                        type="date"
-                        className="bg-gray-700 border-gray-600 text-white focus:border-primary"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        {t('profile.discipline', 'Discipline')}
-                      </label>
-                      <Input
-                        value={profile?.discipline || ''}
-                        disabled
-                        className="bg-gray-700/50 border-gray-600 text-gray-400 cursor-not-allowed"
-                      />
+                      <div className="space-y-3">
+                        {disciplines.map((disc, index) => (
+                          <div key={index} className="flex gap-3 items-end">
+                            <div className="flex-1">
+                              <label className="block text-xs font-medium text-gray-400 mb-1">
+                                {t('profile.discipline', 'Discipline')}
+                              </label>
+                              <select
+                                value={disc.discipline}
+                                onChange={(e) => updateDiscipline(index, 'discipline', e.target.value)}
+                                className="select select-bordered bg-gray-700 border-gray-600 text-white focus:border-primary w-full"
+                              >
+                                <option value="">{t('common.select', 'Select')}</option>
+                                <option value="BJJ">BJJ</option>
+                                <option value="Jiu-Jitsu">Jiu-Jitsu</option>
+                                <option value="Karate">Karate</option>
+                                <option value="Muay Thai">Muay Thai</option>
+                                <option value="Boxing">Boxing</option>
+                                <option value="Fitness">Fitness</option>
+                                <option value="Musculación">Musculación</option>
+                                <option value="Other">Other</option>
+                              </select>
+                            </div>
+                            <div className="flex-1">
+                              <label className="block text-xs font-medium text-gray-400 mb-1">
+                                {t('profile.belt', 'Belt/Rank')}
+                              </label>
+                              <select
+                                value={disc.belt}
+                                onChange={(e) => updateDiscipline(index, 'belt', e.target.value)}
+                                className="select select-bordered bg-gray-700 border-gray-600 text-white focus:border-primary w-full"
+                              >
+                                <option value="">{t('common.select', 'Select')}</option>
+                                {disc.discipline === 'BJJ' || disc.discipline === 'Jiu-Jitsu' ? (
+                                  <>
+                                    <option value="white">{t('belts.white')}</option>
+                                    <option value="blue">{t('belts.blue')}</option>
+                                    <option value="purple">{t('belts.purple')}</option>
+                                    <option value="brown">{t('belts.brown')}</option>
+                                    <option value="black">{t('belts.black')}</option>
+                                  </>
+                                ) : disc.discipline === 'Musculación' || disc.discipline === 'Fitness' ? (
+                                  <>
+                                    <option value="beginner">{t('studentForm.belts.beginner')}</option>
+                                    <option value="intermediate">{t('studentForm.belts.intermediate')}</option>
+                                    <option value="advanced">{t('studentForm.belts.advanced')}</option>
+                                    <option value="expert">{t('studentForm.belts.expert')}</option>
+                                  </>
+                                ) : (
+                                  <option value="other">Other</option>
+                                )}
+                              </select>
+                            </div>
+                            {disciplines.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeDiscipline(index)}
+                                className="btn btn-sm btn-error"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={addDiscipline}
+                          className="btn btn-sm btn-primary"
+                        >
+                          Add Discipline
+                        </button>
+                      </div>
                     </div>
                   </div>
 

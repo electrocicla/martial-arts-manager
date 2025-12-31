@@ -5,6 +5,7 @@ export interface Student {
   phone?: string;
   belt: string;
   discipline: string;
+  disciplines?: { discipline: string; belt: string }[]; // New array format
   join_date: string;
   date_of_birth?: string;
   emergency_contact_name?: string;

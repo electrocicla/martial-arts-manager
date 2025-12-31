@@ -8,6 +8,7 @@ interface StudentUpdateRequest {
   date_of_birth?: string;
   belt?: string;
   discipline?: string;
+  disciplines?: { discipline: string; belt: string }[]; // New array format
   join_date?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
@@ -122,6 +123,7 @@ export async function onRequestPut({ request, env, params }: { request: Request;
       phone: getString(raw, 'phone'),
       belt: getString(raw, 'belt'),
       discipline: getString(raw, 'discipline'),
+      disciplines: raw.disciplines as { discipline: string; belt: string }[] | undefined,
       date_of_birth: getString(raw, 'date_of_birth') ?? getString(raw, 'dateOfBirth'),
       join_date: getString(raw, 'join_date') ?? getString(raw, 'joinDate'),
       emergency_contact_name: getString(raw, 'emergency_contact_name') ?? getString(raw, 'emergencyContactName'),
@@ -159,6 +161,7 @@ export async function onRequestPut({ request, env, params }: { request: Request;
       'date_of_birth',
       'belt',
       'discipline',
+      'disciplines',
       'join_date',
       'emergency_contact_name',
       'emergency_contact_phone',
@@ -170,7 +173,12 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     allowedFields.forEach(field => {
       if (body[field] !== undefined) {
         updates.push(`${field} = ?`);
-        values.push(body[field] as string | number | null);
+        if (field === 'disciplines') {
+          const disciplinesJson = body.disciplines && body.disciplines.length > 0 ? JSON.stringify(body.disciplines) : null;
+          values.push(disciplinesJson);
+        } else {
+          values.push(body[field] as string | number | null);
+        }
       }
     });
 

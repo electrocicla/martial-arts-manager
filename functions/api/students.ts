@@ -8,6 +8,7 @@ interface StudentRecord {
   phone?: string;
   belt: string;
   discipline: string;
+  disciplines?: string; // JSON array of {discipline: string, belt: string}
   join_date: string;
   date_of_birth?: string;
   emergency_contact_name?: string;
@@ -100,6 +101,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       phone?: string;
       belt: string;
       discipline: string;
+      disciplines?: { discipline: string; belt: string }[]; // New array format
       joinDate: string;
       dateOfBirth?: string;
       emergencyContactName?: string;
@@ -108,17 +110,25 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     };
 
     const now = new Date().toISOString();
-    const { id, name, email, phone, belt, discipline, joinDate, dateOfBirth, emergencyContactName, emergencyContactPhone, notes } = body;
+    const { id, name, email, phone, belt, discipline, disciplines, joinDate, dateOfBirth, emergencyContactName, emergencyContactPhone, notes } = body;
+
+    // Handle disciplines: if new array format provided, use it; otherwise convert legacy belt/discipline to array
+    let disciplinesJson: string | null = null;
+    if (disciplines && disciplines.length > 0) {
+      disciplinesJson = JSON.stringify(disciplines);
+    } else if (belt && discipline) {
+      disciplinesJson = JSON.stringify([{ discipline, belt }]);
+    }
 
     // Insert with created_by set to current user
     await env.DB.prepare(`
       INSERT INTO students (
-        id, name, email, phone, belt, discipline, join_date, date_of_birth,
+        id, name, email, phone, belt, discipline, disciplines, join_date, date_of_birth,
         emergency_contact_name, emergency_contact_phone, notes, is_active,
         created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
     `).bind(
-      id, name, email, phone || null, belt, discipline, joinDate,
+      id, name, email, phone || null, belt, discipline, disciplinesJson, joinDate,
       dateOfBirth || null, emergencyContactName || null, emergencyContactPhone || null,
       notes || null, auth.user.id, now, now
     ).run();
@@ -147,6 +157,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       phone?: string;
       belt?: string;
       discipline?: string;
+      disciplines?: { discipline: string; belt: string }[]; // New array format
       joinDate?: string;
       dateOfBirth?: string;
       emergencyContactName?: string;
@@ -195,6 +206,11 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (body.phone !== undefined) { updates.push('phone = ?'); values.push(body.phone || null); }
     if (body.belt !== undefined) { updates.push('belt = ?'); values.push(body.belt); }
     if (body.discipline !== undefined) { updates.push('discipline = ?'); values.push(body.discipline); }
+    if (body.disciplines !== undefined) {
+      const disciplinesJson = body.disciplines && body.disciplines.length > 0 ? JSON.stringify(body.disciplines) : null;
+      updates.push('disciplines = ?');
+      values.push(disciplinesJson);
+    }
     if (finalJoinDate !== undefined) { updates.push('join_date = ?'); values.push(finalJoinDate); }
     if (body.dateOfBirth !== undefined) { updates.push('date_of_birth = ?'); values.push(body.dateOfBirth || null); }
     if (body.emergencyContactName !== undefined) { updates.push('emergency_contact_name = ?'); values.push(body.emergencyContactName || null); }
