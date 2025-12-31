@@ -64,7 +64,20 @@
     "emergencyPhone": "Telefone do contato",
     "beltSelfReport": "Minha faixa (declarada)",
     "selectBelt": "Selecione sua faixa",
-    "beltNote": "Seu instrutor pode verificar e ajustar seu grau se necessário."
+    "beltNote": "Seu instrutor pode verificar e ajustar seu grau se necessário.",
+    "personalInfo": "Informações Pessoais",
+    "email": "E-mail",
+    "disciplines": "Modalidades",
+    "belt": "Faixa/Grau",
+    "notes": "Notas Adicionais",
+    "remove": "Remover",
+    "addDiscipline": "Adicionar Modalidade",
+    "memberSince": "Membro desde",
+    "noDisciplinesSet": "Nenhuma modalidade configurada",
+    "saveChanges": "Salvar Alterações",
+    "cancel": "Cancelar",
+    "errorLoadingProfile": "Erro ao Carregar o Perfil",
+    "retry": "Tentar Novamente"
   },
   "auth": {
     "login": "Entrar",

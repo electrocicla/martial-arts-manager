@@ -64,7 +64,20 @@
     "emergencyPhone": "Contact Phone",
     "beltSelfReport": "My belt (self-reported)",
     "selectBelt": "Select your belt",
-    "beltNote": "Your instructor can verify and adjust your rank if needed."
+    "beltNote": "Your instructor can verify and adjust your rank if needed.",
+    "personalInfo": "Personal Information",
+    "email": "Email",
+    "disciplines": "Disciplines",
+    "belt": "Belt/Rank",
+    "notes": "Additional Notes",
+    "remove": "Remove",
+    "addDiscipline": "Add Discipline",
+    "memberSince": "Member since",
+    "noDisciplinesSet": "No disciplines set",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "errorLoadingProfile": "Error Loading Profile",
+    "retry": "Retry"
   },
   "auth": {
     "login": "Login",

@@ -198,13 +198,13 @@ export default function StudentProfile() {
         <div className="card bg-red-900/20 border border-red-500/30 max-w-md">
           <div className="card-body text-center">
             <AlertCircle className="w-12 h-12 text-error mx-auto mb-4" />
-            <h2 className="card-title text-error justify-center mb-2">Error Loading Profile</h2>
+            <h2 className="card-title text-error justify-center mb-2">{t('profile.errorLoadingProfile', 'Error Loading Profile')}</h2>
             <p className="text-error/80 mb-4">{loadError}</p>
             <button 
               onClick={() => window.location.reload()} 
               className="btn btn-error"
             >
-              Retry
+              {t('profile.retry', 'Retry')}
             </button>
           </div>
         </div>
@@ -262,7 +262,7 @@ export default function StudentProfile() {
                   <div className="text-gray-400 mb-4">
                     {disciplines.length > 0 ? disciplines.map((d, i) => (
                       <div key={i}>{d.discipline} - {d.belt}</div>
-                    )) : 'No disciplines set'}
+                    )) : t('profile.noDisciplinesSet', 'No disciplines set')}
                   </div>
 
                   {/* Quick Stats */}
@@ -270,7 +270,7 @@ export default function StudentProfile() {
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <Calendar className="w-5 h-5 text-blue-400" />
-                        <span className="text-sm text-gray-300">Member since</span>
+                        <span className="text-sm text-gray-300">{t('profile.memberSince', 'Member since')}</span>
                       </div>
                       <span className="text-sm font-medium text-white">
                         {profile?.join_date ? new Date(profile.join_date).getFullYear() : 'N/A'}
@@ -279,9 +279,9 @@ export default function StudentProfile() {
                     <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <Activity className="w-5 h-5 text-green-400" />
-                        <span className="text-sm text-gray-300">Status</span>
+                        <span className="text-sm text-gray-300">{t('profile.status', 'Status')}</span>
                       </div>
-                      <span className="text-sm font-medium text-green-400">Active</span>
+                      <span className="text-sm font-medium text-green-400">{t('profile.active', 'Active')}</span>
                     </div>
                   </div>
                 </div>
@@ -402,9 +402,9 @@ export default function StudentProfile() {
                               <button
                                 type="button"
                                 onClick={() => removeDiscipline(index)}
-                                className="btn btn-sm btn-error"
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
                               >
-                                Remove
+                                {t('profile.remove', 'Remove')}
                               </button>
                             )}
                           </div>
@@ -412,9 +412,10 @@ export default function StudentProfile() {
                         <button
                           type="button"
                           onClick={addDiscipline}
-                          className="btn btn-sm btn-primary"
+                          className="px-6 py-3 bg-gradient-to-r from-primary to-secondary hover:from-primary-focus hover:to-secondary-focus text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg flex items-center gap-2"
                         >
-                          Add Discipline
+                          <span>+</span>
+                          {t('profile.addDiscipline', 'Add Discipline')}
                         </button>
                       </div>
                     </div>
@@ -472,7 +473,7 @@ export default function StudentProfile() {
 
                   {saveSuccess && (
                     <div className="p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
-                      <p className="text-green-400 text-sm">Profile updated successfully!</p>
+                      <p className="text-green-400 text-sm">{t('profile.updatedSuccessfully', 'Profile updated successfully!')}</p>
                     </div>
                   )}
 
@@ -481,16 +482,16 @@ export default function StudentProfile() {
                     <Button
                       type="submit"
                       disabled={isSaving}
-                      className="flex-1 bg-primary hover:bg-primary-focus text-white font-medium py-2.5 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary-focus hover:to-secondary-focus text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
                     >
                       {isSaving ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-5 h-5 animate-spin" />
                           {t('common.saving', 'Saving...')}
                         </>
                       ) : (
                         <>
-                          <Save className="w-4 h-4" />
+                          <Save className="w-5 h-5" />
                           {t('profile.saveChanges', 'Save Changes')}
                         </>
                       )}
@@ -499,7 +500,7 @@ export default function StudentProfile() {
                       type="button"
                       variant="outline"
                       onClick={() => reset()}
-                      className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
+                      className="flex-1 border-2 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500 font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
                     >
                       {t('profile.cancel', 'Cancel')}
                     </Button>

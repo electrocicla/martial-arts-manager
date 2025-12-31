@@ -327,11 +327,11 @@ export default function Header() {
                   
                   {user?.role === 'student' && (
                     <button
-                      onClick={() => { navigate('/settings'); setDropdownOpen(false); }}
+                      onClick={() => { navigate('/profile'); setDropdownOpen(false); }}
                       className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
                     >
-                      <Settings className="w-4 h-4" />
-                      {t('nav.settings')}
+                      <User className="w-4 h-4" />
+                      {t('nav.profile')}
                     </button>
                   )}
 

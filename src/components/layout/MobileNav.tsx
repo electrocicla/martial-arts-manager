@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, Users, Calendar, DollarSign, BookOpen, 
-  Award, Clock, BarChart3, Settings, Plus, X, User
+  Award, Clock, BarChart3, Settings, X, User
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
@@ -138,71 +138,11 @@ export default function MobileNav() {
   const { user } = useAuth();
   const { t } = useTranslation();
 
-  // Filter items based on user role
-  const allowedItems = navigationItems.filter(item =>
-    user?.role && item.roles.includes(user.role)
-  );
-
-  // Take only first 4 items for bottom nav (mobile-first design), 6 for students
-  const visibleItems = allowedItems.slice(0, user?.role === 'student' ? 6 : 4);
+  // Bottom navigation removed - navigation items no longer needed for mobile nav
 
   return (
     <>
-      {/* Enhanced Mobile Bottom Navigation */}
-      <nav className="btm-nav btm-nav-lg md:hidden bg-gray-900/95 backdrop-blur-xl border-t border-gray-700/50 shadow-2xl shadow-black/40 fixed bottom-0 left-0 right-0 mobile-bottom-nav z-50 pb-safe">
-        {visibleItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.href;
-
-          return (
-            <Link
-              key={item.id}
-              to={item.href}
-              className={cn(
-                "relative group transition-all duration-300 flex flex-col items-center justify-center py-2 px-1 h-full",
-                isActive ? "text-primary" : "text-base-content/60 hover:text-base-content/80"
-              )}
-            >
-              {/* Active indicator */}
-              {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-gradient-to-r from-primary to-secondary rounded-full" />
-              )}
-              
-              {/* Icon with enhanced design */}
-              <div className={cn(
-                "relative p-2 rounded-2xl transition-all duration-300 mb-0.5",
-                isActive ? "bg-primary/10 scale-105" : "group-active:scale-95 group-active:bg-base-200/50"
-              )}>
-                <Icon className="w-5 h-5" />
-                {isActive && (
-                  <div className="absolute inset-0 bg-primary/20 blur-md rounded-2xl -z-10" />
-                )}
-              </div>
-              
-              {/* Label */}
-              <span className={cn(
-                "text-[10px] font-semibold transition-all duration-300 text-center leading-tight",
-                isActive ? "text-primary" : "text-base-content/70"
-              )}>
-                {t(item.nameKey)}
-              </span>
-            </Link>
-          );
-        })}
-        
-        {/* Quick Actions Button */}
-        {user?.role !== 'student' && (
-          <button
-            onClick={() => setIsQuickActionsOpen(true)}
-            className="relative group transition-all duration-300 text-base-content/70 flex flex-col items-center justify-center py-2 px-1 h-full"
-          >
-            <div className="p-2 rounded-xl transition-all duration-300 group-active:scale-95">
-              <Plus className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-bold">Actions</span>
-          </button>
-        )}
-      </nav>
+      {/* Mobile Bottom Navigation - REMOVED to prevent vision obstruction */}
 
       {/* Quick Actions Modal - Modern Tailwind Modal Pattern */}
       {isQuickActionsOpen && (

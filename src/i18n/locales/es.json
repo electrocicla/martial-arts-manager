@@ -62,7 +62,20 @@
     "emergencyPhone": "Teléfono del contacto",
     "beltSelfReport": "Mi cinturón (declarado)",
     "selectBelt": "Selecciona tu cinturón",
-    "beltNote": "Tu instructor puede verificar y ajustar tu grado si es necesario."
+    "beltNote": "Tu instructor puede verificar y ajustar tu grado si es necesario.",
+    "personalInfo": "Información Personal",
+    "email": "Correo Electrónico",
+    "disciplines": "Disciplinas",
+    "belt": "Cinturón/Grado",
+    "notes": "Notas Adicionales",
+    "remove": "Eliminar",
+    "addDiscipline": "Agregar Disciplina",
+    "memberSince": "Miembro desde",
+    "noDisciplinesSet": "No hay disciplinas configuradas",
+    "saveChanges": "Guardar Cambios",
+    "cancel": "Cancelar",
+    "errorLoadingProfile": "Error al Cargar el Perfil",
+    "retry": "Reintentar"
   },
   "auth": {
     "login": "Iniciar Sesión",
