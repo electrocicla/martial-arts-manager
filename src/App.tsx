@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Suspense, lazy, useEffect } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/layout/Header';
+import Sidebar from './components/layout/Sidebar';
 import BottomSlidingMenu from './components/layout/BottomSlidingMenu';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/ui/ToastProvider';
@@ -41,6 +42,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-900">
+      <Sidebar />
       <Header />
       <main className="md:ml-64 min-h-screen main-content">
         <Suspense fallback={<LoadingSpinner />}>
