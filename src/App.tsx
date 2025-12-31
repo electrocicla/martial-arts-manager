@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Suspense, lazy, useEffect } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/layout/Header';
-import MobileNav from './components/layout/MobileNav';
+import BottomSlidingMenu from './components/layout/BottomSlidingMenu';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/ui/ToastProvider';
 
@@ -58,7 +58,7 @@ function AppContent() {
           </Routes>
         </Suspense>
       </main>
-      <MobileNav />
+      <BottomSlidingMenu />
     </div>
   );
 }

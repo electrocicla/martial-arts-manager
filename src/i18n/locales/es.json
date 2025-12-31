@@ -90,7 +90,7 @@
     "password": "Contraseña",
     "confirmPassword": "Confirmar Contraseña",
     "role": "Rol",
-    "student": "Estudiante",
+    "student": "Alumno",
     "instructor": "Instructor",
     "admin": "Administrador",
     "loginButton": "Iniciar Sesión",
