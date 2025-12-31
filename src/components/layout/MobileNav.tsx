@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, Users, Calendar, DollarSign, BookOpen, 
-  Award, Clock, BarChart3, Settings, X, User
+  Award, Clock, BarChart3, X, User
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
@@ -49,14 +49,6 @@ const navigationItems = [
     icon: Award,
     roles: ['admin', 'instructor', 'student'],
     color: 'text-yellow-500'
-  },
-  {
-    id: 'settings',
-    nameKey: 'nav.settings',
-    href: '/settings',
-    icon: Settings,
-    roles: ['admin', 'instructor', 'student'],
-    color: 'text-gray-500'
   },
   {
     id: 'students',
@@ -286,33 +278,10 @@ export default function MobileNav() {
           </ul>
         </nav>
 
-        {/* Settings Section - Fixed Bottom with Gradient Fade */}
-        <div className="relative mt-auto">
-          {/* Fade gradient to indicate scrollable content above */}
-          <div className="absolute bottom-full left-0 right-0 h-8 bg-gradient-to-t from-gray-900 to-transparent pointer-events-none" />
-          
-          <div className="p-3 border-t border-gray-800/50 bg-gray-900/80 backdrop-blur-sm">
-            <ul className="space-y-1.5">
-              <li className="group">
-                <Link 
-                  to="/settings" 
-                  className="
-                    flex items-center gap-3.5 px-4 py-3 rounded-xl 
-                    font-semibold text-sm text-gray-300 
-                    hover:text-white hover:bg-gray-800/60
-                    transition-all duration-200
-                    hover:translate-x-0.5
-                  "
-                >
-                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-800/40 group-hover:bg-gray-700/60 transition-all duration-200">
-                    <Settings className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-                  </div>
-                  <span className="flex-1 tracking-wide">
-                    {t('nav.settings')}
-                  </span>
-                </Link>
-              </li>
-            </ul>
+        {/* Footer Section - Quick Actions */}
+        <div className="p-3 border-t border-gray-800/50 bg-gray-900/80 backdrop-blur-sm">
+          <div className="text-xs text-gray-400 text-center">
+            {t('common.appName')} v1.0
           </div>
         </div>
       </aside>

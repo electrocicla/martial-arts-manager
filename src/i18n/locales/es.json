@@ -75,7 +75,12 @@
     "saveChanges": "Guardar Cambios",
     "cancel": "Cancelar",
     "errorLoadingProfile": "Error al Cargar el Perfil",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "tabs": {
+      "personal": "Información Personal",
+      "notifications": "Notificaciones",
+      "appearance": "Apariencia"
+    }
   },
   "auth": {
     "login": "Iniciar Sesión",

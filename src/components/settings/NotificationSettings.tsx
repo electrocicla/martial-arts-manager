@@ -20,42 +20,42 @@ export default function NotificationSettings() {
   };
 
   return (
-    <section className="bg-white dark:bg-slate-900 rounded-lg shadow-sm p-4 sm:p-6">
+    <section className="bg-gray-800/50 border border-gray-700 rounded-lg shadow-sm p-4 sm:p-6">
       <header className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Notification Preferences</h2>
+        <h2 className="text-lg font-semibold text-white">Notification Preferences</h2>
         <div>
-          <button className="px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm">Save</button>
+          <button className="px-3 py-1.5 rounded-md bg-red-600 text-white text-sm hover:bg-red-700">Save</button>
         </div>
       </header>
 
       <div className="space-y-4">
         {Object.entries(notifications).map(([key, value]) => (
           <div key={key} className="flex items-center justify-between">
-            <div className="text-sm text-slate-700 dark:text-slate-300">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+            <div className="text-sm text-gray-300">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
             <label className="inline-flex items-center">
               <input type="checkbox" className="sr-only peer" checked={value} onChange={(e) => setNotifications({ ...notifications, [key]: e.target.checked })} />
-              <div className="w-11 h-6 bg-slate-200 peer-checked:bg-sky-600 rounded-full relative transition-colors"></div>
+              <div className="w-11 h-6 bg-gray-600 peer-checked:bg-red-600 rounded-full relative transition-colors"></div>
             </label>
           </div>
         ))}
 
         <div>
-          <h3 className="text-sm font-semibold mb-2">Notification schedule</h3>
+          <h3 className="text-sm font-semibold mb-2 text-white">Notification schedule</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <label className="flex flex-col">
-              <span className="text-sm text-slate-700 dark:text-slate-300">Quiet hours start</span>
-              <input value={startTime} onChange={(e) => setStartTime(e.target.value)} type="time" className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2" />
+              <span className="text-sm text-gray-300">Quiet hours start</span>
+              <input value={startTime} onChange={(e) => setStartTime(e.target.value)} type="time" className="mt-2 rounded-md border border-gray-600 px-3 py-2 bg-gray-700 text-white" />
             </label>
             <label className="flex flex-col">
-              <span className="text-sm text-slate-700 dark:text-slate-300">Quiet hours end</span>
-              <input value={endTime} onChange={(e) => setEndTime(e.target.value)} type="time" className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2" />
+              <span className="text-sm text-gray-300">Quiet hours end</span>
+              <input value={endTime} onChange={(e) => setEndTime(e.target.value)} type="time" className="mt-2 rounded-md border border-gray-600 px-3 py-2 bg-gray-700 text-white" />
             </label>
           </div>
         </div>
 
         <div className="flex justify-end gap-3">
-          <button className="px-3 py-1 rounded-md border text-sm">Cancel</button>
-          <button onClick={handleSave} className="px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm inline-flex items-center gap-2"><Save className="w-4 h-4" />Save Preferences</button>
+          <button className="px-3 py-1 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-700 text-sm">Cancel</button>
+          <button onClick={handleSave} className="px-3 py-1.5 rounded-md bg-red-600 text-white text-sm inline-flex items-center gap-2 hover:bg-red-700"><Save className="w-4 h-4" />Save Preferences</button>
         </div>
       </div>
     </section>

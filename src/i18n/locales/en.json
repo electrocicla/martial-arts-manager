@@ -77,7 +77,12 @@
     "saveChanges": "Save Changes",
     "cancel": "Cancel",
     "errorLoadingProfile": "Error Loading Profile",
-    "retry": "Retry"
+    "retry": "Retry",
+    "tabs": {
+      "personal": "Personal Info",
+      "notifications": "Notifications",
+      "appearance": "Appearance"
+    }
   },
   "auth": {
     "login": "Login",
