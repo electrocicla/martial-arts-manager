@@ -18,6 +18,46 @@ export default function ProfileSettings() {
     bio: ''
   });
 
+  const handleSave = async () => {
+    setSaveError(null);
+    if (!user) return;
+
+    // Students: persist to D1 via student profile endpoint (real account email)
+    if (user.role === 'student') {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setSaveError('No authentication token found');
+        return;
+      }
+
+      const response = await fetch('/api/student/profile', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: 'Failed to save profile' } as { error?: string }));
+        setSaveError(data.error || 'Failed to save profile');
+        return;
+      }
+
+      // Refresh auth context so email/name changes reflect immediately across the app
+      await refreshAuth();
+      return;
+    }
+
+    // Admin/Instructor: keep existing settings behavior (does not impact login)
+    await saveSection('profile', form);
+  };
+
   // Get user initials for avatar
   const getInitials = (name: string) => {
     return name
@@ -89,7 +129,11 @@ export default function ProfileSettings() {
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
         <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">{t('settings.profile.title')}</h2>
         <div className="flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-400">
+          <button
+            type="button"
+            onClick={handleSave}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-400"
+          >
             <Save className="w-4 h-4" />
             {t('common.save')}
           </button>
@@ -171,7 +215,7 @@ export default function ProfileSettings() {
 
           <div className="sm:col-span-2 flex justify-end gap-3">
             <button type="button" className="px-3 py-1 rounded-md text-sm border">{t('settings.profile.cancel')}</button>
-            <button type="button" onClick={async () => { await saveSection('profile', form); }} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700">
+            <button type="button" onClick={handleSave} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700">
               <Save className="w-4 h-4" />
               {t('settings.profile.save')}
             </button>

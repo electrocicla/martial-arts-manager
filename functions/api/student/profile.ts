@@ -67,6 +67,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     const body = await request.json() as {
       name?: string;
+      email?: string;
       phone?: string;
       belt?: string;
       disciplines?: { discipline: string; belt: string }[]; // Allow students to update their disciplines
@@ -76,15 +77,42 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       notes?: string;
     };
 
-    const { name, phone, belt, disciplines, date_of_birth, emergency_contact_name, emergency_contact_phone, notes } = body;
+    const { name, email, phone, belt, disciplines, date_of_birth, emergency_contact_name, emergency_contact_phone, notes } = body;
     const now = new Date().toISOString();
 
+    let normalizedEmail: string | undefined;
+    if (email !== undefined) {
+      const trimmed = email.trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmed)) {
+        return new Response(JSON.stringify({ error: 'Invalid email format' }), { status: 400 });
+      }
+
+      // Ensure uniqueness across both tables
+      const existingUser = await env.DB.prepare('SELECT id FROM users WHERE email = ? AND id != ?')
+        .bind(trimmed, auth.user.id)
+        .first<{ id: string }>();
+      if (existingUser?.id) {
+        return new Response(JSON.stringify({ error: 'Email is already in use' }), { status: 409 });
+      }
+
+      const existingStudent = await env.DB.prepare('SELECT id FROM students WHERE email = ? AND id != ? AND deleted_at IS NULL')
+        .bind(trimmed, auth.user.student_id)
+        .first<{ id: string }>();
+      if (existingStudent?.id) {
+        return new Response(JSON.stringify({ error: 'Email is already in use' }), { status: 409 });
+      }
+
+      normalizedEmail = trimmed;
+    }
+
     // Update student record
-    // Note: We don't allow updating email, belt, discipline, or instructor here as those are managed by admin/instructor
+    // Note: Belt/discipline/instructor are managed by admin/instructor
     let query = "UPDATE students SET updated_at = ?";
     const params: (string | number | null)[] = [now];
 
     if (name !== undefined) { query += ", name = ?"; params.push(name); }
+    if (normalizedEmail !== undefined) { query += ", email = ?"; params.push(normalizedEmail); }
     if (phone !== undefined) { query += ", phone = ?"; params.push(phone); }
     if (belt !== undefined) { query += ", belt = ?"; params.push(belt); }
     if (disciplines !== undefined) {
@@ -100,14 +128,21 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     query += " WHERE id = ?";
     params.push(auth.user.student_id);
 
-    await env.DB.prepare(query).bind(...params).run();
+    const statements: D1PreparedStatement[] = [env.DB.prepare(query).bind(...params)];
 
-    // If name was updated, we should also update the users table
-    if (name !== undefined) {
-      await env.DB.prepare("UPDATE users SET name = ?, updated_at = ? WHERE id = ?")
-        .bind(name, now, auth.user.id)
-        .run();
+    // Keep users.email in sync so login + profile reflect the same email
+    if (normalizedEmail !== undefined) {
+      statements.push(env.DB.prepare('UPDATE users SET email = ?, updated_at = ? WHERE id = ?')
+        .bind(normalizedEmail, now, auth.user.id));
     }
+
+    // If name was updated, also update the users table
+    if (name !== undefined) {
+      statements.push(env.DB.prepare('UPDATE users SET name = ?, updated_at = ? WHERE id = ?')
+        .bind(name, now, auth.user.id));
+    }
+
+    await env.DB.batch(statements);
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { 'Content-Type': 'application/json' },

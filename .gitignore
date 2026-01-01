@@ -40,6 +40,11 @@ dist-ssr
 *.sqlite-shm
 *.sqlite-wal
 
+# Sensitive exports and helpers
+reports/
+scripts/
+wrangler.d1-probe.toml
+
 # Cloudflare
 .cloudflare/
 
