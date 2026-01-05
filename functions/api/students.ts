@@ -112,6 +112,48 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const now = new Date().toISOString();
     const { id, name, email, phone, belt, discipline, disciplines, joinDate, dateOfBirth, emergencyContactName, emergencyContactPhone, notes } = body;
 
+    if (!id || typeof id !== 'string') {
+      return new Response(JSON.stringify({ error: 'Student id is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return new Response(JSON.stringify({ error: 'Student name is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!email || typeof email !== 'string' || email.trim().length === 0) {
+      return new Response(JSON.stringify({ error: 'Student email is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!belt || typeof belt !== 'string' || belt.trim().length === 0) {
+      return new Response(JSON.stringify({ error: 'Student belt is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!discipline || typeof discipline !== 'string' || discipline.trim().length === 0) {
+      return new Response(JSON.stringify({ error: 'Student discipline is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!joinDate || typeof joinDate !== 'string' || joinDate.trim().length === 0) {
+      return new Response(JSON.stringify({ error: 'Join date is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Handle disciplines: if new array format provided, use it; otherwise convert legacy belt/discipline to array
     let disciplinesJson: string | null = null;
     if (disciplines && disciplines.length > 0) {
@@ -133,9 +175,37 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       notes || null, auth.user.id, now, now
     ).run();
 
-    return new Response(JSON.stringify({ success: true }), { status: 201 });
+    const createdStudent = await env.DB.prepare('SELECT * FROM students WHERE id = ? AND deleted_at IS NULL').bind(id).first<StudentRecord>();
+
+    if (!createdStudent) {
+      return new Response(JSON.stringify({ error: 'Failed to retrieve created student' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({
+      ...createdStudent,
+      avatar_url: normalizeAvatarUrl(createdStudent.avatar_url),
+    }), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    const lowered = message.toLowerCase();
+
+    if (lowered.includes('unique constraint failed') && lowered.includes('students.email')) {
+      return new Response(JSON.stringify({ error: 'A student with this email already exists' }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
 

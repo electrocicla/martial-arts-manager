@@ -54,6 +54,7 @@ CREATE TABLE students (
   phone TEXT,
   belt TEXT NOT NULL,
   discipline TEXT NOT NULL,
+  disciplines TEXT, -- JSON array of {discipline: string, belt: string}
   join_date TEXT NOT NULL,
   date_of_birth TEXT,
   emergency_contact_name TEXT,
