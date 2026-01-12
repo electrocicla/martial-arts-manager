@@ -60,9 +60,9 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     let query = "SELECT * FROM students WHERE deleted_at IS NULL";
     const params: string[] = [];
 
-    // If not admin, filter by creator or instructor
+    // If not admin, filter by creator, instructor, or students without assigned instructor
     if (auth.user.role !== 'admin') {
-      query += " AND (created_by = ? OR instructor_id = ?)";
+      query += " AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)";
       params.push(auth.user.id, auth.user.id);
     }
 
@@ -326,48 +326,6 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 }
 
 export async function onRequestDelete({ request, env }: { request: Request; env: Env }) {
-  try {
-    // Authenticate user
-    const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) {
-      return new Response(JSON.stringify({ error: auth.error }), { 
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Get student ID from URL
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
-
-    if (!id) {
-      return new Response(JSON.stringify({ error: 'Student ID required' }), { 
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Verify the student belongs to the current user
-    const { results } = await env.DB.prepare(
-      "SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(id, auth.user.id).all();
-
-    if (!results || results.length === 0) {
-      return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    const now = new Date().toISOString();
-
-    // Soft delete - set deleted_at timestamp
-    await env.DB.prepare(
-      "UPDATE students SET deleted_at = ?, updated_at = ? WHERE id = ? AND created_by = ?"
-    ).bind(now, now, id, auth.user.id).run();
-
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
-  }
+  // This function is deprecated - DELETE is handled in [id].ts
+  return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
 }

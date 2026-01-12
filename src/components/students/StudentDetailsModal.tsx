@@ -19,6 +19,33 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
+  // Validate student data
+  if (!student || !student.id) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md w-full">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-6 h-6 text-red-600" />
+            <div>
+              <h3 className="font-semibold text-red-800 dark:text-red-200">Student Not Found</h3>
+              <p className="text-sm text-red-600 dark:text-red-300 mt-1">
+                The student information is no longer available. It may have been deleted.
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true);
   };

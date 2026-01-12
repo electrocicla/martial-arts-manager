@@ -29,10 +29,22 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       });
     }
 
-    // Get only payments created by this user
-    const { results } = await env.DB.prepare(
-      "SELECT * FROM payments WHERE deleted_at IS NULL AND created_by = ? ORDER BY date DESC"
-    ).bind(auth.user.id).all<PaymentRecord>();
+    // Get payments for students the user has access to
+    let query = `
+      SELECT p.* FROM payments p
+      INNER JOIN students s ON p.student_id = s.id
+      WHERE p.deleted_at IS NULL AND s.deleted_at IS NULL
+    `;
+    const params: string[] = [];
+
+    if (auth.user.role !== 'admin') {
+      query += " AND (s.created_by = ? OR s.instructor_id = ? OR (s.instructor_id IS NULL AND s.created_by IS NOT NULL))";
+      params.push(auth.user.id, auth.user.id);
+    }
+
+    query += " ORDER BY p.date DESC";
+
+    const { results } = await env.DB.prepare(query).bind(...params).all<PaymentRecord>();
     
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
@@ -87,10 +99,17 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     const now = new Date().toISOString();
 
-    // Verify that the student belongs to this user
-    const studentCheck = await env.DB.prepare(
-      "SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(studentId, auth.user.id).first();
+    // Verify that the student exists and user has access
+    let studentCheckQuery = "SELECT id, instructor_id FROM students WHERE id = ? AND deleted_at IS NULL";
+    const studentCheckParams: string[] = [studentId];
+
+    if (auth.user.role !== 'admin') {
+      // If not admin, check if user is the instructor assigned to the student, or if no instructor is assigned
+      studentCheckQuery += " AND (instructor_id = ? OR instructor_id IS NULL OR created_by = ?)";
+      studentCheckParams.push(auth.user.id, auth.user.id);
+    }
+
+    const studentCheck = await env.DB.prepare(studentCheckQuery).bind(...studentCheckParams).first();
 
     if (!studentCheck) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 

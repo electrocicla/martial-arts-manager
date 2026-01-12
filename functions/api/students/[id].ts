@@ -67,7 +67,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     const bindValues: string[] = [studentId];
 
     if (auth.user.role !== 'admin') {
-      query += ' AND (created_by = ? OR instructor_id = ?)';
+      query += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
       bindValues.push(auth.user.id, auth.user.id);
     }
 
@@ -137,7 +137,7 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     let checkQuery = 'SELECT id FROM students WHERE id = ? AND deleted_at IS NULL';
     const checkValues: string[] = [studentId];
     if (auth.user.role !== 'admin') {
-      checkQuery += ' AND (created_by = ? OR instructor_id = ?)';
+      checkQuery += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
       checkValues.push(auth.user.id, auth.user.id);
     }
 
@@ -254,26 +254,47 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
 
     const studentId = params.id as string;
 
-    // Verify student exists and belongs to user
-    const student = await env.DB.prepare(
-      'SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL'
-    )
-      .bind(studentId, auth.user.id)
-      .first();
+    // Verify student exists and user has access
+    let checkQuery = 'SELECT id, email FROM students WHERE id = ? AND deleted_at IS NULL';
+    const checkParams: string[] = [studentId];
+
+    if (auth.user.role !== 'admin') {
+      checkQuery += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
+      checkParams.push(auth.user.id, auth.user.id);
+    }
+
+    const student = await env.DB.prepare(checkQuery).bind(...checkParams).first<{ id: string; email: string }>();
 
     if (!student) {
-      return new Response(JSON.stringify({ error: 'Student not found' }), {
+      return new Response(JSON.stringify({ error: 'Student not found or access denied' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
+    const now = new Date().toISOString();
+
+    // Start transaction-like operation (D1 doesn't support transactions, but we'll do our best)
+    const db = env.DB;
+
     // Soft delete the student
-    await env.DB.prepare(
-      'UPDATE students SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND created_by = ?'
-    )
-      .bind(studentId, auth.user.id)
-      .run();
+    await db.prepare(
+      'UPDATE students SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ?'
+    ).bind(now, now, auth.user.id, studentId).run();
+
+    // Delete associated user account if it exists
+    const userAccount = await db.prepare(
+      'SELECT id FROM users WHERE email = ?'
+    ).bind(student.email).first<{ id: string }>();
+
+    if (userAccount) {
+      // Delete sessions first (due to foreign key constraints)
+      await db.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userAccount.id).run();
+      // Delete audit logs
+      await db.prepare('DELETE FROM audit_logs WHERE user_id = ?').bind(userAccount.id).run();
+      // Delete user account
+      await db.prepare('DELETE FROM users WHERE id = ?').bind(userAccount.id).run();
+    }
 
     return new Response(
       JSON.stringify({ message: 'Student deleted successfully' }),
