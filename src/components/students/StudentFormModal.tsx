@@ -9,7 +9,7 @@ import { DISCIPLINES } from '../../lib/constants';
 interface StudentFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: StudentFormData) => Promise<Student | null>;
+  onSubmit: (data: StudentFormData) => Promise<{ success: boolean; data?: Student; error?: string }>;
 }
 
 export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentFormModalProps) {
@@ -105,7 +105,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
     };
 
     const result = await onSubmit(studentData);
-    if (result) {
+    if (result.success) {
       onClose();
       // Reset form
       setNewStudent({
@@ -124,7 +124,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
       setBirthMonth('');
       setBirthYear('');
     } else {
-      alert(t('studentForm.addFailed'));
+      alert(result.error || t('studentForm.addFailed'));
     }
   };
 

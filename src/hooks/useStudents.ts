@@ -24,7 +24,7 @@ interface UseStudentsReturn {
 
   // Actions
   refresh: () => Promise<void>;
-  createStudent: (data: StudentFormData) => Promise<Student | null>;
+  createStudent: (data: StudentFormData) => Promise<{ success: boolean; data?: Student; error?: string }>;
   updateStudent: (id: string, data: Partial<StudentFormData>) => Promise<Student | null>;
   deleteStudent: (id: string) => Promise<boolean>;
   filterStudents: (filters: StudentFilters) => Promise<void>;
@@ -63,7 +63,7 @@ export function useStudents(initialFilters?: StudentFilters): UseStudentsReturn 
     await fetchStudents(currentFilters);
   }, [fetchStudents, currentFilters]);
 
-  const createStudent = useCallback(async (data: StudentFormData): Promise<Student | null> => {
+  const createStudent = useCallback(async (data: StudentFormData): Promise<{ success: boolean; data?: Student; error?: string }> => {
     try {
       setIsCreating(true);
       setError(null);
@@ -71,14 +71,16 @@ export function useStudents(initialFilters?: StudentFilters): UseStudentsReturn 
       const response = await studentService.create(data);
       if (response.success && response.data) {
         setStudents(prev => [...prev, response.data!]);
-        return response.data;
+        return { success: true, data: response.data };
       } else {
-        setError(response.error || 'Failed to create student');
-        return null;
+        const errorMsg = response.error || 'Failed to create student';
+        setError(errorMsg);
+        return { success: false, error: errorMsg };
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
-      return null;
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     } finally {
       setIsCreating(false);
     }
