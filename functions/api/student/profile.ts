@@ -45,9 +45,19 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       return new Response(JSON.stringify({ error: 'Student profile not found' }), { status: 404 });
     }
 
+    let disciplines = (student as any).disciplines;
+    try {
+      if (typeof disciplines === 'string') {
+        disciplines = JSON.parse(disciplines);
+      }
+    } catch {
+      disciplines = [];
+    }
+
     const normalized = {
       ...(student as Record<string, unknown>),
       avatar_url: normalizeAvatarUrl((student as Record<string, unknown>).avatar_url),
+      disciplines
     };
 
     return new Response(JSON.stringify(normalized), {

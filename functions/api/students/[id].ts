@@ -80,9 +80,19 @@ export async function onRequestGet({ request, env, params }: { request: Request;
       });
     }
 
+    let disciplines = (student as any).disciplines;
+    try {
+      if (typeof disciplines === 'string') {
+        disciplines = JSON.parse(disciplines);
+      }
+    } catch {
+      disciplines = [];
+    }
+
     const normalized = {
       ...student,
       avatar_url: normalizeAvatarUrl(student.avatar_url),
+      disciplines,
     };
 
     return new Response(JSON.stringify({ student: normalized }), {

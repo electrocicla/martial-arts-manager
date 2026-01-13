@@ -70,10 +70,22 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
 
     const { results } = await env.DB.prepare(query).bind(...params).all<StudentRecord>();
 
-    const normalized = (results || []).map((student) => ({
-      ...student,
-      avatar_url: normalizeAvatarUrl(student.avatar_url),
-    }));
+    const normalized = (results || []).map((student) => {
+      let disciplines = student.disciplines;
+      try {
+        if (typeof disciplines === 'string') {
+          disciplines = JSON.parse(disciplines);
+        }
+      } catch {
+        disciplines = [];
+      }
+      
+      return {
+        ...student,
+        avatar_url: normalizeAvatarUrl(student.avatar_url),
+        disciplines,
+      };
+    });
 
     return new Response(JSON.stringify(normalized), {
       headers: { 'Content-Type': 'application/json' },
