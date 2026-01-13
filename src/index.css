@@ -439,7 +439,8 @@ p, span, div {
 @media (max-width: 768px) {
   /* Ensure ALL main content doesn't overlap with sticky header */
   .main-content {
-    padding-top: 6rem !important; /* Height of mobile header + extra spacing */
+    /* padding-top: 6rem !important; Removed extra padding as requested */
+    padding-top: 0 !important;
     margin-top: 0 !important;
     position: relative !important;
     z-index: 1 !important;
