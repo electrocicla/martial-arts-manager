@@ -533,6 +533,16 @@
       "getStarted": "COMENZAR",
       "followUs": "Síguenos @hamarr_jiujitsu_mma"
     },
+    "stats": {
+      "studentsManaged": "Estudiantes Gestionados",
+      "beltPromotionsTracked": "Promociones de Cinturón Rastreadas",
+      "classesScheduled": "Clases Programadas",
+      "studentRetention": "Retención de Estudiantes"
+    },
+    "featuresSection": {
+      "title": "Características Poderosas",
+      "description": "Todo lo que necesitas para gestionar tu escuela de artes marciales eficientemente"
+    },
     "features": {
       "studentManagement": {
         "title": "Gestión de Estudiantes",

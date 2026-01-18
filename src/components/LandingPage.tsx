@@ -64,10 +64,10 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
   ];
 
   const stats = [
-    { icon: Users, value: "500+", label: "Students Managed" },
-    { icon: Award, value: "50+", label: "Belt Promotions Tracked" },
-    { icon: Calendar, value: "1000+", label: "Classes Scheduled" },
-    { icon: Target, value: "95%", label: "Student Retention" },
+    { icon: Users, value: "500+", label: t('landing.stats.studentsManaged') },
+    { icon: Award, value: "50+", label: t('landing.stats.beltPromotionsTracked') },
+    { icon: Calendar, value: "1000+", label: t('landing.stats.classesScheduled') },
+    { icon: Target, value: "95%", label: t('landing.stats.studentRetention') },
   ];
 
   return (
@@ -542,10 +542,10 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
             className="text-center mb-16"
           >
             <h2 className="text-3xl sm:text-5xl font-black mb-6 gradient-text-yellow-red">
-              Powerful Features
+              {t('landing.featuresSection.title')}
             </h2>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-              Everything you need to manage your martial arts school efficiently
+              {t('landing.featuresSection.description')}
             </p>
           </motion.div>
 

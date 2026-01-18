@@ -401,8 +401,16 @@
       "description": "A solução definitiva para instrutores de artes marciais organizarem alunos, rastrearem progressões de faixas, gerenciarem pagamentos, agendarem aulas, monitorarem presença e expandirem sua academia de artes marciais.",
       "getStarted": "COMEÇAR",
       "followUs": "Siga @hamarr_jiujitsu_mma"
+    },    "stats": {
+      "studentsManaged": "Alunos Gerenciados",
+      "beltPromotionsTracked": "Promoções de Faixa Rastreadas",
+      "classesScheduled": "Aulas Agendadas",
+      "studentRetention": "Retenção de Alunos"
     },
-    "features": {
+    "featuresSection": {
+      "title": "Recursos Poderosos",
+      "description": "Tudo o que você precisa para gerenciar sua escola de artes marciais eficientemente"
+    },    "features": {
       "studentManagement": {
         "title": "Gestão de Alunos",
         "description": "Perfis completos de alunos com informações de contato, contatos de emergência, histórico de progressão de faixas e rastreamento de presença"
