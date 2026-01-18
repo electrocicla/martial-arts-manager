@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "deploy": "pnpm build && wrangler pages deploy dist",
+    "predeploy": "pnpm typecheck && pnpm lint",
+    "deploy": "pnpm predeploy && pnpm build && wrangler pages deploy dist --project-name=martial-arts-manager --branch=main && node scripts/post-deploy.mjs",
+    "deploy:quick": "pnpm build && wrangler pages deploy dist --project-name=martial-arts-manager && node scripts/post-deploy.mjs",
     "type-check": "tsc --noEmit",
     "db:local": "wrangler d1 execute martial-arts-db --local --file=./schema.sql",
     "db:prod": "wrangler d1 execute martial-arts-db --file=./schema.sql"

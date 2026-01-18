@@ -45,7 +45,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       return new Response(JSON.stringify({ error: 'Student profile not found' }), { status: 404 });
     }
 
-    let disciplines = (student as any).disciplines;
+    const studentRecord = student as Record<string, unknown>;
+    let disciplines = studentRecord.disciplines;
     try {
       if (typeof disciplines === 'string') {
         disciplines = JSON.parse(disciplines);

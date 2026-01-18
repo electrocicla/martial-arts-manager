@@ -32,12 +32,12 @@ export default function Header() {
 
   const filteredNavigationItems = useMemo(
     () => navigationItems.filter(item => (user?.role ? item.roles.includes(user.role) : false)),
-    [navigationItems, user?.role]
+    [user?.role]
   );
 
   const filteredQuickActions = useMemo(
     () => quickActions.filter(item => (user?.role ? item.roles.includes(user.role) : false)),
-    [quickActions, user?.role]
+    [user?.role]
   );
 
 

@@ -337,7 +337,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
   }
 }
 
-export async function onRequestDelete({ request, env }: { request: Request; env: Env }) {
+export async function onRequestDelete() {
   // This function is deprecated - DELETE is handled in [id].ts
   return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
 }

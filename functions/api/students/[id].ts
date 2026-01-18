@@ -80,7 +80,8 @@ export async function onRequestGet({ request, env, params }: { request: Request;
       });
     }
 
-    let disciplines = (student as any).disciplines;
+    const studentRecord = student as Record<string, unknown>;
+    let disciplines = studentRecord.disciplines;
     try {
       if (typeof disciplines === 'string') {
         disciplines = JSON.parse(disciplines);

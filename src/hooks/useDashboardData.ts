@@ -124,7 +124,7 @@ export function useDashboardData(): DashboardData {
     }
 
     fetchDashboardData();
-  }, []);
+  }, [user?.role]);
 
   return data;
 }
