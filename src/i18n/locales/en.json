@@ -396,12 +396,22 @@
   "landing": {
     "hero": {
       "title1": "HAMARR",
-      "title2": "MARTIAL ARTS",
-      "title3": "MANAGER",
-      "subtitle": "Empower Your Dojo with Professional Management",
-      "description": "The ultimate solution for martial arts instructors to organize students, track belt progressions, manage payments, schedule classes, monitor attendance, and grow your martial arts academy.",
+      "title2": "JIU-JITSU GI",
+      "title3": "JIU-JITSU NO GI",
+      "title4": "MMA",
+      "description": "Hamarr, connects students and instructors in a single platform, strengthening discipline, commitment and growth on and off the mat.",
       "getStarted": "GET STARTED",
       "followUs": "Follow @hamarr_jiujitsu_mma"
+    },
+    "stats": {
+      "studentsManaged": "Students Managed",
+      "beltPromotionsTracked": "Belt Promotions Tracked",
+      "classesScheduled": "Classes Scheduled",
+      "studentRetention": "Student Retention"
+    },
+    "featuresSection": {
+      "title": "Powerful Features",
+      "description": "Everything you need to manage your martial arts school efficiently"
     },
     "features": {
       "studentManagement": {

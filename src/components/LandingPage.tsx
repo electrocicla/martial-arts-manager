@@ -164,7 +164,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
             <div className="text-left space-y-8">
               {/* Brand Text - Cinturón Negro con Cinta Roja */}
               <motion.h1 
-                className="text-4xl xl:text-5xl 2xl:text-6xl font-black tracking-tight leading-tight space-y-3"
+                className="text-4xl xl:text-5xl 2xl:text-6xl font-black tracking-tight leading-tight space-y-2"
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 1, delay: 0.3 }}
@@ -184,16 +184,25 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.7 }}
                 >
-                  MARTIAL ARTS
+                  JIU-JITSU GI
+                </motion.div>
+                
+                <motion.div 
+                  className="block fire-energy-text text-3xl xl:text-4xl 2xl:text-5xl"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.85 }}
+                >
+                  JIU-JITSU NO GI
                 </motion.div>
                 
                 <motion.div 
                   className="block dark-energy-text drop-shadow-2xl"
                   initial={{ x: 50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.9 }}
+                  transition={{ duration: 0.8, delay: 1.0 }}
                 >
-                  MANAGER
+                  MMA
                 </motion.div>
               </motion.h1>
 
@@ -212,19 +221,11 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
                 >
-                  <motion.h2 
-                    className="text-2xl xl:text-3xl 2xl:text-4xl font-black leading-tight text-white mb-4"
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 1.1 }}
-                  >
-                    {t('landing.hero.subtitle')}
-                  </motion.h2>
                   <motion.p 
                     className="text-lg xl:text-xl 2xl:text-2xl leading-relaxed font-bold text-white mt-4"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 1.3 }}
+                    transition={{ duration: 0.6, delay: 1.2 }}
                   >
                     {t('landing.hero.description')}
                   </motion.p>
@@ -357,16 +358,25 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ duration: 0.8, delay: 0.7 }}
                     >
-                      MARTIAL ARTS
+                      JIU-JITSU GI
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="block fire-energy-text text-2xl sm:text-3xl md:text-4xl"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.8, delay: 0.85 }}
+                    >
+                      JIU-JITSU NO GI
                     </motion.div>
                     
                     <motion.div 
                       className="block dark-energy-text drop-shadow-2xl"
                       initial={{ x: 100, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
-                      transition={{ duration: 0.8, delay: 0.9 }}
+                      transition={{ duration: 0.8, delay: 1.0 }}
                     >
-                      MANAGER
+                      MMA
                     </motion.div>
                   </motion.h1>
                 </div>
@@ -388,22 +398,13 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
               >
-                <motion.h2 
-                  className="text-xl sm:text-2xl md:text-3xl font-black leading-tight text-white mb-6"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 1.1 }}
-                >
-                  Empower Your Dojo with Professional Management
-                </motion.h2>
                 <motion.p 
                   className="text-base sm:text-lg md:text-xl leading-relaxed font-bold text-white mt-6"
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 1.3 }}
+                  transition={{ duration: 0.6, delay: 1.2 }}
                 >
-                  The ultimate solution for martial arts instructors to organize students, track belt progressions, 
-                  manage payments, schedule classes, monitor attendance, and grow your martial arts academy.
+                  {t('landing.hero.description')}
                 </motion.p>
               </motion.div>
 

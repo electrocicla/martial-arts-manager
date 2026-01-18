@@ -395,10 +395,10 @@
   "landing": {
     "hero": {
       "title1": "HAMARR",
-      "title2": "ARTES MARCIAIS",
-      "title3": "GESTOR",
-      "subtitle": "Potencialize Seu Dojo com Gestão Profissional",
-      "description": "A solução definitiva para instrutores de artes marciais organizarem alunos, rastrearem progressões de faixas, gerenciarem pagamentos, agendarem aulas, monitorarem presença e expandirem sua academia de artes marciais.",
+      "title2": "JIU-JITSU GI",
+      "title3": "JIU-JITSU NO GI",
+      "title4": "MMA",
+      "description": "Hamarr, conecta alunos e instrutores em uma única plataforma, fortalecendo a disciplina, o compromisso e o crescimento dentro e fora do tatame.",
       "getStarted": "COMEÇAR",
       "followUs": "Siga @hamarr_jiujitsu_mma"
     },    "stats": {
