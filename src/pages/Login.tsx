@@ -57,7 +57,7 @@ export default function Login() {
             >
               <div className="w-full h-full rounded-full bg-slate-800 p-2 electric-border">
                 <img 
-                  src="/hammar_logo.jpg" 
+                  src="/hammar_logo.jpeg" 
                   alt="HAMARR Logo" 
                   className="w-full h-full object-cover rounded-full"
                 />

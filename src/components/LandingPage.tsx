@@ -111,7 +111,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
               <div className="relative w-64 h-64 xl:w-80 xl:h-80 2xl:w-96 2xl:h-96 flex-shrink-0">
                 <div className="w-full h-full rounded-full bg-slate-800 p-3 electric-border">
                   <img
-                    src="/hammar_logo.jpg"
+                    src="/hammar_logo.jpeg"
                     alt="Hamarr Jiu-Jitsu MMA Logo"
                     className="w-full h-full rounded-full object-cover"
                   />
@@ -298,7 +298,7 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
                 <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 flex-shrink-0">
                   <div className="w-full h-full rounded-full bg-slate-800 p-2 electric-border">
                     <img
-                      src="/hammar_logo.jpg"
+                      src="/hammar_logo.jpeg"
                       alt="Hamarr Jiu-Jitsu MMA Logo"
                       className="w-full h-full rounded-full object-cover"
                     />
