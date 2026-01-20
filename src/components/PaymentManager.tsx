@@ -21,9 +21,11 @@ export default function PaymentManager() {
     createPayment,
   } = usePayments();
 
-  const { students } = useStudents();
+  const { students, isLoading: studentsLoading } = useStudents();
 
   const { t } = useTranslation();
+  const unknownStudentLabel = t('payments.labels.unknownStudent');
+  const loadingStudentsLabel = t('payments.labels.loadingStudents');
 
   const { success: showSuccess, error: showError } = useToast();
 
@@ -33,6 +35,10 @@ export default function PaymentManager() {
   const [typeFilter, setTypeFilter] = useState('all');
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const studentsById = useMemo(() => {
+    return new Map(students.map((student: Student) => [student.id, student]));
+  }, [students]);
 
   // Form setup
   const {
@@ -54,19 +60,21 @@ export default function PaymentManager() {
 
   // Filtered payments
   const filteredPayments = useMemo(() => {
+    const normalizedSearch = debouncedSearchTerm.toLowerCase();
     return payments.filter((payment: Payment) => {
-      const student = students.find((s: Student) => s.id === payment.student_id);
+      const studentName = (studentsById.get(payment.student_id)?.name ?? payment.student_name ?? '').toLowerCase();
+      const notesMatch = (payment.notes?.toLowerCase().includes(normalizedSearch)) ?? false;
       const matchesSearch = !debouncedSearchTerm ||
-        student?.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        payment.type.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        payment.notes?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+        studentName.includes(normalizedSearch) ||
+        payment.type.toLowerCase().includes(normalizedSearch) ||
+        notesMatch;
 
       const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
       const matchesType = typeFilter === 'all' || payment.type === typeFilter;
 
       return matchesSearch && matchesStatus && matchesType;
     });
-  }, [payments, students, debouncedSearchTerm, statusFilter, typeFilter]);
+  }, [payments, studentsById, debouncedSearchTerm, statusFilter, typeFilter]);
 
   const addPayment = async (data: PaymentFormData) => {
     try {
@@ -122,6 +130,12 @@ export default function PaymentManager() {
           {filteredPayments.length} {t('payments.totalPayments')}
         </Badge>
       </div>
+      {studentsLoading && (
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <span className="loading loading-spinner loading-xs text-primary" />
+          <span>{loadingStudentsLabel}</span>
+        </div>
+      )}
 
       {/* Search and Filters */}
       <Card>
@@ -295,7 +309,7 @@ export default function PaymentManager() {
           </Card>
         ) : (
           filteredPayments.map((payment: Payment) => {
-            const student = students.find((s: Student) => s.id === payment.student_id);
+            const studentName = studentsById.get(payment.student_id)?.name ?? payment.student_name ?? unknownStudentLabel;
             const paymentAmount = typeof payment.amount === 'number' ? payment.amount : 0;
             const paymentStatus = payment.status || 'completed';
             const paymentType = payment.type || 'other';
@@ -308,7 +322,7 @@ export default function PaymentManager() {
                       <div className="flex items-center gap-3 mb-2 flex-wrap">
                         <User className="h-5 w-5 text-gray-400" />
                         <span className="font-medium text-gray-900">
-                          {student?.name || 'Estudiante Desconocido'}
+                          {studentName}
                         </span>
                         <Badge variant={getTypeBadgeVariant(paymentType)}>
                           {t(`payments.type.${paymentType.replace('-', '')}`)}

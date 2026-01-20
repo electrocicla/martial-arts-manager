@@ -4,6 +4,7 @@ import { authenticateUser } from '../middleware/auth';
 interface PaymentRecord {
   id: string;
   student_id: string;
+  student_name?: string;
   amount: number;
   date: string;
   type: string;
@@ -31,7 +32,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
 
     // Get payments for students the user has access to
     let query = `
-      SELECT p.* FROM payments p
+      SELECT p.*, s.name as student_name FROM payments p
       INNER JOIN students s ON p.student_id = s.id
       WHERE p.deleted_at IS NULL AND s.deleted_at IS NULL
     `;
@@ -133,7 +134,11 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     ).run();
 
     // Return the full payment record so the client can immediately use it
-    const payment = await env.DB.prepare("SELECT * FROM payments WHERE id = ?").bind(paymentId).first<PaymentRecord>();
+    const payment = await env.DB.prepare(`
+      SELECT p.*, s.name as student_name FROM payments p
+      INNER JOIN students s ON p.student_id = s.id
+      WHERE p.id = ?
+    `).bind(paymentId).first<PaymentRecord>();
     return new Response(JSON.stringify(payment), { status: 201, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });

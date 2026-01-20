@@ -276,6 +276,10 @@
       "private": "Privada",
       "equipment": "Equipo",
       "other": "Otro"
+    },
+    "labels": {
+      "unknownStudent": "Estudiante desconocido",
+      "loadingStudents": "Cargando estudiantes..."
     }
   },
   "students": {

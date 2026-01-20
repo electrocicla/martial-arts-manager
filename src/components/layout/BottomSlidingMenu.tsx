@@ -144,11 +144,11 @@ export default function BottomSlidingMenu() {
   return (
     <>
       {/* Mobile Bottom Sliding Menu */}
-      <div className="md:hidden fixed inset-0 z-50 pointer-events-none">
+      <div className="md:hidden">
         {/* Backdrop - only visible when menu is open */}
         <div
           className={cn(
-            "absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300",
+            "fixed inset-0 z-50 bg-black/30 backdrop-blur-sm transition-opacity duration-300",
             isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           )}
           onClick={handleBackdropClick}
@@ -158,7 +158,7 @@ export default function BottomSlidingMenu() {
         <div
           ref={menuRef}
           className={cn(
-            "absolute bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-xl border-t border-gray-800/50 shadow-2xl transition-transform duration-300 ease-out pointer-events-auto",
+            "fixed bottom-0 left-0 right-0 z-[55] bg-gray-900/95 backdrop-blur-xl border-t border-gray-800/50 shadow-2xl transition-transform duration-300 ease-out pointer-events-auto",
             "max-h-[85vh] overflow-hidden rounded-t-3xl"
           )}
           style={{
@@ -292,37 +292,37 @@ export default function BottomSlidingMenu() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Tab Bar - Always Visible */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-xl border-t border-gray-800/50">
-          <div className="grid grid-cols-5 items-center px-2 py-2">
-            {tabItems.map((tab) => {
-              const Icon = tab.icon;
-              const active = tab.kind === 'link' ? isActive(tab.href) : isOpen;
+      {/* Bottom Tab Bar - Always Visible */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-gray-900/95 backdrop-blur-xl border-t border-gray-800/50">
+        <div className="grid grid-cols-5 items-center px-2 py-2">
+          {tabItems.map((tab) => {
+            const Icon = tab.icon;
+            const active = tab.kind === 'link' ? isActive(tab.href) : isOpen;
 
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    if (tab.kind === 'action') {
-                      setIsOpen(!isOpen);
-                      return;
-                    }
-                    handleNavigate(tab.href);
-                  }}
-                  className={cn(
-                    "flex flex-col items-center justify-center py-2 rounded-xl transition-colors",
-                    active ? "text-white bg-gray-800/60" : "text-gray-400 hover:text-white hover:bg-gray-800/60"
-                  )}
-                  aria-expanded={tab.kind === 'action' ? isOpen : undefined}
-                  aria-label={tab.label}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="text-[10px] font-medium mt-1 leading-none line-clamp-1">{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  if (tab.kind === 'action') {
+                    setIsOpen(!isOpen);
+                    return;
+                  }
+                  handleNavigate(tab.href);
+                }}
+                className={cn(
+                  "flex flex-col items-center justify-center py-2 rounded-xl transition-colors",
+                  active ? "text-white bg-gray-800/60" : "text-gray-400 hover:text-white hover:bg-gray-800/60"
+                )}
+                aria-expanded={tab.kind === 'action' ? isOpen : undefined}
+                aria-label={tab.label}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium mt-1 leading-none line-clamp-1">{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </>
