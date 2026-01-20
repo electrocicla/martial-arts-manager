@@ -56,7 +56,7 @@ export const navigationItems: NavigationItem[] = [
     href: '/attendance',
     icon: Clock,
     color: 'text-blue-500',
-    roles: ['admin', 'instructor']
+    roles: ['admin', 'instructor', 'student']
   },
   {
     id: 'belt-testing',

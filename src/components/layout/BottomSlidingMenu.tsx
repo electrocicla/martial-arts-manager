@@ -132,20 +132,14 @@ export default function BottomSlidingMenu() {
   const isActive = (href: string) => location.pathname === href;
 
   const tabItems = useMemo(() => {
-    const items = [
+    return [
       { id: 'tab-dashboard', kind: 'link' as const, href: '/dashboard', icon: Home, label: t('nav.dashboard') },
       { id: 'tab-calendar', kind: 'link' as const, href: '/calendar', icon: Calendar, label: t('nav.calendar') },
-      { id: 'tab-menu', kind: 'action' as const, icon: Menu, label: t('common.menu') }
+      { id: 'tab-menu', kind: 'action' as const, icon: Menu, label: t('common.menu') },
+      { id: 'tab-attendance', kind: 'link' as const, href: attendanceHref, icon: Clock, label: t('nav.attendance') },
+      { id: 'tab-profile', kind: 'link' as const, href: '/profile', icon: User, label: t('nav.profile') }
     ];
-
-    if (user?.role && user.role !== 'student') {
-      items.push({ id: 'tab-attendance', kind: 'link' as const, href: attendanceHref, icon: Clock, label: t('nav.attendance') });
-    }
-
-    items.push({ id: 'tab-profile', kind: 'link' as const, href: '/profile', icon: User, label: t('nav.profile') });
-
-    return items;
-  }, [attendanceHref, t, user?.role]);
+  }, [attendanceHref, t]);
 
   return (
     <>
