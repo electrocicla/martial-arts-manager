@@ -42,22 +42,34 @@ export default function CalendarView() {
     : [];
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-50">{t('nav.calendar')}</h2>
+    <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-4xl mx-auto space-y-6">
+      <div className="space-y-2">
+        <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-50">
+          {t('nav.calendar')}
+        </h2>
+        <p className="text-sm text-gray-400">
+          {t('calendar.subtitle', 'Explora tus clases y selecciona una fecha')}
+        </p>
+      </div>
       
       {/* Calendar Container with Dark Theme */}
-      <div className="bg-gray-800 rounded-xl shadow-2xl p-6 mb-6 border border-gray-700">
+      <div className="relative overflow-hidden rounded-2xl border border-gray-700/60 bg-gradient-to-b from-gray-900/90 to-gray-900/70 p-4 sm:p-6 shadow-[0_24px_40px_-30px_rgba(0,0,0,0.9)] ring-1 ring-white/5">
         <Calendar 
           onChange={(value) => setSelectedDate(value as Date)} 
           value={selectedDate} 
           selectRange={false} 
           className="custom-calendar w-full"
+          navigationLabel={({ label }) => (
+            <span className="block px-2 py-1 leading-tight text-sm sm:text-base font-semibold text-gray-100 text-center">
+              {label}
+            </span>
+          )}
         />
       </div>
 
       {/* Selected Date Classes */}
       {selectedDate && (
-        <div className="bg-gray-800 rounded-xl shadow-xl p-6 border border-gray-700 animate-slide-up">
+        <div className="bg-gradient-to-b from-gray-900/90 to-gray-900/70 rounded-2xl shadow-[0_20px_40px_-30px_rgba(0,0,0,0.9)] p-4 sm:p-6 border border-gray-700/60 animate-slide-up">
           <h3 className="text-xl font-bold mb-4 text-gray-50">
             {t('classesOnDate', 'Classes on {{date}}').replace('{{date}}', selectedDate.toLocaleDateString(undefined, {
               weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
