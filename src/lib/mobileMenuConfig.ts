@@ -13,7 +13,7 @@ import {
 
 export type Role = 'admin' | 'instructor' | 'student';
 
-export const attendanceHrefForRole = (role?: Role) => (role === 'student' ? '/calendar' : '/classes');
+export const attendanceHrefForRole = (role?: Role) => (role === 'student' ? '/calendar' : '/attendance');
 
 export interface NavigationItem {
   id: string;
@@ -53,11 +53,10 @@ export const navigationItems: NavigationItem[] = [
   {
     id: 'attendance',
     nameKey: 'nav.attendance',
-    href: '/classes',
+    href: '/attendance',
     icon: Clock,
     color: 'text-blue-500',
-    roles: ['admin', 'instructor', 'student'],
-    getHref: attendanceHrefForRole
+    roles: ['admin', 'instructor']
   },
   {
     id: 'belt-testing',
@@ -116,8 +115,8 @@ export const quickActions: QuickAction[] = [
     id: 'quick-attendance',
     labelKey: 'nav.markAttendance',
     icon: Clock,
-    roles: ['admin', 'instructor', 'student'],
-    getHref: attendanceHrefForRole,
+    roles: ['admin', 'instructor'],
+    href: '/attendance',
     color: 'text-blue-500'
   },
   {

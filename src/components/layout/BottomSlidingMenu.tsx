@@ -132,14 +132,20 @@ export default function BottomSlidingMenu() {
   const isActive = (href: string) => location.pathname === href;
 
   const tabItems = useMemo(() => {
-    return [
+    const items = [
       { id: 'tab-dashboard', kind: 'link' as const, href: '/dashboard', icon: Home, label: t('nav.dashboard') },
       { id: 'tab-calendar', kind: 'link' as const, href: '/calendar', icon: Calendar, label: t('nav.calendar') },
-      { id: 'tab-menu', kind: 'action' as const, icon: Menu, label: t('common.menu') },
-      { id: 'tab-attendance', kind: 'link' as const, href: attendanceHref, icon: Clock, label: t('nav.attendance') },
-      { id: 'tab-profile', kind: 'link' as const, href: '/profile', icon: User, label: t('nav.profile') }
+      { id: 'tab-menu', kind: 'action' as const, icon: Menu, label: t('common.menu') }
     ];
-  }, [attendanceHref, t]);
+
+    if (user?.role && user.role !== 'student') {
+      items.push({ id: 'tab-attendance', kind: 'link' as const, href: attendanceHref, icon: Clock, label: t('nav.attendance') });
+    }
+
+    items.push({ id: 'tab-profile', kind: 'link' as const, href: '/profile', icon: User, label: t('nav.profile') });
+
+    return items;
+  }, [attendanceHref, t, user?.role]);
 
   return (
     <>
@@ -296,7 +302,10 @@ export default function BottomSlidingMenu() {
 
       {/* Bottom Tab Bar - Always Visible */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-gray-900/95 backdrop-blur-xl border-t border-gray-800/50">
-        <div className="grid grid-cols-5 items-center px-2 py-2">
+        <div
+          className="grid items-center px-2 py-2"
+          style={{ gridTemplateColumns: `repeat(${tabItems.length}, minmax(0, 1fr))` }}
+        >
           {tabItems.map((tab) => {
             const Icon = tab.icon;
             const active = tab.kind === 'link' ? isActive(tab.href) : isOpen;
