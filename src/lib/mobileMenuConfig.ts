@@ -13,7 +13,11 @@ import {
 
 export type Role = 'admin' | 'instructor' | 'student';
 
-export const attendanceHrefForRole = (role?: Role) => (role === 'student' ? '/calendar' : '/attendance');
+// Each role gets a distinct attendance URL to avoid dual-active button issues
+export const attendanceHrefForRole = (role?: Role): string => {
+  if (role === 'student') return '/my-attendance';
+  return '/attendance';
+};
 
 export interface NavigationItem {
   id: string;

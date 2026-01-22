@@ -16,6 +16,7 @@ const PaymentManager = lazy(() => import('./components/PaymentManager'));
 const CalendarView = lazy(() => import('./components/CalendarView'));
 const AttendanceManager = lazy(() => import('./components/AttendanceManager'));
 const Attendance = lazy(() => import('./pages/Attendance'));
+const StudentAttendance = lazy(() => import('./pages/StudentAttendance'));
 const BeltTesting = lazy(() => import('./pages/BeltTesting'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const StudentProfile = lazy(() => import('./pages/StudentProfile'));
@@ -55,6 +56,7 @@ function AppContent() {
             <Route path="/calendar" element={<CalendarView />} />
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/attendance/:classId" element={<AttendanceManager />} />
+            <Route path="/my-attendance" element={<StudentAttendance />} />
             <Route path="/belt-testing" element={<BeltTesting />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/profile" element={<StudentProfile />} />

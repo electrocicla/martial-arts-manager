@@ -9,6 +9,14 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Clock, MapPin, User } from 'lucide-react';
 
+// Get browser locale for react-calendar
+const getBrowserLocale = (): string => {
+  if (typeof navigator !== 'undefined') {
+    return navigator.language || 'es-CL';
+  }
+  return 'es-CL';
+};
+
 export default function CalendarView() {
   const { t } = useTranslation();
   const { classes, updateClass, refresh, deleteClass } = useClasses();
@@ -59,6 +67,8 @@ export default function CalendarView() {
           value={selectedDate} 
           selectRange={false} 
           className="custom-calendar w-full"
+          locale={getBrowserLocale()}
+          calendarType="iso8601"
           navigationLabel={({ label }) => (
             <span className="block px-2 py-1 leading-tight text-sm sm:text-base font-semibold text-gray-100 text-center">
               {label}

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Calendar, Clock, MapPin, User, Users, ArrowRight } from 'lucide-react';
 import { useClasses } from '../hooks/useClasses';
 import { useAuth } from '../context/AuthContext';
+import { QRCodeManager } from '../components/attendance';
 import type { Class } from '../types';
 
 export default function Attendance() {
@@ -170,6 +171,11 @@ export default function Attendance() {
                   {t('attendance.noUpcoming', 'No hay clases próximas registradas.')}
                 </div>
               )}
+            </section>
+
+            {/* QR Code Management Section */}
+            <section className="space-y-4">
+              <QRCodeManager />
             </section>
           </div>
         )}
