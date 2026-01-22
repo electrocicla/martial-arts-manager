@@ -74,7 +74,7 @@ export default function ProfileSettings() {
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user || user.role !== 'student') return;
+    if (!file || !user || user.role !== 'student' || !user.student_id) return;
 
     // Validate file type
     if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
@@ -93,7 +93,7 @@ export default function ProfileSettings() {
 
     const formData = new FormData();
     formData.append('avatar', file);
-    formData.append('studentId', user.id);
+    formData.append('studentId', user.student_id);
 
     try {
       const token = localStorage.getItem('accessToken');

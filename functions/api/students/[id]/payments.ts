@@ -35,15 +35,22 @@ export async function onRequestGet({ request, env, params }: { request: Request;
       });
     }
 
-    // Verify student exists and belongs to user
-    const student = await env.DB.prepare(
-      'SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL'
-    )
-      .bind(studentId, auth.user.id)
+    // Verify student exists and user has access (admin sees all, instructors see their students)
+    let studentQuery = 'SELECT id FROM students WHERE id = ? AND deleted_at IS NULL';
+    const studentParams: string[] = [studentId];
+
+    if (auth.user.role !== 'admin') {
+      // Instructors can see students they created or are assigned to
+      studentQuery += ' AND (created_by = ? OR instructor_id = ?)';
+      studentParams.push(auth.user.id, auth.user.id);
+    }
+
+    const student = await env.DB.prepare(studentQuery)
+      .bind(...studentParams)
       .first();
 
     if (!student) {
-      return new Response(JSON.stringify({ error: 'Student not found' }), {
+      return new Response(JSON.stringify({ error: 'Student not found or access denied' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });

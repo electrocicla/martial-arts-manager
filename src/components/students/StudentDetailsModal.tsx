@@ -84,7 +84,7 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
       formData.append('studentId', student.id);
 
       // Get auth token
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('accessToken');
       if (!token) {
         alert('Authentication required');
         return;
