@@ -1,5 +1,5 @@
 import React, { type ReactElement } from 'react'
-import { render, type RenderOptions, screen, waitFor } from '@testing-library/react'
+import { render, type RenderOptions } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '../context/AuthContext'
 import { ToastProvider } from '../components/ui/ToastProvider'
@@ -7,7 +7,7 @@ import { ToastProvider } from '../components/ui/ToastProvider'
 const customRender = (
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>,
-) => render(ui, { 
+) => render(ui, {
   wrapper: ({ children }: { children: React.ReactNode }) => (
     <BrowserRouter>
       <AuthProvider>
@@ -16,22 +16,22 @@ const customRender = (
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
-  ), 
-  ...options 
+  ),
+  ...options
 })
 
 const customRenderWithoutAuth = (
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>,
-) => render(ui, { 
+) => render(ui, {
   wrapper: ({ children }: { children: React.ReactNode }) => (
     <BrowserRouter>
       <ToastProvider>
         {children}
       </ToastProvider>
     </BrowserRouter>
-  ), 
-  ...options 
+  ),
+  ...options
 })
 
-export { customRender as render, customRenderWithoutAuth, screen, waitFor }
+export { customRender as render, customRenderWithoutAuth }
