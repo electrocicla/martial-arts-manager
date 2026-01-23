@@ -165,6 +165,10 @@ export interface User {
   student_id?: string;
   avatar_url?: string;
   is_active: number;
+  is_approved: number;
+  approved_by?: string;
+  approved_at?: string;
+  registration_notes?: string;
   created_at: string;
   updated_at: string;
 }

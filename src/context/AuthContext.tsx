@@ -133,7 +133,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log('[Auth] Verification - token in storage:', localStorage.getItem('accessToken') ? 'YES' : 'NO');
         return true;
       } else {
-        setError(result.error || 'Login failed');
+        // Check if it's a pending approval error
+        if (result.code === 'PENDING_APPROVAL') {
+          setError('PENDING_APPROVAL'); // Special error code for UI handling
+        } else {
+          setError(result.error || 'Login failed');
+        }
         return false;
       }
     } catch (error) {

@@ -4,11 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { navigationItems } from '../../lib/mobileMenuConfig';
+import { usePendingApprovalsCount } from '../../hooks/usePendingApprovalsCount';
 
 export default function Sidebar() {
   const location = useLocation();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { count: pendingCount } = usePendingApprovalsCount();
 
   return (
     <aside className="
@@ -91,6 +93,13 @@ export default function Sidebar() {
                   <span className="flex-1 tracking-wide">
                     {t(item.nameKey)}
                   </span>
+
+                  {/* Pending Approvals Badge for Dashboard */}
+                  {item.id === 'dashboard' && pendingCount > 0 && (user?.role === 'admin' || user?.role === 'instructor') && (
+                    <span className="px-2 py-0.5 bg-yellow-500 text-black text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center">
+                      {pendingCount > 9 ? '9+' : pendingCount}
+                    </span>
+                  )}
 
                   {/* Active Pulse Indicator */}
                   {isActive && (

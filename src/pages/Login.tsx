@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +22,13 @@ export default function Login() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+
+  // Watch for pending approval error
+  useEffect(() => {
+    if (error === 'PENDING_APPROVAL') {
+      navigate('/pending-approval');
+    }
+  }, [error, navigate]);
 
   const onSubmit = async (data: LoginFormData) => {
     clearError();

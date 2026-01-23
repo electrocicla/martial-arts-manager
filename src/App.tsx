@@ -22,6 +22,7 @@ const Analytics = lazy(() => import('./pages/Analytics'));
 const StudentProfile = lazy(() => import('./pages/StudentProfile'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const PendingApprovalPage = lazy(() => import('./pages/PendingApprovalPage'));
 
 // Loading component with DaisyUI
 const LoadingSpinner = () => (
@@ -95,6 +96,10 @@ function AppWrapper() {
         <Route 
           path="/register" 
           element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" replace />} 
+        />
+        <Route 
+          path="/pending-approval" 
+          element={<PendingApprovalPage />} 
         />
         
         {/* Landing page */}

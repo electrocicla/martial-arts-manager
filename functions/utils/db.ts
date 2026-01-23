@@ -16,14 +16,18 @@ export async function createUser(
     name: string;
     role: 'admin' | 'instructor' | 'student';
     student_id?: string;
+    is_approved?: boolean;
   }
 ): Promise<User> {
   const now = new Date().toISOString();
   
+  // New manual registrations require approval, unless explicitly approved
+  const isApproved = userData.is_approved !== undefined ? userData.is_approved : 0;
+  
   const result = await db
     .prepare(`
-      INSERT INTO users (id, email, password_hash, name, role, student_id, is_active, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)
+      INSERT INTO users (id, email, password_hash, name, role, student_id, is_active, is_approved, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
       RETURNING *
     `)
     .bind(
@@ -33,6 +37,7 @@ export async function createUser(
       userData.name,
       userData.role,
       userData.student_id || null,
+      isApproved,
       now,
       now
     )

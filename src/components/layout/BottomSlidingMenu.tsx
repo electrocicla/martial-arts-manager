@@ -15,6 +15,7 @@ import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { navigationItems, quickActions, attendanceHrefForRole } from '../../lib/mobileMenuConfig';
+import { usePendingApprovalsCount } from '../../hooks/usePendingApprovalsCount';
 
 export default function BottomSlidingMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,6 +28,7 @@ export default function BottomSlidingMenu() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { t } = useTranslation();
+  const { count: pendingCount } = usePendingApprovalsCount();
 
   const roleLabel = useMemo(() => {
     if (!user?.role) return t('common.account');
@@ -315,7 +317,7 @@ export default function BottomSlidingMenu() {
                   handleNavigate(tab.href);
                 }}
                 className={cn(
-                  "flex flex-col items-center justify-center py-2 rounded-xl transition-colors",
+                  "flex flex-col items-center justify-center py-2 rounded-xl transition-colors relative",
                   active ? "text-white bg-gray-800/60" : "text-gray-400 hover:text-white hover:bg-gray-800/60"
                 )}
                 aria-expanded={tab.kind === 'action' ? isOpen : undefined}
@@ -323,6 +325,13 @@ export default function BottomSlidingMenu() {
               >
                 <Icon className="w-5 h-5" />
                 <span className="text-[10px] font-medium mt-1 leading-none line-clamp-1">{tab.label}</span>
+                
+                {/* Pending Approvals Badge for Dashboard Tab */}
+                {tab.id === 'tab-dashboard' && pendingCount > 0 && (user?.role === 'admin' || user?.role === 'instructor') && (
+                  <span className="absolute -top-1 -right-1 px-1 py-0.5 bg-yellow-500 text-black text-[8px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center">
+                    {pendingCount > 9 ? '9+' : pendingCount}
+                  </span>
+                )}
               </button>
             );
           })}

@@ -79,6 +79,17 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       );
     }
 
+    // Check if user account is approved
+    if (!user.is_approved) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Your account is pending approval by an administrator',
+          code: 'PENDING_APPROVAL'
+        }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Auto-link student_id if missing (legacy users)
     let studentId = user.student_id;
     if (user.role === 'student' && !studentId) {

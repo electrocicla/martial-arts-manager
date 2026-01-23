@@ -12,6 +12,7 @@ import DashboardSchedule from './dashboard/DashboardSchedule';
 import DashboardActivity from './dashboard/DashboardActivity';
 import DashboardMetrics from './dashboard/DashboardMetrics';
 import StudentDashboard from './dashboard/StudentDashboard';
+import { PendingApprovals } from './admin/PendingApprovals';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -53,6 +54,12 @@ export default function Dashboard() {
 
       <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto space-y-8 mobile-dashboard-content dashboard-content">
         <DashboardStats stats={stats} />
+        
+        {/* Pending Approvals section for admin/instructor */}
+        {(user?.role === 'admin' || user?.role === 'instructor') && (
+          <PendingApprovals />
+        )}
+        
         <DashboardQuickActions quickActions={quickActions} />
         <DashboardSchedule todayClasses={todayClasses} isLoading={isLoading} />
         <DashboardActivity recentActivity={recentActivity} />
