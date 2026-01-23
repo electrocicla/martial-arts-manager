@@ -48,6 +48,9 @@ wrangler.d1-probe.toml
 # Cloudflare
 .cloudflare/
 
+# Internal documentation
+docs/
+
 # Development and AI assistant files
 CLAUDE.md
 worklog.md
