@@ -2,7 +2,7 @@
  * Hook to fetch pending approvals count for admin/instructor users
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export function usePendingApprovalsCount() {
@@ -10,7 +10,7 @@ export function usePendingApprovalsCount() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const fetchCount = async () => {
+  const fetchCount = useCallback(async () => {
     if (!user || (user.role !== 'admin' && user.role !== 'instructor')) {
       setCount(0);
       return;
@@ -36,7 +36,7 @@ export function usePendingApprovalsCount() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchCount();
@@ -44,7 +44,7 @@ export function usePendingApprovalsCount() {
     // Refresh count every 30 seconds
     const interval = setInterval(fetchCount, 30000);
     return () => clearInterval(interval);
-  }, [user, fetchCount]);
+  }, [fetchCount]);
 
   return { count, loading, refetch: fetchCount };
 }

@@ -1,15 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { StudentService } from './student.service'
 import { apiClient } from '../lib/api-client'
-import type { Student, StudentFormData } from '../types'
+import type { Student, StudentFormData } from '../types/index'
 
 // Mock the apiClient
+const mockGet = vi.fn()
+const mockPost = vi.fn()
+const mockPut = vi.fn()
+const mockDelete = vi.fn()
+
 vi.mock('../lib/api-client', () => ({
   apiClient: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
+    get: mockGet,
+    post: mockPost,
+    put: mockPut,
+    delete: mockDelete,
   },
 }))
 
@@ -29,13 +34,15 @@ describe('StudentService', () => {
           name: 'John Doe',
           email: 'john@example.com',
           belt: 'white',
-          discipline: 'karate',
-          is_active: true,
+          discipline: 'Karate',
+          is_active: 1,
           join_date: '2023-01-01',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
         },
       ]
 
-      ;(apiClient.get as any).mockResolvedValue({
+      mockGet.mockResolvedValue({
         success: true,
         data: mockStudents,
       })
@@ -57,7 +64,7 @@ describe('StudentService', () => {
         search: 'john',
       }
 
-      ;(apiClient.get as any).mockResolvedValue({
+      mockGet.mockResolvedValue({
         success: true,
         data: [],
       })
@@ -77,12 +84,14 @@ describe('StudentService', () => {
         name: 'John Doe',
         email: 'john@example.com',
         belt: 'white',
-        discipline: 'karate',
-        is_active: true,
+        discipline: 'Karate',
+        is_active: 1,
         join_date: '2023-01-01',
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
       }
 
-      ;(apiClient.get as any).mockResolvedValue({
+      mockGet.mockResolvedValue({
         success: true,
         data: mockStudent,
       })
@@ -104,7 +113,7 @@ describe('StudentService', () => {
         email: 'jane@example.com',
         phone: '123-456-7890',
         belt: 'yellow',
-        discipline: 'karate',
+        discipline: 'Karate',
         dateOfBirth: '2000-01-01',
         emergencyContactName: 'Parent Name',
         emergencyContactPhone: '098-765-4321',
@@ -117,16 +126,18 @@ describe('StudentService', () => {
         email: 'jane@example.com',
         phone: '123-456-7890',
         belt: 'yellow',
-        discipline: 'karate',
-        is_active: true,
+        discipline: 'Karate',
+        is_active: 1,
         join_date: '2024-01-01',
         date_of_birth: '2000-01-01',
         emergency_contact_name: 'Parent Name',
         emergency_contact_phone: '098-765-4321',
         notes: 'Test notes',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
       }
 
-      ;(apiClient.post as any).mockResolvedValue({
+      mockPost.mockResolvedValue({
         success: true,
         data: mockStudent,
       })
@@ -161,7 +172,7 @@ describe('StudentService', () => {
         },
       }
 
-      ;(apiClient.put as any).mockResolvedValue(mockResponse)
+      mockPut.mockResolvedValue(mockResponse)
 
       const result = await service.update('1', updateData)
 
@@ -177,7 +188,7 @@ describe('StudentService', () => {
     })
 
     it('should handle update failure', async () => {
-      ;(apiClient.put as any).mockResolvedValue({
+      mockPut.mockResolvedValue({
         success: false,
         error: 'Update failed',
       })
@@ -193,7 +204,7 @@ describe('StudentService', () => {
 
   describe('delete', () => {
     it('should delete a student', async () => {
-      ;(apiClient.delete as any).mockResolvedValue({
+      mockDelete.mockResolvedValue({
         success: true,
       })
 
@@ -212,31 +223,37 @@ describe('StudentService', () => {
           name: 'John',
           email: 'john@example.com',
           belt: 'white',
-          discipline: 'karate',
-          is_active: true,
+          discipline: 'Karate',
+          is_active: 1,
           join_date: '2023-01-01',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
         },
         {
           id: '2',
           name: 'Jane',
           email: 'jane@example.com',
           belt: 'blue',
-          discipline: 'karate',
-          is_active: true,
+          discipline: 'Karate',
+          is_active: 1,
           join_date: '2023-01-01',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
         },
         {
           id: '3',
           name: 'Bob',
           email: 'bob@example.com',
           belt: 'white',
-          discipline: 'jiu-jitsu',
-          is_active: false,
+          discipline: 'Brazilian Jiu-Jitsu',
+          is_active: 0,
           join_date: '2023-01-01',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z',
         },
       ]
 
-      ;(apiClient.get as any).mockResolvedValue({
+      mockGet.mockResolvedValue({
         success: true,
         data: mockStudents,
       })
@@ -259,7 +276,7 @@ describe('StudentService', () => {
     })
 
     it('should handle stats calculation failure', async () => {
-      ;(apiClient.get as any).mockResolvedValue({
+      mockGet.mockResolvedValue({
         success: false,
         error: 'Failed to fetch students',
       })
