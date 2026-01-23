@@ -4,19 +4,27 @@ import { apiClient } from '../lib/api-client'
 import type { Student, StudentFormData } from '../types/index'
 
 // Mock the apiClient
-const mockGet = vi.fn()
-const mockPost = vi.fn()
-const mockPut = vi.fn()
-const mockDelete = vi.fn()
+vi.mock('../lib/api-client', () => {
+  const mockGet = vi.fn()
+  const mockPost = vi.fn()
+  const mockPut = vi.fn()
+  const mockDelete = vi.fn()
 
-vi.mock('../lib/api-client', () => ({
-  apiClient: {
-    get: mockGet,
-    post: mockPost,
-    put: mockPut,
-    delete: mockDelete,
-  },
-}))
+  return {
+    apiClient: {
+      get: mockGet,
+      post: mockPost,
+      put: mockPut,
+      delete: mockDelete,
+    },
+  }
+})
+
+// Get references to the mocked functions
+const mockGet = vi.mocked(apiClient.get)
+const mockPost = vi.mocked(apiClient.post)
+const mockPut = vi.mocked(apiClient.put)
+const mockDelete = vi.mocked(apiClient.delete)
 
 describe('StudentService', () => {
   let service: StudentService
@@ -148,7 +156,7 @@ describe('StudentService', () => {
         name: 'Jane Doe',
         email: 'jane@example.com',
         belt: 'yellow',
-        discipline: 'karate',
+        discipline: 'Karate',
       }))
       expect(result.success).toBe(true)
     })
@@ -269,8 +277,8 @@ describe('StudentService', () => {
           blue: 1,
         },
         byDiscipline: {
-          karate: 2,
-          'jiu-jitsu': 1,
+          Karate: 2,
+          'Brazilian Jiu-Jitsu': 1,
         },
       })
     })
