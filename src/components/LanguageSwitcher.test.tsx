@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '../test/test-utils'
+import { render } from '../test/test-utils'
+import { screen } from '../test/test-setup'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
 // Mock react-i18next
