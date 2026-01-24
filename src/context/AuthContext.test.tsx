@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from '../test/test-utils'
-import { screen, waitFor } from '../test/test-setup'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useAuth } from '../context/AuthContext'
 import { server } from '../test/setup'
