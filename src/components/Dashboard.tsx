@@ -13,6 +13,7 @@ import DashboardActivity from './dashboard/DashboardActivity';
 import DashboardMetrics from './dashboard/DashboardMetrics';
 import StudentDashboard from './dashboard/StudentDashboard';
 import { PendingApprovals } from './admin/PendingApprovals';
+import { QRCodeManager } from './attendance';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -58,6 +59,11 @@ export default function Dashboard() {
         {/* Pending Approvals section for admin/instructor */}
         {(user?.role === 'admin' || user?.role === 'instructor') && (
           <PendingApprovals />
+        )}
+
+        {/* QR management section for admin/instructor */}
+        {(user?.role === 'admin' || user?.role === 'instructor') && (
+          <QRCodeManager />
         )}
         
         <DashboardQuickActions quickActions={quickActions} />

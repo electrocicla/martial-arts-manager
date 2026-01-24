@@ -1,6 +1,63 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/avif',
+  'image/heic',
+  'image/heif'
+]);
+
+const ALLOWED_EXTENSIONS = new Set([
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'webp',
+  'avif',
+  'heic',
+  'heif'
+]);
+
+const MIME_TYPE_NORMALIZATION: Record<string, string> = {
+  'image/jpg': 'image/jpeg'
+};
+
+const EXTENSION_TO_MIME: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  avif: 'image/avif',
+  heic: 'image/heic',
+  heif: 'image/heif'
+};
+
+const MIME_TO_EXTENSION: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+  'image/avif': 'avif',
+  'image/heic': 'heic',
+  'image/heif': 'heif'
+};
+
+const normalizeMimeType = (type: string): string | undefined => {
+  if (!type) return undefined;
+  return MIME_TYPE_NORMALIZATION[type] || type;
+};
+
+const getFileExtension = (fileName: string): string | undefined => {
+  const match = fileName.toLowerCase().match(/\.([a-z0-9]+)$/);
+  return match ? match[1] : undefined;
+};
+
 export async function onRequestPost({ request, env }: { request: Request; env: Env }) {
   try {
     // Authenticate user
@@ -25,9 +82,12 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      return new Response(JSON.stringify({ error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed' }), { 
+    const normalizedType = normalizeMimeType(file.type);
+    const fileExtension = getFileExtension(file.name || '');
+    const isAllowedType = normalizedType ? ALLOWED_MIME_TYPES.has(normalizedType) : false;
+    const isAllowedExtension = fileExtension ? ALLOWED_EXTENSIONS.has(fileExtension) : false;
+    if (!isAllowedType && !isAllowedExtension) {
+      return new Response(JSON.stringify({ error: 'Invalid file type. Only JPG, PNG, GIF, WebP, AVIF, and HEIC/HEIF are allowed' }), { 
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -56,14 +116,18 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Generate unique filename
     const timestamp = Date.now();
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `avatars/${auth.user.id}/${studentId}-${timestamp}.${fileExtension}`;
+    const resolvedExtension = (fileExtension && ALLOWED_EXTENSIONS.has(fileExtension))
+      ? fileExtension
+      : (normalizedType ? MIME_TO_EXTENSION[normalizedType] : undefined);
+    const safeExtension = resolvedExtension || 'bin';
+    const fileName = `avatars/${auth.user.id}/${studentId}-${timestamp}.${safeExtension}`;
 
     // Upload to R2
     const arrayBuffer = await file.arrayBuffer();
+    const contentType = normalizedType || (fileExtension ? EXTENSION_TO_MIME[fileExtension] : undefined) || 'application/octet-stream';
     await env.AVATARS.put(fileName, arrayBuffer, {
       httpMetadata: {
-        contentType: file.type,
+        contentType,
       },
       customMetadata: {
         userId: auth.user.id,

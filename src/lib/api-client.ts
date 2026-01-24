@@ -48,11 +48,6 @@ export class ApiClient {
       // Get token from localStorage
       const token = localStorage.getItem('accessToken');
       
-      // DEBUG: Log token status
-      console.log('[API Client] Making request to:', endpoint);
-      console.log('[API Client] Token exists:', !!token);
-      console.log('[API Client] Token preview:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN');
-      
       // Build headers with authentication
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -61,9 +56,8 @@ export class ApiClient {
       // Add Authorization header if token exists
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-        console.log('[API Client] Authorization header added');
       } else {
-        console.warn('[API Client] NO TOKEN FOUND IN LOCALSTORAGE!');
+        console.warn('[API Client] Access token missing from storage.');
       }
       
       // Merge with any additional headers from options
@@ -75,8 +69,6 @@ export class ApiClient {
         ...options,
         headers,
       });
-
-      console.log('[API Client] Response status:', response.status);
 
       if (!response.ok) {
         // If 401, token might be expired - trigger logout

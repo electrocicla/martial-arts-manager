@@ -52,7 +52,7 @@ export default function Attendance() {
             onClick={() => navigate(`/attendance/${cls.id}`)}
           >
             <Users className="w-4 h-4" />
-            {t('attendance.take', 'Tomar asistencia')}
+            {t('attendance.take', 'Take attendance')}
           </button>
         </div>
 
@@ -91,7 +91,7 @@ export default function Attendance() {
                 {t('nav.attendance')}
               </h1>
               <p className="text-sm text-base-content/70">
-                {t('attendance.subtitle', 'Selecciona una clase para registrar asistencia')}
+                {t('attendance.subtitle', 'Select a class to record attendance')}
               </p>
             </div>
           </div>
@@ -113,10 +113,10 @@ export default function Attendance() {
                 <Users className="w-10 h-10 text-red-400" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">
-                {t('attendance.onlyStaff', 'Solo instructores y administradores')}
+                {t('attendance.onlyStaff', 'Instructors and administrators only')}
               </h3>
               <p className="text-base-content/60 mb-6">
-                {t('attendance.onlyStaffMessage', 'La asistencia se registra por el instructor de la clase.')}
+                {t('attendance.onlyStaffMessage', 'Attendance is recorded by the class instructor.')}
               </p>
               <button
                 className="btn btn-primary gap-2"
@@ -132,7 +132,7 @@ export default function Attendance() {
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-white">
-                  {t('attendance.today', 'Clases de hoy')}
+                  {t('attendance.today', 'Today classes')}
                 </h2>
                 <span className="text-xs text-gray-400">
                   {new Date().toLocaleDateString()}
@@ -144,7 +144,7 @@ export default function Attendance() {
                 </div>
               ) : (
                 <div className="text-center py-6 bg-gray-800/50 rounded-lg border border-gray-700/50 text-gray-400">
-                  {t('attendance.noClassesToday', 'No hay clases programadas para hoy.')}
+                  {t('attendance.noClassesToday', 'No classes scheduled for today.')}
                 </div>
               )}
             </section>
@@ -152,13 +152,13 @@ export default function Attendance() {
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-white">
-                  {t('attendance.upcoming', 'Próximas clases')}
+                  {t('attendance.upcoming', 'Upcoming classes')}
                 </h2>
                 <button
                   className="btn btn-ghost btn-xs gap-1"
                   onClick={() => navigate('/calendar')}
                 >
-                  {t('attendance.viewCalendar', 'Ver calendario')}
+                  {t('attendance.viewCalendar', 'View calendar')}
                   <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -168,7 +168,7 @@ export default function Attendance() {
                 </div>
               ) : (
                 <div className="text-center py-6 bg-gray-800/50 rounded-lg border border-gray-700/50 text-gray-400">
-                  {t('attendance.noUpcoming', 'No hay clases próximas registradas.')}
+                  {t('attendance.noUpcoming', 'No upcoming classes registered.')}
                 </div>
               )}
             </section>

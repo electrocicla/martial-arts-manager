@@ -55,7 +55,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (auth.user.role !== 'student') {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'Solo los estudiantes pueden registrar asistencia con QR' 
+        message: 'Only students can check in with QR' 
       }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' }
@@ -67,7 +67,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (!studentId) {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'No hay perfil de estudiante vinculado a esta cuenta' 
+        message: 'No student profile is linked to this account' 
       }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
@@ -81,7 +81,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (!qr_code) {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'Código QR no proporcionado' 
+        message: 'QR code not provided' 
       }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -98,7 +98,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (!qrRecord) {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'Código QR inválido o expirado' 
+        message: 'Invalid or expired QR code' 
       }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
@@ -110,7 +110,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (qrRecord.valid_from && new Date(qrRecord.valid_from) > now) {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'Este código QR aún no está activo' 
+        message: 'This QR code is not active yet' 
       }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -119,7 +119,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (qrRecord.valid_until && new Date(qrRecord.valid_until) < now) {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'Este código QR ha expirado' 
+        message: 'This QR code has expired' 
       }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -161,7 +161,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (!classRecord) {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'No hay clases programadas para hoy en esta ubicación' 
+        message: 'No classes are scheduled for today at this location' 
       }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' }
@@ -177,7 +177,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (!enrollment) {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'No estás inscrito en esta clase' 
+        message: 'You are not enrolled in this class' 
       }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' }
@@ -193,7 +193,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (existingAttendance) {
       return new Response(JSON.stringify({ 
         success: false, 
-        message: 'Ya registraste asistencia para esta clase' 
+        message: 'Attendance has already been recorded for this class' 
       }), {
         status: 409,
         headers: { 'Content-Type': 'application/json' }
@@ -226,7 +226,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `¡Asistencia registrada para ${classRecord.name}!`,
+      message: `Attendance recorded for ${classRecord.name}.`,
       attendance: {
         id: attendanceId,
         class_id: classRecord.id,
@@ -247,7 +247,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     console.error('QR check-in error:', error);
     return new Response(JSON.stringify({ 
       success: false,
-      message: (error as Error).message || 'Error al procesar el check-in' 
+      message: (error as Error).message || 'Failed to process the check-in' 
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

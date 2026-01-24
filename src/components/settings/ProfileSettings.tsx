@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import useSettings from '../../hooks/useSettings';
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { prepareAvatarFile } from '../../lib/avatarUpload';
 
 export default function ProfileSettings() {
   const { user, refreshAuth } = useAuth();
@@ -76,23 +77,26 @@ export default function ProfileSettings() {
     const file = e.target.files?.[0];
     if (!file || !user || user.role !== 'student' || !user.student_id) return;
 
-    // Validate file type
-    if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
-      setSaveError('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
-      return;
-    }
+    setSaveError(null);
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setSaveError('File too large. Maximum size is 5MB.');
+    const prepared = await prepareAvatarFile(file, {
+      invalidType: t('settings.profile.photoInvalidType', 'Invalid file type. Only JPG, PNG, GIF, WebP, AVIF, and HEIC/HEIF are allowed.'),
+      tooLarge: t('settings.profile.photoTooLarge', 'File too large. Maximum size is 5MB.'),
+      conversionFailed: t('settings.profile.photoConversionFailed', 'Could not process this image. Please try a JPG or PNG.')
+    });
+
+    if (!prepared.ok || !prepared.file) {
+      setSaveError(prepared.error || t('settings.profile.photoUploadError', 'Failed to process the image.'));
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
 
     setAvatarUploading(true);
-    setSaveError(null);
 
     const formData = new FormData();
-    formData.append('avatar', file);
+    formData.append('avatar', prepared.file);
     formData.append('studentId', user.student_id);
 
     try {
@@ -166,7 +170,7 @@ export default function ProfileSettings() {
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/heic,image/heif"
                       onChange={handleAvatarChange}
                       className="hidden"
                     />

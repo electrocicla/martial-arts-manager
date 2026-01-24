@@ -76,15 +76,18 @@ describe('useLocalStorage', () => {
   })
 
   it('should handle JSON parse errors gracefully', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     // Set invalid JSON in localStorage
     localStorage.setItem('test-key', 'invalid-json{')
 
     const { result } = renderHook(() => useLocalStorage('test-key', 'fallback'))
 
     expect(result.current[0]).toBe('fallback')
+    warnSpy.mockRestore()
   })
 
   it('should handle localStorage errors gracefully', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     // Mock localStorage.setItem to throw an error
     const originalSetItem = Storage.prototype.setItem
     Storage.prototype.setItem = vi.fn(() => {
@@ -102,5 +105,6 @@ describe('useLocalStorage', () => {
 
     // Restore original setItem
     Storage.prototype.setItem = originalSetItem
+    warnSpy.mockRestore()
   })
 })

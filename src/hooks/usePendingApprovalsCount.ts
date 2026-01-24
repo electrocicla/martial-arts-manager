@@ -29,7 +29,7 @@ export function usePendingApprovalsCount() {
 
       if (response.ok) {
         const data = await response.json();
-        setCount(data.users?.length || 0);
+        setCount(data.pending_users?.length || data.users?.length || 0);
       }
     } catch (error) {
       console.error('Failed to fetch pending approvals count:', error);

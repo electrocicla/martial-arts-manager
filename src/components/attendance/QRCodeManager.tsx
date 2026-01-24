@@ -14,10 +14,13 @@ import {
   QrCode,
   Plus,
   Download,
+  Copy,
   Trash2,
   MapPin,
   Clock,
   Loader2,
+  CheckCircle2,
+  XCircle,
   Check,
   X,
   RefreshCw
@@ -77,7 +80,7 @@ export default function QRCodeManager() {
       }
     } catch (err) {
       console.error('Error fetching QR codes:', err);
-      setError(t('qr.fetchError', 'Error al cargar los códigos QR'));
+      setError(t('qr.fetchError', 'Failed to load QR codes'));
     } finally {
       setLoading(false);
     }
@@ -91,7 +94,7 @@ export default function QRCodeManager() {
     e.preventDefault();
     
     if (!form.location.trim()) {
-      setError(t('qr.locationRequired', 'La ubicación es requerida'));
+      setError(t('qr.locationRequired', 'Location is required'));
       return;
     }
 
@@ -108,23 +111,23 @@ export default function QRCodeManager() {
 
       if (response.success && response.data?.qr_code) {
         setQRCodes(prev => [response.data!.qr_code, ...prev]);
-        setSuccess(t('qr.created', 'Código QR creado exitosamente'));
+        setSuccess(t('qr.created', 'QR code created successfully'));
         setShowCreateForm(false);
         setForm({ location: '', class_id: '', valid_from: '', valid_until: '' });
         
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(response.error || t('qr.createError', 'Error al crear el código QR'));
+        setError(response.error || t('qr.createError', 'Failed to create the QR code'));
       }
     } catch {
-      setError(t('qr.createError', 'Error al crear el código QR'));
+      setError(t('qr.createError', 'Failed to create the QR code'));
     } finally {
       setCreating(false);
     }
   };
 
   const handleDelete = async (qrId: string) => {
-    if (!confirm(t('qr.confirmDelete', '¿Estás seguro de eliminar este código QR?'))) {
+    if (!confirm(t('qr.confirmDelete', 'Are you sure you want to delete this QR code?'))) {
       return;
     }
 
@@ -133,11 +136,26 @@ export default function QRCodeManager() {
       
       if (response.success) {
         setQRCodes(prev => prev.filter(qr => qr.id !== qrId));
-        setSuccess(t('qr.deleted', 'Código QR eliminado'));
+        setSuccess(t('qr.deleted', 'QR code deleted'));
         setTimeout(() => setSuccess(null), 3000);
       }
     } catch {
-      setError(t('qr.deleteError', 'Error al eliminar el código QR'));
+      setError(t('qr.deleteError', 'Failed to delete the QR code'));
+    }
+  };
+
+  const handleCopyCode = async (qrCode: QRCodeRecord) => {
+    try {
+      if (!navigator.clipboard?.writeText) {
+        setError(t('qr.copyUnavailable', 'Clipboard access is not available.'));
+        return;
+      }
+      await navigator.clipboard.writeText(qrCode.code);
+      setSuccess(t('qr.copied', 'QR code copied to clipboard'));
+      setTimeout(() => setSuccess(null), 2000);
+    } catch (err) {
+      console.error('Copy QR code error:', err);
+      setError(t('qr.copyFailed', 'Failed to copy QR code'));
     }
   };
 
@@ -166,10 +184,10 @@ export default function QRCodeManager() {
           </div>
           <div>
             <h3 className="font-semibold text-white">
-              {t('qr.title', 'Códigos QR de Asistencia')}
+              {t('qr.title', 'Attendance QR codes')}
             </h3>
             <p className="text-xs text-gray-500">
-              {t('qr.subtitle', 'Los alumnos escanean para registrar asistencia')}
+              {t('qr.subtitle', 'Students scan to record attendance')}
             </p>
           </div>
         </div>
@@ -178,7 +196,7 @@ export default function QRCodeManager() {
           <button
             onClick={fetchQRCodes}
             className="p-2 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-            title={t('common.refresh', 'Actualizar')}
+            title={t('common.refresh', 'Refresh')}
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -187,7 +205,7 @@ export default function QRCodeManager() {
             className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
-            {t('qr.create', 'Crear QR')}
+            {t('qr.create', 'Create QR')}
           </button>
         </div>
       </div>
@@ -215,22 +233,23 @@ export default function QRCodeManager() {
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-gray-900 rounded-2xl border border-gray-700 p-6 w-full max-w-md">
             <h4 className="text-lg font-bold text-white mb-4">
-              {t('qr.createNew', 'Crear Nuevo Código QR')}
+              {t('qr.createNew', 'Create new QR code')}
             </h4>
             
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  {t('qr.location', 'Ubicación / Dojo')} *
+                <label htmlFor="qr-location" className="block text-sm font-medium text-gray-300 mb-1">
+                  {t('qr.location', 'Location')} *
                 </label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                   <input
+                    id="qr-location"
                     type="text"
                     value={form.location}
                     onChange={(e) => setForm(prev => ({ ...prev, location: e.target.value }))}
                     className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    placeholder="Ej: Dojo Central, Sala Norte..."
+                    placeholder="Example: Main dojo, North room"
                     required
                   />
                 </div>
@@ -238,10 +257,11 @@ export default function QRCodeManager() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    {t('qr.validFrom', 'Válido desde')}
+                  <label htmlFor="qr-valid-from" className="block text-sm font-medium text-gray-300 mb-1">
+                    {t('qr.validFrom', 'Valid from')}
                   </label>
                   <input
+                    id="qr-valid-from"
                     type="datetime-local"
                     value={form.valid_from}
                     onChange={(e) => setForm(prev => ({ ...prev, valid_from: e.target.value }))}
@@ -249,10 +269,11 @@ export default function QRCodeManager() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    {t('qr.validUntil', 'Válido hasta')}
+                  <label htmlFor="qr-valid-until" className="block text-sm font-medium text-gray-300 mb-1">
+                    {t('qr.validUntil', 'Valid until')}
                   </label>
                   <input
+                    id="qr-valid-until"
                     type="datetime-local"
                     value={form.valid_until}
                     onChange={(e) => setForm(prev => ({ ...prev, valid_until: e.target.value }))}
@@ -262,7 +283,7 @@ export default function QRCodeManager() {
               </div>
 
               <p className="text-xs text-gray-500">
-                {t('qr.validityNote', 'Deja vacío para que el QR sea válido indefinidamente')}
+                {t('qr.validityNote', 'Leave blank to keep the QR code valid indefinitely')}
               </p>
 
               <div className="flex justify-end gap-3 pt-2">
@@ -271,7 +292,7 @@ export default function QRCodeManager() {
                   onClick={() => setShowCreateForm(false)}
                   className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
                 >
-                  {t('common.cancel', 'Cancelar')}
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
@@ -283,7 +304,7 @@ export default function QRCodeManager() {
                   ) : (
                     <Plus className="w-4 h-4" />
                   )}
-                  {t('qr.generate', 'Generar QR')}
+                  {t('qr.generate', 'Generate QR')}
                 </button>
               </div>
             </form>
@@ -296,16 +317,16 @@ export default function QRCodeManager() {
         {loading ? (
           <div className="text-center py-8">
             <Loader2 className="w-8 h-8 text-red-500 animate-spin mx-auto" />
-            <p className="text-gray-400 mt-2">{t('common.loading', 'Cargando...')}</p>
+            <p className="text-gray-400 mt-2">{t('common.loading', 'Loading...')}</p>
           </div>
         ) : qrCodes.length === 0 ? (
           <div className="text-center py-8">
             <QrCode className="w-12 h-12 text-gray-600 mx-auto mb-3" />
             <p className="text-gray-400 mb-2">
-              {t('qr.noQRCodes', 'No tienes códigos QR creados')}
+              {t('qr.noQRCodes', 'No QR codes created yet')}
             </p>
             <p className="text-sm text-gray-500">
-              {t('qr.createFirst', 'Crea uno para que tus alumnos puedan registrar asistencia')}
+              {t('qr.createFirst', 'Create one so students can check in')}
             </p>
           </div>
         ) : (
@@ -337,6 +358,15 @@ export default function QRCodeManager() {
                     {qr.code}
                   </div>
 
+                  <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+                    {qr.is_active ? (
+                      <CheckCircle2 className="w-3 h-3 text-green-400" />
+                    ) : (
+                      <XCircle className="w-3 h-3 text-red-400" />
+                    )}
+                    <span>{qr.is_active ? t('qr.active', 'Active') : t('qr.inactive', 'Inactive')}</span>
+                  </div>
+
                   {(qr.valid_from || qr.valid_until) && (
                     <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
                       <Clock className="w-3 h-3" />
@@ -354,7 +384,14 @@ export default function QRCodeManager() {
                     className="flex items-center gap-1 px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg text-sm transition-colors"
                   >
                     <Download className="w-4 h-4" />
-                    {t('qr.download', 'Descargar')}
+                    {t('qr.download', 'Download')}
+                  </button>
+                  <button
+                    onClick={() => handleCopyCode(qr)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-gray-600/20 hover:bg-gray-600/30 text-gray-300 rounded-lg text-sm transition-colors"
+                  >
+                    <Copy className="w-4 h-4" />
+                    {t('qr.copy', 'Copy')}
                   </button>
                   <button
                     onClick={() => handleDelete(qr.id)}

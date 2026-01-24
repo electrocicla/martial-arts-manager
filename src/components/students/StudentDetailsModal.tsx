@@ -4,6 +4,7 @@ import { X, Edit2, Trash2, Mail, Phone, Calendar, User, AlertTriangle, Camera, D
 import { getBeltColor } from '../../lib/studentUtils';
 import { useTranslation } from 'react-i18next';
 import StudentPaymentHistory from './StudentPaymentHistory';
+import { prepareAvatarFile } from '../../lib/avatarUpload';
 
 interface StudentDetailsModalProps {
   student: Student;
@@ -64,15 +65,15 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert(t('students.invalidImageType') || 'Please select an image file');
-      return;
-    }
+    const prepared = await prepareAvatarFile(file, {
+      invalidType: t('students.invalidImageType', 'Invalid file type. Only JPG, PNG, GIF, WebP, AVIF, and HEIC/HEIF are allowed.'),
+      tooLarge: t('students.imageTooLarge', 'Image must be less than 5MB'),
+      conversionFailed: t('students.imageConversionFailed', 'Could not process this image. Please try a JPG or PNG.')
+    });
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert(t('students.imageTooLarge') || 'Image must be less than 5MB');
+    if (!prepared.ok || !prepared.file) {
+      alert(prepared.error || t('students.avatarUploadError') || 'Failed to upload profile photo');
+      e.target.value = '';
       return;
     }
 
@@ -80,7 +81,7 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
     try {
       // Create form data
       const formData = new FormData();
-      formData.append('avatar', file);
+      formData.append('avatar', prepared.file);
       formData.append('studentId', student.id);
 
       // Get auth token
@@ -117,6 +118,7 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
       alert(t('students.avatarUploadError') || 'Failed to upload profile photo');
     } finally {
       setIsUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -164,14 +166,18 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
                 </div>
                 
                 {/* Upload Button Overlay */}
-                <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleAvatarUpload}
-                    disabled={isUploading}
-                  />
+                <input
+                  id={`student-avatar-${student.id}`}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/heic,image/heif"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                  disabled={isUploading}
+                />
+                <label
+                  htmlFor={`student-avatar-${student.id}`}
+                  className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
                   {isUploading ? (
                     <div className="animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent" />
                   ) : (
@@ -179,6 +185,15 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
                   )}
                 </label>
               </div>
+
+              {/* Mobile-friendly upload button */}
+              <label
+                htmlFor={`student-avatar-${student.id}`}
+                className="sm:hidden inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium shadow hover:bg-blue-700 transition-colors"
+              >
+                <Camera className="w-4 h-4" />
+                {t('students.changePhoto', 'Change photo')}
+              </label>
 
               {/* Student Info */}
               <div className="flex-1 text-center sm:text-left">

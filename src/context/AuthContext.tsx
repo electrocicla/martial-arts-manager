@@ -125,12 +125,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        console.log('[Auth] Login successful, saving token...');
-        console.log('[Auth] Token preview:', result.accessToken ? `${result.accessToken.substring(0, 20)}...` : 'NO TOKEN IN RESPONSE');
         setUser(result.user);
         localStorage.setItem('accessToken', result.accessToken);
-        console.log('[Auth] Token saved to localStorage');
-        console.log('[Auth] Verification - token in storage:', localStorage.getItem('accessToken') ? 'YES' : 'NO');
         return true;
       } else {
         // Check if it's a pending approval error

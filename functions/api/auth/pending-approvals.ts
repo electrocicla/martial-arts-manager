@@ -2,8 +2,8 @@
  * Account Approval API Endpoints
  * 
  * GET /api/auth/pending-approvals - List pending account approvals (admin/instructor)
- * POST /api/auth/approve - Approve a user account
- * POST /api/auth/reject - Reject a user account
+ * POST /api/auth/pending-approvals - Approve a user account
+ * DELETE /api/auth/pending-approvals?user_id=xxx - Reject a user account
  */
 
 import { Env } from '../../types/index';
@@ -87,8 +87,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       });
     }
 
-    const body = await request.json() as { user_id: string };
-    const { user_id } = body;
+    const body = await request.json() as { user_id?: string; userId?: string };
+    const user_id = body.user_id || body.userId;
 
     if (!user_id) {
       return new Response(JSON.stringify({ error: 'User ID is required' }), {
@@ -157,7 +157,12 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
     }
 
     const url = new URL(request.url);
-    const userId = url.searchParams.get('user_id');
+    let userId = url.searchParams.get('user_id');
+
+    if (!userId) {
+      const body = await request.json().catch(() => ({} as { user_id?: string; userId?: string }));
+      userId = body.user_id || body.userId || null;
+    }
 
     if (!userId) {
       return new Response(JSON.stringify({ error: 'User ID is required' }), {

@@ -94,7 +94,7 @@ export const logPerformanceMetrics = (metrics: Omit<PerformanceMetrics, 'timesta
 
   // Log to console in development
   if (import.meta.env.DEV) {
-    console.log('Performance Metrics:', {
+    console.warn('Performance Metrics:', {
       ...metrics,
       memoryUsage: performanceMonitor.getMemoryUsage()
     });

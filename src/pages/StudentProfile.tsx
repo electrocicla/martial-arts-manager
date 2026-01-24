@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { NotificationSettings } from '../components/settings';
 import { AppearanceSettings } from '../components/settings';
+import { prepareAvatarFile } from '../lib/avatarUpload';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -27,6 +28,26 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
+type DisciplineEntry = {
+  id: string;
+  discipline: string;
+  belt: string;
+};
+
+const createDisciplineId = (): string => {
+  const randomUUID = globalThis.crypto?.randomUUID;
+  if (typeof randomUUID === 'function') {
+    return randomUUID.call(globalThis.crypto);
+  }
+  return `discipline-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+};
+
+const toDisciplineEntry = (entry: { discipline: string; belt: string }): DisciplineEntry => ({
+  id: createDisciplineId(),
+  discipline: entry.discipline,
+  belt: entry.belt,
+});
+
 export default function StudentProfile() {
   const { profile, isLoading, error: loadError, refresh } = useProfile();
   const { t } = useTranslation();
@@ -35,7 +56,7 @@ export default function StudentProfile() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [disciplines, setDisciplines] = useState<{ discipline: string; belt: string }[]>([{ discipline: '', belt: '' }]);
+  const [disciplines, setDisciplines] = useState<DisciplineEntry[]>([toDisciplineEntry({ discipline: '', belt: '' })]);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState('personal');
@@ -67,8 +88,10 @@ export default function StudentProfile() {
 
   useEffect(() => {
     if (profile) {
-      const initialDisciplines = profile.disciplines ? profile.disciplines : (profile.discipline && profile.belt ? [{ discipline: profile.discipline, belt: profile.belt }] : [{ discipline: '', belt: '' }]);
-      setDisciplines(initialDisciplines);
+      const initialDisciplines = profile.disciplines
+        ? profile.disciplines
+        : (profile.discipline && profile.belt ? [{ discipline: profile.discipline, belt: profile.belt }] : [{ discipline: '', belt: '' }]);
+      setDisciplines(initialDisciplines.map(toDisciplineEntry));
       reset({
         name: profile.name,
         phone: profile.phone || '',
@@ -88,13 +111,14 @@ export default function StudentProfile() {
 
     try {
       const token = localStorage.getItem('accessToken');
+      const cleanedDisciplines = disciplines.map(({ discipline, belt }) => ({ discipline, belt }));
       const response = await fetch('/api/student/profile', {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ ...data, disciplines }),
+        body: JSON.stringify({ ...data, disciplines: cleanedDisciplines }),
       });
 
       if (!response.ok) {
@@ -123,23 +147,26 @@ export default function StudentProfile() {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
 
-    // Validate file type
-    if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
-      setSaveError('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
-      return;
-    }
+    setSaveError(null);
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setSaveError('File too large. Maximum size is 5MB.');
+    const prepared = await prepareAvatarFile(file, {
+      invalidType: t('profile.avatarInvalidType', 'Invalid file type. Only JPG, PNG, GIF, WebP, AVIF, and HEIC/HEIF are allowed.'),
+      tooLarge: t('profile.avatarTooLarge', 'File too large. Maximum size is 5MB.'),
+      conversionFailed: t('profile.avatarConversionFailed', 'Could not process this image. Please try a JPG or PNG.')
+    });
+
+    if (!prepared.ok || !prepared.file) {
+      setSaveError(prepared.error || t('profile.avatarUploadError', 'Failed to process the image.'));
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
 
     setAvatarUploading(true);
-    setSaveError(null);
 
     const formData = new FormData();
-    formData.append('avatar', file);
+    formData.append('avatar', prepared.file);
     formData.append('studentId', profile.id);
 
     try {
@@ -175,19 +202,17 @@ export default function StudentProfile() {
   };
 
   const addDiscipline = () => {
-    setDisciplines([...disciplines, { discipline: '', belt: '' }]);
+    setDisciplines((prev) => [...prev, toDisciplineEntry({ discipline: '', belt: '' })]);
   };
 
-  const removeDiscipline = (index: number) => {
+  const removeDiscipline = (id: string) => {
     if (disciplines.length > 1) {
-      setDisciplines(disciplines.filter((_, i) => i !== index));
+      setDisciplines((prev) => prev.filter((entry) => entry.id !== id));
     }
   };
 
-  const updateDiscipline = (index: number, field: 'discipline' | 'belt', value: string) => {
-    const newDisciplines = [...disciplines];
-    newDisciplines[index][field] = value;
-    setDisciplines(newDisciplines);
+  const updateDiscipline = (id: string, field: 'discipline' | 'belt', value: string) => {
+    setDisciplines((prev) => prev.map((entry) => (entry.id === id ? { ...entry, [field]: value } : entry)));
   };
 
   if (isLoading) {
@@ -294,7 +319,7 @@ export default function StudentProfile() {
                           <input
                             ref={fileInputRef}
                             type="file"
-                            accept="image/*"
+                            accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/heic,image/heif"
                             onChange={handleAvatarChange}
                             className="hidden"
                           />
@@ -303,8 +328,8 @@ export default function StudentProfile() {
                         {/* Profile Info */}
                         <h2 className="text-2xl font-bold text-white mb-1">{profile?.name}</h2>
                         <div className="text-gray-400 mb-4">
-                          {disciplines.length > 0 ? disciplines.map((d, i) => (
-                            <div key={i}>{d.discipline} - {d.belt}</div>
+                          {disciplines.length > 0 ? disciplines.map((d) => (
+                            <div key={d.id}>{d.discipline} - {d.belt}</div>
                           )) : t('profile.noDisciplinesSet', 'No disciplines set')}
                         </div>
 
@@ -346,10 +371,11 @@ export default function StudentProfile() {
                       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <label htmlFor="profile-name" className="block text-sm font-medium text-gray-300 mb-2">
                               {t('profile.fullName', 'Full Name')}
                             </label>
                             <Input
+                              id="profile-name"
                               {...register('name')}
                               className="bg-gray-700 border-gray-600 text-white focus:border-primary"
                               placeholder="Enter your full name"
@@ -360,11 +386,12 @@ export default function StudentProfile() {
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                            <label htmlFor="profile-email" className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
                               <Mail className="w-4 h-4" />
                               {t('profile.email', 'Email')}
                             </label>
                             <Input
+                              id="profile-email"
                               value={profile?.email || ''}
                               disabled
                               className="bg-gray-700/50 border-gray-600 text-gray-400 cursor-not-allowed"
@@ -373,11 +400,12 @@ export default function StudentProfile() {
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                            <label htmlFor="profile-phone" className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
                               <Phone className="w-4 h-4" />
                               {t('profile.phone', 'Phone')}
                             </label>
                             <Input
+                              id="profile-phone"
                               {...register('phone')}
                               className="bg-gray-700 border-gray-600 text-white focus:border-primary"
                               placeholder="(555) 123-4567"
@@ -385,19 +413,20 @@ export default function StudentProfile() {
                           </div>
 
                           <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                            <div className="block text-sm font-medium text-gray-300 mb-2">
                               {t('profile.disciplines', 'Disciplines')}
-                            </label>
+                            </div>
                             <div className="space-y-3">
-                              {disciplines.map((disc, index) => (
-                                <div key={index} className="flex gap-3 items-end">
+                              {disciplines.map((disc) => (
+                                <div key={disc.id} className="flex gap-3 items-end">
                                   <div className="flex-1">
-                                    <label className="block text-xs font-medium text-gray-400 mb-1">
+                                    <label htmlFor={`discipline-${disc.id}`} className="block text-xs font-medium text-gray-400 mb-1">
                                       {t('profile.discipline', 'Discipline')}
                                     </label>
                                     <select
+                                      id={`discipline-${disc.id}`}
                                       value={disc.discipline}
-                                      onChange={(e) => updateDiscipline(index, 'discipline', e.target.value)}
+                                      onChange={(e) => updateDiscipline(disc.id, 'discipline', e.target.value)}
                                       className="select select-bordered bg-gray-700 border-gray-600 text-white focus:border-primary w-full"
                                     >
                                       <option value="">{t('common.select', 'Select')}</option>
@@ -412,12 +441,13 @@ export default function StudentProfile() {
                                     </select>
                                   </div>
                                   <div className="flex-1">
-                                    <label className="block text-xs font-medium text-gray-400 mb-1">
+                                    <label htmlFor={`belt-${disc.id}`} className="block text-xs font-medium text-gray-400 mb-1">
                                       {t('profile.belt', 'Belt/Rank')}
                                     </label>
                                     <select
+                                      id={`belt-${disc.id}`}
                                       value={disc.belt}
-                                      onChange={(e) => updateDiscipline(index, 'belt', e.target.value)}
+                                      onChange={(e) => updateDiscipline(disc.id, 'belt', e.target.value)}
                                       className="select select-bordered bg-gray-700 border-gray-600 text-white focus:border-primary w-full"
                                     >
                                       <option value="">{t('common.select', 'Select')}</option>
@@ -444,7 +474,7 @@ export default function StudentProfile() {
                                   {disciplines.length > 1 && (
                                     <button
                                       type="button"
-                                      onClick={() => removeDiscipline(index)}
+                                      onClick={() => removeDiscipline(disc.id)}
                                       className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
                                     >
                                       {t('profile.remove', 'Remove')}
@@ -472,20 +502,22 @@ export default function StudentProfile() {
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                              <label className="block text-sm font-medium text-gray-300 mb-2">
+                              <label htmlFor="emergency-contact-name" className="block text-sm font-medium text-gray-300 mb-2">
                                 {t('profile.emergencyName', 'Contact Name')}
                               </label>
                               <Input
+                                id="emergency-contact-name"
                                 {...register('emergency_contact_name')}
                                 className="bg-gray-700 border-gray-600 text-white focus:border-primary"
                                 placeholder="Emergency contact name"
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-300 mb-2">
+                              <label htmlFor="emergency-contact-phone" className="block text-sm font-medium text-gray-300 mb-2">
                                 {t('profile.emergencyPhone', 'Contact Phone')}
                               </label>
                               <Input
+                                id="emergency-contact-phone"
                                 {...register('emergency_contact_phone')}
                                 className="bg-gray-700 border-gray-600 text-white focus:border-primary"
                                 placeholder="(555) 123-4567"
@@ -496,10 +528,11 @@ export default function StudentProfile() {
 
                         {/* Notes */}
                         <div className="border-t border-gray-700 pt-6">
-                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                          <label htmlFor="profile-notes" className="block text-sm font-medium text-gray-300 mb-2">
                             {t('profile.notes', 'Additional Notes')}
                           </label>
                           <textarea
+                            id="profile-notes"
                             {...register('notes')}
                             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
                             rows={4}

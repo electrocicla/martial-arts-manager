@@ -125,7 +125,7 @@ export default function StudentAttendance() {
       }
     } catch (error) {
       console.error('Camera error:', error);
-      setScanError(t('attendance.cameraError', 'No se pudo acceder a la cámara. Verifica los permisos.'));
+      setScanError(t('attendance.cameraError', 'Unable to access the camera. Please check permissions.'));
       setScanState('error');
     }
   };
@@ -171,8 +171,7 @@ export default function StudentAttendance() {
           }
         }
       } catch (err) {
-        // Silently ignore scan errors
-        console.debug('Scan frame error:', err);
+        console.warn('Scan frame error:', err);
       }
     }, 250);
   };
@@ -180,7 +179,7 @@ export default function StudentAttendance() {
   const scanWithCanvasFallback = () => {
     // Simple fallback that captures frames and could send to server for processing
     // For now, we'll show a message that the browser doesn't support QR scanning
-    setScanError(t('attendance.qrNotSupported', 'Tu navegador no soporta escaneo QR. Intenta con Chrome o Edge.'));
+    setScanError(t('attendance.qrNotSupported', 'Your browser does not support QR scanning. Try Chrome or Edge.'));
     setScanState('error');
     stopCamera();
   };
@@ -206,7 +205,7 @@ export default function StudentAttendance() {
       
       if (response.success && response.data?.success) {
         setScanState('success');
-        setScanSuccess(response.data.message || t('attendance.checkInSuccess', '¡Asistencia registrada!'));
+        setScanSuccess(response.data.message || t('attendance.checkInSuccess', 'Attendance recorded.'));
         
         // Refresh attendance list
         await fetchAttendance();
@@ -218,7 +217,7 @@ export default function StudentAttendance() {
         }, 2000);
       } else {
         setScanState('error');
-        setScanError(response.data?.message || response.error || t('attendance.checkInError', 'Error al registrar asistencia'));
+        setScanError(response.data?.message || response.error || t('attendance.checkInError', 'Failed to record attendance.'));
         
         // Resume scanning after error
         setTimeout(() => {
@@ -230,7 +229,7 @@ export default function StudentAttendance() {
     } catch (error) {
       console.error('Check-in error:', error);
       setScanState('error');
-      setScanError(t('attendance.networkError', 'Error de conexión. Intenta nuevamente.'));
+      setScanError(t('attendance.networkError', 'Network error. Please try again.'));
       
       setTimeout(() => {
         setScanError(null);
@@ -254,10 +253,10 @@ export default function StudentAttendance() {
         <div className="text-center">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">
-            {t('attendance.studentOnly', 'Solo para estudiantes')}
+            {t('attendance.studentOnly', 'Students only')}
           </h2>
           <p className="text-gray-400">
-            {t('attendance.studentOnlyMessage', 'Esta sección es exclusiva para estudiantes.')}
+            {t('attendance.studentOnlyMessage', 'This section is only available to students.')}
           </p>
         </div>
       </div>
@@ -275,10 +274,10 @@ export default function StudentAttendance() {
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-black text-white">
-                {t('attendance.myAttendance', 'Mi Asistencia')}
+                {t('attendance.myAttendance', 'My attendance')}
               </h1>
               <p className="text-sm text-gray-400">
-                {t('attendance.trackYourProgress', 'Registra tu asistencia y revisa tu historial')}
+                {t('attendance.trackYourProgress', 'Check in and review your attendance history')}
               </p>
             </div>
           </div>
@@ -291,10 +290,10 @@ export default function StudentAttendance() {
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="flex-1 text-center sm:text-left">
               <h2 className="text-lg font-bold text-white mb-1">
-                {t('attendance.qrCheckIn', 'Check-in con QR')}
+                {t('attendance.qrCheckIn', 'QR check-in')}
               </h2>
               <p className="text-sm text-gray-400">
-                {t('attendance.scanQrInstruction', 'Escanea el código QR en tu lugar de entrenamiento')}
+                {t('attendance.scanQrInstruction', 'Scan the QR code at your training location')}
               </p>
             </div>
             <button
@@ -303,7 +302,7 @@ export default function StudentAttendance() {
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <QrCode className="w-5 h-5" />
-              {t('attendance.scanQr', 'Escanear QR')}
+              {t('attendance.scanQr', 'Scan QR')}
             </button>
           </div>
         </div>
@@ -314,7 +313,7 @@ export default function StudentAttendance() {
             <div className="bg-gradient-to-br from-green-900/30 to-green-900/10 rounded-xl border border-green-500/20 p-4">
               <div className="flex items-center gap-2 text-green-400 mb-1">
                 <CheckCircle2 className="w-4 h-4" />
-                <span className="text-xs font-medium">{t('attendance.attended', 'Asistidas')}</span>
+                <span className="text-xs font-medium">{t('attendance.attended', 'Attended')}</span>
               </div>
               <div className="text-2xl font-black text-white">{stats.attended}</div>
             </div>
@@ -322,7 +321,7 @@ export default function StudentAttendance() {
             <div className="bg-gradient-to-br from-red-900/30 to-red-900/10 rounded-xl border border-red-500/20 p-4">
               <div className="flex items-center gap-2 text-red-400 mb-1">
                 <XCircle className="w-4 h-4" />
-                <span className="text-xs font-medium">{t('attendance.missed', 'Faltadas')}</span>
+                <span className="text-xs font-medium">{t('attendance.missed', 'Missed')}</span>
               </div>
               <div className="text-2xl font-black text-white">{stats.missed}</div>
             </div>
@@ -330,7 +329,7 @@ export default function StudentAttendance() {
             <div className="bg-gradient-to-br from-blue-900/30 to-blue-900/10 rounded-xl border border-blue-500/20 p-4">
               <div className="flex items-center gap-2 text-blue-400 mb-1">
                 <TrendingUp className="w-4 h-4" />
-                <span className="text-xs font-medium">{t('attendance.rate', 'Porcentaje')}</span>
+                <span className="text-xs font-medium">{t('attendance.rate', 'Rate')}</span>
               </div>
               <div className="text-2xl font-black text-white">{stats.attendance_rate}%</div>
             </div>
@@ -338,7 +337,7 @@ export default function StudentAttendance() {
             <div className="bg-gradient-to-br from-yellow-900/30 to-yellow-900/10 rounded-xl border border-yellow-500/20 p-4">
               <div className="flex items-center gap-2 text-yellow-400 mb-1">
                 <Calendar className="w-4 h-4" />
-                <span className="text-xs font-medium">{t('attendance.streak', 'Racha')}</span>
+                <span className="text-xs font-medium">{t('attendance.streak', 'Streak')}</span>
               </div>
               <div className="text-2xl font-black text-white">{stats.current_streak}</div>
             </div>
@@ -350,10 +349,10 @@ export default function StudentAttendance() {
           <div className="px-4 py-3 border-b border-gray-700/50 flex items-center justify-between">
             <h3 className="font-semibold text-white flex items-center gap-2">
               <Clock className="w-4 h-4 text-gray-400" />
-              {t('attendance.history', 'Historial de Asistencia')}
+              {t('attendance.history', 'Attendance history')}
             </h3>
             <span className="text-xs text-gray-500">
-              {records.length} {t('attendance.records', 'registros')}
+              {records.length} {t('attendance.records', 'records')}
             </span>
           </div>
           
@@ -366,7 +365,7 @@ export default function StudentAttendance() {
             <div className="p-8 text-center">
               <Calendar className="w-12 h-12 text-gray-600 mx-auto mb-3" />
               <p className="text-gray-400">
-                {t('attendance.noRecords', 'Aún no tienes registros de asistencia')}
+                {t('attendance.noRecords', 'You do not have any attendance records yet')}
               </p>
             </div>
           ) : (
@@ -433,7 +432,7 @@ export default function StudentAttendance() {
           {/* Scanner Header */}
           <div className="flex items-center justify-between p-4 bg-black/50 backdrop-blur-sm">
             <h3 className="text-lg font-bold text-white">
-              {t('attendance.scanningQr', 'Escaneando QR...')}
+              {t('attendance.scanningQr', 'Scanning QR...')}
             </h3>
             <button
               onClick={stopCamera}
@@ -450,7 +449,9 @@ export default function StudentAttendance() {
               className="max-w-full max-h-full object-contain"
               playsInline
               muted
-            />
+            >
+              <track kind="captions" src="/empty.vtt" srcLang="en" label="Captions" />
+            </video>
             <canvas ref={canvasRef} className="hidden" />
             
             {/* Scan Frame Overlay */}
@@ -474,7 +475,7 @@ export default function StudentAttendance() {
                 <div className="text-center">
                   <Loader2 className="w-12 h-12 text-red-500 animate-spin mx-auto" />
                   <p className="text-white mt-3 font-medium">
-                    {t('attendance.processing', 'Procesando...')}
+                    {t('attendance.processing', 'Processing...')}
                   </p>
                 </div>
               </div>
@@ -502,7 +503,7 @@ export default function StudentAttendance() {
           {/* Scanner Footer */}
           <div className="p-4 bg-black/50 backdrop-blur-sm text-center">
             <p className="text-gray-400 text-sm">
-              {t('attendance.pointAtQr', 'Apunta la cámara hacia el código QR')}
+              {t('attendance.pointAtQr', 'Point your camera at the QR code')}
             </p>
           </div>
         </div>
