@@ -20,7 +20,7 @@ interface RequestDetector {
 }
 
 interface TarPitResponseGenerator {
-  generate(): Response;
+  generate(): Promise<Response>;
 }
 
 // Path-based detector (SRP: only handles path detection)
@@ -230,18 +230,13 @@ class CompositeRequestDetector implements RequestDetector {
 // Advanced tar pit response generator
 class AdvancedTarPitResponseGenerator implements TarPitResponseGenerator {
   private readonly totalDelayMs = 15000; // 15 seconds
-  private readonly chunkIntervalMs = 1000; // 1 second between chunks
-  private readonly totalChunks = Math.floor(this.totalDelayMs / this.chunkIntervalMs);
 
-  generate(): Response {
-    const encoder = new TextEncoder();
-    const totalChunks = this.totalChunks;
-    const chunkIntervalMs = this.chunkIntervalMs;
+  async generate(): Promise<Response> {
+    // Wait for the full delay before responding
+    await new Promise(resolve => setTimeout(resolve, this.totalDelayMs));
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        // Send initial HTML immediately (200 OK response)
-        const initialHtml = `<!DOCTYPE html>
+    // Return a response that includes CPU-intensive JavaScript
+    const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -250,72 +245,51 @@ class AdvancedTarPitResponseGenerator implements TarPitResponseGenerator {
     <meta name="robots" content="noindex, nofollow, noarchive">
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-        .progress { margin: 20px 0; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <h1>Processing Your Request</h1>
-    <p>Please wait while we process your request...</p>
+    <p>Your request has been processed successfully.</p>
     <div class="spinner"></div>
-    <div class="progress" id="progress">0%</div>
-    <div id="content">
-`;
+    <p>Please wait...</p>
 
-        controller.enqueue(encoder.encode(initialHtml));
-
-        // Slowly stream content over 15 seconds
-        for (let i = 1; i <= totalChunks; i++) {
-          // Wait 1 second between chunks
-          await new Promise(resolve => setTimeout(resolve, chunkIntervalMs));
-
-          const progress = Math.round((i / totalChunks) * 100);
-          const chunk = `<p>Processing... ${progress}% complete</p>
-<script>
+    <script>
 // CPU-intensive JavaScript to consume bot resources if executed
 (function() {
+    // Heavy computation loop
     let result = 0;
-    for (let j = 0; j < 1000000; j++) {
-        result += Math.random() * Math.sin(j);
+    const startTime = Date.now();
+    while (Date.now() - startTime < 10000) { // Run for 10 seconds
+        for (let j = 0; j < 100000; j++) {
+            result += Math.random() * Math.sin(j) * Math.cos(j);
+        }
     }
-    console.log('Processed: ' + result);
+    console.log('Heavy computation completed: ' + result);
+
+    // Additional resource consumption
+    setInterval(() => {
+        const arr = [];
+        for (let i = 0; i < 50000; i++) {
+            arr.push(Math.random());
+        }
+    }, 500);
 })();
 </script>
-<!-- Add many iframes to consume more resources -->
-<iframe src="/nonexistent1" style="display:none;"></iframe>
-<iframe src="/nonexistent2" style="display:none;"></iframe>
-<iframe src="/nonexistent3" style="display:none;"></iframe>
-<iframe src="/nonexistent4" style="display:none;"></iframe>
-<iframe src="/nonexistent5" style="display:none;"></iframe>
-`;
 
-          controller.enqueue(encoder.encode(chunk));
-        }
+<!-- Hidden iframes to consume additional resources -->
+<iframe src="/nonexistent-resource-1" style="display:none;" width="1" height="1"></iframe>
+<iframe src="/nonexistent-resource-2" style="display:none;" width="1" height="1"></iframe>
+<iframe src="/nonexistent-resource-3" style="display:none;" width="1" height="1"></iframe>
+<iframe src="/nonexistent-resource-4" style="display:none;" width="1" height="1"></iframe>
+<iframe src="/nonexistent-resource-5" style="display:none;" width="1" height="1"></iframe>
 
-        // Send closing HTML
-        const closingHtml = `
-    </div>
-    <p>Request processed successfully.</p>
-    <script>
-        // More CPU consumption
-        setInterval(() => {
-            let arr = [];
-            for (let i = 0; i < 10000; i++) {
-                arr.push(Math.random());
-            }
-        }, 100);
-    </script>
 </body>
 </html>`;
 
-        controller.enqueue(encoder.encode(closingHtml));
-        controller.close();
-      }
-    });
-
-    return new Response(stream, {
-      status: 200, // Positive response
+    return new Response(html, {
+      status: 200,
       statusText: 'OK',
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
@@ -363,7 +337,7 @@ class TarPitMiddleware {
 
     if (this.detector.isSuspicious(request)) {
       console.log(`[Tar Pit] Trapping suspicious request: ${request.url} from ${request.headers.get('User-Agent')}`);
-      return this.responseGenerator.generate();
+      return await this.responseGenerator.generate();
     }
 
     return undefined;
