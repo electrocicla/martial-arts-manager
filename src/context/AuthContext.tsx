@@ -216,13 +216,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return true;
         }
       }
+      
+      // Only clear auth if we got a 401 (unauthorized) response
+      // Other errors (network, 5xx) should not log the user out
+      if (response.status === 401) {
+        setUser(null);
+        localStorage.removeItem('accessToken');
+      }
     } catch (error) {
       console.error('Token refresh failed:', error);
+      // Network error - don't log user out, token might still be valid
     }
     
-    // Refresh failed, clear auth state
-    setUser(null);
-    localStorage.removeItem('accessToken');
     return false;
   };
 

@@ -50,8 +50,9 @@ export default function ProfileSettings() {
         return;
       }
 
-      // Refresh auth context so email/name changes reflect immediately across the app
-      await refreshAuth();
+      // Try to refresh auth context so email/name changes reflect immediately across the app
+      // Don't fail if this doesn't work - the save was already successful
+      refreshAuth().catch(err => console.warn('Failed to refresh auth after profile save:', err));
       return;
     }
 
@@ -114,8 +115,9 @@ export default function ProfileSettings() {
         throw new Error(errorData.error || 'Failed to upload avatar');
       }
 
-      // Refresh auth context to update header avatar
-      await refreshAuth();
+      // Try to refresh auth context to update header avatar
+      // Don't fail the whole operation if this doesn't work
+      refreshAuth().catch(err => console.warn('Failed to refresh auth after avatar upload:', err));
       
     } catch (err) {
       setSaveError((err as Error).message);

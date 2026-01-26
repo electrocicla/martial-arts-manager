@@ -127,7 +127,9 @@ export default function StudentProfile() {
       }
 
       await refresh();
-      await refreshAuth();
+      // Try to refresh auth context, but don't fail if it doesn't work
+      // The profile update was already successful
+      refreshAuth().catch(err => console.warn('Failed to refresh auth after profile update:', err));
 
       setSaveSuccess(true);
       // Hide success message after 3 seconds
@@ -187,8 +189,9 @@ export default function StudentProfile() {
       // Refresh dashboard data (profile)
       await refresh();
       
-      // Refresh auth context to update header avatar
-      await refreshAuth();
+      // Try to refresh auth context to update header avatar
+      // Don't fail the whole operation if this doesn't work
+      refreshAuth().catch(err => console.warn('Failed to refresh auth after avatar upload:', err));
       
     } catch (err) {
       setSaveError((err as Error).message);
