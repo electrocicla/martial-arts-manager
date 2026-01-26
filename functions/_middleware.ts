@@ -352,6 +352,7 @@ class TarPitMiddleware {
     this.responseGenerator = responseGenerator;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async handleRequest(request: Request, env: Env): Promise<Response | undefined> {
     const url = new URL(request.url);
 
