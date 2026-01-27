@@ -50,10 +50,7 @@ interface AdminBeltTestingProps {
 export default function AdminBeltTesting({
   exams,
   eligibleStudents,
-  onCreateExam,
-  onUpdateExam,
   onDeleteExam,
-  onAssignStudent,
 }: AdminBeltTestingProps) {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState<'exams' | 'students'>('exams');

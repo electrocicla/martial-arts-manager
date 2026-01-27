@@ -4,7 +4,7 @@ import { StudentBeltTesting, AdminBeltTesting } from '../components/belttesting'
 import { useStudents } from '../hooks/useStudents';
 import { useAttendance } from '../hooks/useAttendance';
 import { calculateEligibleStudents, getNextBelt, getRequiredClasses } from '../lib/beltTestingUtils';
-import { apiClient } from '../services/api.client';
+import { apiClient } from '../lib/api-client';
 
 interface BeltExam {
   id: string;

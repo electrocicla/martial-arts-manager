@@ -3,8 +3,8 @@
  * Manages belt examination scheduling, assignment, and results
  */
 
-import { Env } from '../../types/index';
-import { authenticateUser } from '../../middleware/auth';
+import { Env } from '../types/index';
+import { authenticateUser } from '../middleware/auth';
 
 // GET /api/belt-exams - List all belt exams (filtered by role)
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {

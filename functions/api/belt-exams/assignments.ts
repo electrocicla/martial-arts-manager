@@ -3,8 +3,8 @@
  * Manages student assignments to belt exams
  */
 
-import { Env } from '../../../types/index';
-import { authenticateUser } from '../../../middleware/auth';
+import { Env } from '../../types/index';
+import { authenticateUser } from '../../middleware/auth';
 
 // GET /api/belt-exams/assignments - Get exam assignments
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {

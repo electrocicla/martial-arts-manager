@@ -3,8 +3,8 @@
  * Handles API calls for belt examination management
  */
 
-import { apiClient } from './api.client';
-import type { ApiResponse } from './api.client';
+import { apiClient } from '../lib/api-client';
+import type { ApiResponse } from '../lib/api-client';
 
 export interface BeltExam {
   id: string;
