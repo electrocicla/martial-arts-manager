@@ -9,8 +9,7 @@ import { Env } from './types/index';
  * This middleware now simply passes through all requests to the next handler.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function onRequest(request: Request, env: Env): Promise<Response | undefined> {
+export async function onRequest(context: { request: Request; env: Env; next: () => Promise<Response> }): Promise<Response> {
   // Pass through to the next handler
-  return undefined;
+  return await context.next();
 }
