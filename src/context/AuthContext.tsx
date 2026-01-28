@@ -75,33 +75,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const checkAuthStatus = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('accessToken');
-      
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
-      // Verify token with backend
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-      } else {
-        // Token is invalid, try to refresh
-        const refreshed = await refreshAuth();
-        if (!refreshed) {
-          localStorage.removeItem('accessToken');
-        }
-      }
+      // Try to refresh immediately using HttpOnly cookie since we don't store access token in localStorage anymore
+      await refreshAuth();
     } catch (error) {
       console.error('Auth check failed:', error);
-      localStorage.removeItem('accessToken');
     } finally {
       setIsLoading(false);
     }
@@ -126,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok && result.success) {
         setUser(result.user);
-        localStorage.setItem('accessToken', result.accessToken);
+        // Use in-memory token only
         return true;
       } else {
         // Check if it's a pending approval error
@@ -165,7 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok && result.success) {
         setUser(result.user);
-        localStorage.setItem('accessToken', result.accessToken);
+        // Use in-memory token only
         return true;
       } else {
         setError(result.error || 'Registration failed');
@@ -195,7 +172,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       // Clear local state regardless of API call success
       setUser(null);
-      localStorage.removeItem('accessToken');
       setIsLoading(false);
     }
   };
@@ -212,7 +188,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const result = await response.json();
         if (result.success) {
           setUser(result.user);
-          localStorage.setItem('accessToken', result.accessToken);
+          // Use in-memory token only
           return true;
         }
       }
@@ -221,7 +197,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Other errors (network, 5xx) should not log the user out
       if (response.status === 401) {
         setUser(null);
-        localStorage.removeItem('accessToken');
       }
     } catch (error) {
       console.error('Token refresh failed:', error);

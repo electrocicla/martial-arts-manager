@@ -36,7 +36,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
   try {
     // Parse request body
     const body = await request.json() as RegisterRequest;
-    const { email, password, name, role = 'student', instructorId } = body;
+    // Force role to 'student' for public registration to prevent privilege escalation
+    // even if the request contains another role
+    const { email, password, name, instructorId } = body;
+    const role = 'student';
 
     // Validate input
     if (!email || !password || !name) {

@@ -56,6 +56,14 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       });
     }
 
+    // Security: Students should not be able to list other students (PII protection)
+    if (auth.user.role === 'student') {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), { 
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     // Get students based on role
     let query = "SELECT * FROM students WHERE deleted_at IS NULL";
     const params: string[] = [];

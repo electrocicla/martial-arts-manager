@@ -10,6 +10,19 @@ import { Env } from './types/index';
  */
 
 export async function onRequest(context: { request: Request; env: Env; next: () => Promise<Response> }): Promise<Response> {
-  // Pass through to the next handler
-  return await context.next();
+  const response = await context.next();
+  
+  // Add security headers
+  const newHeaders = new Headers(response.headers);
+  newHeaders.set('X-Content-Type-Options', 'nosniff');
+  newHeaders.set('X-Frame-Options', 'DENY');
+  newHeaders.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  newHeaders.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  
+  // Return new response with added headers
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: newHeaders,
+  });
 }
