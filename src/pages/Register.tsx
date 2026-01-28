@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, UserPlus, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
 import { InstructorSelect } from '../components/ui/InstructorSelect';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
@@ -19,22 +18,19 @@ export default function Register() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const roleOptions = [
-    { value: 'student', label: t('registerPage.roles.student') },
-    { value: 'instructor', label: t('registerPage.roles.instructor') },
-    { value: 'admin', label: t('registerPage.roles.admin') },
-  ];
+  // Only student role is allowed for public registration
+  // Admin and instructor accounts must be created by administrators
 
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      role: 'student', // Force student role by default
+    },
   });
-
-  const selectedRole = watch('role');
 
   const onSubmit = async (data: RegisterFormData) => {
     clearError();
@@ -92,26 +88,18 @@ export default function Register() {
               />
             </div>
 
+            {/* Role is fixed to 'student' for public registration - hidden field */}
+            <input type="hidden" {...register('role')} value="student" />
+
+            {/* Instructor selection - always shown since all public registrations are students */}
             <div>
-              <Select
-                {...register('role')}
-                label={t('registerPage.role')}
-                placeholder={t('registerPage.rolePlaceholder')}
-                options={roleOptions}
-                error={errors.role?.message}
+              <InstructorSelect
+                {...register('instructorId')}
+                label={t('registerPage.selectInstructor')}
+                error={errors.instructorId?.message}
                 disabled={isLoading}
               />
             </div>
-            {selectedRole === 'student' && (
-              <div>
-                <InstructorSelect
-                  {...register('instructorId')}
-                  label={t('registerPage.selectInstructor')}
-                  error={errors.instructorId?.message}
-                  disabled={isLoading}
-                />
-              </div>
-            )}
             <div>
               <Input
                 {...register('password')}
