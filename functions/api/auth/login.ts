@@ -2,7 +2,7 @@
  * Login endpoint - authenticate user and return tokens
  */
 
-import { verifyPassword, generateSessionToken, generateUserId } from '../../utils/hash';
+import { verifyPassword, generateUserId } from '../../utils/hash';
 import { createTokens } from '../../utils/jwt';
 import { findUserByEmail, createSession, updateUserLastLogin, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
 import { createRefreshTokenCookie } from '../../middleware/auth';
@@ -118,13 +118,12 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Create session record
     const sessionId = generateUserId();
-    const sessionToken = generateSessionToken();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
 
     await createSession(env.DB, {
       id: sessionId,
       user_id: user.id,
-      refresh_token: sessionToken,
+      refresh_token: refreshToken,
       expires_at: expiresAt,
       ip_address: getClientIP(request),
       user_agent: getUserAgent(request),

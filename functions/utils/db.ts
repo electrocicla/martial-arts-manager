@@ -21,8 +21,10 @@ export async function createUser(
 ): Promise<User> {
   const now = new Date().toISOString();
   
-  // New manual registrations require approval, unless explicitly approved
-  const isApproved = userData.is_approved !== undefined ? userData.is_approved : 0;
+  // Auto-approve admin and instructor accounts, students require manual approval unless explicitly approved
+  const isApproved = userData.is_approved !== undefined 
+    ? userData.is_approved 
+    : (userData.role === 'admin' || userData.role === 'instructor') ? 1 : 0;
   
   const result = await db
     .prepare(`
