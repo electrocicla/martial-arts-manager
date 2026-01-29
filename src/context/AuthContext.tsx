@@ -5,6 +5,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { apiClient } from '../lib/api-client';
 
 // Types
 interface User {
@@ -61,6 +62,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Sync accessToken with apiClient whenever it changes
+  useEffect(() => {
+    apiClient.setAccessToken(accessToken);
+  }, [accessToken]);
+
   // Set up automatic token refresh
   useEffect(() => {
     if (!user) return;
@@ -105,7 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok && result.success) {
         setUser(result.user);
-        // Use in-memory token only
+        setAccessToken(result.accessToken);
         return true;
       } else {
         // Check if it's a pending approval error

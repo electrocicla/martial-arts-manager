@@ -33,9 +33,20 @@ export class ApiError extends Error {
 
 export class ApiClient {
   private baseURL: string;
+  private accessToken: string | null = null;
 
   constructor(baseURL = '') {
     this.baseURL = baseURL;
+  }
+
+  // Method to set the access token
+  setAccessToken(token: string | null) {
+    this.accessToken = token;
+  }
+
+  // Method to get the current access token
+  getAccessToken(): string | null {
+    return this.accessToken;
   }
 
   private async request<T>(
@@ -45,19 +56,16 @@ export class ApiClient {
     try {
       const url = `${this.baseURL}${endpoint}`;
       
-      // Get token from localStorage
-      const token = localStorage.getItem('accessToken');
-      
       // Build headers with authentication
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
       
       // Add Authorization header if token exists
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      if (this.accessToken) {
+        headers['Authorization'] = `Bearer ${this.accessToken}`;
       } else {
-        console.warn('[API Client] Access token missing from storage.');
+        console.warn('[API Client] Access token missing.');
       }
       
       // Merge with any additional headers from options
@@ -71,14 +79,9 @@ export class ApiClient {
       });
 
       if (!response.ok) {
-        // If 401, token might be expired - trigger logout
+        // If 401, token might be expired - just log, let context handle it
         if (response.status === 401) {
-          console.error('[API Client] 401 Unauthorized - removing token and redirecting');
-          localStorage.removeItem('accessToken');
-          // Redirect to login if not already on login page
-          if (!window.location.pathname.includes('/login')) {
-            window.location.href = '/login';
-          }
+          console.error('[API Client] 401 Unauthorized');
         }
         
         throw new ApiError(
