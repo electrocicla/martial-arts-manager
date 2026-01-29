@@ -35,6 +35,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  accessToken: string | null;
 
   // Methods
   login: (data: LoginData) => Promise<boolean>;
@@ -50,6 +51,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Auth provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -142,7 +144,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok && result.success) {
         setUser(result.user);
-        // Use in-memory token only
+        setAccessToken(result.accessToken);
         return true;
       } else {
         setError(result.error || 'Registration failed');
@@ -172,6 +174,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       // Clear local state regardless of API call success
       setUser(null);
+      setAccessToken(null);
       setIsLoading(false);
     }
   };
@@ -188,7 +191,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const result = await response.json();
         if (result.success) {
           setUser(result.user);
-          // Use in-memory token only
+          setAccessToken(result.accessToken);
           return true;
         }
       }
@@ -197,6 +200,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Other errors (network, 5xx) should not log the user out
       if (response.status === 401) {
         setUser(null);
+        setAccessToken(null);
       }
     } catch (error) {
       console.error('Token refresh failed:', error);
@@ -219,6 +223,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAuthenticated: !!user,
     isLoading,
     error,
+    accessToken,
     login,
     register,
     logout,

@@ -17,6 +17,7 @@ interface RefreshResponse {
     email: string;
     name: string;
     role: string;
+    student_id?: string;
   };
 }
 
@@ -75,6 +76,24 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       return response;
     }
 
+    // Auto-link student_id if missing (for students without student_id)
+    let studentId = user.student_id ?? undefined;
+    if (user.role === 'student' && !studentId) {
+      const studentMatch = await env.DB.prepare(
+        'SELECT id FROM students WHERE email = ? AND deleted_at IS NULL'
+      )
+        .bind(user.email)
+        .first<{ id: string }>();
+
+      if (studentMatch?.id) {
+        studentId = studentMatch.id;
+        const now = new Date().toISOString();
+        await env.DB.prepare('UPDATE users SET student_id = ?, updated_at = ? WHERE id = ?')
+          .bind(studentId, now, user.id)
+          .run();
+      }
+    }
+
     // Create new tokens
     const { accessToken, refreshToken: newRefreshToken } = await createTokens(
       user.id,
@@ -111,6 +130,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         email: user.email,
         name: user.name,
         role: user.role,
+        student_id: studentId,
       },
     };
 

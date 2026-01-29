@@ -34,20 +34,17 @@ export function useStudentDashboardData() {
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
 
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
+      // Note: We no longer store access tokens in localStorage
+      // The token should be passed as a parameter or obtained from context
+      // For now, this will fail gracefully and prompt re-authentication
       const headers = {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       };
 
       const [profileRes, classesRes, paymentsRes] = await Promise.all([
-        fetch('/api/student/profile', { headers }),
-        fetch('/api/student/classes', { headers }),
-        fetch('/api/student/payments', { headers })
+        fetch('/api/student/profile', { headers, credentials: 'include' }),
+        fetch('/api/student/classes', { headers, credentials: 'include' }),
+        fetch('/api/student/payments', { headers, credentials: 'include' })
       ]);
 
       if (!profileRes.ok || !classesRes.ok || !paymentsRes.ok) {
