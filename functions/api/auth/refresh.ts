@@ -4,7 +4,7 @@
 
 import { verifyJWT, createTokens } from '../../utils/jwt';
 import { findSessionByRefreshToken, findUserById, updateUserLastLogin, createSession, deleteSession } from '../../utils/db';
-import { getRefreshTokenFromCookies, createRefreshTokenCookie } from '../../middleware/auth';
+import { getRefreshTokenFromCookies, createRefreshTokenCookie, createClearRefreshTokenCookie } from '../../middleware/auth';
 import { generateUserId } from '../../utils/hash';
 
 import { Env } from '../../types/index';
@@ -29,37 +29,50 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const refreshToken = getRefreshTokenFromCookies(request);
     
     if (!refreshToken) {
-      return new Response(
+      const response = new Response(
         JSON.stringify({ error: 'Refresh token not found' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
+      // Clear invalid cookie
+      response.headers.append('Set-Cookie', createClearRefreshTokenCookie());
+      return response;
     }
 
     // Verify refresh token
     const payload = await verifyJWT(refreshToken, env.JWT_SECRET);
     if (!payload) {
-      return new Response(
+      const response = new Response(
         JSON.stringify({ error: 'Invalid or expired refresh token' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
+      // Clear invalid cookie
+      response.headers.append('Set-Cookie', createClearRefreshTokenCookie());
+      return response;
     }
 
     // Find session in database
     const session = await findSessionByRefreshToken(env.DB, refreshToken);
     if (!session) {
-      return new Response(
+      const response = new Response(
         JSON.stringify({ error: 'Session not found or expired' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
+      // Clear invalid cookie
+      response.headers.append('Set-Cookie', createClearRefreshTokenCookie());
+      return response;
     }
 
     // Find user
     const user = await findUserById(env.DB, session.user_id);
     if (!user || !user.is_active) {
-      return new Response(
+      const response = new Response(
         JSON.stringify({ error: 'User not found or inactive' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
+      // Clear invalid cookie and delete session
+      await deleteSession(env.DB, refreshToken);
+      response.headers.append('Set-Cookie', createClearRefreshTokenCookie());
+      return response;
     }
 
     // Create new tokens
