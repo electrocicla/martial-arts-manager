@@ -4,6 +4,7 @@ import DashboardHeader from './DashboardHeader';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Calendar, CreditCard, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { QRScanner } from '../attendance';
 
 export default function StudentDashboard() {
   const { profile, classes, payments, isLoading, error } = useStudentDashboardData();
@@ -45,6 +46,9 @@ export default function StudentDashboard() {
 
       <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto space-y-8 mobile-dashboard-content dashboard-content">
         
+        {/* QR Scanner Section */}
+        <QRScanner />
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>

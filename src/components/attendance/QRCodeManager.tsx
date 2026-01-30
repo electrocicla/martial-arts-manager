@@ -1,11 +1,11 @@
 /**
- * QRCodeManager Component
+ * QRCodeManager Component - REDESIGNED
  * 
- * Allows instructors and admins to:
- * - Create new QR codes for their locations
- * - View existing QR codes
- * - Download QR code images
- * - Deactivate/delete QR codes
+ * Features:
+ * - Quick QR creation with preset durations (1 day, 1 week, 1 month, 1 year)
+ * - Enhanced UI with proper padding and modern Tailwind design
+ * - Display creation date and duration
+ * - Download and manage QR codes
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -23,13 +23,13 @@ import {
   XCircle,
   Check,
   X,
-  RefreshCw
+  RefreshCw,
+  Calendar,
+  Zap,
+  Timer,
 } from 'lucide-react';
 import { apiClient } from '../../lib/api-client';
 import { useAuth } from '../../context/AuthContext';
-
-// QR Code generation using a simple library approach
-// We'll use a canvas-based approach for QR generation
 import QRCodeCanvas from './QRCodeCanvas';
 
 interface QRCodeRecord {
@@ -52,6 +52,8 @@ interface CreateQRForm {
   valid_until: string;
 }
 
+type QuickDuration = '1day' | '1week' | '1month' | '1year' | 'custom';
+
 export default function QRCodeManager() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -59,9 +61,10 @@ export default function QRCodeManager() {
   const [qrCodes, setQRCodes] = useState<QRCodeRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [selectedDuration, setSelectedDuration] = useState<QuickDuration>('1day');
   
   const [form, setForm] = useState<CreateQRForm>({
     location: '',
@@ -69,6 +72,48 @@ export default function QRCodeManager() {
     valid_from: '',
     valid_until: ''
   });
+
+  const quickDurations = [
+    { id: '1day' as QuickDuration, label: t('qr.duration.1day', '1 Day'), icon: Zap, days: 1, color: 'primary' },
+    { id: '1week' as QuickDuration, label: t('qr.duration.1week', '1 Week'), icon: Calendar, days: 7, color: 'secondary' },
+    { id: '1month' as QuickDuration, label: t('qr.duration.1month', '1 Month'), icon: Timer, days: 30, color: 'accent' },
+    { id: '1year' as QuickDuration, label: t('qr.duration.1year', '1 Year'), icon: Clock, days: 365, color: 'info' },
+  ];
+
+  const getQuickDates = (duration: QuickDuration) => {
+    const now = new Date();
+    const validFrom = now.toISOString().slice(0, 16);
+    
+    let validUntil = '';
+    switch (duration) {
+      case '1day':
+        validUntil = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+        break;
+      case '1week':
+        validUntil = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+        break;
+      case '1month':
+        validUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+        break;
+      case '1year':
+        validUntil = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+        break;
+      default:
+        break;
+    }
+    
+    return { validFrom, validUntil };
+  };
+
+  const handleDurationSelect = (duration: QuickDuration) => {
+    setSelectedDuration(duration);
+    if (duration !== 'custom') {
+      const { validFrom, validUntil } = getQuickDates(duration);
+      setForm(prev => ({ ...prev, valid_from: validFrom, valid_until: validUntil }));
+    } else {
+      setForm(prev => ({ ...prev, valid_from: '', valid_until: '' }));
+    }
+  };
 
   const fetchQRCodes = useCallback(async () => {
     try {
@@ -112,8 +157,9 @@ export default function QRCodeManager() {
       if (response.success && response.data?.qr_code) {
         setQRCodes(prev => [response.data!.qr_code, ...prev]);
         setSuccess(t('qr.created', 'QR code created successfully'));
-        setShowCreateForm(false);
+        setShowCreateModal(false);
         setForm({ location: '', class_id: '', valid_from: '', valid_until: '' });
+        setSelectedDuration('1day');
         
         setTimeout(() => setSuccess(null), 3000);
       } else {
@@ -160,7 +206,6 @@ export default function QRCodeManager() {
   };
 
   const downloadQR = (qrCode: QRCodeRecord) => {
-    // Get the canvas element and download it
     const canvas = document.getElementById(`qr-canvas-${qrCode.id}`) as HTMLCanvasElement;
     if (canvas) {
       const link = document.createElement('a');
@@ -170,238 +215,366 @@ export default function QRCodeManager() {
     }
   };
 
+  const getDurationLabel = (qr: QRCodeRecord) => {
+    if (!qr.valid_from || !qr.valid_until) return t('qr.permanent', 'Permanent');
+    
+    const from = new Date(qr.valid_from);
+    const until = new Date(qr.valid_until);
+    const days = Math.ceil((until.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (days === 1) return t('qr.duration.1day', '1 Day');
+    if (days === 7) return t('qr.duration.1week', '1 Week');
+    if (days >= 28 && days <= 31) return t('qr.duration.1month', '1 Month');
+    if (days >= 365) return t('qr.duration.1year', '1 Year');
+    return `${days} ${t('qr.days', 'days')}`;
+  };
+
   if (user?.role === 'student') {
     return null;
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-800/80 to-gray-900 rounded-2xl border border-gray-700/50 overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-4 border-b border-gray-700/50 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-blue-500/20">
-            <QrCode className="w-5 h-5 text-blue-400" />
+    <div className="bg-gradient-to-br from-base-200 to-base-300 rounded-3xl border-2 border-base-300 shadow-2xl overflow-hidden">
+      {/* Enhanced Header */}
+      <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 backdrop-blur-sm px-6 py-6 border-b-2 border-base-300">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary to-primary/50 shadow-lg">
+              <QrCode className="w-8 h-8 text-primary-content" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black text-base-content">
+                {t('qr.title', 'Attendance QR codes')}
+              </h3>
+              <p className="text-sm text-base-content/70 mt-1">
+                {t('qr.subtitle', 'Students scan to record attendance')}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-white">
-              {t('qr.title', 'Attendance QR codes')}
-            </h3>
-            <p className="text-xs text-gray-500">
-              {t('qr.subtitle', 'Students scan to record attendance')}
-            </p>
+          
+          <div className="flex items-center gap-3">
+            <button
+              onClick={fetchQRCodes}
+              className="btn btn-ghost btn-circle btn-lg shadow-md hover:shadow-lg"
+              title={t('common.refresh', 'Refresh')}
+            >
+              <RefreshCw className="w-6 h-6" />
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="btn btn-primary btn-lg gap-3 shadow-lg hover:shadow-xl"
+            >
+              <Plus className="w-6 h-6" />
+              {t('qr.create', 'Create QR')}
+            </button>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <button
-            onClick={fetchQRCodes}
-            className="p-2 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-            title={t('common.refresh', 'Refresh')}
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            {t('qr.create', 'Create QR')}
-          </button>
         </div>
       </div>
 
       {/* Alerts */}
-      {error && (
-        <div className="mx-4 mt-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
-          <X className="w-4 h-4 flex-shrink-0" />
-          {error}
-          <button onClick={() => setError(null)} className="ml-auto">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-      
-      {success && (
-        <div className="mx-4 mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg text-green-400 text-sm flex items-center gap-2">
-          <Check className="w-4 h-4 flex-shrink-0" />
-          {success}
-        </div>
-      )}
+      <div className="px-6">
+        {error && (
+          <div className="alert alert-error shadow-lg mt-6 rounded-2xl">
+            <XCircle className="w-6 h-6" />
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="btn btn-ghost btn-sm btn-circle">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+        
+        {success && (
+          <div className="alert alert-success shadow-lg mt-6 rounded-2xl">
+            <CheckCircle2 className="w-6 h-6" />
+            <span>{success}</span>
+          </div>
+        )}
+      </div>
 
-      {/* Create Form Modal */}
-      {showCreateForm && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-gray-900 rounded-2xl border border-gray-700 p-6 w-full max-w-md">
-            <h4 className="text-lg font-bold text-white mb-4">
-              {t('qr.createNew', 'Create new QR code')}
-            </h4>
+      {/* Create Modal */}
+      {showCreateModal && (
+        <div className="modal modal-open">
+          <div className="modal-box max-w-3xl bg-base-200 rounded-3xl shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-primary/20">
+                  <QrCode className="w-7 h-7 text-primary" />
+                </div>
+                <h4 className="text-2xl font-bold text-base-content">
+                  {t('qr.createNew', 'Create new QR code')}
+                </h4>
+              </div>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="btn btn-ghost btn-sm btn-circle"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
             
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label htmlFor="qr-location" className="block text-sm font-medium text-gray-300 mb-1">
-                  {t('qr.location', 'Location')} *
+            <form onSubmit={handleCreate} className="space-y-6">
+              {/* Location */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold text-lg flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    {t('qr.location', 'Location')}
+                    <span className="text-error">*</span>
+                  </span>
                 </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input
-                    id="qr-location"
-                    type="text"
-                    value={form.location}
-                    onChange={(e) => setForm(prev => ({ ...prev, location: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    placeholder="Example: Main dojo, North room"
-                    required
-                  />
+                <input
+                  type="text"
+                  value={form.location}
+                  onChange={(e) => setForm(prev => ({ ...prev, location: e.target.value }))}
+                  className="input input-bordered input-lg w-full bg-base-300 focus:border-primary rounded-2xl"
+                  placeholder={t('qr.locationPlaceholder', 'Example: Main dojo, North room')}
+                  required
+                />
+              </div>
+
+              {/* Quick Duration Buttons */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-semibold text-lg flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-warning" />
+                    {t('qr.quickDuration', 'Quick Duration')}
+                  </span>
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {quickDurations.map((duration) => {
+                    const Icon = duration.icon;
+                    return (
+                      <button
+                        key={duration.id}
+                        type="button"
+                        onClick={() => handleDurationSelect(duration.id)}
+                        className={`btn btn-lg gap-2 ${
+                          selectedDuration === duration.id
+                            ? `btn-${duration.color} shadow-lg`
+                            : 'btn-outline'
+                        } rounded-2xl`}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <div className="text-left">
+                          <div className="font-bold">{duration.label}</div>
+                          <div className="text-xs opacity-70">{duration.days}d</div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="qr-valid-from" className="block text-sm font-medium text-gray-300 mb-1">
-                    {t('qr.validFrom', 'Valid from')}
-                  </label>
+              {/* Custom Dates */}
+              <div className="form-control">
+                <label className="label cursor-pointer justify-start gap-3">
                   <input
-                    id="qr-valid-from"
-                    type="datetime-local"
-                    value={form.valid_from}
-                    onChange={(e) => setForm(prev => ({ ...prev, valid_from: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    type="checkbox"
+                    className="checkbox checkbox-primary"
+                    checked={selectedDuration === 'custom'}
+                    onChange={(e) => handleDurationSelect(e.target.checked ? 'custom' : '1day')}
                   />
-                </div>
-                <div>
-                  <label htmlFor="qr-valid-until" className="block text-sm font-medium text-gray-300 mb-1">
-                    {t('qr.validUntil', 'Valid until')}
-                  </label>
-                  <input
-                    id="qr-valid-until"
-                    type="datetime-local"
-                    value={form.valid_until}
-                    onChange={(e) => setForm(prev => ({ ...prev, valid_until: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  />
-                </div>
+                  <span className="label-text font-semibold text-lg">
+                    {t('qr.customDates', 'Custom dates')}
+                  </span>
+                </label>
+                
+                {selectedDuration === 'custom' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text">{t('qr.validFrom', 'Valid from')}</span>
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={form.valid_from}
+                        onChange={(e) => setForm(prev => ({ ...prev, valid_from: e.target.value }))}
+                        className="input input-bordered w-full bg-base-300 focus:border-primary rounded-xl"
+                      />
+                    </div>
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text">{t('qr.validUntil', 'Valid until')}</span>
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={form.valid_until}
+                        onChange={(e) => setForm(prev => ({ ...prev, valid_until: e.target.value }))}
+                        className="input input-bordered w-full bg-base-300 focus:border-primary rounded-xl"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <p className="text-xs text-gray-500">
-                {t('qr.validityNote', 'Leave blank to keep the QR code valid indefinitely')}
-              </p>
+              {selectedDuration !== 'custom' && form.valid_from && form.valid_until && (
+                <div className="alert alert-info rounded-2xl">
+                  <Calendar className="w-5 h-5" />
+                  <div>
+                    <div className="font-semibold">{t('qr.validity', 'Validity Period')}</div>
+                    <div className="text-sm">
+                      {new Date(form.valid_from).toLocaleString()} - {new Date(form.valid_until).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              <div className="flex justify-end gap-3 pt-2">
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-base-300">
                 <button
                   type="button"
-                  onClick={() => setShowCreateForm(false)}
-                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                  onClick={() => setShowCreateModal(false)}
+                  className="btn btn-ghost btn-lg rounded-2xl"
                 >
                   {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                  className="btn btn-primary btn-lg gap-3 shadow-lg hover:shadow-xl rounded-2xl"
                 >
                   {creating ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-6 h-6 animate-spin" />
                   ) : (
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-6 h-6" />
                   )}
                   {t('qr.generate', 'Generate QR')}
                 </button>
               </div>
             </form>
           </div>
+          <div className="modal-backdrop" onClick={() => setShowCreateModal(false)}>
+            <button>close</button>
+          </div>
         </div>
       )}
 
-      {/* QR Codes List */}
-      <div className="p-4">
+      {/* QR Codes Grid */}
+      <div className="p-6">
         {loading ? (
-          <div className="text-center py-8">
-            <Loader2 className="w-8 h-8 text-red-500 animate-spin mx-auto" />
-            <p className="text-gray-400 mt-2">{t('common.loading', 'Loading...')}</p>
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-16 h-16 text-primary animate-spin mb-4" />
+            <p className="text-base-content/70 text-lg">{t('common.loading', 'Loading...')}</p>
           </div>
         ) : qrCodes.length === 0 ? (
-          <div className="text-center py-8">
-            <QrCode className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-400 mb-2">
-              {t('qr.noQRCodes', 'No QR codes created yet')}
-            </p>
-            <p className="text-sm text-gray-500">
-              {t('qr.createFirst', 'Create one so students can check in')}
-            </p>
+          <div className="card bg-base-300 shadow-xl rounded-3xl">
+            <div className="card-body items-center text-center py-20">
+              <QrCode className="w-20 h-20 text-base-content/20 mb-4" />
+              <h3 className="text-xl font-bold text-base-content mb-2">
+                {t('qr.noQRCodes', 'No QR codes created yet')}
+              </h3>
+              <p className="text-base-content/70">
+                {t('qr.createFirst', 'Create one so students can check in')}
+              </p>
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {qrCodes.map((qr) => (
-              <div
-                key={qr.id}
-                className="bg-gray-800/50 rounded-xl border border-gray-700/50 p-4 hover:border-gray-600 transition-colors"
-              >
-                {/* QR Code Display */}
-                <div className="flex justify-center mb-3">
-                  <div className="bg-white p-3 rounded-lg">
-                    <QRCodeCanvas 
-                      id={`qr-canvas-${qr.id}`}
-                      value={qr.code} 
-                      size={120} 
-                    />
-                  </div>
-                </div>
-
-                {/* QR Info */}
-                <div className="space-y-2 text-center">
-                  <div className="flex items-center justify-center gap-2 text-white font-medium">
-                    <MapPin className="w-4 h-4 text-red-400" />
-                    {qr.location}
-                  </div>
-                  
-                  <div className="text-xs text-gray-500 font-mono">
-                    {qr.code}
-                  </div>
-
-                  <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                    {qr.is_active ? (
-                      <CheckCircle2 className="w-3 h-3 text-green-400" />
-                    ) : (
-                      <XCircle className="w-3 h-3 text-red-400" />
-                    )}
-                    <span>{qr.is_active ? t('qr.active', 'Active') : t('qr.inactive', 'Inactive')}</span>
-                  </div>
-
-                  {(qr.valid_from || qr.valid_until) && (
-                    <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                      <Clock className="w-3 h-3" />
-                      {qr.valid_from && new Date(qr.valid_from).toLocaleDateString()}
-                      {qr.valid_from && qr.valid_until && ' - '}
-                      {qr.valid_until && new Date(qr.valid_until).toLocaleDateString()}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {qrCodes.map((qr) => {
+              const isExpired = qr.valid_until && new Date(qr.valid_until) < new Date();
+              const durationLabel = getDurationLabel(qr);
+              
+              return (
+                <div
+                  key={qr.id}
+                  className={`card bg-base-300 border-2 shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 rounded-3xl overflow-hidden ${
+                    isExpired ? 'border-error/30 opacity-70' : 'border-base-300'
+                  }`}
+                >
+                  <div className="card-body p-6 space-y-4">
+                    {/* QR Code */}
+                    <div className="flex justify-center">
+                      <div className="bg-white p-5 rounded-2xl shadow-lg">
+                        <QRCodeCanvas 
+                          id={`qr-canvas-${qr.id}`}
+                          value={qr.code} 
+                          size={160} 
+                        />
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                {/* Actions */}
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  <button
-                    onClick={() => downloadQR(qr)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg text-sm transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                    {t('qr.download', 'Download')}
-                  </button>
-                  <button
-                    onClick={() => handleCopyCode(qr)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-gray-600/20 hover:bg-gray-600/30 text-gray-300 rounded-lg text-sm transition-colors"
-                  >
-                    <Copy className="w-4 h-4" />
-                    {t('qr.copy', 'Copy')}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(qr.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-sm transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                    {/* Info */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-center gap-2">
+                        <MapPin className="w-5 h-5 text-primary" />
+                        <span className="font-bold text-lg text-base-content">{qr.location}</span>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="badge badge-lg badge-outline font-mono px-4 py-3">
+                          {qr.code}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-center gap-2">
+                        {qr.is_active && !isExpired ? (
+                          <>
+                            <CheckCircle2 className="w-5 h-5 text-success" />
+                            <span className="badge badge-success badge-lg">{t('qr.active', 'Active')}</span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-5 h-5 text-error" />
+                            <span className="badge badge-error badge-lg">
+                              {isExpired ? t('qr.expired', 'Expired') : t('qr.inactive', 'Inactive')}
+                            </span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Duration Badge */}
+                      <div className="flex items-center justify-center gap-2">
+                        <Timer className="w-5 h-5 text-accent" />
+                        <span className="badge badge-accent badge-lg">{durationLabel}</span>
+                      </div>
+
+                      {/* Dates */}
+                      <div className="bg-base-200 rounded-2xl p-4 space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-base-content/70">{t('qr.created', 'Created')}</span>
+                          <span className="font-semibold">{new Date(qr.created_at).toLocaleDateString()}</span>
+                        </div>
+                        {qr.valid_from && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-base-content/70">{t('qr.from', 'From')}</span>
+                            <span className="font-semibold">{new Date(qr.valid_from).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        {qr.valid_until && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-base-content/70">{t('qr.until', 'Until')}</span>
+                            <span className="font-semibold">{new Date(qr.valid_until).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => downloadQR(qr)}
+                        className="btn btn-primary flex-1 gap-2 shadow-md hover:shadow-lg rounded-xl"
+                      >
+                        <Download className="w-5 h-5" />
+                        {t('qr.download', 'Download')}
+                      </button>
+                      <button
+                        onClick={() => handleCopyCode(qr)}
+                        className="btn btn-secondary gap-2 shadow-md hover:shadow-lg rounded-xl"
+                      >
+                        <Copy className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(qr.id)}
+                        className="btn btn-error gap-2 shadow-md hover:shadow-lg rounded-xl"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

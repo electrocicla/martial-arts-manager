@@ -13,7 +13,7 @@ import DashboardActivity from './dashboard/DashboardActivity';
 import DashboardMetrics from './dashboard/DashboardMetrics';
 import StudentDashboard from './dashboard/StudentDashboard';
 import { PendingApprovals } from './admin/PendingApprovals';
-import { QRCodeManager } from './attendance';
+import { QRCodeManager, QRScanner } from './attendance';
 
 export default function Dashboard() {
   const { user } = useAuth();
