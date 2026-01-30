@@ -112,6 +112,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.ok && result.success) {
         setUser(result.user);
         setAccessToken(result.accessToken);
+        // Immediately sync token with apiClient to avoid race conditions
+        apiClient.setAccessToken(result.accessToken);
         return true;
       } else {
         // Check if it's a pending approval error
@@ -151,6 +153,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.ok && result.success) {
         setUser(result.user);
         setAccessToken(result.accessToken);
+        // Immediately sync token with apiClient to avoid race conditions
+        apiClient.setAccessToken(result.accessToken);
         return true;
       } else {
         setError(result.error || 'Registration failed');

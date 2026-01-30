@@ -9,7 +9,7 @@ interface ProfileData {
 }
 
 export function useProfile() {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const [data, setData] = useState<ProfileData>({
     profile: null,
     isLoading: true,
@@ -22,16 +22,17 @@ export function useProfile() {
       return;
     }
 
+    // Wait for access token to be available
+    if (!accessToken) {
+      console.log('[Profile] Waiting for access token...');
+      return;
+    }
+
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
 
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
       const headers = {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       };
 
@@ -95,7 +96,7 @@ export function useProfile() {
         error: (err as Error).message
       }));
     }
-  }, [user]);
+  }, [user, accessToken]);
 
   useEffect(() => {
     fetchData();

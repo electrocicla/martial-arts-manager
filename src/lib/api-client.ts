@@ -65,7 +65,7 @@ export class ApiClient {
       if (this.accessToken) {
         headers['Authorization'] = `Bearer ${this.accessToken}`;
       } else {
-        console.warn('[API Client] Access token missing.');
+        console.warn('[API Client] Access token missing for request:', endpoint);
       }
       
       // Merge with any additional headers from options
@@ -81,11 +81,22 @@ export class ApiClient {
       if (!response.ok) {
         // If 401, token might be expired - just log, let context handle it
         if (response.status === 401) {
-          console.error('[API Client] 401 Unauthorized');
+          console.error('[API Client] 401 Unauthorized for:', endpoint);
+        }
+        
+        // Try to parse error response
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // Failed to parse error response, use default message
         }
         
         throw new ApiError(
-          `HTTP ${response.status}: ${response.statusText}`,
+          errorMessage,
           response.status
         );
       }
@@ -93,7 +104,7 @@ export class ApiClient {
       const data = await response.json();
       return { data, success: true };
     } catch (error) {
-      console.error('[API Client] Request failed:', error);
+      console.error('[API Client] Request failed:', endpoint, error);
       if (error instanceof ApiError) {
         return { error: error.message, success: false };
       }

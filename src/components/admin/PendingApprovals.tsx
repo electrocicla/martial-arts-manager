@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle, CheckCircle2, RefreshCw, UserCheck, XCircle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface PendingUser {
   id: string;
@@ -22,24 +23,25 @@ interface PendingApprovalsResponse {
 }
 
 export function PendingApprovals() {
+  const { accessToken } = useAuth();
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const fetchPendingUsers = useCallback(async () => {
+    if (!accessToken) {
+      console.log('[PendingApprovals] Waiting for access token...');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        throw new Error('No authentication token');
-      }
-
       const response = await fetch('/api/auth/pending-approvals', {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -55,10 +57,15 @@ export function PendingApprovals() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [accessToken]);
 
   const handleApprove = async (userId: string, userName: string) => {
     if (!confirm(`Approve the account for ${userName}?`)) {
+      return;
+    }
+
+    if (!accessToken) {
+      setError('No authentication token');
       return;
     }
 
@@ -66,16 +73,11 @@ export function PendingApprovals() {
       setProcessingId(userId);
       setError(null);
 
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        throw new Error('No authentication token');
-      }
-
       const response = await fetch('/api/auth/pending-approvals', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ user_id: userId }),
       });
@@ -98,19 +100,19 @@ export function PendingApprovals() {
       return;
     }
 
+    if (!accessToken) {
+      setError('No authentication token');
+      return;
+    }
+
     try {
       setProcessingId(userId);
       setError(null);
 
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        throw new Error('No authentication token');
-      }
-
       const response = await fetch(`/api/auth/pending-approvals?user_id=${encodeURIComponent(userId)}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 

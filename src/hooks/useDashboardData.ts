@@ -22,7 +22,7 @@ interface DashboardData {
 }
 
 export function useDashboardData(): DashboardData {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const [data, setData] = useState<DashboardData>({
     stats: {
       totalStudents: 0,
@@ -43,6 +43,12 @@ export function useDashboardData(): DashboardData {
     async function fetchDashboardData() {
       if (user?.role === 'student') {
         setData(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+
+      // Wait for authentication token to be available
+      if (!accessToken) {
+        console.log('[Dashboard] Waiting for access token...');
         return;
       }
 
@@ -124,7 +130,7 @@ export function useDashboardData(): DashboardData {
     }
 
     fetchDashboardData();
-  }, [user?.role]);
+  }, [user?.role, accessToken]);
 
   return data;
 }

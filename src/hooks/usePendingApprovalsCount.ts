@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 export function usePendingApprovalsCount() {
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
 
   const fetchCount = useCallback(async () => {
     if (!user || (user.role !== 'admin' && user.role !== 'instructor')) {
@@ -16,14 +16,17 @@ export function usePendingApprovalsCount() {
       return;
     }
 
+    if (!accessToken) {
+      console.log('[PendingApprovals] Waiting for access token...');
+      return;
+    }
+
     try {
       setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      if (!token) return;
 
       const response = await fetch('/api/auth/pending-approvals', {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -36,7 +39,7 @@ export function usePendingApprovalsCount() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, accessToken]);
 
   useEffect(() => {
     fetchCount();
