@@ -16,41 +16,53 @@ export function AttendanceStats({ presentCount, totalCount, attendanceRate }: At
   const { t } = useTranslation();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="p-2 bg-green-500/20 rounded-lg">
-            <CheckCircle2 className="w-6 h-6 text-green-400" />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="card bg-gradient-to-br from-success/20 to-success/5 border-2 border-success/30 shadow-xl hover:shadow-2xl transition-all rounded-3xl">
+        <div className="card-body p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-4 bg-success rounded-2xl shadow-lg">
+              <CheckCircle2 className="w-10 h-10 text-success-content" />
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-bold text-base-content/70 uppercase tracking-wider mb-1">
+                {t('attendance.present')}
+              </div>
+              <div className="text-4xl font-black text-success">{presentCount}</div>
+            </div>
           </div>
         </div>
-        <div className="text-sm text-gray-400 font-medium uppercase tracking-wide">
-          {t('attendance.present')}
-        </div>
-        <div className="text-3xl font-black text-white mt-1">{presentCount}</div>
       </div>
 
-      <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 border border-red-500/20 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="p-2 bg-red-500/20 rounded-lg">
-            <XCircle className="w-6 h-6 text-red-400" />
+      <div className="card bg-gradient-to-br from-error/20 to-error/5 border-2 border-error/30 shadow-xl hover:shadow-2xl transition-all rounded-3xl">
+        <div className="card-body p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-4 bg-error rounded-2xl shadow-lg">
+              <XCircle className="w-10 h-10 text-error-content" />
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-bold text-base-content/70 uppercase tracking-wider mb-1">
+                {t('attendance.absent')}
+              </div>
+              <div className="text-4xl font-black text-error">{totalCount - presentCount}</div>
+            </div>
           </div>
         </div>
-        <div className="text-sm text-gray-400 font-medium uppercase tracking-wide">
-          {t('attendance.absent')}
-        </div>
-        <div className="text-3xl font-black text-white mt-1">{totalCount - presentCount}</div>
       </div>
 
-      <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="p-2 bg-blue-500/20 rounded-lg">
-            <TrendingUp className="w-6 h-6 text-blue-400" />
+      <div className="card bg-gradient-to-br from-info/20 to-info/5 border-2 border-info/30 shadow-xl hover:shadow-2xl transition-all rounded-3xl">
+        <div className="card-body p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-4 bg-info rounded-2xl shadow-lg">
+              <TrendingUp className="w-10 h-10 text-info-content" />
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-bold text-base-content/70 uppercase tracking-wider mb-1">
+                {t('attendance.rate')}
+              </div>
+              <div className="text-4xl font-black text-info">{attendanceRate}%</div>
+            </div>
           </div>
         </div>
-        <div className="text-sm text-gray-400 font-medium uppercase tracking-wide">
-          {t('attendance.rate')}
-        </div>
-        <div className="text-3xl font-black text-white mt-1">{attendanceRate}%</div>
       </div>
     </div>
   );

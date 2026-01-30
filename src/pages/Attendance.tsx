@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Clock, MapPin, User, Users, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Users, ArrowRight, QrCode } from 'lucide-react';
 import { useClasses } from '../hooks/useClasses';
 import { useAuth } from '../context/AuthContext';
-import { QRCodeManager } from '../components/attendance';
+import { QRCodeManager, QRScanner } from '../components/attendance';
 import type { Class } from '../types';
 
 export default function Attendance() {
@@ -39,39 +39,42 @@ export default function Attendance() {
   const renderClassCard = (cls: Class) => (
     <div
       key={cls.id}
-      className="card bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 shadow-lg"
+      className="card bg-gradient-to-br from-base-200 to-base-300 border-2 border-base-300 shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 rounded-3xl overflow-hidden"
     >
-      <div className="card-body p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h3 className="text-base sm:text-lg font-bold text-white truncate">{cls.name}</h3>
-            <div className="mt-1 text-xs text-red-400 font-semibold">{cls.discipline}</div>
+      <div className="card-body p-6">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-xl font-bold text-base-content mb-1 truncate">{cls.name}</h3>
+            <div className="badge badge-primary badge-lg font-semibold shadow-md">{cls.discipline}</div>
           </div>
           <button
-            className="btn btn-primary btn-sm gap-2"
+            className="btn btn-primary btn-lg gap-3 shadow-lg hover:shadow-xl rounded-2xl"
             onClick={() => navigate(`/attendance/${cls.id}`)}
           >
-            <Users className="w-4 h-4" />
-            {t('attendance.take', 'Take attendance')}
+            <Users className="w-6 h-6" />
+            <span className="hidden sm:inline">{t('attendance.take', 'Take attendance')}</span>
+            <ArrowRight className="w-5 h-5 sm:hidden" />
           </button>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs sm:text-sm text-base-content/70">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-blue-400" />
-            <span>{new Date(cls.date).toLocaleDateString()}</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="flex items-center gap-3 p-3 bg-base-300 rounded-2xl">
+            <Calendar className="w-5 h-5 text-primary flex-shrink-0" />
+            <span className="text-sm font-medium text-base-content truncate">
+              {new Date(cls.date).toLocaleDateString()}
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-green-400" />
-            <span>{cls.time}</span>
+          <div className="flex items-center gap-3 p-3 bg-base-300 rounded-2xl">
+            <Clock className="w-5 h-5 text-success flex-shrink-0" />
+            <span className="text-sm font-medium text-base-content">{cls.time}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-purple-400" />
-            <span className="truncate">{cls.location}</span>
+          <div className="flex items-center gap-3 p-3 bg-base-300 rounded-2xl">
+            <MapPin className="w-5 h-5 text-accent flex-shrink-0" />
+            <span className="text-sm font-medium text-base-content truncate">{cls.location}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-yellow-400" />
-            <span className="truncate">{cls.instructor}</span>
+          <div className="flex items-center gap-3 p-3 bg-base-300 rounded-2xl">
+            <User className="w-5 h-5 text-warning flex-shrink-0" />
+            <span className="text-sm font-medium text-base-content truncate">{cls.instructor}</span>
           </div>
         </div>
       </div>
@@ -79,104 +82,175 @@ export default function Attendance() {
   );
 
   return (
-    <div className="min-h-screen bg-black pb-20 md:pb-8">
-      <div className="bg-gradient-to-br from-black to-red-900/20 px-4 py-6">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-lg bg-red-600/30">
-              <Users className="w-8 h-8 text-red-400" />
+    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 pb-24 md:pb-10">
+      {/* Enhanced Header */}
+      <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 backdrop-blur-sm border-b-2 border-base-300">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-primary to-primary/50 shadow-lg">
+                <Users className="w-10 h-10 text-primary-content" />
+              </div>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-black text-base-content bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  {t('nav.attendance')}
+                </h1>
+                <p className="text-base text-base-content/70 mt-1">
+                  {user?.role === 'student'
+                    ? t('attendance.scanQR', 'Scan QR code to record your attendance')
+                    : t('attendance.subtitle', 'Select a class to record attendance')}
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black text-base-content">
-                {t('nav.attendance')}
-              </h1>
-              <p className="text-sm text-base-content/70">
-                {t('attendance.subtitle', 'Select a class to record attendance')}
-              </p>
-            </div>
+            <button
+              className="btn btn-ghost btn-lg gap-3 shadow-md hover:shadow-lg rounded-2xl"
+              onClick={() => navigate('/calendar')}
+            >
+              <Calendar className="w-6 h-6" />
+              <span className="hidden sm:inline">{t('nav.calendar')}</span>
+            </button>
           </div>
-          <button
-            className="btn btn-ghost btn-sm gap-2"
-            onClick={() => navigate('/calendar')}
-          >
-            <Calendar className="w-4 h-4" />
-            {t('nav.calendar')}
-          </button>
         </div>
       </div>
 
-      <div className="px-4 py-6 max-w-6xl mx-auto">
+      <div className="px-6 py-8 max-w-7xl mx-auto">
         {user?.role === 'student' ? (
-          <div className="text-center py-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-gray-700/50">
-            <div className="max-w-md mx-auto px-4">
-              <div className="p-4 bg-red-500/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                <Users className="w-10 h-10 text-red-400" />
+          // Student View - QR Scanner
+          <div className="space-y-8">
+            {/* QR Scanner Section */}
+            <div className="animate-fadeIn">
+              <QRScanner />
+            </div>
+
+            {/* Info Card */}
+            <div className="card bg-gradient-to-br from-info/10 to-info/5 border-2 border-info/30 shadow-xl rounded-3xl">
+              <div className="card-body p-8">
+                <div className="flex items-start gap-4">
+                  <div className="p-4 rounded-2xl bg-info/20">
+                    <QrCode className="w-8 h-8 text-info" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-base-content mb-3">
+                      {t('attendance.howToScan', 'How to record attendance')}
+                    </h3>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3">
+                        <div className="badge badge-info badge-lg mt-1">1</div>
+                        <p className="text-base-content/80 flex-1">
+                          {t('attendance.step1', 'Ask your instructor for the class QR code')}
+                        </p>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="badge badge-info badge-lg mt-1">2</div>
+                        <p className="text-base-content/80 flex-1">
+                          {t('attendance.step2', 'Use your camera to scan the QR code or enter the code manually')}
+                        </p>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="badge badge-info badge-lg mt-1">3</div>
+                        <p className="text-base-content/80 flex-1">
+                          {t('attendance.step3', 'Your attendance will be recorded automatically with date and time')}
+                        </p>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">
-                {t('attendance.onlyStaff', 'Instructors and administrators only')}
-              </h3>
-              <p className="text-base-content/60 mb-6">
-                {t('attendance.onlyStaffMessage', 'Attendance is recorded by the class instructor.')}
-              </p>
-              <button
-                className="btn btn-primary gap-2"
-                onClick={() => navigate('/calendar')}
-              >
-                <Calendar className="w-5 h-5" />
-                {t('nav.calendar')}
-              </button>
             </div>
           </div>
         ) : (
+          // Instructor/Admin View
           <div className="space-y-8">
-            <section className="space-y-4">
+            {/* QR Code Manager for Instructors/Admins */}
+            <div className="animate-fadeIn">
+              <QRCodeManager />
+            </div>
+
+            {/* Today's Classes */}
+            <section className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white">
-                  {t('attendance.today', 'Today classes')}
-                </h2>
-                <span className="text-xs text-gray-400">
-                  {new Date().toLocaleDateString()}
-                </span>
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-success/20">
+                    <Calendar className="w-6 h-6 text-success" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-base-content">
+                      {t('attendance.today', 'Today classes')}
+                    </h2>
+                    <p className="text-sm text-base-content/70">
+                      {new Date().toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className="stats shadow-lg bg-base-200 border border-base-300 rounded-2xl">
+                  <div className="stat py-4 px-6">
+                    <div className="stat-value text-success text-3xl">{todaysClasses.length}</div>
+                    <div className="stat-desc font-medium">
+                      {t('attendance.classesToday', 'Classes today')}
+                    </div>
+                  </div>
+                </div>
               </div>
+
               {todaysClasses.length > 0 ? (
-                <div className="grid gap-3">
+                <div className="grid gap-6">
                   {todaysClasses.map(renderClassCard)}
                 </div>
               ) : (
-                <div className="text-center py-6 bg-gray-800/50 rounded-lg border border-gray-700/50 text-gray-400">
-                  {t('attendance.noClassesToday', 'No classes scheduled for today.')}
+                <div className="card bg-base-200 border-2 border-base-300 shadow-xl rounded-3xl">
+                  <div className="card-body items-center text-center py-16">
+                    <Calendar className="w-20 h-20 text-base-content/20 mb-4" />
+                    <h3 className="text-xl font-bold text-base-content mb-2">
+                      {t('attendance.noClassesToday', 'No classes scheduled for today')}
+                    </h3>
+                    <p className="text-base-content/70">
+                      {t('attendance.checkUpcoming', 'Check upcoming classes below')}
+                    </p>
+                  </div>
                 </div>
               )}
             </section>
 
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white">
-                  {t('attendance.upcoming', 'Upcoming classes')}
-                </h2>
-                <button
-                  className="btn btn-ghost btn-xs gap-1"
-                  onClick={() => navigate('/calendar')}
-                >
-                  {t('attendance.viewCalendar', 'View calendar')}
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-              {upcomingClasses.length > 0 ? (
-                <div className="grid gap-3">
-                  {upcomingClasses.map(renderClassCard)}
+            {/* Upcoming Classes */}
+            {upcomingClasses.length > 0 && (
+              <section className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-primary/20">
+                    <ArrowRight className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-base-content">
+                      {t('attendance.upcoming', 'Upcoming classes')}
+                    </h2>
+                    <p className="text-sm text-base-content/70">
+                      {upcomingClasses.length} {t('attendance.classesScheduled', 'classes scheduled')}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <div className="text-center py-6 bg-gray-800/50 rounded-lg border border-gray-700/50 text-gray-400">
-                  {t('attendance.noUpcoming', 'No upcoming classes registered.')}
-                </div>
-              )}
-            </section>
 
-            {/* QR Code Management Section */}
-            <section className="space-y-4">
-              <QRCodeManager />
-            </section>
+                <div className="grid gap-6">
+                  {upcomingClasses.slice(0, 5).map(renderClassCard)}
+                </div>
+
+                {upcomingClasses.length > 5 && (
+                  <div className="text-center">
+                    <button
+                      className="btn btn-outline btn-lg gap-3 shadow-md hover:shadow-lg rounded-2xl"
+                      onClick={() => navigate('/calendar')}
+                    >
+                      <Calendar className="w-6 h-6" />
+                      {t('attendance.viewAllClasses', 'View all classes in calendar')}
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
+              </section>
+            )}
           </div>
         )}
       </div>

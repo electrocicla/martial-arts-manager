@@ -94,57 +94,57 @@ export default function AttendanceManager() {
   }
 
   return (
-    <div className="min-h-screen bg-black pb-20 md:pb-8">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-black to-red-900/20 px-4 py-6">
-        <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 pb-24 md:pb-10">
+      {/* Enhanced Header */}
+      <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 backdrop-blur-sm border-b-2 border-base-300">
+        <div className="max-w-7xl mx-auto px-6 py-8">
           <button 
             onClick={() => navigate('/classes')}
-            className="btn btn-ghost btn-sm mb-4 gap-2"
+            className="btn btn-ghost btn-lg gap-3 mb-6 shadow-md hover:shadow-lg rounded-2xl"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-6 h-6" />
             {t('common.back')}
           </button>
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-lg bg-red-600/30">
-              <Users className="w-8 h-8 text-red-400" />
+          <div className="flex items-center gap-4 mb-6">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary to-primary/50 shadow-lg">
+              <Users className="w-10 h-10 text-primary-content" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-black text-base-content">
+              <h1 className="text-3xl md:text-4xl font-black text-base-content bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 {t('attendance.title')}
               </h1>
               {classInfo && (
-                <p className="text-sm text-base-content/70">{classInfo.name}</p>
+                <p className="text-base text-base-content/70 mt-1">{classInfo.name}</p>
               )}
             </div>
           </div>
 
           {/* Class Info */}
           {classInfo && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-              <div className="flex items-center gap-2 text-sm text-base-content/70">
-                <Calendar className="w-4 h-4 text-blue-400" />
-                <span>{new Date(classInfo.date).toLocaleDateString()}</span>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+              <div className="flex items-center gap-3 p-4 bg-base-200 rounded-2xl border border-base-300 shadow-md">
+                <Calendar className="w-6 h-6 text-primary flex-shrink-0" />
+                <span className="text-sm font-medium text-base-content">{new Date(classInfo.date).toLocaleDateString()}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-base-content/70">
-                <Clock className="w-4 h-4 text-green-400" />
-                <span>{classInfo.time}</span>
+              <div className="flex items-center gap-3 p-4 bg-base-200 rounded-2xl border border-base-300 shadow-md">
+                <Clock className="w-6 h-6 text-success flex-shrink-0" />
+                <span className="text-sm font-medium text-base-content">{classInfo.time}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-base-content/70">
-                <MapPin className="w-4 h-4 text-purple-400" />
-                <span>{classInfo.location}</span>
+              <div className="flex items-center gap-3 p-4 bg-base-200 rounded-2xl border border-base-300 shadow-md">
+                <MapPin className="w-6 h-6 text-accent flex-shrink-0" />
+                <span className="text-sm font-medium text-base-content truncate">{classInfo.location}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-base-content/70">
-                <User className="w-4 h-4 text-yellow-400" />
-                <span>{classInfo.instructor}</span>
+              <div className="flex items-center gap-3 p-4 bg-base-200 rounded-2xl border border-base-300 shadow-md">
+                <User className="w-6 h-6 text-warning flex-shrink-0" />
+                <span className="text-sm font-medium text-base-content truncate">{classInfo.instructor}</span>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      <div className="px-4 py-6 max-w-7xl mx-auto">
+      <div className="px-6 py-8 max-w-7xl mx-auto space-y-8">
         {/* Stats */}
         <AttendanceStats 
           presentCount={presentCount}
@@ -153,31 +153,33 @@ export default function AttendanceManager() {
         />
 
         {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder={t('attendance.searchStudents')}
-            className="input input-bordered w-full pl-10 bg-gray-800 border-gray-700"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="form-control">
+          <div className="relative">
+            <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-6 h-6 text-base-content/50" />
+            <input
+              type="text"
+              placeholder={t('attendance.searchStudents')}
+              className="input input-bordered input-lg w-full pl-14 bg-base-200 border-base-300 focus:border-primary rounded-2xl shadow-lg"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Attendance List */}
         {enrolledStudents.length === 0 ? (
-          <div className="text-center py-16 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-gray-700/50">
-            <div className="max-w-md mx-auto px-4">
-              <div className="p-4 bg-red-500/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                <Users className="w-10 h-10 text-red-400" />
+          <div className="card bg-base-200 border-2 border-base-300 shadow-2xl rounded-3xl">
+            <div className="card-body items-center text-center py-20">
+              <div className="p-6 rounded-full bg-primary/10 w-28 h-28 mx-auto mb-6 flex items-center justify-center">
+                <Users className="w-16 h-16 text-primary" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{t('attendance.noStudentsEnrolled')}</h3>
-              <p className="text-base-content/60 mb-6">{t('attendance.enrollStudentsFirst')}</p>
+              <h3 className="text-2xl font-bold text-base-content mb-3">{t('attendance.noStudentsEnrolled')}</h3>
+              <p className="text-base-content/70 mb-8 max-w-md">{t('attendance.enrollStudentsFirst')}</p>
               <button 
-                className="btn btn-primary gap-2"
+                className="btn btn-primary btn-lg gap-3 shadow-lg hover:shadow-xl rounded-2xl"
                 onClick={() => navigate(`/classes/${classId}/enroll`)}
               >
-                <Users className="w-5 h-5" />
+                <Users className="w-6 h-6" />
                 {t('attendance.enrollStudents')}
               </button>
             </div>
