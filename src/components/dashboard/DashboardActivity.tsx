@@ -25,7 +25,7 @@ export default function DashboardActivity({ recentActivity }: DashboardActivityP
           <Activity className="w-5 h-5 text-primary" />
           Recent Activity
         </h2>
-        <button className="btn btn-ghost btn-sm text-xs sm:text-sm rounded-lg hover:bg-primary/10 transition-all duration-200">
+        <button className="btn btn-ghost btn-sm text-xs sm:text-sm rounded-lg hover:bg-primary/10 transition-all duration-200 gap-2">
           View All <ChevronRight className="w-4 h-4" />
         </button>
       </div>

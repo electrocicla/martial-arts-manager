@@ -30,7 +30,7 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
           <Calendar className="w-5 h-5 text-primary" />
           {t('dashboard.schedule.todaySchedule')}
         </h2>
-        <button className="btn btn-ghost btn-sm text-xs sm:text-sm hover:bg-primary/10 rounded-lg transition-all duration-200" onClick={() => navigate('/calendar')}>
+        <button className="btn btn-ghost btn-sm text-xs sm:text-sm hover:bg-primary/10 rounded-lg transition-all duration-200 gap-2" onClick={() => navigate('/calendar')}>
           {t('dashboard.schedule.viewAll')} <ChevronRight className="w-4 h-4" />
         </button>
       </div>

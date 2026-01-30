@@ -370,7 +370,7 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                         <button
                           type="button"
                           onClick={() => setShowCustomLocation(true)}
-                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg gap-2"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
@@ -390,7 +390,7 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                             setShowCustomLocation(false);
                             setCustomLocation('');
                           }}
-                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg gap-2"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -426,7 +426,7 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                         <button
                           type="button"
                           onClick={() => setShowCustomInstructor(true)}
-                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg gap-2"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
@@ -446,7 +446,7 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                             setShowCustomInstructor(false);
                             setCustomInstructor('');
                           }}
-                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg gap-2"
                         >
                           <X className="w-4 h-4" />
                         </button>

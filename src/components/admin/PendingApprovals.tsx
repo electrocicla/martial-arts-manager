@@ -87,9 +87,12 @@ export function PendingApprovals() {
         throw new Error(data.error || 'Failed to approve account');
       }
 
+      // Update local state immediately
       setPendingUsers((prev) => prev.filter((user) => user.id !== userId));
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to approve account');
+      console.error('[PendingApprovals] Approve error:', err);
     } finally {
       setProcessingId(null);
     }
@@ -121,19 +124,25 @@ export function PendingApprovals() {
         throw new Error(data.error || 'Failed to reject account');
       }
 
+      // Update local state immediately
       setPendingUsers((prev) => prev.filter((user) => user.id !== userId));
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to reject account');
+      console.error('[PendingApprovals] Reject error:', err);
     } finally {
       setProcessingId(null);
     }
   };
 
   useEffect(() => {
-    fetchPendingUsers();
-  }, [fetchPendingUsers]);
+    if (accessToken) {
+      fetchPendingUsers();
+    }
+  }, [fetchPendingUsers, accessToken]);
 
-  if (loading) {
+  // Don't show loading on initial render if we haven't started fetching yet
+  if (loading && pendingUsers.length === 0) {
     return (
       <div className="bg-gray-800 rounded-lg p-6">
         <div className="flex items-center justify-center">
@@ -143,24 +152,7 @@ export function PendingApprovals() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-gray-800 rounded-lg p-6">
-        <div className="text-red-400 text-center">
-          <p className="font-semibold">Error</p>
-          <p className="text-sm mt-1">{error}</p>
-          <button
-            onClick={fetchPendingUsers}
-            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm font-medium transition-colors"
-          >
-            Try again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (pendingUsers.length === 0) {
+  if (pendingUsers.length === 0 && !loading && !error) {
     return (
       <div className="bg-gray-800 rounded-lg p-6">
         <div className="text-center text-gray-400">
@@ -174,6 +166,25 @@ export function PendingApprovals() {
 
   return (
     <div className="bg-gray-800 rounded-lg p-4 sm:p-6 border border-yellow-500/30">
+      {/* Error Alert */}
+      {error && (
+        <div className="mb-4 bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <XCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-red-400">Error</p>
+              <p className="text-sm text-red-300 mt-1">{error}</p>
+            </div>
+            <button
+              onClick={() => setError(null)}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-yellow-600 rounded-lg">
