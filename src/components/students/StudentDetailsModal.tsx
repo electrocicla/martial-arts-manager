@@ -5,6 +5,7 @@ import { getBeltColor } from '../../lib/studentUtils';
 import { useTranslation } from 'react-i18next';
 import StudentPaymentHistory from './StudentPaymentHistory';
 import { prepareAvatarFile } from '../../lib/avatarUpload';
+import { useAuth } from '../../context/AuthContext';
 
 interface StudentDetailsModalProps {
   student: Student;
@@ -16,6 +17,7 @@ interface StudentDetailsModalProps {
 
 export default function StudentDetailsModal({ student, onClose, onEdit, onDelete, onAvatarUpdate }: StudentDetailsModalProps) {
   const { t } = useTranslation();
+  const { accessToken } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -85,8 +87,7 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
       formData.append('studentId', student.id);
 
       // Get auth token
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
+      if (!accessToken) {
         alert('Authentication required');
         return;
       }
@@ -95,7 +96,7 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
       const response = await fetch('/api/students/avatar', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: formData
       });

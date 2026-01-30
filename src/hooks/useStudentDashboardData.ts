@@ -11,7 +11,7 @@ interface StudentDashboardData {
 }
 
 export function useStudentDashboardData() {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const [data, setData] = useState<StudentDashboardData>({
     profile: null,
     classes: [],
@@ -31,13 +31,17 @@ export function useStudentDashboardData() {
       return;
     }
 
+    // Wait for access token to be available
+    if (!accessToken) {
+      console.log('[StudentDashboard] Waiting for access token...');
+      return;
+    }
+
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
 
-      // Note: We no longer store access tokens in localStorage
-      // The token should be passed as a parameter or obtained from context
-      // For now, this will fail gracefully and prompt re-authentication
       const headers = {
+        'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       };
 
@@ -71,7 +75,7 @@ export function useStudentDashboardData() {
         error: (err as Error).message
       }));
     }
-  }, [user]);
+  }, [user, accessToken]);
 
   useEffect(() => {
     fetchData();

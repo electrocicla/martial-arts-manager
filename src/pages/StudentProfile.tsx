@@ -51,7 +51,7 @@ const toDisciplineEntry = (entry: { discipline: string; belt: string }): Discipl
 export default function StudentProfile() {
   const { profile, isLoading, error: loadError, refresh } = useProfile();
   const { t } = useTranslation();
-  const { user, refreshAuth } = useAuth();
+  const { user, refreshAuth, accessToken } = useAuth();
   void user; // Acknowledge unused variable
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -109,14 +109,19 @@ export default function StudentProfile() {
     setSaveError(null);
     setSaveSuccess(false);
 
+    if (!accessToken) {
+      setSaveError('No authentication token available');
+      setIsSaving(false);
+      return;
+    }
+
     try {
-      const token = localStorage.getItem('accessToken');
       const cleanedDisciplines = disciplines.map(({ discipline, belt }) => ({ discipline, belt }));
       const response = await fetch('/api/student/profile', {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({ ...data, disciplines: cleanedDisciplines }),
       });
@@ -167,16 +172,21 @@ export default function StudentProfile() {
 
     setAvatarUploading(true);
 
+    if (!accessToken) {
+      setSaveError('No authentication token available');
+      setAvatarUploading(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('avatar', prepared.file);
     formData.append('studentId', profile.id);
 
     try {
-      const token = localStorage.getItem('accessToken');
       const response = await fetch('/api/students/avatar', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: formData
       });

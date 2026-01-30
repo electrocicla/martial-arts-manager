@@ -84,9 +84,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       // Try to refresh immediately using HttpOnly cookie since we don't store access token in localStorage anymore
-      await refreshAuth();
+      const success = await refreshAuth();
+      if (!success) {
+        // No valid refresh token found - clear state
+        console.log('[Auth] No valid refresh token, clearing auth state');
+        setUser(null);
+        setAccessToken(null);
+        apiClient.setAccessToken(null);
+      }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error('[Auth] Auth check failed:', error);
+      setUser(null);
+      setAccessToken(null);
+      apiClient.setAccessToken(null);
     } finally {
       setIsLoading(false);
     }

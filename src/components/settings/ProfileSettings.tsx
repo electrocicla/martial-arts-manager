@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { prepareAvatarFile } from '../../lib/avatarUpload';
 
 export default function ProfileSettings() {
-  const { user, refreshAuth } = useAuth();
+  const { user, refreshAuth, accessToken } = useAuth();
   const { saveSection } = useSettings();
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,8 +25,7 @@ export default function ProfileSettings() {
 
     // Students: persist to D1 via student profile endpoint (real account email)
     if (user.role === 'student') {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
+      if (!accessToken) {
         setSaveError('No authentication token found');
         return;
       }
@@ -34,7 +33,7 @@ export default function ProfileSettings() {
       const response = await fetch('/api/student/profile', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -96,16 +95,24 @@ export default function ProfileSettings() {
 
     setAvatarUploading(true);
 
+    if (!accessToken) {
+      setSaveError('No authentication token available');
+      setAvatarUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
     const formData = new FormData();
     formData.append('avatar', prepared.file);
     formData.append('studentId', user.student_id);
 
     try {
-      const token = localStorage.getItem('accessToken');
       const response = await fetch('/api/students/avatar', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: formData
       });
