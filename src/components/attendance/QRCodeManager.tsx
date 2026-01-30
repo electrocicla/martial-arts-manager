@@ -65,6 +65,7 @@ export default function QRCodeManager() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<QuickDuration>('1day');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   
   const [form, setForm] = useState<CreateQRForm>({
     location: '',
@@ -197,8 +198,12 @@ export default function QRCodeManager() {
         return;
       }
       await navigator.clipboard.writeText(qrCode.code);
+      setCopiedId(qrCode.id);
       setSuccess(t('qr.copied', 'QR code copied to clipboard'));
-      setTimeout(() => setSuccess(null), 2000);
+      setTimeout(() => {
+        setSuccess(null);
+        setCopiedId(null);
+      }, 2000);
     } catch (err) {
       console.error('Copy QR code error:', err);
       setError(t('qr.copyFailed', 'Failed to copy QR code'));
@@ -560,9 +565,15 @@ export default function QRCodeManager() {
                       </button>
                       <button
                         onClick={() => handleCopyCode(qr)}
-                        className="btn btn-secondary gap-2 shadow-md hover:shadow-lg rounded-xl"
+                        className={`btn gap-2 shadow-md hover:shadow-lg rounded-xl transition-all ${
+                          copiedId === qr.id ? 'btn-success' : 'btn-secondary'
+                        }`}
                       >
-                        <Copy className="w-5 h-5" />
+                        {copiedId === qr.id ? (
+                          <Check className="w-5 h-5" />
+                        ) : (
+                          <Copy className="w-5 h-5" />
+                        )}
                       </button>
                       <button
                         onClick={() => handleDelete(qr.id)}
