@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { LanguageSwitcher } from '../LanguageSwitcher';
+import NotificationBell from '../NotificationBell';
 import { useTranslation } from 'react-i18next';
 import { navigationItems, quickActions } from '../../lib/mobileMenuConfig';
 
@@ -226,6 +227,9 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Notification Bell */}
+          <NotificationBell />
+          
           {/* Language Switcher */}
           <LanguageSwitcher />
           

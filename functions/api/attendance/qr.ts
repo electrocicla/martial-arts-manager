@@ -51,15 +51,17 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     }
 
     // Get QR codes for this instructor (admins see all)
+    // Filter out inactive and expired QR codes
     let query = `
       SELECT qr.*, u.name as instructor_name
       FROM attendance_qr_codes qr
       LEFT JOIN users u ON qr.instructor_id = u.id
+      WHERE qr.is_active = 1
     `;
     const params: string[] = [];
 
     if (auth.user.role !== 'admin') {
-      query += ' WHERE qr.instructor_id = ?';
+      query += ' AND qr.instructor_id = ?';
       params.push(auth.user.id);
     }
 
@@ -205,10 +207,10 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
       });
     }
 
-    // Soft delete by deactivating
+    // Hard delete - physically remove the QR code from database
     await env.DB.prepare(`
-      UPDATE attendance_qr_codes SET is_active = 0, updated_at = ? WHERE id = ?
-    `).bind(new Date().toISOString(), qrId).run();
+      DELETE FROM attendance_qr_codes WHERE id = ?
+    `).bind(qrId).run();
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { 'Content-Type': 'application/json' }

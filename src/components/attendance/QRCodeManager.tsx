@@ -122,7 +122,15 @@ export default function QRCodeManager() {
       const response = await apiClient.get<{ qr_codes: QRCodeRecord[] }>('/api/attendance/qr');
       
       if (response.success && response.data) {
-        setQRCodes(response.data.qr_codes || []);
+        // Filter out expired QR codes on the client side as well
+        const now = new Date();
+        const activeQRCodes = (response.data.qr_codes || []).filter(qr => {
+          // Keep QR codes that are active and not expired
+          if (!qr.is_active) return false;
+          if (qr.valid_until && new Date(qr.valid_until) < now) return false;
+          return true;
+        });
+        setQRCodes(activeQRCodes);
       }
     } catch (err) {
       console.error('Error fetching QR codes:', err);
