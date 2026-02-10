@@ -26,6 +26,7 @@ interface QRCode {
   is_active: number;
   valid_from: string | null;
   valid_until: string | null;
+  deleted_at: string | null;
 }
 
 interface ClassInfo {
@@ -92,7 +93,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const qrRecord = await env.DB.prepare(`
       SELECT id, instructor_id, class_id, location, code, is_active, valid_from, valid_until
       FROM attendance_qr_codes
-      WHERE code = ? AND is_active = 1
+      WHERE code = ?
+        AND is_active = 1
+        AND deleted_at IS NULL
     `).bind(qr_code).first<QRCode>();
 
     if (!qrRecord) {

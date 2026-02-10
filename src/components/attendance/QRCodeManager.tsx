@@ -247,9 +247,9 @@ export default function QRCodeManager() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-base-200 to-base-300 rounded-3xl border-2 border-base-300 shadow-2xl overflow-hidden">
+    <div className="relative overflow-hidden rounded-[28px] border border-base-300/60 bg-gradient-to-br from-base-200/70 via-base-300/80 to-base-200 shadow-[0_24px_60px_-32px_rgba(0,0,0,0.7)] animate-fade-in motion-reduce:animate-none">
       {/* Enhanced Header */}
-      <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 backdrop-blur-sm px-6 py-6 border-b-2 border-base-300">
+      <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 backdrop-blur-md px-6 py-6 sm:px-8 sm:py-7 border-b border-base-300/70">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-4 rounded-2xl bg-gradient-to-br from-primary to-primary/50 shadow-lg">
@@ -268,14 +268,14 @@ export default function QRCodeManager() {
           <div className="flex items-center gap-3">
             <button
               onClick={fetchQRCodes}
-              className="btn btn-ghost btn-circle btn-lg shadow-md hover:shadow-lg"
+              className="btn btn-ghost btn-circle btn-lg border border-base-300/60 bg-base-200/60 shadow-md transition-all duration-200 ease-out hover:shadow-lg hover:bg-base-200 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
               title={t('common.refresh', 'Refresh')}
             >
               <RefreshCw className="w-6 h-6" />
             </button>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="btn btn-primary btn-lg gap-3 shadow-lg hover:shadow-xl"
+              className="btn btn-primary btn-lg gap-3 rounded-2xl px-6 shadow-lg transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
             >
               <Plus className="w-6 h-6" />
               {t('qr.create', 'Create QR')}
@@ -307,7 +307,7 @@ export default function QRCodeManager() {
       {/* Create Modal */}
       {showCreateModal && (
         <div className="modal modal-open">
-          <div className="modal-box max-w-3xl bg-base-200 rounded-3xl shadow-2xl">
+          <div className="modal-box max-w-3xl bg-base-200/90 rounded-3xl border border-base-300/60 shadow-2xl backdrop-blur-xl animate-scale-in motion-reduce:animate-none">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-2xl bg-primary/20">
@@ -361,11 +361,11 @@ export default function QRCodeManager() {
                         key={duration.id}
                         type="button"
                         onClick={() => handleDurationSelect(duration.id)}
-                        className={`btn btn-lg gap-2 ${
+                        className={`btn btn-lg h-auto gap-3 px-4 py-4 ${
                           selectedDuration === duration.id
                             ? `btn-${duration.color} shadow-lg`
                             : 'btn-outline'
-                        } rounded-2xl`}
+                        } rounded-2xl items-start text-left transition-all duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none`}
                       >
                         <Icon className="w-5 h-5" />
                         <div className="text-left">
@@ -437,14 +437,14 @@ export default function QRCodeManager() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="btn btn-ghost btn-lg rounded-2xl"
+                  className="btn btn-ghost btn-lg rounded-2xl px-6 transition-all duration-200 ease-out active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
                 >
                   {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="btn btn-primary btn-lg gap-3 shadow-lg hover:shadow-xl rounded-2xl"
+                  className="btn btn-primary btn-lg gap-3 rounded-2xl px-6 shadow-lg transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
                 >
                   {creating ? (
                     <Loader2 className="w-6 h-6 animate-spin" />
@@ -482,7 +482,7 @@ export default function QRCodeManager() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
             {qrCodes.map((qr) => {
               const isExpired = qr.valid_until && new Date(qr.valid_until) < new Date();
               const durationLabel = getDurationLabel(qr);
@@ -490,14 +490,19 @@ export default function QRCodeManager() {
               return (
                 <div
                   key={qr.id}
-                  className={`card bg-base-300 border-2 shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 rounded-3xl overflow-hidden ${
-                    isExpired ? 'border-error/30 opacity-70' : 'border-base-300'
+                  className={`group rounded-[28px] bg-gradient-to-br from-base-200/70 via-base-300 to-base-200 p-[1px] shadow-xl transition-[transform,box-shadow,filter] duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl motion-reduce:transition-none motion-reduce:transform-none animate-fade-in motion-reduce:animate-none ${
+                    isExpired ? 'opacity-70' : ''
                   }`}
                 >
-                  <div className="card-body p-6 space-y-4">
+                  <div
+                    className={`card relative bg-base-300/80 backdrop-blur-xl rounded-[27px] border overflow-hidden transition-[border-color,box-shadow] duration-300 ease-out before:pointer-events-none before:absolute before:inset-0 before:opacity-0 before:bg-[radial-gradient(1200px_circle_at_10%_0%,rgba(255,255,255,0.08),transparent_60%)] before:transition-opacity before:duration-500 after:pointer-events-none after:absolute after:inset-0 after:translate-x-[-120%] after:bg-gradient-to-r after:from-transparent after:via-white/5 after:to-transparent after:opacity-0 after:transition-all after:duration-700 group-hover:after:translate-x-[120%] group-hover:after:opacity-100 group-hover:before:opacity-100 group-hover:border-primary/30 group-hover:shadow-[0_20px_45px_-30px_rgba(0,0,0,0.9)] motion-reduce:transition-none ${
+                      isExpired ? 'border-error/30' : 'border-base-200/50'
+                    }`}
+                  >
+                    <div className="card-body p-6 sm:p-7 space-y-5">
                     {/* QR Code */}
                     <div className="flex justify-center">
-                      <div className="bg-white p-5 rounded-2xl shadow-lg">
+                      <div className="bg-white/95 p-5 rounded-2xl shadow-[0_12px_30px_-18px_rgba(0,0,0,0.6)] ring-1 ring-base-300/30 transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:transform-none">
                         <QRCodeCanvas 
                           id={`qr-canvas-${qr.id}`}
                           value={qr.code} 
@@ -514,7 +519,7 @@ export default function QRCodeManager() {
                       </div>
                       
                       <div className="text-center">
-                        <div className="badge badge-lg badge-outline font-mono px-4 py-3">
+                        <div className="badge badge-lg badge-outline font-mono px-5 py-3 tracking-wider">
                           {qr.code}
                         </div>
                       </div>
@@ -523,12 +528,12 @@ export default function QRCodeManager() {
                         {qr.is_active && !isExpired ? (
                           <>
                             <CheckCircle2 className="w-5 h-5 text-success" />
-                            <span className="badge badge-success badge-lg">{t('qr.active', 'Active')}</span>
+                            <span className="badge badge-success badge-lg rounded-full px-4">{t('qr.active', 'Active')}</span>
                           </>
                         ) : (
                           <>
                             <XCircle className="w-5 h-5 text-error" />
-                            <span className="badge badge-error badge-lg">
+                            <span className="badge badge-error badge-lg rounded-full px-4">
                               {isExpired ? t('qr.expired', 'Expired') : t('qr.inactive', 'Inactive')}
                             </span>
                           </>
@@ -538,11 +543,11 @@ export default function QRCodeManager() {
                       {/* Duration Badge */}
                       <div className="flex items-center justify-center gap-2">
                         <Timer className="w-5 h-5 text-accent" />
-                        <span className="badge badge-accent badge-lg">{durationLabel}</span>
+                        <span className="badge badge-accent badge-lg rounded-full px-4">{durationLabel}</span>
                       </div>
 
                       {/* Dates */}
-                      <div className="bg-base-200 rounded-2xl p-4 space-y-2">
+                      <div className="bg-base-200/70 border border-base-300/70 rounded-2xl p-4 space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-base-content/70">{t('qr.created', 'Created')}</span>
                           <span className="font-semibold">{new Date(qr.created_at).toLocaleDateString()}</span>
@@ -566,14 +571,15 @@ export default function QRCodeManager() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => downloadQR(qr)}
-                        className="btn btn-primary flex-1 gap-2 shadow-md hover:shadow-lg rounded-xl"
+                        className="btn btn-primary h-12 min-h-0 flex-1 gap-2 rounded-2xl px-5 shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
                       >
                         <Download className="w-5 h-5" />
                         {t('qr.download', 'Download')}
                       </button>
                       <button
                         onClick={() => handleCopyCode(qr)}
-                        className={`btn gap-2 shadow-md hover:shadow-lg rounded-xl transition-all ${
+                        title={t('qr.copy', 'Copy')}
+                        className={`btn h-12 min-h-0 gap-2 rounded-2xl px-4 shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none ${
                           copiedId === qr.id ? 'btn-success' : 'btn-secondary'
                         }`}
                       >
@@ -585,7 +591,8 @@ export default function QRCodeManager() {
                       </button>
                       <button
                         onClick={() => handleDelete(qr.id)}
-                        className="btn btn-error gap-2 shadow-md hover:shadow-lg rounded-xl"
+                        title={t('qr.delete', 'Delete')}
+                        className="btn btn-error h-12 min-h-0 gap-2 rounded-2xl px-4 shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-error/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>

@@ -21,6 +21,7 @@ interface QRCodeRecord {
   check_in_radius_meters: number | null;
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 }
 
 interface CreateQRRequest {
@@ -31,6 +32,11 @@ interface CreateQRRequest {
   check_in_radius_meters?: number;
 }
 
+const jsonHeaders = {
+  'Content-Type': 'application/json',
+  'Cache-Control': 'no-store'
+};
+
 // GET - List instructor's QR codes
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
   try {
@@ -38,7 +44,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     if (!auth.authenticated) {
       return new Response(JSON.stringify({ error: auth.error }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' }
+        headers: jsonHeaders
       });
     }
 
@@ -46,7 +52,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     if (auth.user.role === 'student') {
       return new Response(JSON.stringify({ error: 'Access denied' }), {
         status: 403,
-        headers: { 'Content-Type': 'application/json' }
+        headers: jsonHeaders
       });
     }
 
@@ -57,6 +63,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       FROM attendance_qr_codes qr
       LEFT JOIN users u ON qr.instructor_id = u.id
       WHERE qr.is_active = 1
+        AND qr.deleted_at IS NULL
     `;
     const params: string[] = [];
 
@@ -74,14 +81,14 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     return new Response(JSON.stringify({ 
       qr_codes: results || [] 
     }), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: jsonHeaders
     });
 
   } catch (error) {
     console.error('QR list error:', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: jsonHeaders
     });
   }
 }
@@ -93,14 +100,14 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (!auth.authenticated) {
       return new Response(JSON.stringify({ error: auth.error }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' }
+        headers: jsonHeaders
       });
     }
 
     if (auth.user.role === 'student') {
       return new Response(JSON.stringify({ error: 'Access denied' }), {
         status: 403,
-        headers: { 'Content-Type': 'application/json' }
+        headers: jsonHeaders
       });
     }
 
@@ -110,7 +117,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (!location) {
       return new Response(JSON.stringify({ error: 'Location is required' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: jsonHeaders
       });
     }
 
@@ -148,33 +155,33 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       qr_code: newQR
     }), {
       status: 201,
-      headers: { 'Content-Type': 'application/json' }
+      headers: jsonHeaders
     });
 
   } catch (error) {
     console.error('QR create error:', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: jsonHeaders
     });
   }
 }
 
-// DELETE - Deactivate/delete QR code
+// DELETE - Soft delete QR code
 export async function onRequestDelete({ request, env }: { request: Request; env: Env }) {
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
       return new Response(JSON.stringify({ error: auth.error }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' }
+        headers: jsonHeaders
       });
     }
 
     if (auth.user.role === 'student') {
       return new Response(JSON.stringify({ error: 'Access denied' }), {
         status: 403,
-        headers: { 'Content-Type': 'application/json' }
+        headers: jsonHeaders
       });
     }
 
@@ -184,7 +191,7 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
     if (!qrId) {
       return new Response(JSON.stringify({ error: 'QR code ID is required' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: jsonHeaders
       });
     }
 
@@ -196,31 +203,37 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
     if (!qrRecord) {
       return new Response(JSON.stringify({ error: 'QR code not found' }), {
         status: 404,
-        headers: { 'Content-Type': 'application/json' }
+        headers: jsonHeaders
       });
     }
 
     if (auth.user.role !== 'admin' && qrRecord.instructor_id !== auth.user.id) {
       return new Response(JSON.stringify({ error: 'Access denied' }), {
         status: 403,
-        headers: { 'Content-Type': 'application/json' }
+        headers: jsonHeaders
       });
     }
 
-    // Hard delete - physically remove the QR code from database
+    const now = new Date().toISOString();
+
+    // Soft delete - mark inactive to preserve attendance integrity
     await env.DB.prepare(`
-      DELETE FROM attendance_qr_codes WHERE id = ?
-    `).bind(qrId).run();
+      UPDATE attendance_qr_codes
+      SET is_active = 0,
+          deleted_at = ?,
+          updated_at = ?
+      WHERE id = ?
+    `).bind(now, now, qrId).run();
 
     return new Response(JSON.stringify({ success: true }), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: jsonHeaders
     });
 
   } catch (error) {
     console.error('QR delete error:', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: jsonHeaders
     });
   }
 }
