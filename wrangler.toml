@@ -7,11 +7,6 @@ compatibility_date = "2023-12-01"
 # After configuring, your production URL will be: https://your-domain.com
 # Preview URLs will remain dynamic: https://<commit>.<project>.pages.dev
 
-# Cron Triggers for scheduled tasks
-# This will run the cleanup-expired-qr endpoint every hour
-[triggers]
-crons = ["0 * * * *"]
-
 [[d1_databases]]
 database_id = "4ad2408a-54e1-45e3-a352-42be3e284299"
 binding = "DB"

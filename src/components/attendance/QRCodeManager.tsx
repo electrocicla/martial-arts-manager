@@ -599,6 +599,7 @@ export default function QRCodeManager() {
                     </div>
                   </div>
                 </div>
+                </div>
               );
             })}
           </div>
