@@ -124,6 +124,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAccessToken(result.accessToken);
         // Immediately sync token with apiClient to avoid race conditions
         apiClient.setAccessToken(result.accessToken);
+        // Flag a successful login so we can trigger Android APK prompt once
+        try {
+          sessionStorage.setItem('hamarr:just-logged-in', Date.now().toString());
+        } catch {
+          // ignore storage errors (private mode, browser restrictions)
+        }
         return true;
       } else {
         // Check if it's a pending approval error

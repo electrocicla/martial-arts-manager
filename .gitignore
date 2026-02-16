@@ -48,6 +48,11 @@ wrangler.d1-probe.toml
 # Cloudflare
 .cloudflare/
 
+# Android native local/build artifacts
+android/.gradle/
+android/local.properties
+android/**/build/
+
 # Internal documentation
 docs/
 

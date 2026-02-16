@@ -1,0 +1,27 @@
+{
+  "name": "HAMARR JIU-JITSU",
+  "short_name": "HAMARR",
+  "description": "Sistema de gestión exclusivo para alumnos HAMARR: perfil, asistencia, progresión, clases y pagos.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111827",
+  "theme_color": "#DC2626",
+  "lang": "es-CL",
+  "categories": ["sports", "education", "productivity"],
+  "icons": [
+    {
+      "src": "/hammar_logo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/hammar_logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

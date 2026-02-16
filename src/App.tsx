@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
 import BottomSlidingMenu from './components/layout/BottomSlidingMenu';
+import AndroidApkInstallPrompt from './components/mobile/AndroidApkInstallPrompt';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/ui/ToastProvider';
 
@@ -45,6 +46,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-900">
+      <AndroidApkInstallPrompt />
       <Sidebar />
       <Header />
       <main className="md:ml-64 min-h-screen main-content">

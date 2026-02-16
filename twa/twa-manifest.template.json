@@ -1,0 +1,25 @@
+{
+  "packageId": "cl.hamarr.twa",
+  "host": "hamarr.cl",
+  "name": "HAMARR JIU-JITSU",
+  "launcherName": "HAMARR",
+  "display": "standalone",
+  "themeColor": "#DC2626",
+  "navigationColor": "#111827",
+  "backgroundColor": "#111827",
+  "startUrl": "/",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "fallbackType": "customtabs",
+  "enableNotifications": false,
+  "shortcuts": [],
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "generatorApp": "bubblewrap-cli"
+}
