@@ -48,6 +48,9 @@ wrangler.d1-probe.toml
 # Cloudflare
 .cloudflare/
 
+# Android release signing artifacts
+keystore/
+
 # Android native local/build artifacts
 android/.gradle/
 android/local.properties

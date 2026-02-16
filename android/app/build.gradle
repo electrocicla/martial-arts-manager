@@ -29,10 +29,19 @@ android {
     signingConfigs {
         release {
             if (hasReleaseKeystore) {
-                storeFile file(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
+                def releaseStoreFile = keystoreProperties.getProperty('storeFile') ?: keystoreProperties.getProperty('\uFEFFstoreFile')
+                def releaseStorePassword = keystoreProperties.getProperty('storePassword')
+                def releaseKeyAlias = keystoreProperties.getProperty('keyAlias')
+                def releaseKeyPassword = keystoreProperties.getProperty('keyPassword')
+
+                if (!releaseStoreFile || !releaseStorePassword || !releaseKeyAlias || !releaseKeyPassword) {
+                    throw new GradleException('keystore.properties is missing required signing properties: storeFile, storePassword, keyAlias, keyPassword')
+                }
+
+                storeFile rootProject.file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
             }
         }
     }

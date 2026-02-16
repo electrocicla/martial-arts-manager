@@ -50,6 +50,44 @@ interface AttendanceStats {
 
 type ScanState = 'idle' | 'scanning' | 'processing' | 'success' | 'error';
 
+const QR_CODE_PATTERN = /HAMARR-[A-Z0-9]{6,}/i;
+
+function extractAttendanceCode(rawValue: string): string | null {
+  const trimmed = rawValue.trim();
+  if (!trimmed) return null;
+
+  const directMatch = trimmed.match(QR_CODE_PATTERN);
+  if (directMatch) {
+    return directMatch[0].toUpperCase();
+  }
+
+  try {
+    const url = new URL(trimmed);
+    const fromParams =
+      url.searchParams.get('qr') ||
+      url.searchParams.get('qr_code') ||
+      url.searchParams.get('code');
+
+    if (fromParams) {
+      const decodedParam = decodeURIComponent(fromParams).trim();
+      const paramMatch = decodedParam.match(QR_CODE_PATTERN);
+      if (paramMatch) {
+        return paramMatch[0].toUpperCase();
+      }
+      return decodedParam || null;
+    }
+
+    const pathMatch = decodeURIComponent(url.pathname).match(QR_CODE_PATTERN);
+    if (pathMatch) {
+      return pathMatch[0].toUpperCase();
+    }
+
+    return null;
+  } catch {
+    return trimmed;
+  }
+}
+
 export default function StudentAttendance() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -185,6 +223,19 @@ export default function StudentAttendance() {
   };
 
   const processQRCode = async (qrValue: string) => {
+    const normalizedCode = extractAttendanceCode(qrValue);
+    if (!normalizedCode) {
+      setScanState('error');
+      setScanError(t('attendance.invalidQrCode', 'Invalid QR code format'));
+
+      setTimeout(() => {
+        setScanError(null);
+        startQRScanning();
+        setScanState('scanning');
+      }, 2000);
+      return;
+    }
+
     // Stop scanning while processing
     if (scanIntervalRef.current) {
       clearInterval(scanIntervalRef.current);
@@ -199,7 +250,7 @@ export default function StudentAttendance() {
         message: string;
         attendance?: AttendanceRecord;
       }>('/api/student/attendance/check-in', {
-        qr_code: qrValue,
+        qr_code: normalizedCode,
         timestamp: new Date().toISOString(),
       });
       

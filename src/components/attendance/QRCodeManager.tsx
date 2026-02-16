@@ -228,6 +228,15 @@ export default function QRCodeManager() {
     }
   };
 
+  const getQRPayload = (qrCode: QRCodeRecord) => {
+    if (typeof window === 'undefined') {
+      return qrCode.code;
+    }
+
+    const origin = window.location.origin;
+    return `${origin}/attendance?qr=${encodeURIComponent(qrCode.code)}`;
+  };
+
   const getDurationLabel = (qr: QRCodeRecord) => {
     if (!qr.valid_from || !qr.valid_until) return t('qr.permanent', 'Permanent');
     
@@ -505,7 +514,7 @@ export default function QRCodeManager() {
                       <div className="bg-white/95 p-5 rounded-2xl shadow-[0_12px_30px_-18px_rgba(0,0,0,0.6)] ring-1 ring-base-300/30 transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:transform-none">
                         <QRCodeCanvas 
                           id={`qr-canvas-${qr.id}`}
-                          value={qr.code} 
+                          value={getQRPayload(qr)} 
                           size={160} 
                         />
                       </div>

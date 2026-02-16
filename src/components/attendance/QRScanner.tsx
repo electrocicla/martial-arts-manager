@@ -5,7 +5,7 @@
  * Automatically detects and records the date and time of the scan
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   QrCode,
@@ -29,6 +29,45 @@ interface ScanResult {
   timestamp?: string;
 }
 
+const QR_CODE_PATTERN = /HAMARR-[A-Z0-9]{6,}/i;
+
+function extractAttendanceCode(rawValue: string): string | null {
+  const trimmed = rawValue.trim();
+  if (!trimmed) return null;
+
+  const directMatch = trimmed.match(QR_CODE_PATTERN);
+  if (directMatch) {
+    return directMatch[0].toUpperCase();
+  }
+
+  try {
+    const url = new URL(trimmed);
+    const fromParams =
+      url.searchParams.get('qr') ||
+      url.searchParams.get('qr_code') ||
+      url.searchParams.get('code');
+
+    if (fromParams) {
+      const decodedParam = decodeURIComponent(fromParams).trim();
+      const paramMatch = decodedParam.match(QR_CODE_PATTERN);
+      if (paramMatch) {
+        return paramMatch[0].toUpperCase();
+      }
+      return decodedParam || null;
+    }
+
+    const pathMatch = decodeURIComponent(url.pathname).match(QR_CODE_PATTERN);
+    if (pathMatch) {
+      return pathMatch[0].toUpperCase();
+    }
+
+    return null;
+  } catch {
+    // Not a URL, fallback to the raw value.
+    return trimmed;
+  }
+}
+
 export default function QRScanner() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -39,6 +78,8 @@ export default function QRScanner() {
   const [recentScans, setRecentScans] = useState<ScanResult[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const processingScanRef = useRef(false);
 
   useEffect(() => {
     // Load recent scans from localStorage
@@ -52,11 +93,144 @@ export default function QRScanner() {
     }
   }, []);
 
-  const saveToRecentScans = (scan: ScanResult) => {
-    const updated = [scan, ...recentScans].slice(0, 10);
-    setRecentScans(updated);
-    localStorage.setItem('recentScans', JSON.stringify(updated));
-  };
+  const saveToRecentScans = useCallback((scan: ScanResult) => {
+    setRecentScans((prev) => {
+      const updated = [scan, ...prev].slice(0, 10);
+      localStorage.setItem('recentScans', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const stopCamera = useCallback(() => {
+    if (scanIntervalRef.current) {
+      clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+
+    processingScanRef.current = false;
+    setScanning(false);
+  }, []);
+
+  const submitAttendance = useCallback(async (rawCode: string, fromCamera = false) => {
+    const code = extractAttendanceCode(rawCode);
+    if (!code) {
+      setResult({
+        success: false,
+        message: t('qr.scanner.invalidCode', 'Invalid QR code format')
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    setResult(null);
+
+    try {
+      const now = new Date();
+      const response = await apiClient.post<{
+        success: boolean;
+        message: string;
+        attendance?: {
+          id: string;
+          class_id: string;
+          class_name: string;
+          class_date: string;
+          class_time: string;
+          discipline: string;
+          location: string;
+          attended: number;
+          check_in_time: string;
+          check_in_method: 'qr';
+        };
+      }>('/api/student/attendance/check-in', {
+        qr_code: code,
+        timestamp: now.toISOString(),
+      });
+
+      const checkInSuccess = Boolean(response.success && response.data?.success);
+      const scanResult: ScanResult = {
+        success: checkInSuccess,
+        message:
+          response.data?.message ||
+          response.error ||
+          (checkInSuccess
+            ? t('qr.scanner.success', 'Attendance recorded successfully')
+            : t('qr.scanner.failed', 'Failed to record attendance')),
+        location: response.data?.attendance?.location,
+        timestamp: now.toISOString(),
+      };
+
+      setResult(scanResult);
+
+      if (checkInSuccess) {
+        saveToRecentScans(scanResult);
+        setManualCode('');
+
+        // Clear success message after 5 seconds
+        setTimeout(() => setResult(null), 5000);
+      }
+    } catch (error) {
+      console.error('Scan error:', error);
+      setResult({
+        success: false,
+        message: t('qr.scanner.error', 'An error occurred while recording attendance')
+      });
+    } finally {
+      if (fromCamera) {
+        stopCamera();
+      }
+      setSubmitting(false);
+      processingScanRef.current = false;
+    }
+  }, [saveToRecentScans, stopCamera, t]);
+
+  const scanWithBarcodeDetector = useCallback(() => {
+    const BarcodeDetectorClass = (window as unknown as Record<string, unknown>)
+      .BarcodeDetector as new (options: { formats: string[] }) => {
+      detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue: string }>>;
+    };
+
+    const detector = new BarcodeDetectorClass({ formats: ['qr_code'] });
+
+    scanIntervalRef.current = setInterval(async () => {
+      if (!videoRef.current || videoRef.current.readyState !== 4 || processingScanRef.current) {
+        return;
+      }
+
+      try {
+        const barcodes = await detector.detect(videoRef.current);
+        if (!barcodes.length) return;
+
+        const rawValue = barcodes[0].rawValue;
+        if (!rawValue) return;
+
+        processingScanRef.current = true;
+        await submitAttendance(rawValue, true);
+      } catch (error) {
+        console.warn('QR detect frame error:', error);
+      }
+    }, 250);
+  }, [submitAttendance]);
+
+  const startQRScanning = useCallback(() => {
+    if (!('BarcodeDetector' in window)) {
+      setResult({
+        success: false,
+        message: t('qr.scanner.notSupported', 'Your browser does not support QR camera scanning. Use manual code entry.')
+      });
+      return;
+    }
+
+    scanWithBarcodeDetector();
+  }, [scanWithBarcodeDetector, t]);
 
   const startCamera = async () => {
     try {
@@ -67,8 +241,10 @@ export default function QRScanner() {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
+        await videoRef.current.play();
       }
       setScanning(true);
+      startQRScanning();
     } catch (error) {
       console.error('Camera error:', error);
       setResult({
@@ -76,17 +252,6 @@ export default function QRScanner() {
         message: t('qr.scanner.cameraError', 'Could not access camera. Please allow camera permissions or enter code manually.')
       });
     }
-  };
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setScanning(false);
   };
 
   const handleManualSubmit = async (e: React.FormEvent) => {
@@ -103,62 +268,30 @@ export default function QRScanner() {
     await submitAttendance(manualCode.trim());
   };
 
-  const submitAttendance = async (code: string) => {
-    setSubmitting(true);
-    setResult(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const qrFromUrl = params.get('qr') || params.get('qr_code') || params.get('code');
 
-    try {
-      const now = new Date();
-      const response = await apiClient.post<{
-        success: boolean;
-        message: string;
-        location?: string;
-        attendance?: {
-          id: string;
-          student_id: string;
-          class_id: string;
-          attendance_date: string;
-          scan_time: string;
-        };
-      }>('/api/attendance/scan', {
-        qr_code: code,
-        scan_time: now.toISOString(),
-      });
-
-      const scanResult: ScanResult = {
-        success: response.success,
-        message: response.data?.message || (response.success 
-          ? t('qr.scanner.success', 'Attendance recorded successfully') 
-          : t('qr.scanner.failed', 'Failed to record attendance')),
-        location: response.data?.location,
-        timestamp: now.toISOString(),
-      };
-
-      setResult(scanResult);
-      
-      if (response.success) {
-        saveToRecentScans(scanResult);
-        setManualCode('');
-        
-        // Clear success message after 5 seconds
-        setTimeout(() => setResult(null), 5000);
-      }
-    } catch (error) {
-      console.error('Scan error:', error);
-      setResult({
-        success: false,
-        message: t('qr.scanner.error', 'An error occurred while recording attendance')
-      });
-    } finally {
-      setSubmitting(false);
+    if (!qrFromUrl) {
+      return;
     }
-  };
+
+    void submitAttendance(qrFromUrl);
+
+    params.delete('qr');
+    params.delete('qr_code');
+    params.delete('code');
+
+    const nextQuery = params.toString();
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`;
+    window.history.replaceState({}, '', nextUrl);
+  }, [submitAttendance]);
 
   useEffect(() => {
     return () => {
       stopCamera();
     };
-  }, []);
+  }, [stopCamera]);
 
   if (user?.role !== 'student') {
     return null;
