@@ -14,6 +14,8 @@
     "mobile:cap:android": "pnpm mobile:cap:sync && cap open android",
     "mobile:apk:open": "cap open android",
     "mobile:apk:doctor": "cap doctor",
+    "mobile:apk:build:debug": "cd android && gradlew.bat assembleDebug",
+    "mobile:apk:build:release": "cd android && gradlew.bat assembleRelease",
     "mobile:cap:ios": "pnpm mobile:cap:sync && cap open ios",
     "mobile:twa:doctor": "bubblewrap doctor",
     "mobile:twa:init": "bubblewrap init --manifest https://hamarr.cl/manifest.webmanifest",
