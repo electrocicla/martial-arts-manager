@@ -10,6 +10,7 @@
  */
 
 import { Env } from '../../types/index';
+import { ensureNotificationsSchema } from '../../utils/notifications';
 
 interface ExpiredQRCode {
   id: string;
@@ -87,23 +88,8 @@ export async function onRequest({ env }: { env: Env }) {
       }
     }
 
-    // Create notifications table if it doesn't exist
-    await env.DB.prepare(`
-      CREATE TABLE IF NOT EXISTS notifications (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        message TEXT NOT NULL,
-        type TEXT NOT NULL,
-        read INTEGER NOT NULL DEFAULT 0,
-        created_at TEXT NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      )
-    `).run();
-
-    // Create index for fast user lookups
-    await env.DB.prepare(`
-      CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id)
-    `).run();
+    // Ensure notifications table exists
+    await ensureNotificationsSchema(env.DB);
 
     // Insert all notifications
     for (const notification of notificationsToCreate) {

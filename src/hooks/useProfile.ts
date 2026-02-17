@@ -36,23 +36,55 @@ export function useProfile() {
         'Content-Type': 'application/json'
       };
 
-      // For now, use student profile endpoint for all roles
-      // If user doesn't have student_id, we'll handle it gracefully
-      const endpoint = '/api/student/profile';
+      // Student endpoint requires a valid student_id.
+      // For admin/instructor (or students not linked yet), use auth/me directly.
+      const shouldUseStudentEndpoint = user.role === 'student' && Boolean(user.student_id);
 
-      const profileRes = await fetch(endpoint, { headers });
+      let profilePayload: Student | null = null;
 
-      if (!profileRes.ok) {
-        // If profile endpoint fails, try to get basic user info from /api/auth/me
+      if (shouldUseStudentEndpoint) {
+        const profileRes = await fetch('/api/student/profile', { headers });
+
+        if (profileRes.ok) {
+          profilePayload = await profileRes.json() as Student;
+        } else {
+          // Graceful fallback for legacy users when student profile is temporarily unavailable
+          const userRes = await fetch('/api/auth/me', { headers });
+          if (!userRes.ok) {
+            throw new Error('Failed to fetch profile data');
+          }
+
+          const userData = await userRes.json();
+          profilePayload = {
+            id: userData.user.id,
+            name: userData.user.name,
+            email: userData.user.email,
+            role: userData.user.role,
+            avatar_url: userData.user.avatar_url,
+            discipline: 'Unknown',
+            belt: 'Unknown',
+            join_date: new Date().toISOString(),
+            date_of_birth: undefined,
+            emergency_contact_name: undefined,
+            emergency_contact_phone: undefined,
+            notes: undefined,
+            is_active: 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            phone: undefined,
+            created_by: undefined,
+            updated_by: undefined,
+            deleted_at: undefined
+          } as Student;
+        }
+      } else {
         const userRes = await fetch('/api/auth/me', { headers });
         if (!userRes.ok) {
           throw new Error('Failed to fetch profile data');
         }
 
         const userData = await userRes.json();
-
-        // Create a basic profile from user data
-        const basicProfile = {
+        profilePayload = {
           id: userData.user.id,
           name: userData.user.name,
           email: userData.user.email,
@@ -72,20 +104,11 @@ export function useProfile() {
           created_by: undefined,
           updated_by: undefined,
           deleted_at: undefined
-        };
-
-        setData({
-          profile: basicProfile,
-          isLoading: false,
-          error: null
-        });
-        return;
+        } as Student;
       }
 
-      const profile = await profileRes.json();
-
       setData({
-        profile,
+        profile: profilePayload,
         isLoading: false,
         error: null
       });

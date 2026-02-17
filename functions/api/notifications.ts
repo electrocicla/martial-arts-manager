@@ -8,14 +8,20 @@
 
 import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
+import { NotificationRecord, ensureNotificationsSchema, withNotificationsTable } from '../utils/notifications';
 
-interface Notification {
+interface NotificationOwnershipRecord {
   id: string;
   user_id: string;
-  message: string;
-  type: string;
-  read: number;
-  created_at: string;
+}
+
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
+
+function createJsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: JSON_HEADERS
+  });
 }
 
 // GET - List user's notifications
@@ -23,11 +29,10 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
-      return new Response(JSON.stringify({ error: auth.error }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createJsonResponse({ error: auth.error }, 401);
     }
+
+    await ensureNotificationsSchema(env.DB);
 
     const url = new URL(request.url);
     const unreadOnly = url.searchParams.get('unread') === 'true';
@@ -43,22 +48,19 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     
     query += ' ORDER BY created_at DESC LIMIT 50';
 
-    const { results } = await env.DB.prepare(query)
-      .bind(auth.user.id)
-      .all<Notification>();
+    const notifications = await withNotificationsTable(env.DB, async () => {
+      const { results } = await env.DB.prepare(query)
+        .bind(auth.user.id)
+        .all<NotificationRecord>();
 
-    return new Response(JSON.stringify({ 
-      notifications: results || [] 
-    }), {
-      headers: { 'Content-Type': 'application/json' }
+      return results ?? [];
     });
+
+    return createJsonResponse({ notifications });
 
   } catch (error) {
     console.error('Notifications list error:', error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return createJsonResponse({ error: (error as Error).message }, 500);
   }
 }
 
@@ -67,56 +69,41 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
-      return new Response(JSON.stringify({ error: auth.error }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createJsonResponse({ error: auth.error }, 401);
     }
+
+    await ensureNotificationsSchema(env.DB);
 
     const url = new URL(request.url);
     const notificationId = url.searchParams.get('id');
 
     if (!notificationId) {
-      return new Response(JSON.stringify({ error: 'Notification ID is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createJsonResponse({ error: 'Notification ID is required' }, 400);
     }
 
     // Verify ownership
-    const notification = await env.DB.prepare(`
+    const notification = await withNotificationsTable(env.DB, () => env.DB.prepare(`
       SELECT id, user_id FROM notifications WHERE id = ?
-    `).bind(notificationId).first<{ id: string; user_id: string }>();
+    `).bind(notificationId).first<NotificationOwnershipRecord>());
 
     if (!notification) {
-      return new Response(JSON.stringify({ error: 'Notification not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createJsonResponse({ error: 'Notification not found' }, 404);
     }
 
     if (notification.user_id !== auth.user.id) {
-      return new Response(JSON.stringify({ error: 'Access denied' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createJsonResponse({ error: 'Access denied' }, 403);
     }
 
     // Mark as read
-    await env.DB.prepare(`
+    await withNotificationsTable(env.DB, () => env.DB.prepare(`
       UPDATE notifications SET read = 1 WHERE id = ?
-    `).bind(notificationId).run();
+    `).bind(notificationId).run());
 
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return createJsonResponse({ success: true });
 
   } catch (error) {
     console.error('Mark notification read error:', error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return createJsonResponse({ error: (error as Error).message }, 500);
   }
 }
 
@@ -125,55 +112,40 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
-      return new Response(JSON.stringify({ error: auth.error }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createJsonResponse({ error: auth.error }, 401);
     }
+
+    await ensureNotificationsSchema(env.DB);
 
     const url = new URL(request.url);
     const notificationId = url.searchParams.get('id');
 
     if (!notificationId) {
-      return new Response(JSON.stringify({ error: 'Notification ID is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createJsonResponse({ error: 'Notification ID is required' }, 400);
     }
 
     // Verify ownership
-    const notification = await env.DB.prepare(`
+    const notification = await withNotificationsTable(env.DB, () => env.DB.prepare(`
       SELECT id, user_id FROM notifications WHERE id = ?
-    `).bind(notificationId).first<{ id: string; user_id: string }>();
+    `).bind(notificationId).first<NotificationOwnershipRecord>());
 
     if (!notification) {
-      return new Response(JSON.stringify({ error: 'Notification not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createJsonResponse({ error: 'Notification not found' }, 404);
     }
 
     if (notification.user_id !== auth.user.id) {
-      return new Response(JSON.stringify({ error: 'Access denied' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return createJsonResponse({ error: 'Access denied' }, 403);
     }
 
     // Delete notification
-    await env.DB.prepare(`
+    await withNotificationsTable(env.DB, () => env.DB.prepare(`
       DELETE FROM notifications WHERE id = ?
-    `).bind(notificationId).run();
+    `).bind(notificationId).run());
 
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return createJsonResponse({ success: true });
 
   } catch (error) {
     console.error('Delete notification error:', error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return createJsonResponse({ error: (error as Error).message }, 500);
   }
 }
