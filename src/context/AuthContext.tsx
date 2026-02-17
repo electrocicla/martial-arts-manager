@@ -161,6 +161,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        if (result.pending_approval) {
+          // Keep user logged out until an admin/instructor approves the account
+          setUser(null);
+          setAccessToken(null);
+          apiClient.setAccessToken(null);
+          return true;
+        }
+
         setUser(result.user);
         setAccessToken(result.accessToken);
         // Immediately sync token with apiClient to avoid race conditions

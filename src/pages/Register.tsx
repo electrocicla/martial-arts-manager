@@ -38,7 +38,7 @@ export default function Register() {
     void confirmPassword; // Acknowledge unused variable
     const success = await registerUser(registerData);
     if (success) {
-      navigate('/');
+      navigate('/pending-approval');
     }
   };
 
