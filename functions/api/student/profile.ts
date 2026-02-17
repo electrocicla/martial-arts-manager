@@ -1,34 +1,6 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
-
-function normalizeAvatarUrl(avatarUrl: unknown): string | undefined {
-  if (typeof avatarUrl !== 'string' || avatarUrl.trim().length === 0) {
-    return undefined;
-  }
-
-  // If it already points to our proxy endpoint, keep as-is
-  if (avatarUrl.startsWith('/api/avatars')) {
-    return avatarUrl;
-  }
-
-  // If stored as a bare key
-  if (avatarUrl.startsWith('avatars/')) {
-    return `/api/avatars?key=${encodeURIComponent(avatarUrl)}`;
-  }
-
-  // If stored as an absolute URL to a deprecated avatars subdomain, rewrite to proxy
-  try {
-    const parsed = new URL(avatarUrl);
-    const key = parsed.pathname.startsWith('/') ? parsed.pathname.slice(1) : parsed.pathname;
-    if (key.startsWith('avatars/')) {
-      return `/api/avatars?key=${encodeURIComponent(key)}`;
-    }
-  } catch {
-    // ignore
-  }
-
-  return avatarUrl;
-}
+import { normalizeAvatarUrl } from '../../utils/avatar';
 
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
   try {

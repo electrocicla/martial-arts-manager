@@ -2,14 +2,15 @@ import { useStudentDashboardData } from '../../hooks/useStudentDashboardData';
 import { useGreeting } from '../../hooks/useGreeting';
 import DashboardHeader from './DashboardHeader';
 import { Card, CardHeader, CardContent } from '../ui/Card';
-import { Calendar, CreditCard, User } from 'lucide-react';
+import { Calendar, CreditCard, User, QrCode, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { QRScanner } from '../attendance';
+import { useNavigate } from 'react-router-dom';
 
 export default function StudentDashboard() {
   const { profile, classes, payments, isLoading, error } = useStudentDashboardData();
   const { greeting } = useGreeting();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -45,9 +46,35 @@ export default function StudentDashboard() {
       <DashboardHeader greeting={greeting} />
 
       <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto space-y-8 mobile-dashboard-content dashboard-content">
-        
-        {/* QR Scanner Section */}
-        <QRScanner />
+
+        {/* Attendance quick access (replaces redundant dashboard QR scanner) */}
+        <Card className="border border-red-500/20 bg-gradient-to-br from-red-900/20 to-gray-900">
+          <CardContent className="p-5 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-xl bg-red-500/20 border border-red-500/30">
+                  <QrCode className="w-5 h-5 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">
+                    {t('attendance.qrCheckIn', 'QR check-in')}
+                  </h3>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {t('attendance.scanQrInstruction', 'Scan the QR code at your training location')}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => navigate('/my-attendance')}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-red-900/40"
+              >
+                {t('attendance.scanQr', 'Scan QR')}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -58,6 +58,7 @@ export const navigationItems: NavigationItem[] = [
     id: 'attendance',
     nameKey: 'nav.attendance',
     href: '/attendance',
+    getHref: attendanceHrefForRole,
     icon: Clock,
     color: 'text-blue-500',
     roles: ['admin', 'instructor', 'student']

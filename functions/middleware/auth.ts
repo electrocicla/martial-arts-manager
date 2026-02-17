@@ -4,6 +4,7 @@
 
 import { verifyJWT } from '../utils/jwt';
 import { findUserById } from '../utils/db';
+import { normalizeAvatarUrl } from '../utils/avatar';
 
 import { Env } from '../types/index';
 
@@ -67,7 +68,7 @@ export async function authenticateUser(
         name: user.name,
         role: user.role,
         student_id: studentId,
-        avatar_url: user.avatar_url,
+        avatar_url: normalizeAvatarUrl(user.avatar_url),
       },
     };
   } catch (error) {

@@ -6,6 +6,7 @@ import { verifyJWT, createTokens } from '../../utils/jwt';
 import { findSessionByRefreshToken, findUserById, updateUserLastLogin, createSession, deleteSession } from '../../utils/db';
 import { getRefreshTokenFromCookies, createRefreshTokenCookie, createClearRefreshTokenCookie } from '../../middleware/auth';
 import { generateUserId } from '../../utils/hash';
+import { normalizeAvatarUrl } from '../../utils/avatar';
 
 import { Env } from '../../types/index';
 
@@ -18,6 +19,7 @@ interface RefreshResponse {
     name: string;
     role: string;
     student_id?: string;
+    avatar_url?: string;
   };
 }
 
@@ -131,6 +133,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         name: user.name,
         role: user.role,
         student_id: studentId,
+        avatar_url: normalizeAvatarUrl(user.avatar_url),
       },
     };
 

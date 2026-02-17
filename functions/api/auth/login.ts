@@ -6,6 +6,7 @@ import { verifyPassword, generateUserId } from '../../utils/hash';
 import { createTokens } from '../../utils/jwt';
 import { findUserByEmail, createSession, updateUserLastLogin, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
 import { createRefreshTokenCookie } from '../../middleware/auth';
+import { normalizeAvatarUrl } from '../../utils/avatar';
 
 import { Env } from '../../types/index';
 
@@ -151,7 +152,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         name: user.name,
         role: user.role,
         student_id: studentId || undefined,
-        avatar_url: user.avatar_url || undefined,
+        avatar_url: normalizeAvatarUrl(user.avatar_url),
       },
       accessToken,
     };

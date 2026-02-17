@@ -12,6 +12,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   QrCode, 
+  Camera,
+  Keyboard,
+  AlertCircle,
   Calendar, 
   Clock, 
   CheckCircle2, 
@@ -24,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../lib/api-client';
+import jsQR from 'jsqr';
 
 interface AttendanceRecord {
   id: string;
@@ -99,11 +103,16 @@ export default function StudentAttendance() {
   const [scanError, setScanError] = useState<string | null>(null);
   const [scanSuccess, setScanSuccess] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [manualCode, setManualCode] = useState('');
+  const [manualSubmitting, setManualSubmitting] = useState(false);
+  const [scannerMode, setScannerMode] = useState<'barcode-detector' | 'jsqr-fallback' | null>(null);
+  const isProcessing = scanState === 'processing' || manualSubmitting;
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const processingScanRef = useRef(false);
 
   // Fetch attendance history
   const fetchAttendance = useCallback(async () => {
@@ -131,17 +140,26 @@ export default function StudentAttendance() {
     fetchAttendance();
   }, [fetchAttendance]);
 
-  // Cleanup camera on unmount
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
+  const clearScanInterval = useCallback(() => {
+    if (scanIntervalRef.current) {
+      clearInterval(scanIntervalRef.current);
+      scanIntervalRef.current = null;
+    }
   }, []);
 
   const startCamera = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setScanState('error');
+      setScanError(t('attendance.cameraUnavailable', 'Camera is not available on this device/browser.'));
+      return;
+    }
+
     try {
+      clearScanInterval();
+      processingScanRef.current = false;
       setScanState('scanning');
       setScanError(null);
+      setScanSuccess(null);
       setShowScanner(true);
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -165,47 +183,58 @@ export default function StudentAttendance() {
       console.error('Camera error:', error);
       setScanError(t('attendance.cameraError', 'Unable to access the camera. Please check permissions.'));
       setScanState('error');
+      setShowScanner(false);
     }
   };
 
-  const stopCamera = () => {
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
-    }
+  const stopCamera = useCallback(() => {
+    clearScanInterval();
     
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
     
+    processingScanRef.current = false;
     setShowScanner(false);
     setScanState('idle');
-  };
+    setScannerMode(null);
+  }, [clearScanInterval]);
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, [stopCamera]);
 
   const startQRScanning = () => {
+    clearScanInterval();
+
     // Check if BarcodeDetector is available (modern browsers)
     if ('BarcodeDetector' in window) {
+      setScannerMode('barcode-detector');
       scanWithBarcodeDetector();
     } else {
-      // Fallback: use a polling mechanism that sends frames to backend
+      setScannerMode('jsqr-fallback');
       scanWithCanvasFallback();
     }
   };
 
-  const scanWithBarcodeDetector = async () => {
+  const scanWithBarcodeDetector = () => {
     const BarcodeDetectorClass = (window as unknown as Record<string, unknown>).BarcodeDetector as new (options: { formats: string[] }) => { detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue: string }>> };
     const barcodeDetector = new BarcodeDetectorClass({ formats: ['qr_code'] });
     
     scanIntervalRef.current = setInterval(async () => {
-      if (!videoRef.current || videoRef.current.readyState !== 4) return;
+      if (!videoRef.current || videoRef.current.readyState !== 4 || processingScanRef.current) return;
       
       try {
         const barcodes = await barcodeDetector.detect(videoRef.current);
         if (barcodes.length > 0) {
           const qrValue = barcodes[0].rawValue;
           if (qrValue) {
-            await processQRCode(qrValue);
+            processingScanRef.current = true;
+            await processQRCode(qrValue, 'camera');
           }
         }
       } catch (err) {
@@ -215,34 +244,78 @@ export default function StudentAttendance() {
   };
 
   const scanWithCanvasFallback = () => {
-    // Simple fallback that captures frames and could send to server for processing
-    // For now, we'll show a message that the browser doesn't support QR scanning
-    setScanError(t('attendance.qrNotSupported', 'Your browser does not support QR scanning. Try Chrome or Edge.'));
-    setScanState('error');
-    stopCamera();
+    if (!videoRef.current || !canvasRef.current) {
+      setScanError(t('attendance.cameraUnavailable', 'Camera is not available on this device/browser.'));
+      setScanState('error');
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+
+    if (!context) {
+      setScanError(t('attendance.qrNotSupported', 'Unable to start QR scanner. Try manual code entry.'));
+      setScanState('error');
+      return;
+    }
+
+    scanIntervalRef.current = setInterval(async () => {
+      const video = videoRef.current;
+      if (!video || video.readyState !== 4 || processingScanRef.current) return;
+
+      const sourceWidth = video.videoWidth;
+      const sourceHeight = video.videoHeight;
+      if (!sourceWidth || !sourceHeight) return;
+
+      const maxWidth = 960;
+      const scale = sourceWidth > maxWidth ? maxWidth / sourceWidth : 1;
+      const width = Math.max(1, Math.floor(sourceWidth * scale));
+      const height = Math.max(1, Math.floor(sourceHeight * scale));
+
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
+
+      context.drawImage(video, 0, 0, width, height);
+      const imageData = context.getImageData(0, 0, width, height);
+      const qrCode = jsQR(imageData.data, width, height, { inversionAttempts: 'attemptBoth' });
+
+      if (!qrCode?.data) return;
+
+      processingScanRef.current = true;
+      await processQRCode(qrCode.data, 'camera');
+    }, 300);
   };
 
-  const processQRCode = async (qrValue: string) => {
+  const processQRCode = async (qrValue: string, source: 'camera' | 'manual' = 'camera') => {
     const normalizedCode = extractAttendanceCode(qrValue);
     if (!normalizedCode) {
       setScanState('error');
       setScanError(t('attendance.invalidQrCode', 'Invalid QR code format'));
 
-      setTimeout(() => {
-        setScanError(null);
-        startQRScanning();
-        setScanState('scanning');
-      }, 2000);
+      if (source === 'camera') {
+        setTimeout(() => {
+          processingScanRef.current = false;
+          if (!streamRef.current || !videoRef.current) return;
+          setScanError(null);
+          startQRScanning();
+          setScanState('scanning');
+        }, 2000);
+      } else {
+        processingScanRef.current = false;
+      }
+
       return;
     }
 
     // Stop scanning while processing
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
+    if (source === 'camera') {
+      clearScanInterval();
     }
     
     setScanState('processing');
+    setScanError(null);
     
     try {
       const response = await apiClient.post<{ 
@@ -257,36 +330,80 @@ export default function StudentAttendance() {
       if (response.success && response.data?.success) {
         setScanState('success');
         setScanSuccess(response.data.message || t('attendance.checkInSuccess', 'Attendance recorded.'));
+        setManualCode('');
         
         // Refresh attendance list
         await fetchAttendance();
         
-        // Close scanner after delay
-        setTimeout(() => {
-          stopCamera();
-          setScanSuccess(null);
-        }, 2000);
+        if (source === 'camera') {
+          // Close scanner after short confirmation
+          setTimeout(() => {
+            stopCamera();
+            setScanSuccess(null);
+          }, 1600);
+        } else {
+          processingScanRef.current = false;
+          setTimeout(() => {
+            setScanSuccess(null);
+            setScanState('idle');
+          }, 2500);
+        }
       } else {
         setScanState('error');
         setScanError(response.data?.message || response.error || t('attendance.checkInError', 'Failed to record attendance.'));
-        
-        // Resume scanning after error
-        setTimeout(() => {
-          setScanError(null);
-          startQRScanning();
-          setScanState('scanning');
-        }, 3000);
+
+        if (source === 'camera') {
+          // Resume scanning after error
+          setTimeout(() => {
+            processingScanRef.current = false;
+            if (!streamRef.current || !videoRef.current) return;
+            setScanError(null);
+            startQRScanning();
+            setScanState('scanning');
+          }, 3000);
+        } else {
+          processingScanRef.current = false;
+        }
       }
     } catch (error) {
       console.error('Check-in error:', error);
       setScanState('error');
       setScanError(t('attendance.networkError', 'Network error. Please try again.'));
-      
-      setTimeout(() => {
-        setScanError(null);
-        startQRScanning();
-        setScanState('scanning');
-      }, 3000);
+
+      if (source === 'camera') {
+        setTimeout(() => {
+          processingScanRef.current = false;
+          if (!streamRef.current || !videoRef.current) return;
+          setScanError(null);
+          startQRScanning();
+          setScanState('scanning');
+        }, 3000);
+      } else {
+        processingScanRef.current = false;
+      }
+    }
+  };
+
+  const handleManualSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!manualCode.trim()) {
+      setScanState('error');
+      setScanError(t('attendance.codeRequired', 'Please enter a code first.'));
+      return;
+    }
+
+    if (manualSubmitting) {
+      return;
+    }
+
+    setManualSubmitting(true);
+    processingScanRef.current = true;
+
+    try {
+      await processQRCode(manualCode.trim(), 'manual');
+    } finally {
+      setManualSubmitting(false);
     }
   };
 
@@ -337,25 +454,120 @@ export default function StudentAttendance() {
 
       <div className="px-4 py-6 max-w-4xl mx-auto space-y-6">
         {/* QR Check-in Button */}
-        <div className="bg-gradient-to-br from-gray-800/80 to-gray-900 rounded-2xl border border-gray-700/50 p-6 shadow-xl">
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="flex-1 text-center sm:text-left">
+        <div className="bg-gradient-to-br from-gray-800/80 to-gray-900 rounded-2xl border border-gray-700/50 p-5 sm:p-6 shadow-xl">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+            <div className="flex-1 text-left">
               <h2 className="text-lg font-bold text-white mb-1">
                 {t('attendance.qrCheckIn', 'QR check-in')}
               </h2>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-300">
                 {t('attendance.scanQrInstruction', 'Scan the QR code at your training location')}
               </p>
             </div>
             <button
               onClick={startCamera}
-              disabled={scanState === 'scanning' || scanState === 'processing'}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={scanState === 'scanning' || isProcessing}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <QrCode className="w-5 h-5" />
+              <Camera className="w-5 h-5" />
               {t('attendance.scanQr', 'Scan QR')}
             </button>
           </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="px-2.5 py-1 rounded-full text-[11px] border border-red-500/25 bg-red-900/30 text-red-200">
+              {t('attendance.tipOpenCamera', '1. Open camera')}
+            </span>
+            <span className="px-2.5 py-1 rounded-full text-[11px] border border-red-500/25 bg-red-900/30 text-red-200">
+              {t('attendance.tipAlignQr', '2. Align QR inside frame')}
+            </span>
+            <span className="px-2.5 py-1 rounded-full text-[11px] border border-red-500/25 bg-red-900/30 text-red-200">
+              {t('attendance.tipAutoCheckin', '3. Automatic check-in')}
+            </span>
+          </div>
+
+          <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+            {t('attendance.scannerCompatibilityHint', 'If camera scan is unstable on your device, use manual code entry below.')}
+          </p>
+        </div>
+
+        {/* Inline feedback for manual flow */}
+        {!showScanner && (scanError || scanSuccess) && (
+          <div
+            className={`rounded-2xl border p-4 shadow-lg ${
+              scanSuccess
+                ? 'border-green-500/30 bg-green-900/20'
+                : 'border-red-500/30 bg-red-900/20'
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              {scanSuccess ? (
+                <CheckCircle2 className="w-5 h-5 text-green-300 mt-0.5" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-300 mt-0.5" />
+              )}
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-white">
+                  {scanSuccess || scanError}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setScanError(null);
+                  setScanSuccess(null);
+                  if (scanState !== 'idle') setScanState('idle');
+                }}
+                className="text-gray-300 hover:text-white transition-colors"
+                aria-label={t('common.close', 'Close')}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Manual code fallback */}
+        <div className="bg-gradient-to-br from-gray-800/80 to-gray-900 rounded-2xl border border-gray-700/50 p-5 sm:p-6 shadow-xl">
+          <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+            <Keyboard className="w-5 h-5 text-red-400" />
+            {t('attendance.manualCode', 'Manual code entry')}
+          </h2>
+
+          <form onSubmit={handleManualSubmit} className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={manualCode}
+              onChange={(event) => setManualCode(event.target.value.toUpperCase())}
+              placeholder={t('attendance.manualCodePlaceholder', 'Example: HAMARR-ABC123')}
+              className="flex-1 px-4 py-3.5 bg-gray-900 border border-gray-700 text-white rounded-xl outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/30 font-mono"
+              disabled={isProcessing}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+
+            <button
+              type="submit"
+              disabled={!manualCode.trim() || isProcessing}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {manualSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {t('attendance.processing', 'Processing...')}
+                </>
+              ) : (
+                <>
+                  <QrCode className="w-4 h-4" />
+                  {t('attendance.recordNow', 'Record now')}
+                </>
+              )}
+            </button>
+          </form>
+
+          <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+            {t('attendance.manualCodeHelp', 'Use the exact code shared by your instructor. Most codes start with HAMARR-.')}
+          </p>
         </div>
 
         {/* Stats Cards */}
@@ -556,6 +768,11 @@ export default function StudentAttendance() {
             <p className="text-gray-400 text-sm">
               {t('attendance.pointAtQr', 'Point your camera at the QR code')}
             </p>
+            {scannerMode === 'jsqr-fallback' && (
+              <p className="text-xs text-amber-300 mt-1">
+                {t('attendance.compatibilityMode', 'Compatibility mode active')}
+              </p>
+            )}
           </div>
         </div>
       )}

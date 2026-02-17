@@ -215,9 +215,9 @@ export default function ProfileSettings() {
           <label className="flex flex-col">
             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('settings.profile.role')}</span>
             <select disabled defaultValue={user?.role || 'admin'} className="mt-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm bg-transparent">
-              <option value="admin">{t('auth.roles.admin')}</option>
-              <option value="instructor">{t('auth.roles.instructor')}</option>
-              <option value="student">{t('auth.roles.student')}</option>
+              <option value="admin">{t('auth.admin')}</option>
+              <option value="instructor">{t('auth.instructor')}</option>
+              <option value="student">{t('auth.student')}</option>
             </select>
           </label>
 

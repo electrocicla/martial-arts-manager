@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Clock, MapPin, User, Users, ArrowRight, QrCode } from 'lucide-react';
 import { useClasses } from '../hooks/useClasses';
@@ -12,6 +12,7 @@ export default function Attendance() {
   const navigate = useNavigate();
   const { classes } = useClasses();
   const { user } = useAuth();
+  const isStudent = user?.role === 'student';
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -81,6 +82,10 @@ export default function Attendance() {
     </div>
   );
 
+  if (isStudent) {
+    return <Navigate to="/my-attendance" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 pb-24 md:pb-10">
       {/* Enhanced Header */}
@@ -96,7 +101,7 @@ export default function Attendance() {
                   {t('nav.attendance')}
                 </h1>
                 <p className="text-base text-base-content/70 mt-1">
-                  {user?.role === 'student'
+                  {isStudent
                     ? t('attendance.scanQR', 'Scan QR code to record your attendance')
                     : t('attendance.subtitle', 'Select a class to record attendance')}
                 </p>
@@ -114,7 +119,7 @@ export default function Attendance() {
       </div>
 
       <div className="px-6 py-8 max-w-7xl mx-auto">
-        {user?.role === 'student' ? (
+        {isStudent ? (
           // Student View - QR Scanner
           <div className="space-y-8">
             {/* QR Scanner Section */}

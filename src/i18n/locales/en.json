@@ -35,7 +35,12 @@
       "cancel": "Cancel",
       "updatePhoto": "Update your profile photo and public details.",
       "changePhoto": "Change Photo",
-      "photoRequirements": "JPG, PNG up to 5MB"
+      "photoRequirements": "JPG, PNG up to 5MB",
+      "photoInvalidType": "Invalid file type. Only JPG, PNG, GIF, WebP, AVIF, and HEIC/HEIF are allowed.",
+      "photoTooLarge": "File too large. Maximum size is 5MB.",
+      "photoConversionFailed": "Could not process this image. Please try a JPG or PNG.",
+      "photoUploadError": "Failed to process the image.",
+      "photoNotAvailable": "Profile photo is only available for student accounts"
     }
   },
   "belts": {
@@ -78,6 +83,10 @@
     "cancel": "Cancel",
     "errorLoadingProfile": "Error Loading Profile",
     "retry": "Retry",
+    "avatarInvalidType": "Invalid file type. Only JPG, PNG, GIF, WebP, AVIF, and HEIC/HEIF are allowed.",
+    "avatarTooLarge": "File too large. Maximum size is 5MB.",
+    "avatarConversionFailed": "Could not process this image. Please try a JPG or PNG.",
+    "avatarUploadError": "Failed to process the image.",
     "tabs": {
       "personal": "Personal Info",
       "notifications": "Notifications",
@@ -522,9 +531,12 @@
     "cancel": "Cancel",
     "saveChanges": "Save Changes",
     "save": "Save",
+    "saving": "Saving...",
+    "uploading": "Uploading...",
     "delete": "Delete",
     "edit": "Edit",
     "add": "Add",
+    "select": "Select",
     "search": "Search",
     "filter": "Filter",
     "export": "Export",

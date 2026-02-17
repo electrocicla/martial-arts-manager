@@ -15,6 +15,7 @@ export default function Header() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -50,7 +51,10 @@ export default function Header() {
       <header className="flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-gray-700 md:hidden">
         {/* Left: Menu Button */}
         <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          onClick={() => {
+            setMobileMenuOpen(!mobileMenuOpen);
+            setMobileAccountOpen(false);
+          }}
           className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
         >
           <Menu className="w-6 h-6" />
@@ -64,15 +68,63 @@ export default function Header() {
           <h1 className="text-xl font-bold text-white">{t('common.appName')}</h1>
         </button>
 
-        {/* Right: User Avatar */}
-        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-          {user?.avatar_url ? (
-            <img src={user.avatar_url} alt={user.name} className="w-8 h-8 rounded-full" />
-          ) : (
-            <User className="w-4 h-4 text-gray-300" />
-          )}
+        {/* Right: User Avatar + Quick Account Menu */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setMobileAccountOpen(!mobileAccountOpen);
+              setMobileMenuOpen(false);
+            }}
+            className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-600"
+            aria-label={t('common.account')}
+          >
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt={user?.name || 'User'} className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <User className="w-4 h-4 text-gray-300" />
+            )}
+          </button>
         </div>
       </header>
+
+      {mobileAccountOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[65] md:hidden"
+            onClick={() => setMobileAccountOpen(false)}
+          />
+          <div className="fixed top-14 right-4 w-56 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-[66] py-2 md:hidden">
+            <div className="px-4 py-3 border-b border-gray-700 mb-2">
+              <p className="text-sm text-white font-medium truncate">{user?.name || 'User'}</p>
+              <p className="text-xs text-gray-400 truncate">{user?.email || ''}</p>
+            </div>
+
+            <button
+              onClick={() => {
+                navigate('/profile');
+                setMobileAccountOpen(false);
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
+            >
+              {user?.role === 'student' ? <User className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
+              {user?.role === 'student' ? t('nav.profile') : t('nav.settings')}
+            </button>
+
+            <div className="border-t border-gray-700 my-2 pt-2">
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMobileAccountOpen(false);
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300 flex items-center gap-2 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                {t('auth.logout')}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Mobile Slide Menu - Improved */}
       <div className={`fixed inset-0 z-[70] md:hidden transition-all duration-300 ${

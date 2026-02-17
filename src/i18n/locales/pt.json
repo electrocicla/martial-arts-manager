@@ -35,7 +35,12 @@
       "cancel": "Cancelar",
       "updatePhoto": "Atualize sua foto de perfil e detalhes públicos.",
       "changePhoto": "Alterar Foto",
-      "photoRequirements": "JPG, PNG até 5MB"
+      "photoRequirements": "JPG, PNG até 5MB",
+      "photoInvalidType": "Tipo de arquivo inválido. Apenas JPG, PNG, GIF, WebP, AVIF e HEIC/HEIF são permitidos.",
+      "photoTooLarge": "Arquivo muito grande. O tamanho máximo é 5MB.",
+      "photoConversionFailed": "Não foi possível processar esta imagem. Tente um JPG ou PNG.",
+      "photoUploadError": "Não foi possível processar a imagem.",
+      "photoNotAvailable": "A foto de perfil está disponível apenas para contas de aluno"
     }
   },
   "belts": {
@@ -78,6 +83,10 @@
     "cancel": "Cancelar",
     "errorLoadingProfile": "Erro ao Carregar o Perfil",
     "retry": "Tentar Novamente",
+    "avatarInvalidType": "Tipo de arquivo inválido. Apenas JPG, PNG, GIF, WebP, AVIF e HEIC/HEIF são permitidos.",
+    "avatarTooLarge": "Arquivo muito grande. O tamanho máximo é 5MB.",
+    "avatarConversionFailed": "Não foi possível processar esta imagem. Tente um JPG ou PNG.",
+    "avatarUploadError": "Não foi possível processar a imagem.",
     "tabs": {
       "personal": "Informações Pessoais",
       "notifications": "Notificações",
@@ -110,6 +119,7 @@
     "emailPlaceholder": "Digite seu e-mail",
     "role": "Função",
     "rolePlaceholder": "Selecione sua função",
+    "selectInstructor": "Selecione seu instrutor",
     "password": "Senha",
     "passwordPlaceholder": "Crie uma senha",
     "confirmPassword": "Confirmar Senha",
@@ -519,9 +529,12 @@
     "cancel": "Cancelar",
     "saveChanges": "Salvar alterações",
     "save": "Salvar",
+    "saving": "Salvando...",
+    "uploading": "Enviando...",
     "delete": "Excluir",
     "edit": "Editar",
     "add": "Adicionar",
+    "select": "Selecionar",
     "search": "Buscar",
     "filter": "Filtrar",
     "export": "Exportar",
