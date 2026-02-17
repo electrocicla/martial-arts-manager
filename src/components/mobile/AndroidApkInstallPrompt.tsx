@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Download, Smartphone } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 
-const JUST_LOGGED_IN_KEY = 'hamarr:just-logged-in';
 const APK_PROMPT_DISMISSED_UNTIL_KEY = 'hamarr:apk-prompt-dismissed-until';
 const DEFAULT_ANDROID_APK_URL = '/downloads/hamarr-app-latest.apk';
 const LATER_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24h
@@ -44,8 +44,13 @@ function setDismissedUntil(timestamp: number): void {
   }
 }
 
-export default function AndroidApkInstallPrompt() {
+interface AndroidApkInstallPromptProps {
+  context?: 'dashboard' | 'login';
+}
+
+export default function AndroidApkInstallPrompt({ context = 'dashboard' }: AndroidApkInstallPromptProps) {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
   const apkUrl = useMemo(() => {
@@ -54,27 +59,27 @@ export default function AndroidApkInstallPrompt() {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-
-    // Only show after a successful login in this session
-    let hasRecentLoginMarker = false;
-    try {
-      hasRecentLoginMarker = Boolean(sessionStorage.getItem(JUST_LOGGED_IN_KEY));
-      sessionStorage.removeItem(JUST_LOGGED_IN_KEY);
-    } catch {
-      hasRecentLoginMarker = false;
-    }
-
-    if (!hasRecentLoginMarker) return;
     if (!isAndroidDevice()) return;
     if (!ALLOWED_HOSTS.has(window.location.hostname)) return;
     if (isStandaloneDisplayMode()) return;
+
+    const path = location.pathname;
+    const isDashboardRoute = path === '/dashboard' || path.startsWith('/dashboard/');
+    const isLoginRoute = path === '/login';
+
+    if (context === 'dashboard') {
+      if (!isAuthenticated || !isDashboardRoute) return;
+    }
+
+    if (context === 'login') {
+      if (isAuthenticated || !isLoginRoute) return;
+    }
 
     const dismissedUntil = getDismissedUntil();
     if (dismissedUntil && dismissedUntil > Date.now()) return;
 
     setIsOpen(true);
-  }, [isAuthenticated]);
+  }, [context, isAuthenticated, location.pathname]);
 
   const closeForLater = () => {
     setDismissedUntil(Date.now() + LATER_COOLDOWN_MS);

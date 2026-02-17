@@ -46,7 +46,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <AndroidApkInstallPrompt />
+      <AndroidApkInstallPrompt context="dashboard" />
       <Sidebar />
       <Header />
       <main className="md:ml-64 min-h-screen main-content">

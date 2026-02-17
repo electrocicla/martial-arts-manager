@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
+import AndroidApkInstallPrompt from '../components/mobile/AndroidApkInstallPrompt';
 import { useAuth } from '../context/AuthContext';
 import { loginSchema, type LoginFormData } from '../lib/validation';
 
@@ -40,6 +41,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-red-900/20 to-black px-4 py-6 sm:px-6 lg:px-8 relative overflow-hidden">
+      <AndroidApkInstallPrompt context="login" />
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-transparent to-red-900/30"></div>
       <div className="absolute top-0 left-0 w-full h-full">
