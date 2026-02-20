@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { studentService, type StudentFilters, type StudentStats } from '../services';
 import type { Student, StudentFormData } from '../types/index';
+import { dispatchDataEvent, onDataEvent } from '../lib/dataEvents';
 
 interface UseStudentsReturn {
   // Data
@@ -71,6 +72,7 @@ export function useStudents(initialFilters?: StudentFilters): UseStudentsReturn 
       const response = await studentService.create(data);
       if (response.success && response.data) {
         setStudents(prev => [...prev, response.data!]);
+        dispatchDataEvent('students');
         return { success: true, data: response.data };
       } else {
         const errorMsg = response.error || 'Failed to create student';
@@ -96,6 +98,7 @@ export function useStudents(initialFilters?: StudentFilters): UseStudentsReturn 
         setStudents(prev => prev.map(student =>
           student.id === id ? response.data! : student
         ));
+        dispatchDataEvent('students');
         return response.data;
       } else {
         setError(response.error || 'Failed to update student');
@@ -117,6 +120,7 @@ export function useStudents(initialFilters?: StudentFilters): UseStudentsReturn 
       const response = await studentService.delete(id);
       if (response.success) {
         setStudents(prev => prev.filter(student => student.id !== id));
+        dispatchDataEvent('students');
         return true;
       } else {
         setError(response.error || 'Failed to delete student');
@@ -154,6 +158,11 @@ export function useStudents(initialFilters?: StudentFilters): UseStudentsReturn 
   // Initial load
   useEffect(() => {
     fetchStudents(currentFilters);
+  }, [fetchStudents, currentFilters]);
+
+  // Refetch whenever another hook instance mutates students data
+  useEffect(() => {
+    return onDataEvent('students', () => fetchStudents(currentFilters));
   }, [fetchStudents, currentFilters]);
 
   return {

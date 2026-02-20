@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { onDataEvent } from '../lib/dataEvents';
 
 export function usePendingApprovalsCount() {
   const [count, setCount] = useState(0);
@@ -47,6 +48,11 @@ export function usePendingApprovalsCount() {
     // Refresh count every 30 seconds
     const interval = setInterval(fetchCount, 30000);
     return () => clearInterval(interval);
+  }, [fetchCount]);
+
+  // Also refetch immediately when another component approves/rejects an account
+  useEffect(() => {
+    return onDataEvent('pendingApprovals', fetchCount);
   }, [fetchCount]);
 
   return { count, loading, refetch: fetchCount };

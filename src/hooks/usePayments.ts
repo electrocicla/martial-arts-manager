@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { paymentService, type PaymentFilters, type PaymentStats } from '../services';
 import type { Payment, PaymentFormData } from '../types/index';
+import { dispatchDataEvent, onDataEvent } from '../lib/dataEvents';
 
 interface UsePaymentsReturn {
   // Data
@@ -75,6 +76,7 @@ export function usePayments(initialFilters?: PaymentFilters): UsePaymentsReturn 
       const response = await paymentService.create(data);
       if (response.success && response.data) {
         setPayments(prev => [...prev, response.data!]);
+        dispatchDataEvent('payments');
         return response.data;
       } else {
         setError(response.error || 'Failed to create payment');
@@ -98,6 +100,7 @@ export function usePayments(initialFilters?: PaymentFilters): UsePaymentsReturn 
         setPayments(prev => prev.map(payment =>
           payment.id === id ? response.data! : payment
         ));
+        dispatchDataEvent('payments');
         return response.data;
       } else {
         setError(response.error || 'Failed to update payment');
@@ -119,6 +122,7 @@ export function usePayments(initialFilters?: PaymentFilters): UsePaymentsReturn 
       const response = await paymentService.delete(id);
       if (response.success) {
         setPayments(prev => prev.filter(payment => payment.id !== id));
+        dispatchDataEvent('payments');
         return true;
       } else {
         setError(response.error || 'Failed to delete payment');
@@ -179,6 +183,7 @@ export function usePayments(initialFilters?: PaymentFilters): UsePaymentsReturn 
         setPayments(prev => prev.map(payment =>
           payment.id === id ? response.data! : payment
         ));
+        dispatchDataEvent('payments');
         return response.data;
       } else {
         setError(response.error || 'Failed to mark payment as paid');
@@ -195,6 +200,11 @@ export function usePayments(initialFilters?: PaymentFilters): UsePaymentsReturn 
   // Initial load
   useEffect(() => {
     fetchPayments(currentFilters);
+  }, [fetchPayments, currentFilters]);
+
+  // Refetch whenever another hook instance mutates payments data
+  useEffect(() => {
+    return onDataEvent('payments', () => fetchPayments(currentFilters));
   }, [fetchPayments, currentFilters]);
 
   return {

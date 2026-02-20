@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { attendanceService, type AttendanceFilters, type AttendanceStats, type AttendanceRecord } from '../services';
 import type { Attendance, AttendanceFormData } from '../types/index';
+import { dispatchDataEvent, onDataEvent } from '../lib/dataEvents';
 
 interface UseAttendanceReturn {
   // Data
@@ -84,6 +85,7 @@ export function useAttendance(initialFilters?: AttendanceFilters): UseAttendance
       const response = await attendanceService.create(record);
       if (response.success && response.data) {
         setAttendance(prev => [...prev, response.data!]);
+        dispatchDataEvent('attendance');
         return response.data;
       } else {
         setError(response.error || 'Failed to create attendance record');
@@ -107,6 +109,7 @@ export function useAttendance(initialFilters?: AttendanceFilters): UseAttendance
         setAttendance(prev => prev.map(att =>
           att.id === id ? response.data! : att
         ));
+        dispatchDataEvent('attendance');
         return response.data;
       } else {
         setError(response.error || 'Failed to update attendance record');
@@ -128,6 +131,7 @@ export function useAttendance(initialFilters?: AttendanceFilters): UseAttendance
       const response = await attendanceService.delete(id);
       if (response.success) {
         setAttendance(prev => prev.filter(att => att.id !== id));
+        dispatchDataEvent('attendance');
         return true;
       } else {
         setError(response.error || 'Failed to delete attendance record');
@@ -187,6 +191,7 @@ export function useAttendance(initialFilters?: AttendanceFilters): UseAttendance
       const response = await attendanceService.markPresent(studentId, classId);
       if (response.success && response.data) {
         setAttendance(prev => [...prev, response.data!]);
+        dispatchDataEvent('attendance');
         return response.data;
       } else {
         setError(response.error || 'Failed to mark student as present');
@@ -208,6 +213,7 @@ export function useAttendance(initialFilters?: AttendanceFilters): UseAttendance
       const response = await attendanceService.markAbsent(studentId, classId);
       if (response.success && response.data) {
         setAttendance(prev => [...prev, response.data!]);
+        dispatchDataEvent('attendance');
         return response.data;
       } else {
         setError(response.error || 'Failed to mark student as absent');
@@ -224,6 +230,11 @@ export function useAttendance(initialFilters?: AttendanceFilters): UseAttendance
   // Initial load
   useEffect(() => {
     fetchAttendance(currentFilters);
+  }, [fetchAttendance, currentFilters]);
+
+  // Refetch whenever another hook instance mutates attendance data
+  useEffect(() => {
+    return onDataEvent('attendance', () => fetchAttendance(currentFilters));
   }, [fetchAttendance, currentFilters]);
 
   return {

@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle, CheckCircle2, RefreshCw, UserCheck, XCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { dispatchDataEvent } from '../../lib/dataEvents';
 
 interface PendingUser {
   id: string;
@@ -89,6 +90,7 @@ export function PendingApprovals() {
 
       // Update local state immediately
       setPendingUsers((prev) => prev.filter((user) => user.id !== userId));
+      dispatchDataEvent('pendingApprovals');
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to approve account');
@@ -126,6 +128,7 @@ export function PendingApprovals() {
 
       // Update local state immediately
       setPendingUsers((prev) => prev.filter((user) => user.id !== userId));
+      dispatchDataEvent('pendingApprovals');
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to reject account');

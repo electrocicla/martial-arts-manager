@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hamarr-pwa-v1';
+const CACHE_NAME = 'hamarr-pwa-v2';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -34,6 +34,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  const url = new URL(request.url);
+
+  // Never cache API requests — always go to network so mutations are reflected immediately.
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   // Network-first for navigation requests, fallback to offline page.
   if (request.mode === 'navigate') {
     event.respondWith(
@@ -51,7 +59,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for static assets.
+  // Cache-first for static assets (JS, CSS, images, fonts, etc.).
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;

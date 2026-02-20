@@ -31,6 +31,7 @@ import {
 import { apiClient } from '../../lib/api-client';
 import { useAuth } from '../../context/AuthContext';
 import QRCodeCanvas from './QRCodeCanvas';
+import { dispatchDataEvent, onDataEvent } from '../../lib/dataEvents';
 
 interface QRCodeRecord {
   id: string;
@@ -144,6 +145,11 @@ export default function QRCodeManager() {
     fetchQRCodes();
   }, [fetchQRCodes]);
 
+  // Refetch when another mounted instance mutates QR codes
+  useEffect(() => {
+    return onDataEvent('qrCodes', fetchQRCodes);
+  }, [fetchQRCodes]);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -165,6 +171,7 @@ export default function QRCodeManager() {
 
       if (response.success && response.data?.qr_code) {
         setQRCodes(prev => [response.data!.qr_code, ...prev]);
+        dispatchDataEvent('qrCodes');
         setSuccess(t('qr.created', 'QR code created successfully'));
         setShowCreateModal(false);
         setForm({ location: '', class_id: '', valid_from: '', valid_until: '' });
@@ -191,6 +198,7 @@ export default function QRCodeManager() {
       
       if (response.success) {
         setQRCodes(prev => prev.filter(qr => qr.id !== qrId));
+        dispatchDataEvent('qrCodes');
         setSuccess(t('qr.deleted', 'QR code deleted'));
         setTimeout(() => setSuccess(null), 3000);
       }
