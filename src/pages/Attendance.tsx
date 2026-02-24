@@ -1,15 +1,16 @@
 import { useMemo } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Clock, MapPin, User, Users, ArrowRight, QrCode } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Users, ArrowRight } from 'lucide-react';
 import { useClasses } from '../hooks/useClasses';
 import { useAuth } from '../context/AuthContext';
-import { QRCodeManager, QRScanner } from '../components/attendance';
+import { QRCodeManager } from '../components/attendance';
 import type { Class } from '../types';
 
 export default function Attendance() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { classes } = useClasses();
   const { user } = useAuth();
   const isStudent = user?.role === 'student';
@@ -83,7 +84,8 @@ export default function Attendance() {
   );
 
   if (isStudent) {
-    return <Navigate to="/my-attendance" replace />;
+    const suffix = `${location.search}${location.hash}`;
+    return <Navigate to={`/my-attendance${suffix}`} replace />;
   }
 
   return (
@@ -101,9 +103,7 @@ export default function Attendance() {
                   {t('nav.attendance')}
                 </h1>
                 <p className="text-base text-base-content/70 mt-1">
-                  {isStudent
-                    ? t('attendance.scanQR', 'Scan QR code to record your attendance')
-                    : t('attendance.subtitle', 'Select a class to record attendance')}
+                  {t('attendance.subtitle', 'Select a class to record attendance')}
                 </p>
               </div>
             </div>
@@ -119,60 +119,21 @@ export default function Attendance() {
       </div>
 
       <div className="px-6 py-8 max-w-7xl mx-auto">
-        {isStudent ? (
-          // Student View - QR Scanner
-          <div className="space-y-8">
-            {/* QR Scanner Section */}
-            <div className="animate-fadeIn">
-              <QRScanner />
+        <div className="space-y-8">
+          {/* QR Code Manager for Instructors/Admins */}
+          <section className="space-y-4">
+            <div className="rounded-2xl border border-base-300/70 bg-base-200/60 p-4 sm:p-5">
+              <p className="text-sm text-base-content/80">
+                {t('qr.adminHint', 'Create QR codes by gym/location and share them with students for fast check-in.')}
+              </p>
             </div>
-
-            {/* Info Card */}
-            <div className="card bg-gradient-to-br from-info/10 to-info/5 border-2 border-info/30 shadow-xl rounded-3xl">
-              <div className="card-body p-8">
-                <div className="flex items-start gap-4">
-                  <div className="p-4 rounded-2xl bg-info/20">
-                    <QrCode className="w-8 h-8 text-info" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-base-content mb-3">
-                      {t('attendance.howToScan', 'How to record attendance')}
-                    </h3>
-                    <ul className="space-y-3">
-                      <li className="flex items-start gap-3">
-                        <div className="badge badge-info badge-lg mt-1">1</div>
-                        <p className="text-base-content/80 flex-1">
-                          {t('attendance.step1', 'Ask your instructor for the class QR code')}
-                        </p>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <div className="badge badge-info badge-lg mt-1">2</div>
-                        <p className="text-base-content/80 flex-1">
-                          {t('attendance.step2', 'Use your camera to scan the QR code or enter the code manually')}
-                        </p>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <div className="badge badge-info badge-lg mt-1">3</div>
-                        <p className="text-base-content/80 flex-1">
-                          {t('attendance.step3', 'Your attendance will be recorded automatically with date and time')}
-                        </p>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          // Instructor/Admin View
-          <div className="space-y-8">
-            {/* QR Code Manager for Instructors/Admins */}
             <div className="animate-fadeIn">
               <QRCodeManager />
             </div>
+          </section>
 
-            {/* Today's Classes */}
-            <section className="space-y-6">
+          {/* Today's Classes */}
+          <section className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-success/20">
@@ -219,11 +180,11 @@ export default function Attendance() {
                   </div>
                 </div>
               )}
-            </section>
+          </section>
 
-            {/* Upcoming Classes */}
-            {upcomingClasses.length > 0 && (
-              <section className="space-y-6">
+          {/* Upcoming Classes */}
+          {upcomingClasses.length > 0 && (
+            <section className="space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-primary/20">
                     <ArrowRight className="w-6 h-6 text-primary" />
@@ -254,10 +215,9 @@ export default function Attendance() {
                     </button>
                   </div>
                 )}
-              </section>
-            )}
-          </div>
-        )}
+            </section>
+          )}
+        </div>
       </div>
     </div>
   );

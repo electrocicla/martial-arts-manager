@@ -67,6 +67,7 @@ export default function QRCodeManager() {
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<QuickDuration>('1day');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [availableLocations, setAvailableLocations] = useState<string[]>([]);
   
   const [form, setForm] = useState<CreateQRForm>({
     location: '',
@@ -144,6 +145,31 @@ export default function QRCodeManager() {
   useEffect(() => {
     fetchQRCodes();
   }, [fetchQRCodes]);
+
+  useEffect(() => {
+    const fetchLocationOptions = async () => {
+      try {
+        const response = await apiClient.get<Array<{ location?: string }>>('/api/classes');
+        if (!response.success || !response.data) {
+          return;
+        }
+
+        const uniqueLocations = Array.from(
+          new Set(
+            response.data
+              .map((cls) => (cls.location || '').trim())
+              .filter(Boolean)
+          )
+        ).sort((a, b) => a.localeCompare(b));
+
+        setAvailableLocations(uniqueLocations);
+      } catch (error) {
+        console.warn('Failed to load class locations for QR generator:', error);
+      }
+    };
+
+    void fetchLocationOptions();
+  }, []);
 
   // Refetch when another mounted instance mutates QR codes
   useEffect(() => {
@@ -242,7 +268,7 @@ export default function QRCodeManager() {
     }
 
     const origin = window.location.origin;
-    return `${origin}/attendance?qr=${encodeURIComponent(qrCode.code)}`;
+    return `${origin}/my-attendance?qr=${encodeURIComponent(qrCode.code)}`;
   };
 
   const getDurationLabel = (qr: QRCodeRecord) => {
@@ -358,8 +384,42 @@ export default function QRCodeManager() {
                   onChange={(e) => setForm(prev => ({ ...prev, location: e.target.value }))}
                   className="input input-bordered input-lg w-full bg-base-300 focus:border-primary rounded-2xl"
                   placeholder={t('qr.locationPlaceholder', 'Example: Main dojo, North room')}
+                  list="qr-location-options"
                   required
                 />
+                {availableLocations.length > 0 && (
+                  <>
+                    <div className="mt-3">
+                      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                        {t('qr.existingLocations', 'Existing gym locations')}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {availableLocations.slice(0, 8).map((location) => (
+                          <button
+                            key={location}
+                            type="button"
+                            onClick={() => setForm(prev => ({ ...prev, location }))}
+                            className={`badge badge-lg rounded-full px-4 py-3 transition-all ${
+                              form.location === location
+                                ? 'badge-primary shadow-md'
+                                : 'badge-outline hover:border-primary/60 hover:text-primary'
+                            }`}
+                          >
+                            {location}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <datalist id="qr-location-options">
+                      {availableLocations.map((location) => (
+                        <option key={location} value={location} />
+                      ))}
+                    </datalist>
+                    <p className="mt-2 text-xs text-base-content/60">
+                      {t('qr.locationHint', 'Select an existing gym/location or enter a new one.')}
+                    </p>
+                  </>
+                )}
               </div>
 
               {/* Quick Duration Buttons */}

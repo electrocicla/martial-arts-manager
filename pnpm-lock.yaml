@@ -1006,8 +1006,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@maxim_mazurok/gapi.client.androidpublisher-v3@0.1.20260216':
-    resolution: {integrity: sha512-UtvSCf7cR5DDsuz47Djs5+RLDNenSSkN5WL7u+ytLoU5h2XCount59lHryf1KUv2zrtrebUNK4oYjzdA1MkYaQ==}
+  '@maxim_mazurok/gapi.client.androidpublisher-v3@0.1.20260224':
+    resolution: {integrity: sha512-tGw3I2JTlt5/OLxokMW+O8g18jL6pFEA4wgEzhPmDy2xU6aLx3dX/GCmdZrpOisA5ngHSJhm1ajrsxK+Thz7tQ==}
 
   '@maxim_mazurok/gapi.client.discovery-v1@0.4.20200806':
     resolution: {integrity: sha512-Jeo/KZqK39DI6ExXHcJ4lqnn1O/wEqboQ6eQ8WnNpu5eJ7wUnX/C5KazOgs1aRhnIB/dVzDe8wm62nmtkMIoaw==}
@@ -4963,7 +4963,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@maxim_mazurok/gapi.client.androidpublisher-v3@0.1.20260216':
+  '@maxim_mazurok/gapi.client.androidpublisher-v3@0.1.20260224':
     dependencies:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
@@ -5346,7 +5346,7 @@ snapshots:
 
   '@types/gapi.client.androidpublisher@3.0.2':
     dependencies:
-      '@maxim_mazurok/gapi.client.androidpublisher-v3': 0.1.20260216
+      '@maxim_mazurok/gapi.client.androidpublisher-v3': 0.1.20260224
 
   '@types/gapi.client.discovery-v1@0.0.4':
     dependencies:

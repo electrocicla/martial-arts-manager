@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '../../lib/api-client';
 import { useAuth } from '../../context/AuthContext';
+import jsQR from 'jsqr';
 
 interface ScanResult {
   success: boolean;
@@ -76,7 +77,9 @@ export default function QRScanner() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [recentScans, setRecentScans] = useState<ScanResult[]>([]);
+  const [scannerMode, setScannerMode] = useState<'barcode-detector' | 'jsqr-fallback' | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const processingScanRef = useRef(false);
@@ -101,11 +104,15 @@ export default function QRScanner() {
     });
   }, []);
 
-  const stopCamera = useCallback(() => {
+  const clearScanInterval = useCallback(() => {
     if (scanIntervalRef.current) {
       clearInterval(scanIntervalRef.current);
       scanIntervalRef.current = null;
     }
+  }, []);
+
+  const stopCamera = useCallback(() => {
+    clearScanInterval();
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
@@ -117,8 +124,9 @@ export default function QRScanner() {
     }
 
     processingScanRef.current = false;
+    setScannerMode(null);
     setScanning(false);
-  }, []);
+  }, [clearScanInterval]);
 
   const submitAttendance = useCallback(async (rawCode: string, fromCamera = false) => {
     const code = extractAttendanceCode(rawCode);
@@ -200,6 +208,7 @@ export default function QRScanner() {
 
     const detector = new BarcodeDetectorClass({ formats: ['qr_code'] });
 
+    clearScanInterval();
     scanIntervalRef.current = setInterval(async () => {
       if (!videoRef.current || videoRef.current.readyState !== 4 || processingScanRef.current) {
         return;
@@ -218,22 +227,83 @@ export default function QRScanner() {
         console.warn('QR detect frame error:', error);
       }
     }, 250);
-  }, [submitAttendance]);
+  }, [clearScanInterval, submitAttendance]);
 
-  const startQRScanning = useCallback(() => {
-    if (!('BarcodeDetector' in window)) {
+  const scanWithCanvasFallback = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current) {
       setResult({
         success: false,
-        message: t('qr.scanner.notSupported', 'Your browser does not support QR camera scanning. Use manual code entry.')
+        message: t('qr.scanner.cameraUnavailable', 'Camera scanner is not available on this device/browser.')
       });
       return;
     }
 
-    scanWithBarcodeDetector();
-  }, [scanWithBarcodeDetector, t]);
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+
+    if (!context) {
+      setResult({
+        success: false,
+        message: t('qr.scanner.notSupported', 'Unable to start QR camera scanning. Use manual code entry.')
+      });
+      return;
+    }
+
+    clearScanInterval();
+    scanIntervalRef.current = setInterval(async () => {
+      const video = videoRef.current;
+      if (!video || video.readyState !== 4 || processingScanRef.current) {
+        return;
+      }
+
+      const sourceWidth = video.videoWidth;
+      const sourceHeight = video.videoHeight;
+      if (!sourceWidth || !sourceHeight) {
+        return;
+      }
+
+      const maxWidth = 960;
+      const scale = sourceWidth > maxWidth ? maxWidth / sourceWidth : 1;
+      const width = Math.max(1, Math.floor(sourceWidth * scale));
+      const height = Math.max(1, Math.floor(sourceHeight * scale));
+
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
+
+      context.drawImage(video, 0, 0, width, height);
+      const imageData = context.getImageData(0, 0, width, height);
+      const qrCode = jsQR(imageData.data, width, height, { inversionAttempts: 'attemptBoth' });
+      if (!qrCode?.data) {
+        return;
+      }
+
+      processingScanRef.current = true;
+      await submitAttendance(qrCode.data, true);
+    }, 300);
+  }, [clearScanInterval, submitAttendance, t]);
+
+  const startQRScanning = useCallback(() => {
+    if ('BarcodeDetector' in window) {
+      setScannerMode('barcode-detector');
+      scanWithBarcodeDetector();
+    } else {
+      setScannerMode('jsqr-fallback');
+      scanWithCanvasFallback();
+    }
+  }, [scanWithBarcodeDetector, scanWithCanvasFallback]);
 
   const startCamera = async () => {
     try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setResult({
+          success: false,
+          message: t('qr.scanner.cameraUnavailable', 'Camera is not available on this device/browser.')
+        });
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
@@ -353,11 +423,23 @@ export default function QRScanner() {
                 <Camera className="w-6 h-6 text-primary" />
                 {t('qr.scanner.useCamera', 'Use Camera')}
               </h3>
+
+              <div className="mb-4 flex flex-wrap gap-2">
+                <span className="badge badge-outline rounded-full px-3 py-2 text-xs">
+                  {t('qr.scanner.tip1', 'Open camera')}
+                </span>
+                <span className="badge badge-outline rounded-full px-3 py-2 text-xs">
+                  {t('qr.scanner.tip2', 'Align QR in frame')}
+                </span>
+                <span className="badge badge-outline rounded-full px-3 py-2 text-xs">
+                  {t('qr.scanner.tip3', 'Check-in is automatic')}
+                </span>
+              </div>
               
               {!scanning ? (
                 <button
                   onClick={startCamera}
-                  className="btn btn-primary btn-lg w-full gap-3 shadow-lg hover:shadow-xl rounded-2xl"
+                  className="btn btn-primary btn-lg min-h-0 h-12 w-full gap-3 rounded-2xl px-5 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
                 >
                   <Camera className="w-6 h-6" />
                   {t('qr.scanner.startCamera', 'Start Camera')}
@@ -370,6 +452,7 @@ export default function QRScanner() {
                     playsInline
                     className="w-full aspect-video bg-black"
                   />
+                  <canvas ref={canvasRef} className="hidden" />
                   <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute inset-0 border-4 border-primary/30 rounded-2xl m-20 flex items-center justify-center">
                       <ScanLine className="w-full h-1 text-primary animate-pulse" />
@@ -381,6 +464,13 @@ export default function QRScanner() {
                   >
                     <X className="w-6 h-6" />
                   </button>
+                  {scannerMode === 'jsqr-fallback' && (
+                    <div className="absolute bottom-4 left-4 right-4 text-center">
+                      <span className="inline-flex rounded-full border border-warning/40 bg-warning/20 px-3 py-1 text-xs font-semibold text-warning-content">
+                        {t('qr.scanner.compatibilityMode', 'Compatibility mode active')}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -402,17 +492,20 @@ export default function QRScanner() {
                   <input
                     type="text"
                     value={manualCode}
-                    onChange={(e) => setManualCode(e.target.value)}
+                    onChange={(e) => setManualCode(e.target.value.toUpperCase())}
                     placeholder={t('qr.scanner.codePlaceholder', 'Enter QR code here...')}
                     className="input input-bordered input-lg w-full bg-base-300 focus:border-primary rounded-2xl font-mono text-center text-xl"
                     disabled={submitting}
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    spellCheck={false}
                   />
                 </div>
                 
                 <button
                   type="submit"
                   disabled={submitting || !manualCode.trim()}
-                  className="btn btn-secondary btn-lg w-full gap-3 shadow-lg hover:shadow-xl rounded-2xl"
+                  className="btn btn-secondary btn-lg min-h-0 h-12 w-full gap-3 rounded-2xl px-5 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
                 >
                   {submitting ? (
                     <>

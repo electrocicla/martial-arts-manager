@@ -66,8 +66,8 @@ export default function StudentDashboard() {
               </div>
 
               <button
-                onClick={() => navigate('/my-attendance')}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-red-900/40"
+                onClick={() => navigate('/attendance')}
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-all duration-200 hover:-translate-y-0.5 shadow-lg shadow-red-900/40"
               >
                 {t('attendance.scanQr', 'Scan QR')}
                 <ArrowRight className="w-4 h-4" />
