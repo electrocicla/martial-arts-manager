@@ -98,7 +98,12 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('es-MX', {
+    // Parse as local midnight to avoid UTC timezone shift (new Date("YYYY-MM-DD") is UTC)
+    const dateParts = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const d = dateParts
+      ? new Date(Number(dateParts[1]), Number(dateParts[2]) - 1, Number(dateParts[3]))
+      : new Date(date);
+    return d.toLocaleDateString('es-MX', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'

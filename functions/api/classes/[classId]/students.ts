@@ -35,10 +35,12 @@ export async function onRequestPost({ request, env, params }: { request: Request
       });
     }
 
-    // Verify class exists and belongs to user
+    // Verify class exists and belongs to user (admins can manage any class)
     const classCheck = await env.DB.prepare(
-      "SELECT id, max_students FROM classes WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(classId, auth.user.id).first<{ id: string; max_students: number }>();
+      auth.user.role === 'admin'
+        ? "SELECT id, max_students FROM classes WHERE id = ? AND deleted_at IS NULL"
+        : "SELECT id, max_students FROM classes WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id])).first<{ id: string; max_students: number }>();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { 
@@ -47,10 +49,12 @@ export async function onRequestPost({ request, env, params }: { request: Request
       });
     }
 
-    // Verify student exists and belongs to user (created by OR assigned to)
+    // Verify student exists and belongs to user (admins can enroll any student)
     const studentCheck = await env.DB.prepare(
-      "SELECT id FROM students WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(studentId, auth.user.id, auth.user.id).first();
+      auth.user.role === 'admin'
+        ? "SELECT id FROM students WHERE id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM students WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [studentId] : [studentId, auth.user.id, auth.user.id])).first();
 
     if (!studentCheck) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
@@ -127,10 +131,12 @@ export async function onRequestGet({ request, env, params }: { request: Request;
 
     const { classId } = params;
 
-    // Verify class belongs to user
+    // Verify class belongs to user (admins can view any class)
     const classCheck = await env.DB.prepare(
-      "SELECT id FROM classes WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(classId, auth.user.id).first();
+      auth.user.role === 'admin'
+        ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM classes WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id])).first();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { 

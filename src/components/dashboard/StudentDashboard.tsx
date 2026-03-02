@@ -1,5 +1,6 @@
 import { useStudentDashboardData } from '../../hooks/useStudentDashboardData';
 import { useGreeting } from '../../hooks/useGreeting';
+import { parseLocalDate } from '../../lib/utils';
 import DashboardHeader from './DashboardHeader';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Calendar, CreditCard, User, QrCode, ArrowRight } from 'lucide-react';
@@ -117,7 +118,7 @@ export default function StudentDashboard() {
               </div>
               {payments.length > 0 && (
                 <p className="text-xs text-gray-500">
-                  {new Date(payments[0].date).toLocaleDateString()}
+                  {parseLocalDate(payments[0].date).toLocaleDateString()}
                 </p>
               )}
             </CardContent>

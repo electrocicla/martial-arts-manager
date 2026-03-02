@@ -19,10 +19,25 @@ export function formatCurrency(amount: number): string {
 }
 
 /**
+ * Parse a date-only string (YYYY-MM-DD) as local midnight to avoid UTC timezone shift.
+ * JavaScript's `new Date("YYYY-MM-DD")` treats the string as UTC midnight, which causes
+ * a one-day offset when displayed in timezones behind UTC (e.g. UTC-6).
+ */
+export function parseLocalDate(dateString: string): Date {
+  // If it's a bare date (YYYY-MM-DD), construct using local-time parts
+  const dateParts = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateParts) {
+    return new Date(Number(dateParts[1]), Number(dateParts[2]) - 1, Number(dateParts[3]));
+  }
+  // Fall back to normal parsing for full ISO timestamps
+  return new Date(dateString);
+}
+
+/**
  * Format date strings to readable format
  */
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const date = parseLocalDate(dateString);
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',

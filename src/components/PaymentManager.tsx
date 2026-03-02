@@ -13,6 +13,7 @@ import { paymentSchema } from '../lib/validation';
 import { usePayments } from '../hooks/usePayments';
 import { useStudents } from '../hooks/useStudents';
 import { Search, Plus, DollarSign, Calendar, User } from 'lucide-react';
+import { parseLocalDate } from '../lib/utils';
 import type { Payment, PaymentFormData, Student } from '../types/index';
 
 export default function PaymentManager() {
@@ -53,7 +54,11 @@ export default function PaymentManager() {
       amount: 0,
       type: 'monthly' as const,
       notes: '',
-      date: new Date().toISOString().split('T')[0],
+      // Use local date parts to avoid UTC midnight offset (toISOString returns UTC date)
+      date: (() => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      })(),
       status: 'completed' as const
     }
   });
@@ -342,7 +347,7 @@ export default function PaymentManager() {
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
                           <span>
-                            {payment.date ? new Date(payment.date).toLocaleDateString('es-ES') : 'Sin fecha'}
+                            {payment.date ? parseLocalDate(payment.date).toLocaleDateString('es-ES') : 'Sin fecha'}
                           </span>
                         </div>
                       </div>

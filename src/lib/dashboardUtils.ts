@@ -1,4 +1,5 @@
 import type { Payment, Class } from '../types';
+import { parseLocalDate } from './utils';
 
 /**
  * Get the appropriate greeting based on current time
@@ -27,7 +28,7 @@ export const generateRecentActivity = (recentPayments: Payment[], todayClasses: 
     ...(recentPayments.slice(0, 2).map(payment => ({
       icon: 'DollarSign',
       text: `Payment received: $${payment.amount}`,
-      time: new Date(payment.date).toLocaleDateString(),
+      time: parseLocalDate(payment.date).toLocaleDateString(),
       type: 'info' as const
     }))),
     ...todayClasses.slice(0, 2).map(cls => ({
