@@ -4,6 +4,7 @@ import type { Class as ClassType } from '../../types';
 import { classService } from '../../services/class.service';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { Button } from '../ui/Button';
 
 type CommentRecord = { id: string; comment: string; author_id: string; created_at: string };
 type RecurrencePattern = { frequency?: string; days?: number[]; endDate?: string };
@@ -128,7 +129,7 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
           <div className="space-y-2 mb-3">
             <textarea placeholder={t('classDetails.commentPlaceholder') || ''} value={newComment} onChange={(e)=>setNewComment(e.target.value)} className="textarea textarea-bordered w-full bg-gray-800 border-gray-700 text-white" rows={3} />
             <div className="flex justify-end gap-2">
-              <button onClick={handleAdd} className="btn btn-primary">{t('classDetails.addComment') || 'Agregar'}</button>
+              <Button variant="primary" size="sm" onClick={handleAdd}>{t('classDetails.addComment') || 'Agregar'}</Button>
             </div>
           </div>
 

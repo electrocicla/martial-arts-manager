@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, MapPin, User, Award, Users, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
+import { Button } from '../ui/Button';
 
 interface BeltExam {
   id: string;
@@ -328,33 +329,28 @@ export default function CreateExamModal({
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-base-300">
-            <button
+            <Button
               type="button"
-              className="btn btn-ghost"
-              onClick={onClose}
+              variant="secondary"
+              size="md"
               disabled={loading}
+              onClick={onClose}
             >
               {label(t, 'common.cancel', 'Cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="btn btn-primary gap-2"
-              disabled={loading}
+              variant="primary"
+              size="md"
+              isLoading={loading}
+              leftIcon={!loading ? <Award className="w-5 h-5" /> : undefined}
             >
-              {loading ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  {label(t, 'common.saving', 'Saving...')}
-                </>
-              ) : (
-                <>
-                  <Award className="w-5 h-5" />
-                  {editingExam
-                    ? label(t, 'common.update', 'Update Exam')
-                    : label(t, 'common.create', 'Create Exam')}
-                </>
-              )}
-            </button>
+              {loading
+                ? label(t, 'common.saving', 'Saving...')
+                : editingExam
+                  ? label(t, 'common.update', 'Update Exam')
+                  : label(t, 'common.create', 'Create Exam')}
+            </Button>
           </div>
         </form>
       </div>

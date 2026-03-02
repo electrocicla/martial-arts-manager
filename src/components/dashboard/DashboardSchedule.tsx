@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, Loader2, ChevronRight } from 'lucide-react';
 import { getClassStatus } from '../../lib/dashboardUtils';
 import { useTranslation } from 'react-i18next';
+import { Button } from '../ui/Button';
 
 interface Class {
   id: string;
@@ -30,9 +31,14 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
           <Calendar className="w-5 h-5 text-primary" />
           {t('dashboard.schedule.todaySchedule')}
         </h2>
-        <button className="btn btn-ghost btn-sm text-xs sm:text-sm hover:bg-primary/10 rounded-lg transition-all duration-200 gap-2" onClick={() => navigate('/calendar')}>
-          {t('dashboard.schedule.viewAll')} <ChevronRight className="w-4 h-4" />
-        </button>
+        <Button
+          variant="ghost"
+          size="sm"
+          rightIcon={<ChevronRight className="w-4 h-4" />}
+          onClick={() => navigate('/calendar')}
+        >
+          {t('dashboard.schedule.viewAll')}
+        </Button>
       </div>
 
       <div className="space-y-3">
@@ -47,12 +53,13 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
               <Calendar className="w-12 h-12 text-base-content/30 mx-auto mb-3" />
               <h3 className="font-bold text-base-content mb-2">{t('dashboard.schedule.noClassesToday')}</h3>
               <p className="text-sm text-base-content/60 mb-4">{t('dashboard.schedule.noClassesDescription')}</p>
-              <button
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={() => navigate('/classes')}
-                className="btn btn-primary btn-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
               >
                 {t('dashboard.schedule.scheduleClass')}
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -95,12 +102,13 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
                         {status === 'ongoing' ? t('dashboard.schedule.live') :
                          status === 'upcoming' ? t('dashboard.schedule.soon') : status}
                       </div>
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() => navigate(`/classes/${cls.id}`)}
-                        className="btn btn-ghost btn-xs sm:btn-sm text-primary hover:bg-primary/10"
                       >
                         {t('common.details')}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>

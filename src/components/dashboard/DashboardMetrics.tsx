@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Target, Activity, Users, Calendar, DollarSign, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '../ui/Button';
 import type { DashboardStats } from '../../hooks/useDashboardData';
 
 interface DashboardMetricsProps {
@@ -32,12 +33,13 @@ export default function DashboardMetrics({ dashboardStats, isLoading }: Dashboar
                 <p className="text-gray-500">{t('dashboard.metrics.noDataAvailableYet')}</p>
                 <p className="text-sm text-gray-400 mt-1">{t('dashboard.metrics.startByAddingStudentsAndClasses')}</p>
               </div>
-              <button
+              <Button
+                variant="primary"
+                size="lg"
                 onClick={() => navigate('/students')}
-                className="btn btn-primary btn-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
                 {t('dashboard.metrics.addFirstStudent')}
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -93,33 +95,33 @@ export default function DashboardMetrics({ dashboardStats, isLoading }: Dashboar
             </div>
           ) : (
             <div className="space-y-3">
-              <button
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                leftIcon={<Users className="w-6 h-6" />}
                 onClick={() => navigate('/students')}
-                className="btn btn-info btn-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full text-left bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-0"
               >
-                <div className="flex items-center gap-3">
-                  <Users className="w-6 h-6" />
-                  <span className="text-base font-semibold">{t('dashboard.metrics.manageStudents')}</span>
-                </div>
-              </button>
-              <button
+                {t('dashboard.metrics.manageStudents')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
+                fullWidth
+                leftIcon={<Calendar className="w-6 h-6" />}
                 onClick={() => navigate('/classes')}
-                className="btn btn-success btn-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full text-left bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-0"
               >
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-6 h-6" />
-                  <span className="text-base font-semibold">{t('dashboard.metrics.scheduleClasses')}</span>
-                </div>
-              </button>
-              <button
+                {t('dashboard.metrics.scheduleClasses')}
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                fullWidth
+                leftIcon={<DollarSign className="w-6 h-6" />}
                 onClick={() => navigate('/payments')}
-                className="btn btn-warning btn-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full text-left bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 border-0"
               >
-                <div className="flex items-center gap-3">
-                  <DollarSign className="w-6 h-6" />
-                  <span className="text-base font-semibold">{t('dashboard.metrics.recordPayments')}</span>
-                </div>
-              </button>
+                {t('dashboard.metrics.recordPayments')}
+              </Button>
             </div>
           )}
           {dashboardStats.totalStudents === 0 && !isLoading && (

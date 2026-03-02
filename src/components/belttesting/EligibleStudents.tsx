@@ -2,6 +2,7 @@ import { Award, CheckCircle, Clock, TrendingUp, Target } from 'lucide-react';
 import { getBeltColor } from '../../lib/beltTestingUtils';
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
+import { Button } from '../ui/Button';
 import type { EligibleStudent } from '../../lib/beltTestingUtils';
 
 interface EligibleStudentsProps {
@@ -108,10 +109,13 @@ export default function EligibleStudents({ students }: EligibleStudentsProps) {
                           </div>
                         </div>
 
-                        <button className="btn btn-success gap-2 shadow-lg hover:shadow-xl btn-lg">
-                          <CheckCircle className="w-5 h-5" />
+                        <Button
+                          variant="success"
+                          size="lg"
+                          leftIcon={<CheckCircle className="w-5 h-5" />}
+                        >
                           {label(t, 'beltTesting.actions.schedule', 'Schedule Test')}
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>

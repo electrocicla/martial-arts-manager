@@ -1,6 +1,7 @@
 import { Calendar, Users, MapPin, User, Clock, Award, Eye, Edit2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
+import { Button } from '../ui/Button';
 import type { UpcomingTest } from '../../lib/beltTestingUtils';
 
 interface UpcomingTestsProps {
@@ -156,15 +157,21 @@ export default function UpcomingTests({ tests }: UpcomingTestsProps) {
 
                     {/* Right Section - Actions */}
                     <div className="flex lg:flex-col gap-3 justify-end lg:justify-start lg:min-w-[140px]">
-                      <button className="btn btn-primary gap-2 flex-1 lg:flex-none shadow-lg hover:shadow-xl">
-                        <Eye className="w-5 h-5" />
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        leftIcon={<Eye className="w-5 h-5" />}
+                      >
                         {label(t, 'beltTesting.actions.view', 'View Details')}
-                      </button>
+                      </Button>
                       {isUpcoming && (
-                        <button className="btn btn-outline gap-2 flex-1 lg:flex-none shadow-md hover:shadow-lg">
-                          <Edit2 className="w-5 h-5" />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          leftIcon={<Edit2 className="w-5 h-5" />}
+                        >
                           {label(t, 'beltTesting.actions.edit', 'Edit Test')}
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, UserPlus, Search, Award, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
+import { Button } from '../ui/Button';
 
 interface EligibleStudent {
   id: string;
@@ -266,32 +267,28 @@ export default function AssignStudentModal({
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-base-300">
-          <button
+          <Button
             type="button"
-            className="btn btn-ghost"
-            onClick={onClose}
+            variant="secondary"
+            size="md"
             disabled={loading}
+            onClick={onClose}
           >
             {label(t, 'common.cancel', 'Cancel')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="btn btn-primary gap-2"
-            onClick={handleAssign}
+            variant="primary"
+            size="md"
+            isLoading={loading}
             disabled={!selectedStudent || isFull || loading}
+            leftIcon={!loading ? <UserPlus className="w-5 h-5" /> : undefined}
+            onClick={handleAssign}
           >
-            {loading ? (
-              <>
-                <span className="loading loading-spinner loading-sm"></span>
-                {label(t, 'common.assigning', 'Assigning...')}
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-5 h-5" />
-                {label(t, 'beltTesting.assignModal.assignButton', 'Assign Student')}
-              </>
-            )}
-          </button>
+            {loading
+              ? label(t, 'common.assigning', 'Assigning...')
+              : label(t, 'beltTesting.assignModal.assignButton', 'Assign Student')}
+          </Button>
         </div>
       </div>
       <div className="modal-backdrop" onClick={onClose}>

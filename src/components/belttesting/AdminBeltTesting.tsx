@@ -7,6 +7,8 @@ import { useState } from 'react';
 import { Award, Calendar, Users, Plus, Edit, Trash2, UserPlus, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
+import { Button } from '../ui/Button';
+import { TabButton } from '../ui/TabButton';
 import CreateExamModal from './CreateExamModal';
 import AssignStudentModal from './AssignStudentModal';
 
@@ -103,13 +105,14 @@ export default function AdminBeltTesting({
                 </p>
               </div>
             </div>
-            <button
+            <Button
+              variant="primary"
+              size="lg"
+              leftIcon={<Plus className="w-6 h-6" />}
               onClick={() => setShowCreateModal(true)}
-              className="btn btn-primary btn-lg gap-3 shadow-lg hover:shadow-xl transition-all"
             >
-              <Plus className="w-6 h-6" />
               {label(t, 'beltTesting.admin.createExam', 'Create Exam')}
-            </button>
+            </Button>
           </div>
 
           {/* Modern Stats Cards */}
@@ -150,29 +153,23 @@ export default function AdminBeltTesting({
 
           {/* Modern Tabs */}
           <div className="flex gap-2 mt-8">
-            <button
-              className={`btn gap-2 flex-1 md:flex-none transition-all ${
-                selectedTab === 'exams'
-                  ? 'btn-primary shadow-lg'
-                  : 'btn-ghost bg-base-200 hover:bg-base-300'
-              }`}
+            <TabButton
+              isActive={selectedTab === 'exams'}
+              icon={<Calendar className="w-5 h-5" />}
               onClick={() => setSelectedTab('exams')}
+              accent="red"
             >
-              <Calendar className="w-5 h-5" />
               {label(t, 'beltTesting.admin.exams', 'Exams')}
-            </button>
-            <button
-              className={`btn gap-2 flex-1 md:flex-none transition-all ${
-                selectedTab === 'students'
-                  ? 'btn-primary shadow-lg'
-                  : 'btn-ghost bg-base-200 hover:bg-base-300'
-              }`}
+            </TabButton>
+            <TabButton
+              isActive={selectedTab === 'students'}
+              icon={<Users className="w-5 h-5" />}
               onClick={() => setSelectedTab('students')}
+              accent="red"
             >
-              <Users className="w-5 h-5" />
               {label(t, 'beltTesting.admin.eligibleStudents', 'Eligible Students')}
-              <div className="badge badge-success badge-sm">{readyStudents.length}</div>
-            </button>
+              <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold">{readyStudents.length}</span>
+            </TabButton>
           </div>
         </div>
       </div>
@@ -279,28 +276,31 @@ export default function AdminBeltTesting({
 
                             {/* Right Section - Actions */}
                             <div className="flex lg:flex-col gap-3 justify-end">
-                              <button
-                                onClick={() => setAssigningExam(exam)}
-                                className="btn btn-success gap-2 flex-1 lg:flex-none shadow-md hover:shadow-lg"
+                              <Button
+                                variant="success"
+                                size="sm"
+                                leftIcon={<UserPlus className="w-5 h-5" />}
                                 disabled={availableSpots === 0}
+                                onClick={() => setAssigningExam(exam)}
                               >
-                                <UserPlus className="w-5 h-5" />
                                 {label(t, 'beltTesting.admin.assignStudents', 'Assign')}
-                              </button>
-                              <button
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                leftIcon={<Edit className="w-5 h-5" />}
                                 onClick={() => setEditingExam(exam)}
-                                className="btn btn-info gap-2 flex-1 lg:flex-none shadow-md hover:shadow-lg"
                               >
-                                <Edit className="w-5 h-5" />
                                 {label(t, 'beltTesting.admin.edit', 'Edit')}
-                              </button>
-                              <button
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                leftIcon={<Trash2 className="w-5 h-5" />}
                                 onClick={() => handleDeleteExam(exam.id)}
-                                className="btn btn-error gap-2 flex-1 lg:flex-none shadow-md hover:shadow-lg"
                               >
-                                <Trash2 className="w-5 h-5" />
                                 {label(t, 'beltTesting.admin.delete', 'Delete')}
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -421,8 +421,10 @@ export default function AdminBeltTesting({
                                 <span className="text-lg font-bold text-success">{student.targetBelt}</span>
                               </div>
                             </div>
-                            <button
-                              className="btn btn-success gap-2 shadow-lg hover:shadow-xl"
+                            <Button
+                              variant="success"
+                              size="sm"
+                              leftIcon={<UserPlus className="w-5 h-5" />}
                               onClick={() => {
                                 // Find a suitable exam for this student
                                 const suitableExam = scheduledExams.find(
@@ -435,9 +437,8 @@ export default function AdminBeltTesting({
                                 }
                               }}
                             >
-                              <UserPlus className="w-5 h-5" />
                               {label(t, 'beltTesting.admin.assignToExam', 'Assign')}
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       </div>

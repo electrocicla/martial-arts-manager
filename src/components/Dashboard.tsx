@@ -1,6 +1,7 @@
 import { AlertCircle, ArrowRight, QrCode } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Button } from './ui/Button';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useGreeting } from '../hooks/useGreeting';
 import { useDashboardStats } from '../hooks/useDashboardStats';
@@ -40,12 +41,13 @@ export default function Dashboard() {
             <AlertCircle className="w-12 h-12 text-error mx-auto mb-4" />
             <h2 className="card-title text-error justify-center mb-2">Dashboard Error</h2>
             <p className="text-error/80 mb-4">{error}</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="btn btn-error"
+            <Button
+              variant="danger"
+              size="md"
+              onClick={() => window.location.reload()}
             >
               Retry
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -82,14 +84,14 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  size="md"
+                  rightIcon={<ArrowRight className="h-4 w-4" />}
                   onClick={() => navigate('/attendance')}
-                  className="btn btn-primary w-full sm:w-auto gap-2 rounded-xl px-5 min-h-0 h-11 transition-all duration-200 hover:-translate-y-0.5"
                 >
                   {t('attendance.openAttendance', 'Open Attendance')}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
           </div>

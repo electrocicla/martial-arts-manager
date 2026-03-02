@@ -3,6 +3,7 @@ import { useGreeting } from '../../hooks/useGreeting';
 import { parseLocalDate } from '../../lib/utils';
 import DashboardHeader from './DashboardHeader';
 import { Card, CardHeader, CardContent } from '../ui/Card';
+import { Button } from '../ui/Button';
 import { Calendar, CreditCard, User, QrCode, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -31,9 +32,9 @@ export default function StudentDashboard() {
           <div className="card-body text-center">
             <h2 className="card-title text-error justify-center">{t('common.error')}</h2>
             <p className="text-error/80">{error}</p>
-            <button onClick={() => window.location.reload()} className="btn btn-error mt-4">
+            <Button variant="danger" size="md" onClick={() => window.location.reload()}>
               {t('common.retry') || 'Retry'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
