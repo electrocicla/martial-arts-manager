@@ -6,6 +6,7 @@ import { getBeltColor } from '../lib/studentUtils';
 import { DISCIPLINES, BELT_RANKINGS } from '../lib/constants';
 import { StudentFormModal, StudentDetailsModal, StudentEditModal } from './students';
 import { useTranslation } from 'react-i18next';
+import { Button } from './ui/Button';
 
 export default function StudentManager() {
   const { t } = useTranslation();
@@ -134,21 +135,20 @@ export default function StudentManager() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3">
-              <button className="inline-flex items-center px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
-                <Download className="w-4 h-4 mr-2 flex-shrink-0" />
+              <Button variant="secondary" size="sm" leftIcon={<Download className="w-4 h-4" />}>
                 <span className="whitespace-nowrap">{t('students.actions.exportData')}</span>
-              </button>
-              <button className="inline-flex items-center px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
-                <Upload className="w-4 h-4 mr-2 flex-shrink-0" />
+              </Button>
+              <Button variant="secondary" size="sm" leftIcon={<Upload className="w-4 h-4" />}>
                 <span className="whitespace-nowrap">{t('students.actions.importStudents')}</span>
-              </button>
-              <button 
-                className="inline-flex items-center px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<UserPlus className="w-4 h-4" />}
                 onClick={() => setShowAddModal(true)}
               >
-                <UserPlus className="w-4 h-4 mr-2 flex-shrink-0" />
                 <span className="whitespace-nowrap">{t('students.actions.addNewStudent')}</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -242,27 +242,21 @@ export default function StudentManager() {
               </select>
 
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-900/50 border border-gray-600 rounded-lg p-1">
-                                <button 
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    viewMode === 'grid' 
-                      ? 'bg-red-600 text-white shadow-lg shadow-red-500/50' 
-                      : 'text-gray-400 hover:text-white'
-                  }`}
+              <div className="flex bg-gray-900/50 border border-gray-700 rounded-xl p-1 gap-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+                  size="sm"
                   onClick={() => setViewMode('grid')}
                 >
                   {t('students.viewModes.grid')}
-                </button>
-                <button 
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    viewMode === 'list' 
-                      ? 'bg-red-600 text-white shadow-lg shadow-red-500/50' 
-                      : 'text-gray-400 hover:text-white'
-                  }`}
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                  size="sm"
                   onClick={() => setViewMode('list')}
                 >
                   {t('students.viewModes.list')}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -346,21 +340,22 @@ export default function StudentManager() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
-                  <button 
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    leftIcon={<Eye className="w-4 h-4" />}
                     onClick={() => setSelectedStudent(student)}
-                    className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm shadow-lg hover:shadow-blue-500/50 transition-all duration-200 flex items-center justify-center gap-2 group/btn"
                   >
-                    <Eye className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
-                    <span>Ver</span>
-                  </button>
-                  
-                  <button 
+                    Ver
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<Edit className="w-4 h-4" />}
                     onClick={() => setEditingStudent(student)}
-                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-medium text-sm shadow-lg hover:shadow-purple-500/50 transition-all duration-200 flex items-center justify-center gap-2 group/btn"
                   >
-                    <Edit className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
-                    <span>Editar</span>
-                  </button>
+                    Editar
+                  </Button>
                 </div>
 
                 {/* Hover Overlay Effect */}
@@ -473,23 +468,24 @@ export default function StudentManager() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex gap-2 justify-end">
-                          <button 
-                            onClick={() => setSelectedStudent(student)}
-                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium shadow-lg hover:shadow-blue-500/50 transition-all duration-200 flex items-center gap-1.5"
+                          <Button
+                            variant="secondary"
+                            size="xs"
+                            leftIcon={<Eye className="w-3.5 h-3.5" />}
                             title={t('students.actions.viewDetails')}
+                            onClick={() => setSelectedStudent(student)}
                           >
-                            <Eye className="w-3.5 h-3.5" />
                             <span className="hidden sm:inline">{t('students.actions.view')}</span>
-                          </button>
-                          
-                          <button 
-                            onClick={() => setEditingStudent(student)}
-                            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium shadow-lg hover:shadow-purple-500/50 transition-all duration-200 flex items-center gap-1.5"
+                          </Button>
+                          <Button
+                            variant="primary"
+                            size="xs"
+                            leftIcon={<Edit className="w-3.5 h-3.5" />}
                             title={t('students.actions.editStudent')}
+                            onClick={() => setEditingStudent(student)}
                           >
-                            <Edit className="w-3.5 h-3.5" />
                             <span className="hidden sm:inline">{t('students.actions.edit')}</span>
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>

@@ -1,6 +1,7 @@
 import { Database, AlertCircle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import useSettings from '../../hooks/useSettings';
+import { Button } from '../ui/Button';
 
 export default function DataBackupSettings() {
   const { settings, saveSection, isLoading } = useSettings();
@@ -40,7 +41,7 @@ export default function DataBackupSettings() {
       <header className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Data & Backup</h2>
         <div className="flex items-center gap-2">
-          <button onClick={handleSave} disabled={isLoading} className="px-3 py-1 rounded-md bg-sky-600 text-white text-sm inline-flex items-center gap-2">Save</button>
+          <Button variant="primary" size="sm" onClick={handleSave} disabled={isLoading} isLoading={isLoading}>Save</Button>
         </div>
       </header>
 
@@ -69,18 +70,18 @@ export default function DataBackupSettings() {
           <h3 className="text-sm font-semibold mb-2">Manual backup</h3>
           <p className="text-sm text-slate-500 mb-3">Last backup: {lastBackup ?? 'Never'}</p>
           <div className="flex flex-wrap gap-3">
-            <button className="px-3 py-2 rounded-md border text-sm inline-flex items-center gap-2"><Database className="w-4 h-4" />Create backup</button>
-            <button className="px-3 py-2 rounded-md border text-sm">Download backup</button>
+            <Button variant="secondary" size="sm" leftIcon={<Database className="w-4 h-4" />}>Create backup</Button>
+            <Button variant="outline" size="sm">Download backup</Button>
           </div>
         </div>
 
         <div>
           <h3 className="text-sm font-semibold mb-2">Data export</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button className="px-3 py-2 rounded-md border text-sm">Export students (CSV)</button>
-            <button className="px-3 py-2 rounded-md border text-sm">Export classes (CSV)</button>
-            <button className="px-3 py-2 rounded-md border text-sm">Export payments (CSV)</button>
-            <button className="px-3 py-2 rounded-md border text-sm">Export all data (ZIP)</button>
+            <Button variant="secondary" size="sm">Export students (CSV)</Button>
+            <Button variant="secondary" size="sm">Export classes (CSV)</Button>
+            <Button variant="secondary" size="sm">Export payments (CSV)</Button>
+            <Button variant="secondary" size="sm">Export all data (ZIP)</Button>
           </div>
         </div>
 
@@ -93,7 +94,7 @@ export default function DataBackupSettings() {
             </div>
           </div>
           <div className="mt-3">
-            <button className="px-3 py-2 rounded-md bg-rose-600 text-white text-sm">Delete all data</button>
+            <Button variant="danger" size="sm">Delete all data</Button>
           </div>
         </div>
       </div>

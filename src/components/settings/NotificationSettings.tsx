@@ -1,6 +1,7 @@
 import useSettings from '../../hooks/useSettings';
 import { useState } from 'react';
 import { Save } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 export default function NotificationSettings() {
   const [notifications, setNotifications] = useState({
@@ -24,7 +25,7 @@ export default function NotificationSettings() {
       <header className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-white">Notification Preferences</h2>
         <div>
-          <button className="px-3 py-1.5 rounded-md bg-red-600 text-white text-sm hover:bg-red-700">Save</button>
+          <Button variant="primary" size="sm" leftIcon={<Save className="w-4 h-4" />} onClick={handleSave}>Save</Button>
         </div>
       </header>
 
@@ -54,8 +55,10 @@ export default function NotificationSettings() {
         </div>
 
         <div className="flex justify-end gap-3">
-          <button className="px-3 py-1 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-700 text-sm">Cancel</button>
-          <button onClick={handleSave} className="px-3 py-1.5 rounded-md bg-red-600 text-white text-sm inline-flex items-center gap-2 hover:bg-red-700"><Save className="w-4 h-4" />Save Preferences</button>
+          <Button variant="secondary" size="sm">Cancel</Button>
+          <Button variant="primary" size="sm" leftIcon={<Save className="w-4 h-4" />} onClick={handleSave}>
+            Save Preferences
+          </Button>
         </div>
       </div>
     </section>

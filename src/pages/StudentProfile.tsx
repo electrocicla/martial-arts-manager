@@ -247,12 +247,13 @@ export default function StudentProfile() {
             <AlertCircle className="w-12 h-12 text-error mx-auto mb-4" />
             <h2 className="card-title text-error justify-center mb-2">{t('profile.errorLoadingProfile', 'Error Loading Profile')}</h2>
             <p className="text-error/80 mb-4">{loadError}</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="btn btn-error"
+            <Button
+              variant="danger"
+              size="md"
+              onClick={() => window.location.reload()}
             >
               {t('profile.retry', 'Retry')}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -325,7 +326,7 @@ export default function StudentProfile() {
                           <button
                             onClick={handleAvatarClick}
                             disabled={avatarUploading}
-                            className="absolute bottom-0 right-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white hover:bg-primary-focus transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="absolute bottom-0 right-0 w-10 h-10 bg-red-600 hover:bg-red-500 rounded-full flex items-center justify-center text-white transition-colors duration-200 shadow-lg shadow-red-900/40 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Camera className="w-5 h-5" />
                           </button>
@@ -485,24 +486,26 @@ export default function StudentProfile() {
                                     </select>
                                   </div>
                                   {disciplines.length > 1 && (
-                                    <button
+                                    <Button
                                       type="button"
+                                      variant="danger"
+                                      size="sm"
                                       onClick={() => removeDiscipline(disc.id)}
-                                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
                                     >
                                       {t('profile.remove', 'Remove')}
-                                    </button>
+                                    </Button>
                                   )}
                                 </div>
                               ))}
-                              <button
+                              <Button
                                 type="button"
+                                variant="primary"
+                                size="md"
+                                leftIcon={<span aria-hidden="true">+</span>}
                                 onClick={addDiscipline}
-                                className="px-6 py-3 bg-gradient-to-r from-primary to-secondary hover:from-primary-focus hover:to-secondary-focus text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg flex items-center gap-2"
                               >
-                                <span>+</span>
                                 {t('profile.addDiscipline', 'Add Discipline')}
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         </div>

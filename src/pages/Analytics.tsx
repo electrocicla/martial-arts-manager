@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TabButton } from '../components/ui/TabButton';
 import { AnalyticsHeader, KPICards, AnalyticsOverview } from '../components/analytics';
 import RevenueAnalytics from '../components/analytics/RevenueAnalytics';
 import StudentAnalytics from '../components/analytics/StudentAnalytics';
@@ -46,54 +47,34 @@ export default function Analytics() {
             {/* Enhanced Tabs */}
             <div className="bg-gray-900 rounded-xl p-1.5 shadow-xl border border-gray-800" role="tablist" aria-label={t('analytics.dashboardTitle')}>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                <button
-                  role="tab"
-                  aria-pressed={selectedMetric === 'overview'}
-                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 motion-safe:transition-all ${
-                    selectedMetric === 'overview'
-                      ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-lg shadow-red-900/50'
-                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
-                  }`}
+                <TabButton
+                  isActive={selectedMetric === 'overview'}
                   onClick={() => setSelectedMetric('overview')}
+                  accent="red"
                 >
                   {t('analytics.tabs.overview')}
-                </button>
-                <button
-                  role="tab"
-                  aria-pressed={selectedMetric === 'revenue'}
-                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 motion-safe:transition-all ${
-                    selectedMetric === 'revenue'
-                      ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-lg shadow-red-900/50'
-                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
-                  }`}
+                </TabButton>
+                <TabButton
+                  isActive={selectedMetric === 'revenue'}
                   onClick={() => setSelectedMetric('revenue')}
+                  accent="red"
                 >
                   {t('analytics.tabs.revenue')}
-                </button>
-                <button
-                  role="tab"
-                  aria-pressed={selectedMetric === 'students'}
-                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 motion-safe:transition-all ${
-                    selectedMetric === 'students'
-                      ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-lg shadow-red-900/50'
-                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
-                  }`}
+                </TabButton>
+                <TabButton
+                  isActive={selectedMetric === 'students'}
                   onClick={() => setSelectedMetric('students')}
+                  accent="red"
                 >
                   {t('analytics.tabs.students')}
-                </button>
-                <button
-                  role="tab"
-                  aria-pressed={selectedMetric === 'classes'}
-                  className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 motion-safe:transition-all ${
-                    selectedMetric === 'classes'
-                      ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-lg shadow-red-900/50'
-                      : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
-                  }`}
+                </TabButton>
+                <TabButton
+                  isActive={selectedMetric === 'classes'}
                   onClick={() => setSelectedMetric('classes')}
+                  accent="red"
                 >
                   {t('analytics.tabs.classes')}
-                </button>
+                </TabButton>
               </div>
             </div>
 

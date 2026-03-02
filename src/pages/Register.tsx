@@ -112,7 +112,7 @@ export default function Register() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="p-1 rounded-md text-gray-400 hover:text-red-400 focus:outline-none focus:ring-1 focus:ring-red-500/50 transition-colors duration-200"
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -136,7 +136,7 @@ export default function Register() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="p-1 rounded-md text-gray-400 hover:text-red-400 focus:outline-none focus:ring-1 focus:ring-red-500/50 transition-colors duration-200"
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="w-4 h-4" />

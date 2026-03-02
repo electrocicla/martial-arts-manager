@@ -1,6 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 
 import { useState } from 'react';
+import { Button } from './Button';
 
 interface Props {
   isOpen: boolean;
@@ -19,64 +20,68 @@ export default function ConfirmModal({ isOpen, title = 'Confirm', message = '', 
 
   if (!isOpen) return null;
 
+  const typingMatch = Array.isArray(requireTyping) && requireTyping.length > 0
+    ? requireTyping.map(s => s.toLowerCase()).includes(typed.trim().toLowerCase())
+    : true;
+
+  const actionRow = (
+    <div className="flex gap-3 mt-6">
+      <Button
+        variant="secondary"
+        size="md"
+        fullWidth
+        onClick={onCancel}
+        disabled={isProcessing}
+        type="button"
+      >
+        {cancelLabel}
+      </Button>
+      <Button
+        variant="danger"
+        size="md"
+        fullWidth
+        onClick={() => void onConfirm()}
+        disabled={isProcessing || !typingMatch}
+        isLoading={isProcessing}
+        type="button"
+      >
+        {!isProcessing && confirmLabel}
+      </Button>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onCancel} />
 
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
-        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full">
-          <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
+      <div className="relative bg-gray-900 border border-gray-700/70 rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-900/30 border border-red-700/30 rounded-full">
+          <AlertTriangle className="w-8 h-8 text-red-400" />
         </div>
 
-        <h3 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-2">{title}</h3>
-        <p className="text-center text-gray-600 dark:text-gray-300 mb-6">{message}</p>
+        <h3 className="text-xl font-bold text-center text-white mb-2">{title}</h3>
+        <p className="text-center text-gray-400 text-sm leading-relaxed">{message}</p>
 
-        {/* Actions - if requireTyping is provided show input and require typed confirmation */}
         {Array.isArray(requireTyping) && requireTyping.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4 mt-4">
             <input
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
-              placeholder={requireTyping.length > 1 ? `Escribe '${requireTyping[0]}' o '${requireTyping[1]}'` : `Escribe '${requireTyping[0]}'`}
-              className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-red-500 transition-all duration-200"
+              placeholder={
+                requireTyping.length > 1
+                  ? `Type '${requireTyping[0]}' or '${requireTyping[1]}'`
+                  : `Type '${requireTyping[0]}' to confirm`
+              }
+              className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
               autoFocus
             />
-            <div className="flex gap-3">
-              <button
-                onClick={onCancel}
-                className="flex-1 px-6 py-3 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 focus:ring-2 focus:ring-gray-500 transition-all duration-200 font-medium"
-                disabled={isProcessing}
-              >
-                {cancelLabel}
-              </button>
-              <button
-                onClick={() => void onConfirm()}
-                disabled={isProcessing || !requireTyping.map(s => s.toLowerCase()).includes(typed.trim().toLowerCase())}
-                className="flex-1 px-6 py-3 text-white bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg focus:ring-2 focus:ring-red-500 transition-all duration-200 font-medium"
-              >
-                {isProcessing ? 'Procesando...' : confirmLabel}
-              </button>
-            </div>
+            {actionRow}
           </div>
         ) : (
-          <div className="flex gap-3">
-            <button
-              onClick={onCancel}
-              className="flex-1 px-6 py-3 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 focus:ring-2 focus:ring-gray-500 transition-all duration-200 font-medium"
-              disabled={isProcessing}
-            >
-              {cancelLabel}
-            </button>
-            <button
-              onClick={() => void onConfirm()}
-              disabled={isProcessing}
-              className="flex-1 px-6 py-3 text-white bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg focus:ring-2 focus:ring-red-500 transition-all duration-200 font-medium"
-            >
-              {isProcessing ? 'Procesando...' : confirmLabel}
-            </button>
-          </div>
+          actionRow
         )}
       </div>
     </div>
   );
 }
+

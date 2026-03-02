@@ -1,6 +1,7 @@
 import { Save, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 import useSettings from '../../hooks/useSettings';
+import { Button } from '../ui/Button';
 
 export default function PaymentSettings() {
   const { saveSection } = useSettings();
@@ -29,8 +30,8 @@ export default function PaymentSettings() {
       <header className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Payment Configuration</h2>
         <div className="flex items-center gap-2">
-          <button className="px-3 py-1 rounded-md border text-sm">Test</button>
-          <button onClick={handleSave} className="px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm inline-flex items-center gap-2"><Save className="w-4 h-4" />Save</button>
+          <Button variant="secondary" size="sm">Test</Button>
+          <Button variant="primary" size="sm" leftIcon={<Save className="w-4 h-4" />} onClick={handleSave}>Save</Button>
         </div>
       </header>
 

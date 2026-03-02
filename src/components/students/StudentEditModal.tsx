@@ -5,6 +5,8 @@ import { useClassMetadata } from '../../hooks/useClassMetadata';
 import { useTranslation } from 'react-i18next';
 import { BELT_RANKINGS } from '../../lib/constants';
 import { DISCIPLINES } from '../../lib/constants';
+import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
 
 interface StudentEditModalProps {
   isOpen: boolean;
@@ -148,12 +150,15 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
                 </p>
               </div>
             </div>
-            <button
+            <IconButton
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              variant="ghost"
+              size="sm"
+              shape="square"
+              aria-label="Close"
             >
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
+              <X className="w-5 h-5" />
+            </IconButton>
           </div>
         </div>
 
@@ -404,24 +409,21 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-700/50 px-6 py-4 border-t border-gray-200 dark:border-gray-600 rounded-b-2xl">
-          <div className="flex justify-end space-x-3">
-            <button
-              type="button"
-              className="px-6 py-2.5 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-500 focus:ring-2 focus:ring-gray-500 transition-all duration-200 font-medium"
-              onClick={onClose}
-            >
+        <div className="sticky bottom-0 bg-gray-800/90 backdrop-blur-sm px-6 py-4 border-t border-gray-700 rounded-b-2xl">
+          <div className="flex justify-end gap-3">
+            <Button variant="secondary" size="md" type="button" onClick={onClose}>
               {t('common.cancel') || 'Cancel'}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
               type="button"
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              leftIcon={<UserPlus className="w-4 h-4" />}
               onClick={handleSubmit}
               disabled={!editStudent.name || !editStudent.email}
             >
-              <UserPlus className="w-4 h-4" />
-              <span>{t('students.updateStudent') || 'Update Student'}</span>
-            </button>
+              {t('students.updateStudent') || 'Update Student'}
+            </Button>
           </div>
         </div>
       </div>

@@ -2,6 +2,12 @@
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
 
+export { IconButton } from './IconButton';
+export type { IconButtonProps } from './IconButton';
+
+export { TabButton } from './TabButton';
+export type { TabButtonProps } from './TabButton';
+
 export { Card, CardHeader, CardContent, CardFooter } from './Card';
 export type { CardProps } from './Card';
 

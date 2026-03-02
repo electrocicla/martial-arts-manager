@@ -5,6 +5,7 @@ import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
 import BottomSlidingMenu from './components/layout/BottomSlidingMenu';
 import AndroidApkInstallPrompt from './components/mobile/AndroidApkInstallPrompt';
+import PullToRefresh from './components/mobile/PullToRefresh';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/ui/ToastProvider';
 
@@ -45,6 +46,7 @@ function AppContent() {
   }, []);
 
   return (
+    <PullToRefresh>
     <div className="min-h-screen bg-gray-900">
       <AndroidApkInstallPrompt context="dashboard" />
       <Sidebar />
@@ -69,6 +71,7 @@ function AppContent() {
       </main>
       <BottomSlidingMenu />
     </div>
+    </PullToRefresh>
   );
 }
 

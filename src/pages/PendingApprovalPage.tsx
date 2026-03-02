@@ -6,6 +6,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { ArrowLeft, Clock, Info, Mail, RefreshCw } from 'lucide-react';
+import { Button } from '../components/ui/Button';
 
 export default function PendingApprovalPage() {
   const navigate = useNavigate();
@@ -74,21 +75,25 @@ export default function PendingApprovalPage() {
 
           {/* Actions */}
           <div className="mt-6 space-y-3">
-            <button
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              leftIcon={<ArrowLeft className="h-5 w-5" />}
               onClick={handleBackToLogin}
-              className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-colors flex items-center justify-center gap-2"
             >
-              <ArrowLeft className="h-5 w-5" />
               Back to login
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="secondary"
+              size="lg"
+              fullWidth
+              leftIcon={<RefreshCw className="h-5 w-5" />}
               onClick={() => window.location.reload()}
-              className="w-full px-4 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white font-medium transition-colors flex items-center justify-center gap-2"
             >
-              <RefreshCw className="h-5 w-5" />
               Check status
-            </button>
+            </Button>
           </div>
         </div>
 

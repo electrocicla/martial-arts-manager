@@ -4,6 +4,7 @@ import useSettings from '../../hooks/useSettings';
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { prepareAvatarFile } from '../../lib/avatarUpload';
+import { Button } from '../ui/Button';
 
 export default function ProfileSettings() {
   const { user, refreshAuth, accessToken } = useAuth();
@@ -142,14 +143,15 @@ export default function ProfileSettings() {
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
         <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">{t('settings.profile.title')}</h2>
         <div className="flex items-center gap-3">
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="sm"
+            leftIcon={<Save className="w-4 h-4" />}
             onClick={handleSave}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-400"
           >
-            <Save className="w-4 h-4" />
             {t('common.save')}
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -168,14 +170,17 @@ export default function ProfileSettings() {
               <div className="flex items-center gap-3">
                 {user?.role === 'student' ? (
                   <>
-                    <button 
+                  <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      leftIcon={<Camera className="w-4 h-4" />}
                       onClick={handleAvatarClick}
                       disabled={avatarUploading}
-                      className="px-3 py-1 rounded-md border border-slate-200 dark:border-slate-700 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      isLoading={avatarUploading}
                     >
-                      <Camera className="w-4 h-4" />
                       {avatarUploading ? t('common.uploading') : t('settings.profile.changePhoto')}
-                    </button>
+                    </Button>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -227,11 +232,10 @@ export default function ProfileSettings() {
           </label>
 
           <div className="sm:col-span-2 flex justify-end gap-3">
-            <button type="button" className="px-3 py-1 rounded-md text-sm border">{t('settings.profile.cancel')}</button>
-            <button type="button" onClick={handleSave} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700">
-              <Save className="w-4 h-4" />
+            <Button type="button" variant="secondary" size="sm">{t('settings.profile.cancel')}</Button>
+            <Button type="button" variant="primary" size="sm" leftIcon={<Save className="w-4 h-4" />} onClick={handleSave}>
               {t('settings.profile.save')}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

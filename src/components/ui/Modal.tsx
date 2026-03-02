@@ -1,5 +1,7 @@
 import { forwardRef } from 'react';
 import type { ReactNode, HTMLAttributes } from 'react';
+import { X } from 'lucide-react';
+import { IconButton } from './IconButton';
 
 export interface ModalProps extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean;
@@ -89,22 +91,15 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
               )}
               
               {showCloseButton && (
-                <button
-                  type="button"
+                <IconButton
                   onClick={onClose}
-                  className="
-                    rounded-lg p-2 text-gray-400 transition-colors duration-200
-                    hover:bg-gray-700 hover:text-gray-300 focus:outline-none
-                    focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-                    dark:hover:bg-gray-700 dark:hover:text-gray-300
-                    dark:focus:ring-indigo-400 dark:focus:ring-offset-gray-800
-                  "
+                  variant="ghost"
+                  size="sm"
+                  shape="circle"
                   aria-label="Close modal"
                 >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                  <X className="w-4 h-4" />
+                </IconButton>
               )}
             </div>
           )}

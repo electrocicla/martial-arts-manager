@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import useSettings from '../../hooks/useSettings';
 import { Save } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 export default function DojoSettings() {
   const { saveSection } = useSettings();
@@ -36,7 +37,7 @@ export default function DojoSettings() {
       <header className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Dojo Information</h2>
         <div className="flex items-center gap-2">
-          <button className="px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm hover:bg-sky-700">Save</button>
+          <Button variant="primary" size="sm" leftIcon={<Save className="w-4 h-4" />} onClick={async () => { await saveSection('dojo', dojoInfo); }}>Save</Button>
         </div>
       </header>
 
@@ -80,10 +81,13 @@ export default function DojoSettings() {
                 </div>
                 <div className="flex items-center gap-2">
                   <input type="number" defaultValue={belt.classes} className="w-20 rounded-md border px-2 py-1 text-sm" />
-                  <button className="text-sm text-sky-600">Edit</button>
+                  <button className="text-sm text-red-400 hover:text-red-300 font-medium transition-colors">Edit</button>
                 </div>
               </div>
             ))}
+          </div>
+          <div className="mt-3">
+            <Button variant="outline" size="sm">Add Class Type</Button>
           </div>
         </div>
 
@@ -93,23 +97,20 @@ export default function DojoSettings() {
             {classTypes.map((cls) => (
               <div key={cls.name} className="flex items-center justify-between">
                 <div className="text-sm font-medium">{cls.name}</div>
-                <div className="text-sm text-slate-600">{cls.duration} min • ${cls.price}</div>
+                <div className="text-sm text-slate-600 dark:text-slate-400">{cls.duration} min • ${cls.price}</div>
                 <div>
-                  <button className="text-sm text-sky-600">Edit</button>
+                  <button className="text-sm text-red-400 hover:text-red-300 font-medium transition-colors">Edit</button>
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-3">
-            <button className="px-3 py-1 rounded-md border text-sm">Add Class Type</button>
-          </div>
         </div>
 
         <div className="flex justify-end gap-3">
-          <button className="px-3 py-1 rounded-md border text-sm">Cancel</button>
-          <button className="px-3 py-1.5 rounded-md bg-sky-600 text-white text-sm" onClick={async () => { await saveSection('dojo', dojoInfo); }}>
-            <Save className="w-4 h-4 inline-block mr-1" /> Save Changes
-          </button>
+          <Button variant="secondary" size="sm">Cancel</Button>
+          <Button variant="primary" size="sm" leftIcon={<Save className="w-4 h-4" />} onClick={async () => { await saveSection('dojo', dojoInfo); }}>
+            Save Changes
+          </Button>
         </div>
       </div>
     </section>

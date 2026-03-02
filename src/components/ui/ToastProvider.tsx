@@ -1,6 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
+import { X } from 'lucide-react';
 import type { Toast } from './toastTypes';
 import { ToastContext } from './toastContext';
+import { IconButton } from './IconButton';
 
 export const ToastProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -47,7 +49,15 @@ export const ToastProvider: React.FC<React.PropsWithChildren> = ({ children }) =
                 <div className="text-xs text-gray-300 truncate">{t.message}</div>
               </div>
               <div className="flex-0">
-                <button onClick={() => dismiss(t.id)} className="btn btn-ghost btn-sm btn-circle">×</button>
+                <IconButton
+                  onClick={() => dismiss(t.id)}
+                  variant="ghost"
+                  size="xs"
+                  shape="circle"
+                  aria-label="Dismiss notification"
+                >
+                  <X className="w-3 h-3" />
+                </IconButton>
               </div>
             </div>
           ))}
