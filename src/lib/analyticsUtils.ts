@@ -1,5 +1,6 @@
 import type { Student, Payment, Class, Attendance } from '../types';
 import type { ComponentType } from 'react';
+import { parseLocalDate } from './utils';
 
 export interface KPIMetric {
   title: string;
@@ -48,13 +49,19 @@ export function calculateKPIs(
 ): KPIMetric[] {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-  const thisMonthPayments = payments.filter(p => new Date(p.date) >= monthStart);
-  const lastMonthPayments = payments.filter(p =>
-    new Date(p.date) >= lastMonthStart && new Date(p.date) <= lastMonthEnd
-  );
+  // Use parseLocalDate so "YYYY-MM-DD" strings are parsed as local midnight.
+  // Use nextMonthStart as upper bound so future-dated payments within the month count.
+  const thisMonthPayments = payments.filter(p => {
+    const d = parseLocalDate(p.date);
+    return d >= monthStart && d < nextMonthStart;
+  });
+  const lastMonthPayments = payments.filter(p => {
+    const d = parseLocalDate(p.date);
+    return d >= lastMonthStart && d < monthStart;
+  });
 
   const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
   const thisMonthRevenue = thisMonthPayments.reduce((sum, p) => sum + p.amount, 0);
@@ -193,21 +200,23 @@ export function calculateMonthlyTrends(
     const date = new Date();
     date.setMonth(date.getMonth() - i);
     const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    const nextMonthStart = new Date(date.getFullYear(), date.getMonth() + 1, 1);
 
+    // Use parseLocalDate so "YYYY-MM-DD" strings don't shift a day back due to UTC parsing.
+    // Use nextMonthStart as upper bound so future-dated payments within the month are included.
     const monthPayments = payments.filter(p => {
-      const paymentDate = new Date(p.date);
-      return paymentDate >= monthStart && paymentDate <= monthEnd;
+      const paymentDate = parseLocalDate(p.date);
+      return paymentDate >= monthStart && paymentDate < nextMonthStart;
     });
 
     const monthStudents = students.filter(s => {
-      const joinDate = new Date(s.join_date);
-      return joinDate >= monthStart && joinDate <= monthEnd;
+      const joinDate = parseLocalDate(s.join_date);
+      return joinDate >= monthStart && joinDate < nextMonthStart;
     });
 
     const monthAttendance = attendance.filter(a => {
       const attendanceDate = new Date(a.created_at);
-      return attendanceDate >= monthStart && attendanceDate <= monthEnd;
+      return attendanceDate >= monthStart && attendanceDate < nextMonthStart;
     });
 
     const attendanceRate = monthAttendance.length > 0 ?

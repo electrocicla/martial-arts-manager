@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { studentService, classService, paymentService } from '../services';
+import { parseLocalDate } from '../lib/utils';
 import type { Student, Payment, Class } from '../types/index';
 
 export interface DashboardStats {
@@ -72,10 +73,13 @@ export function useDashboardData(): DashboardData {
 
         // Calculate stats
         const now = new Date();
-        const today = now.toISOString().split('T')[0];
+        // Build today string using local parts to avoid UTC-date shift
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay());
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        // nextMonthStart as upper bound so future-dated payments within the month are included
+        const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
         const todayClasses = classes.filter(cls => {
           const classDate = cls.date;
@@ -83,17 +87,20 @@ export function useDashboardData(): DashboardData {
         });
 
         const thisWeekClasses = classes.filter(cls => {
-          const classDate = new Date(cls.date);
+          const classDate = parseLocalDate(cls.date);
           return classDate >= weekStart && classDate <= now;
         });
 
+        // Use parseLocalDate so "YYYY-MM-DD" strings are parsed as local midnight (not UTC),
+        // and use nextMonthStart as upper bound so admin-entered future dates within the
+        // current month are always counted in the monthly total.
         const thisMonthPayments = payments.filter(payment => {
-          const paymentDate = new Date(payment.date);
-          return paymentDate >= monthStart && paymentDate <= now;
+          const paymentDate = parseLocalDate(payment.date);
+          return paymentDate >= monthStart && paymentDate < nextMonthStart;
         });
 
         const thisMonthStudents = students.filter(student => {
-          const joinDate = new Date(student.join_date);
+          const joinDate = parseLocalDate(student.join_date);
           return joinDate >= monthStart && joinDate <= now;
         });
 
