@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, AlertCircle, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
+import { Button } from '../ui/Button';
 import type { ClassFormData, Discipline, Class } from '../../types/index';
 
 interface ClassFormModalProps {
@@ -367,13 +368,13 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                             <option value="">Cargando ubicaciones...</option>
                           )}
                         </select>
-                        <button
+                        <Button
                           type="button"
+                          variant="secondary"
+                          size="sm"
                           onClick={() => setShowCustomLocation(true)}
-                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg gap-2"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
+                          leftIcon={<Plus className="w-4 h-4" />}
+                        />
                       </div>
                     ) : (
                       <div className="flex gap-2">
@@ -384,16 +385,16 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                           value={customLocation}
                           onChange={(e) => setCustomLocation(e.target.value)}
                         />
-                        <button
+                        <Button
                           type="button"
+                          variant="secondary"
+                          size="sm"
                           onClick={() => {
                             setShowCustomLocation(false);
                             setCustomLocation('');
                           }}
-                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg gap-2"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                          leftIcon={<X className="w-4 h-4" />}
+                        />
                       </div>
                     )}
                   </div>
@@ -423,13 +424,13 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                             <option value="">Cargando instructores...</option>
                           )}
                         </select>
-                        <button
+                        <Button
                           type="button"
+                          variant="secondary"
+                          size="sm"
                           onClick={() => setShowCustomInstructor(true)}
-                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg gap-2"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
+                          leftIcon={<Plus className="w-4 h-4" />}
+                        />
                       </div>
                     ) : (
                       <div className="flex gap-2">
@@ -440,16 +441,16 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                           value={customInstructor}
                           onChange={(e) => setCustomInstructor(e.target.value)}
                         />
-                        <button
+                        <Button
                           type="button"
+                          variant="secondary"
+                          size="sm"
                           onClick={() => {
                             setShowCustomInstructor(false);
                             setCustomInstructor('');
                           }}
-                          className="btn btn-sm bg-gray-700 hover:bg-gray-600 border-gray-600 text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg gap-2"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                          leftIcon={<X className="w-4 h-4" />}
+                        />
                       </div>
                     )}
                   </div>
@@ -573,20 +574,17 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
 
         {/* Footer Actions */}
         <div className="bg-gray-900 px-6 py-4 border-t border-gray-700 flex justify-end gap-3">
-          <button 
-            className="btn bg-gray-800 hover:bg-gray-700 text-white border-gray-700 rounded-lg transition-all duration-300 ease-out transform hover:scale-105 hover:shadow-lg px-6" 
-            onClick={onClose}
-          >
+          <Button variant="secondary" onClick={onClose}>
             {t('classForm.cancel')}
-          </button>
-          <button 
-            className={`btn bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white border-none rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-out transform hover:scale-105 gap-2 px-6 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+          </Button>
+          <Button
+            variant="primary"
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            isLoading={isSubmitting}
+            leftIcon={<Plus className="w-5 h-5" />}
           >
-            <Plus className="w-5 h-5 transition-transform duration-300 hover:rotate-90" />
             {isSubmitting ? (initialData ? t('classForm.updating') : t('classForm.scheduling')) : (initialData ? t('classForm.updateClass') : t('classForm.scheduleClass'))}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

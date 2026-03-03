@@ -1,6 +1,7 @@
 import { BarChart3, Calendar, Filter, RefreshCw, Download, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
+import { Button } from '../ui/Button';
 
 interface AnalyticsHeaderProps {
   timeRange: string;
@@ -80,21 +81,17 @@ export default function AnalyticsHeader({ timeRange, onTimeRangeChange }: Analyt
             </div>
 
             {/* Filter Button */}
-            <button className="btn btn-sm bg-gray-800 hover:bg-gray-700 border-gray-700 hover:border-gray-600 text-gray-200 shadow-lg gap-2">
-              <Filter className="w-4 h-4" />
+            <Button variant="secondary" size="sm" leftIcon={<Filter className="w-4 h-4" />}>
               <span className="hidden sm:inline">{label(t, 'analytics.filter', 'Filter')}</span>
-            </button>
+            </Button>
 
             {/* Refresh Button */}
-            <button className="btn btn-sm bg-gray-800 hover:bg-gray-700 border-gray-700 hover:border-gray-600 text-gray-200 shadow-lg hover:rotate-180 transition-transform duration-500 gap-2">
-              <RefreshCw className="w-4 h-4" />
-            </button>
+            <Button variant="secondary" size="sm" leftIcon={<RefreshCw className="w-4 h-4" />} />
 
             {/* Export Button */}
-            <button className="btn btn-sm bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 border-0 text-white shadow-lg shadow-red-900/50 hover:shadow-xl hover:shadow-red-900/60 transition-all gap-2">
-              <Download className="w-4 h-4" />
+            <Button variant="primary" size="sm" leftIcon={<Download className="w-4 h-4" />}>
               <span className="hidden sm:inline">{label(t, 'analytics.export', 'Export')}</span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>

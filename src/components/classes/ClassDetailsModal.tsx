@@ -5,6 +5,7 @@ import { classService } from '../../services/class.service';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
 
 type CommentRecord = { id: string; comment: string; author_id: string; created_at: string };
 type RecurrencePattern = { frequency?: string; days?: number[]; endDate?: string };
@@ -102,7 +103,9 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
             <h3 className="text-2xl font-bold text-white">{cls.name}</h3>
             <p className="text-sm text-gray-400">{cls.discipline}</p>
           </div>
-          <button onClick={onClose} className="btn btn-ghost btn-sm btn-circle"><X className="w-4 h-4"/></button>
+          <IconButton onClick={onClose} variant="ghost" size="sm" shape="circle" aria-label="Close">
+            <X className="w-4 h-4"/>
+          </IconButton>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

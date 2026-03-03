@@ -6,6 +6,7 @@ import { useClasses } from '../hooks/useClasses';
 import { useAuth } from '../context/AuthContext';
 import { QRCodeManager } from '../components/attendance';
 import type { Class } from '../types';
+import { Button } from '../components/ui/Button';
 
 export default function Attendance() {
   const { t } = useTranslation();
@@ -49,14 +50,15 @@ export default function Attendance() {
             <h3 className="text-xl font-bold text-base-content mb-1 truncate">{cls.name}</h3>
             <div className="badge badge-primary badge-lg font-semibold shadow-md">{cls.discipline}</div>
           </div>
-          <button
-            className="btn btn-primary btn-lg gap-3 shadow-lg hover:shadow-xl rounded-2xl"
+          <Button
+            variant="primary"
+            size="lg"
             onClick={() => navigate(`/attendance/${cls.id}`)}
+            leftIcon={<Users className="w-6 h-6" />}
           >
-            <Users className="w-6 h-6" />
             <span className="hidden sm:inline">{t('attendance.take', 'Take attendance')}</span>
             <ArrowRight className="w-5 h-5 sm:hidden" />
-          </button>
+          </Button>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -107,13 +109,14 @@ export default function Attendance() {
                 </p>
               </div>
             </div>
-            <button
-              className="btn btn-ghost btn-lg gap-3 shadow-md hover:shadow-lg rounded-2xl"
+            <Button
+              variant="ghost"
+              size="lg"
               onClick={() => navigate('/calendar')}
+              leftIcon={<Calendar className="w-6 h-6" />}
             >
-              <Calendar className="w-6 h-6" />
               <span className="hidden sm:inline">{t('nav.calendar')}</span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>

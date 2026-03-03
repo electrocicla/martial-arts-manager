@@ -12,7 +12,6 @@ import {
   Camera,
   CheckCircle,
   XCircle,
-  Loader2,
   X,
   ScanLine,
   Clock,
@@ -22,6 +21,8 @@ import {
 import { apiClient } from '../../lib/api-client';
 import { useAuth } from '../../context/AuthContext';
 import jsQR from 'jsqr';
+import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
 
 interface ScanResult {
   success: boolean;
@@ -409,9 +410,9 @@ export default function QRScanner() {
                   </div>
                 )}
               </div>
-              <button onClick={() => setResult(null)} className="btn btn-ghost btn-sm btn-circle">
+              <IconButton onClick={() => setResult(null)} variant="ghost" size="sm" shape="circle" aria-label="Dismiss">
                 <X className="w-5 h-5" />
-              </button>
+              </IconButton>
             </div>
           )}
 
@@ -437,13 +438,15 @@ export default function QRScanner() {
               </div>
               
               {!scanning ? (
-                <button
+                <Button
                   onClick={startCamera}
-                  className="btn btn-primary btn-lg min-h-0 h-12 w-full gap-3 rounded-2xl px-5 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  leftIcon={<Camera className="w-6 h-6" />}
                 >
-                  <Camera className="w-6 h-6" />
                   {t('qr.scanner.startCamera', 'Start Camera')}
-                </button>
+                </Button>
               ) : (
                 <div className="relative rounded-3xl overflow-hidden border-4 border-primary shadow-2xl">
                   <video
@@ -458,12 +461,15 @@ export default function QRScanner() {
                       <ScanLine className="w-full h-1 text-primary animate-pulse" />
                     </div>
                   </div>
-                  <button
+                  <IconButton
                     onClick={stopCamera}
-                    className="absolute top-4 right-4 btn btn-error btn-circle shadow-xl"
+                    variant="danger"
+                    shape="circle"
+                    className="absolute top-4 right-4 shadow-xl"
+                    aria-label="Stop camera"
                   >
                     <X className="w-6 h-6" />
-                  </button>
+                  </IconButton>
                   {scannerMode === 'jsqr-fallback' && (
                     <div className="absolute bottom-4 left-4 right-4 text-center">
                       <span className="inline-flex rounded-full border border-warning/40 bg-warning/20 px-3 py-1 text-xs font-semibold text-warning-content">
@@ -502,23 +508,17 @@ export default function QRScanner() {
                   />
                 </div>
                 
-                <button
+                <Button
                   type="submit"
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
                   disabled={submitting || !manualCode.trim()}
-                  className="btn btn-secondary btn-lg min-h-0 h-12 w-full gap-3 rounded-2xl px-5 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                  isLoading={submitting}
+                  leftIcon={<CheckCircle className="w-6 h-6" />}
                 >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                      {t('qr.scanner.submitting', 'Recording...')}
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-6 h-6" />
-                      {t('qr.scanner.submit', 'Record Attendance')}
-                    </>
-                  )}
-                </button>
+                  {submitting ? t('qr.scanner.submitting', 'Recording...') : t('qr.scanner.submit', 'Record Attendance')}
+                </Button>
               </form>
             </div>
           </div>

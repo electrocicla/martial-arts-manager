@@ -8,6 +8,7 @@ import ClassFormModal from './classes/ClassFormModal';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Clock, MapPin, User } from 'lucide-react';
+import { Button } from './ui/Button';
 
 // Get browser locale for react-calendar
 const getBrowserLocale = (): string => {
@@ -112,13 +113,14 @@ export default function CalendarView() {
                         onChange={(e) => { e.stopPropagation(); setSelectedIds(prev => ({ ...prev, [c.id]: !!e.target.checked })); }}
                       />
                       {(user?.role === 'admin' || user?.role === 'instructor') && (
-                        <button
-                          className="btn btn-ghost btn-sm text-sm"
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           title="Edit"
                           onClick={(e) => { e.stopPropagation(); setEditingClass(c); setShowEditModal(true); }}
                         >
                           Edit
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -136,25 +138,25 @@ export default function CalendarView() {
               <div className="flex items-center gap-2">
                 {(user?.role === 'admin' || user?.role === 'instructor') && (
                   <>
-                    <button className="btn btn-sm btn-primary" onClick={async () => {
+                    <Button size="sm" variant="primary" onClick={async () => {
                       const ids = Object.keys(selectedIds).filter(id => selectedIds[id]);
                       if (ids.length === 0) return;
                       const first = visibleClasses.find(v => v.id === ids[0]);
                       if (!first) return;
                       setEditingClass(first);
                       setShowEditModal(true);
-                    }}>Bulk Edit</button>
-                    <button className="btn btn-sm btn-ghost" onClick={async () => {
+                    }}>Bulk Edit</Button>
+                    <Button size="sm" variant="ghost" onClick={async () => {
                       const ids = Object.keys(selectedIds).filter(id => selectedIds[id]);
                       for (const id of ids) {
                         await deleteClass(id);
                       }
                       setSelectedIds({});
                       await refresh();
-                    }}>Delete Selected</button>
+                    }}>Delete Selected</Button>
                   </>
                 )}
-                <button className="btn btn-sm btn-ghost" onClick={() => setSelectedIds({})}>Clear</button>
+                <Button size="sm" variant="ghost" onClick={() => setSelectedIds({})}>Clear</Button>
               </div>
             </div>
           )}

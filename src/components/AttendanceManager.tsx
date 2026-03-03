@@ -8,6 +8,7 @@ import { AttendanceStats } from './attendance/AttendanceStats';
 import { apiClient } from '../lib/api-client';
 import type { Student } from '../types/index';
 import { useTranslation } from 'react-i18next';
+import { Button } from './ui/Button';
 
 interface EnrolledStudent extends Student {
   attended?: number;
@@ -98,13 +99,15 @@ export default function AttendanceManager() {
       {/* Enhanced Header */}
       <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 backdrop-blur-sm border-b-2 border-base-300">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <button 
+          <Button
             onClick={() => navigate('/classes')}
-            className="btn btn-ghost btn-lg gap-3 mb-6 shadow-md hover:shadow-lg rounded-2xl"
+            variant="ghost"
+            size="lg"
+            className="mb-6"
+            leftIcon={<ArrowLeft className="w-6 h-6" />}
           >
-            <ArrowLeft className="w-6 h-6" />
             {t('common.back')}
-          </button>
+          </Button>
 
           <div className="flex items-center gap-4 mb-6">
             <div className="p-4 rounded-2xl bg-gradient-to-br from-primary to-primary/50 shadow-lg">
@@ -175,13 +178,15 @@ export default function AttendanceManager() {
               </div>
               <h3 className="text-2xl font-bold text-base-content mb-3">{t('attendance.noStudentsEnrolled')}</h3>
               <p className="text-base-content/70 mb-8 max-w-md">{t('attendance.enrollStudentsFirst')}</p>
-              <button 
-                className="btn btn-primary btn-lg gap-3 shadow-lg hover:shadow-xl rounded-2xl"
+              <Button
+                variant="primary"
+                size="lg"
+                className="w-full sm:w-auto"
                 onClick={() => navigate(`/classes/${classId}/enroll`)}
+                leftIcon={<Users className="w-6 h-6" />}
               >
-                <Users className="w-6 h-6" />
                 {t('attendance.enrollStudents')}
-              </button>
+              </Button>
             </div>
           </div>
         ) : (

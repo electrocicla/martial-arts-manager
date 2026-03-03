@@ -3,6 +3,7 @@ import { X, Calendar, Clock, MapPin, User, Award, Users, FileText } from 'lucide
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
 import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
 
 interface BeltExam {
   id: string;
@@ -134,13 +135,16 @@ export default function CreateExamModal({
                 : label(t, 'beltTesting.modal.createTitle', 'Create New Belt Exam')}
             </h3>
           </div>
-          <button
+          <IconButton
             onClick={onClose}
-            className="btn btn-ghost btn-sm btn-circle"
+            variant="ghost"
+            size="sm"
+            shape="circle"
+            aria-label="Close"
             disabled={loading}
           >
             <X className="w-5 h-5" />
-          </button>
+          </IconButton>
         </div>
 
         {/* Form */}

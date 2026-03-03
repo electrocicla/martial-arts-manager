@@ -12,6 +12,7 @@ import ConfirmModal from './ui/ConfirmModal';
 import { useToast } from '../hooks/useToast';
 import type { Class } from '../types';
 import { useTranslation } from 'react-i18next';
+import { Button } from './ui/Button';
 
 export default function ClassManager() {
   const { t } = useTranslation();
@@ -73,21 +74,23 @@ export default function ClassManager() {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2 shrink-0">
-                <button 
-                  className="btn btn-ghost btn-sm sm:btn-md gap-2 hover:bg-gray-700/50 transition-all border border-gray-700/50 hover:border-gray-600"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   title={t('classes.actions.duplicateWeek')}
+                  leftIcon={<Copy className="w-4 h-4 sm:w-5 sm:h-5" />}
                 >
-                  <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="hidden lg:inline">{t('classes.actions.duplicateWeek')}</span>
-                </button>
-                <button 
-                  className="btn btn-primary btn-sm sm:btn-md gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 border-none shadow-lg shadow-red-500/20 hover:shadow-red-500/40 transition-all"
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
                   onClick={() => setShowAddModal(true)}
+                  leftIcon={<Plus className="w-4 h-4 sm:w-5 sm:h-5" />}
                 >
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="hidden sm:inline">{t('classes.actions.addClass')}</span>
                   <span className="sm:hidden">Agregar</span>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -260,47 +263,39 @@ export default function ClassManager() {
 
                             {/* Actions */}
                             <div className="flex sm:flex-col gap-2 w-full sm:w-auto shrink-0">
-                              <button 
-                                className="
-                                  flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg
-                                  bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 
-                                  border-none shadow-md hover:shadow-lg transition-all duration-200
-                                  text-white font-medium text-xs sm:text-sm flex-1 sm:flex-none
-                                "
+                              <Button
+                                variant="success"
+                                size="sm"
+                                className="flex-1 sm:flex-none"
                                 onClick={() => {
                                   setSelectedClass(cls);
                                   setShowEnrollModal(true);
                                 }}
                                 title="Gestionar estudiantes"
+                                leftIcon={<UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />}
                               >
-                                <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                                 <span className="hidden sm:inline">{t('classes.actions.students')}</span>
-                              </button>
-                              <button 
-                                className="
-                                  flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg
-                                  bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800
-                                  border-none shadow-md hover:shadow-lg transition-all duration-200
-                                  text-white font-medium text-xs sm:text-sm flex-1 sm:flex-none
-                                "
+                              </Button>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                className="flex-1 sm:flex-none"
                                 onClick={() => navigate(`/attendance/${cls.id}`)}
+                                leftIcon={<Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />}
                               >
-                                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                                 <span className="hidden sm:inline">{t('classes.actions.attendance')}</span>
-                              </button>
-                              <button 
-                                className="
-                                  flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg
-                                  bg-gray-700 hover:bg-gray-600 border border-gray-600 hover:border-gray-500
-                                  transition-all duration-200 text-white text-xs sm:text-sm flex-1 sm:flex-none
-                                "
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="flex-1 sm:flex-none"
                                 title={t('classes.actions.edit')}
                                 onClick={() => { setEditingClass(cls); setShowAddModal(true); }}
-                              >
-                                <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                              </button>
-                              <button
-                                className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-red-800 hover:bg-red-700 text-white text-xs sm:text-sm"
+                                leftIcon={<Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                              />
+                              <Button
+                                variant="danger"
+                                size="sm"
                                 onClick={async () => {
                                   // If no students are enrolled, delete immediately without confirmation modal
                                   const enrolled = cls.enrolled_count || 0;
@@ -322,7 +317,7 @@ export default function ClassManager() {
                                 title={t('common.delete')}
                               >
                                 {t('common.delete')}
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -342,17 +337,13 @@ export default function ClassManager() {
                   </div>
                   <h3 className="text-lg sm:text-xl font-bold text-white mb-2">{t('classes.empty.noClassesScheduled')}</h3>
                   <p className="text-sm sm:text-base text-base-content/60 mb-6">{t('classes.empty.startCreateSchedule')}</p>
-                  <button 
-                    className="
-                      btn btn-primary gap-2 bg-gradient-to-r from-red-600 to-red-700 
-                      hover:from-red-700 hover:to-red-800 border-none shadow-lg
-                      text-sm sm:text-base
-                    "
+                  <Button
+                    variant="primary"
                     onClick={() => setShowAddModal(true)}
+                    leftIcon={<Plus className="w-4 h-4 sm:w-5 sm:h-5" />}
                   >
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                     {t('classes.actions.scheduleFirstClass')}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -384,44 +375,35 @@ export default function ClassManager() {
                       
                       {/* Actions */}
                       <div className="flex gap-2 w-full sm:w-auto shrink-0">
-                        <button 
-                          className="
-                            flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg flex-1 sm:flex-none
-                            bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 
-                            border-none shadow-md hover:shadow-lg transition-all duration-200
-                            text-white font-medium text-xs sm:text-sm
-                          "
+                        <Button
+                          variant="success"
+                          size="sm"
+                          className="flex-1 sm:flex-none"
                           onClick={() => {
                             setSelectedClass(cls);
                             setShowEnrollModal(true);
                           }}
+                          leftIcon={<UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />}
                         >
-                          <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                          <span>{t('classes.actions.students')}</span>
-                        </button>
-                        <button 
-                          className="
-                            flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg flex-1 sm:flex-none
-                            bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 
-                            border-none shadow-md hover:shadow-lg transition-all duration-200
-                            text-white font-medium text-xs sm:text-sm
-                          "
+                          {t('classes.actions.students')}
+                        </Button>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          className="flex-1 sm:flex-none"
                           onClick={() => navigate(`/attendance/${cls.id}`)}
+                          leftIcon={<Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />}
                         >
-                          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                           <span className="hidden sm:inline">{t('classes.actions.attendance')}</span>
                           <span className="sm:hidden">{t('classes.actions.attendanceShort')}</span>
-                        </button>
-                        <button 
-                          className="
-                            flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg
-                            bg-gray-700 hover:bg-gray-600 border border-gray-600 hover:border-gray-500
-                            transition-all duration-200 text-white text-xs sm:text-sm
-                          "
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           title={t('classes.actions.edit')}
-                        >
-                          <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
+                          onClick={() => { setEditingClass(cls); setShowAddModal(true); }}
+                          leftIcon={<Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                        />
                       </div>
                     </div>
                     

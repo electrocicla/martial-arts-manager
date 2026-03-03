@@ -3,6 +3,7 @@ import { X, UserPlus, Search, Award, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
 import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
 
 interface EligibleStudent {
   id: string;
@@ -97,13 +98,16 @@ export default function AssignStudentModal({
               </p>
             </div>
           </div>
-          <button
+          <IconButton
             onClick={onClose}
-            className="btn btn-ghost btn-sm btn-circle"
+            variant="ghost"
+            size="sm"
+            shape="circle"
+            aria-label="Close"
             disabled={loading}
           >
             <X className="w-5 h-5" />
-          </button>
+          </IconButton>
         </div>
 
         {/* Capacity Info */}

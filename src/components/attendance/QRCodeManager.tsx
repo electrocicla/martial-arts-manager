@@ -10,6 +10,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
 import {
   QrCode,
   Plus,
@@ -309,20 +311,24 @@ export default function QRCodeManager() {
           </div>
           
           <div className="flex items-center gap-3">
-            <button
+            <IconButton
               onClick={fetchQRCodes}
-              className="btn btn-ghost btn-circle btn-lg border border-base-300/60 bg-base-200/60 shadow-md transition-all duration-200 ease-out hover:shadow-lg hover:bg-base-200 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
+              variant="ghost"
+              size="lg"
+              shape="circle"
+              aria-label={t('common.refresh', 'Refresh')}
               title={t('common.refresh', 'Refresh')}
             >
               <RefreshCw className="w-6 h-6" />
-            </button>
-            <button
+            </IconButton>
+            <Button
               onClick={() => setShowCreateModal(true)}
-              className="btn btn-primary btn-lg gap-3 rounded-2xl px-6 shadow-lg transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
+              variant="primary"
+              size="lg"
+              leftIcon={<Plus className="w-5 h-5" />}
             >
-              <Plus className="w-6 h-6" />
               {t('qr.create', 'Create QR')}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -333,9 +339,9 @@ export default function QRCodeManager() {
           <div className="alert alert-error shadow-lg mt-6 rounded-2xl">
             <XCircle className="w-6 h-6" />
             <span>{error}</span>
-            <button onClick={() => setError(null)} className="btn btn-ghost btn-sm btn-circle">
+            <IconButton onClick={() => setError(null)} variant="ghost" size="sm" shape="circle" aria-label="Dismiss">
               <X className="w-5 h-5" />
-            </button>
+            </IconButton>
           </div>
         )}
         
@@ -360,12 +366,15 @@ export default function QRCodeManager() {
                   {t('qr.createNew', 'Create new QR code')}
                 </h4>
               </div>
-              <button
+              <IconButton
                 onClick={() => setShowCreateModal(false)}
-                className="btn btn-ghost btn-sm btn-circle"
+                variant="ghost"
+                size="sm"
+                shape="circle"
+                aria-label="Close"
               >
                 <X className="w-6 h-6" />
-              </button>
+              </IconButton>
             </div>
             
             <form onSubmit={handleCreate} className="space-y-6">
@@ -511,25 +520,23 @@ export default function QRCodeManager() {
 
               {/* Actions */}
               <div className="flex justify-end gap-3 pt-4 border-t border-base-300">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="btn btn-ghost btn-lg rounded-2xl px-6 transition-all duration-200 ease-out active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
+                  variant="secondary"
+                  size="lg"
                 >
                   {t('common.cancel', 'Cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  disabled={creating}
-                  className="btn btn-primary btn-lg gap-3 rounded-2xl px-6 shadow-lg transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
+                  variant="primary"
+                  size="lg"
+                  isLoading={creating}
+                  leftIcon={<Plus className="w-5 h-5" />}
                 >
-                  {creating ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : (
-                    <Plus className="w-6 h-6" />
-                  )}
                   {t('qr.generate', 'Generate QR')}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -646,33 +653,26 @@ export default function QRCodeManager() {
 
                     {/* Actions */}
                     <div className="flex gap-2">
-                      <button
+                      <Button
                         onClick={() => downloadQR(qr)}
-                        className="btn btn-primary h-12 min-h-0 flex-1 gap-2 rounded-2xl px-5 shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
+                        variant="primary"
+                        className="flex-1"
+                        leftIcon={<Download className="w-5 h-5" />}
                       >
-                        <Download className="w-5 h-5" />
                         {t('qr.download', 'Download')}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => handleCopyCode(qr)}
                         title={t('qr.copy', 'Copy')}
-                        className={`btn h-12 min-h-0 gap-2 rounded-2xl px-4 shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none ${
-                          copiedId === qr.id ? 'btn-success' : 'btn-secondary'
-                        }`}
-                      >
-                        {copiedId === qr.id ? (
-                          <Check className="w-5 h-5" />
-                        ) : (
-                          <Copy className="w-5 h-5" />
-                        )}
-                      </button>
-                      <button
+                        variant={copiedId === qr.id ? 'success' : 'secondary'}
+                        leftIcon={copiedId === qr.id ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                      />
+                      <Button
                         onClick={() => handleDelete(qr.id)}
                         title={t('qr.delete', 'Delete')}
-                        className="btn btn-error h-12 min-h-0 gap-2 rounded-2xl px-4 shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-error/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-200 motion-reduce:transition-none motion-reduce:transform-none"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                        variant="danger"
+                        leftIcon={<Trash2 className="w-5 h-5" />}
+                      />
                     </div>
                   </div>
                 </div>

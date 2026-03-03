@@ -5,6 +5,8 @@ import { useStudents } from '../../hooks/useStudents';
 import { apiClient } from '../../lib/api-client';
 import type { Student } from '../../types';
 import { useToast } from '../../hooks/useToast';
+import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
 
 interface EnrollStudentsModalProps {
   isOpen: boolean;
@@ -175,16 +177,16 @@ export function EnrollStudentsModal({
             </div>
             
             {/* Close Button */}
-            <button
+            <IconButton
               onClick={onClose}
               aria-label="Cerrar"
-              className="
-                btn btn-sm btn-circle btn-ghost shrink-0
-                hover:bg-gray-700/40 transition-all duration-150
-              "
+              variant="ghost"
+              size="sm"
+              shape="circle"
+              className="shrink-0"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
+            </IconButton>
           </div>
         </div>
 
@@ -195,12 +197,9 @@ export function EnrollStudentsModal({
             <div className="alert alert-error mb-4 shadow-lg">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span className="text-sm">{error}</span>
-              <button 
-                onClick={() => setError(null)}
-                className="btn btn-ghost btn-sm btn-circle"
-              >
+              <IconButton onClick={() => setError(null)} variant="ghost" size="sm" shape="circle" aria-label="Dismiss">
                 <X className="w-4 h-4" />
-              </button>
+              </IconButton>
             </div>
           )}
 
@@ -280,33 +279,17 @@ export function EnrollStudentsModal({
                     </div>
 
                     {/* Action Button */}
-                    <button
+                    <Button
+                      size="sm"
+                      variant="success"
                       onClick={() => isEnrolled ? handleUnenroll(student.id) : handleEnroll(student.id)}
                       disabled={isProcessing || (!isEnrolled && availableSlots === 0)}
-                      className={`
-                        btn btn-sm shrink-0 gap-1.5 sm:gap-2 transition-all duration-200
-                        ${isEnrolled 
-                          ? 'bg-gradient-to-r from-green-600 to-green-700 text-white border border-green-500/30 shadow-md hover:shadow-lg' 
-                          : 'btn-success hover:btn-success shadow-lg shadow-green-500/20'
-                        }
-                        ${isProcessing ? 'loading' : ''}
-                        ${(!isEnrolled && availableSlots === 0) ? 'btn-disabled opacity-50' : ''}
-                      `}
+                      isLoading={isProcessing}
+                      leftIcon={isEnrolled ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                      className="shrink-0"
                     >
-                      {isProcessing ? (
-                        <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
-                      ) : isEnrolled ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                          <span className="text-xs sm:text-sm">{t('classes.enrollModal.inscribed')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          <span className="text-xs sm:text-sm">{t('classes.enrollModal.enroll')}</span>
-                        </>
-                      )}
-                    </button>
+                      {isEnrolled ? t('classes.enrollModal.inscribed') : t('classes.enrollModal.enroll')}
+                    </Button>
                   </div>
                 );
               })
@@ -321,26 +304,24 @@ export function EnrollStudentsModal({
               {t('classes.enrollModal.searchResults', { count: filteredStudents.length })}
             </div>
             <div className="flex items-center gap-3">
-              <button 
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={() => {
                   // Save explicitly (ensures parent refreshes and modal closes)
                   onEnrollmentUpdated?.();
                   onClose();
                 }}
-                className="btn btn-primary btn-sm bg-gradient-to-r from-red-600 to-red-700 border-none"
               >
                 {t('common.save')}
-              </button>
-              <button 
-                onClick={onClose} 
-                className="
-                  btn btn-ghost gap-2 hover:bg-gray-700/50 transition-all
-                  text-sm sm:text-base
-                "
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={onClose}
+                leftIcon={<X className="w-4 h-4" />}
               >
-                <X className="w-4 h-4" />
                 {t('common.close')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

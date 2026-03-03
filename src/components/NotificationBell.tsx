@@ -10,6 +10,8 @@ import { useTranslation } from 'react-i18next';
 import { Bell, X, Check, Trash2, Loader2 } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import { useAuth } from '../context/AuthContext';
+import { IconButton } from './ui/IconButton';
+import { Button } from './ui/Button';
 
 interface Notification {
   id: string;
@@ -100,9 +102,11 @@ export default function NotificationBell() {
 
   return (
     <div className="dropdown dropdown-end">
-      <button
+      <IconButton
         tabIndex={0}
-        className="btn btn-ghost btn-circle"
+        variant="ghost"
+        shape="circle"
+        aria-label="Notifications"
         onClick={() => setShowDropdown(!showDropdown)}
       >
         <div className="indicator">
@@ -113,7 +117,7 @@ export default function NotificationBell() {
             </span>
           )}
         </div>
-      </button>
+      </IconButton>
 
       {showDropdown && (
         <div
@@ -128,21 +132,25 @@ export default function NotificationBell() {
             </h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
-                <button
+                <Button
                   onClick={markAllAsRead}
-                  className="btn btn-ghost btn-xs gap-1"
+                  variant="ghost"
+                  size="xs"
                   title={t('notifications.markAllRead', 'Mark all as read')}
+                  leftIcon={<Check className="w-4 h-4" />}
                 >
-                  <Check className="w-4 h-4" />
                   {t('notifications.all', 'All')}
-                </button>
+                </Button>
               )}
-              <button
+              <IconButton
                 onClick={() => setShowDropdown(false)}
-                className="btn btn-ghost btn-xs btn-circle"
+                variant="ghost"
+                size="xs"
+                shape="circle"
+                aria-label="Close"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </IconButton>
             </div>
           </div>
 
@@ -180,21 +188,27 @@ export default function NotificationBell() {
                       </div>
                       <div className="flex gap-1">
                         {notification.read === 0 && (
-                          <button
+                          <IconButton
                             onClick={() => markAsRead(notification.id)}
-                            className="btn btn-ghost btn-xs btn-circle"
+                            variant="ghost"
+                            size="xs"
+                            shape="circle"
+                            aria-label={t('notifications.markRead', 'Mark as read')}
                             title={t('notifications.markRead', 'Mark as read')}
                           >
                             <Check className="w-4 h-4" />
-                          </button>
+                          </IconButton>
                         )}
-                        <button
+                        <IconButton
                           onClick={() => deleteNotification(notification.id)}
-                          className="btn btn-ghost btn-xs btn-circle hover:btn-error"
+                          variant="ghost"
+                          size="xs"
+                          shape="circle"
+                          aria-label={t('notifications.delete', 'Delete')}
                           title={t('notifications.delete', 'Delete')}
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </IconButton>
                       </div>
                     </div>
                   </li>
