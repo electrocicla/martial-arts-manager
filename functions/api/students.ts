@@ -1,5 +1,6 @@
 import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
+import { ensureStudentHasInitialPayment } from '../utils/payment-provisioning';
 
 interface StudentRecord {
   id: string;
@@ -194,6 +195,12 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       dateOfBirth || null, emergencyContactName || null, emergencyContactPhone || null,
       notes || null, auth.user.id, now, now
     ).run();
+
+    await ensureStudentHasInitialPayment(env.DB, {
+      studentId: id,
+      actorUserId: auth.user.id,
+      reason: 'student-created',
+    });
 
     const createdStudent = await env.DB.prepare('SELECT * FROM students WHERE id = ? AND deleted_at IS NULL').bind(id).first<StudentRecord>();
 

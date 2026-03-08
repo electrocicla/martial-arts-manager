@@ -9,6 +9,7 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 import { generateUserId } from '../../utils/hash';
+import { ensureStudentHasInitialPayment } from '../../utils/payment-provisioning';
 
 interface PendingUser {
   id: string;
@@ -212,6 +213,14 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         SET is_approved = 1, approved_by = ?, approved_at = ?, updated_at = ?
         WHERE id = ?
       `).bind(auth.user.id, now, now, user_id).run();
+    }
+
+    if (user.role === 'student' && linkedStudentId) {
+      await ensureStudentHasInitialPayment(env.DB, {
+        studentId: linkedStudentId,
+        actorUserId: auth.user.id,
+        reason: 'approval',
+      });
     }
 
     return new Response(JSON.stringify({ 
