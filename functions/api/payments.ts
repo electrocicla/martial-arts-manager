@@ -133,6 +133,24 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       auth.user.id, now, now
     ).run();
 
+    // When a real payment is confirmed (completed/refunded), soft-delete any auto-provisioned
+    // pending placeholder payments for the same student in the same month. These placeholders
+    // are created by ensureStudentHasInitialPayment to keep students visible in payment lists,
+    // and should be replaced once an actual payment is recorded to avoid duplicate/confusing entries.
+    if (status === 'completed' || status === 'refunded') {
+      const paymentMonth = date.slice(0, 7); // YYYY-MM
+      await env.DB.prepare(`
+        UPDATE payments
+        SET deleted_at = ?
+        WHERE student_id = ?
+          AND id != ?
+          AND status = 'pending'
+          AND deleted_at IS NULL
+          AND notes LIKE 'Auto-generated pending monthly payment%'
+          AND strftime('%Y-%m', date) = ?
+      `).bind(now, studentId, paymentId, paymentMonth).run().catch(() => null);
+    }
+
     // Return the full payment record so the client can immediately use it
     const payment = await env.DB.prepare(`
       SELECT p.*, s.name as student_name FROM payments p
