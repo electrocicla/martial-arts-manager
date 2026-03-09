@@ -42,6 +42,18 @@ export interface MonthlyTrend {
   attendance: number;
 }
 
+function getRealizedPaymentAmount(payment: Pick<Payment, 'status' | 'amount'>): number {
+  if (payment.status === 'completed') {
+    return payment.amount;
+  }
+
+  if (payment.status === 'refunded') {
+    return -payment.amount;
+  }
+
+  return 0;
+}
+
 export function calculateKPIs(
   students: Student[],
   payments: Payment[],
@@ -63,9 +75,9 @@ export function calculateKPIs(
     return d >= lastMonthStart && d < monthStart;
   });
 
-  const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
-  const thisMonthRevenue = thisMonthPayments.reduce((sum, p) => sum + p.amount, 0);
-  const lastMonthRevenue = lastMonthPayments.reduce((sum, p) => sum + p.amount, 0);
+  const totalRevenue = payments.reduce((sum, p) => sum + getRealizedPaymentAmount(p), 0);
+  const thisMonthRevenue = thisMonthPayments.reduce((sum, p) => sum + getRealizedPaymentAmount(p), 0);
+  const lastMonthRevenue = lastMonthPayments.reduce((sum, p) => sum + getRealizedPaymentAmount(p), 0);
   const revenueChange = lastMonthRevenue > 0 ?
     ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(1) : '0';
 
@@ -127,7 +139,7 @@ export function calculateRevenueByClass(
     const uniqueStudents = new Set(classAttendance.map(a => a.student_id)).size;
 
     // Calculate revenue for this class (distribute total revenue based on attendance)
-    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalRevenue = payments.reduce((sum, p) => sum + getRealizedPaymentAmount(p), 0);
     const totalAttendance = attendance.length;
     const revenue = totalAttendance > 0 ? (classAttendance.length / totalAttendance) * totalRevenue : 0;
 
@@ -222,7 +234,7 @@ export function calculateMonthlyTrends(
     const attendanceRate = monthAttendance.length > 0 ?
       (monthAttendance.filter(a => a.attended === 1).length / monthAttendance.length * 100) : 0;
 
-    const revenue = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+    const revenue = monthPayments.reduce((sum, p) => sum + getRealizedPaymentAmount(p), 0);
 
     trends.push({
       month: date.toLocaleDateString('en-US', { month: 'short' }),

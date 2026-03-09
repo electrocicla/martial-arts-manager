@@ -119,7 +119,7 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0">
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -243,7 +243,7 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
       </div>
 
       {/* Payment List */}
-      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 payment-scrollbar">
+      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 sm:pr-2 payment-scrollbar min-w-0">
         {filteredPayments.length === 0 ? (
           <div className="text-center py-12">
             <DollarSign className="w-16 h-16 text-gray-600 mx-auto mb-4" />
@@ -260,15 +260,15 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
               key={payment.id}
               className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4 border border-gray-700 hover:border-red-500/50 transition-all duration-200 hover:shadow-lg hover:shadow-red-500/10"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3 flex-1">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
                   <div className="p-2 bg-gray-700/50 rounded-lg">
                     {getStatusIcon(payment.status)}
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-white font-semibold truncate">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <h4 className="text-white font-semibold truncate min-w-0">
                         {payment.type}
                       </h4>
                       {getStatusBadge(payment.status)}
@@ -294,8 +294,8 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
                   </div>
                 </div>
 
-                <div className="text-right flex-shrink-0">
-                  <div className={`text-xl font-bold ${
+                <div className="text-left sm:text-right flex-shrink-0">
+                  <div className={`text-lg sm:text-xl font-bold whitespace-nowrap ${
                     payment.status === 'completed' ? 'text-green-400' :
                     payment.status === 'pending' ? 'text-yellow-400' :
                     payment.status === 'refunded' ? 'text-gray-400' :

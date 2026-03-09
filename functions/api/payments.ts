@@ -19,6 +19,8 @@ interface PaymentRecord {
   deleted_at?: string;
 }
 
+const AUTO_PENDING_PLACEHOLDER_NOTE = 'Auto-generated pending monthly payment%';
+
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
   try {
     // Authenticate user
@@ -30,20 +32,65 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       });
     }
 
+    const { searchParams } = new URL(request.url);
+    const studentId = searchParams.get('student_id');
+    const status = searchParams.get('status');
+    const type = searchParams.get('type');
+    const dateFrom = searchParams.get('date_from');
+    const dateTo = searchParams.get('date_to');
+
     // Get payments for students the user has access to
     let query = `
       SELECT p.*, s.name as student_name FROM payments p
       INNER JOIN students s ON p.student_id = s.id
       WHERE p.deleted_at IS NULL AND s.deleted_at IS NULL
+        AND NOT (
+          p.status = 'pending'
+          AND p.notes LIKE ?
+          AND EXISTS (
+            SELECT 1
+            FROM payments p2
+            WHERE p2.student_id = p.student_id
+              AND p2.deleted_at IS NULL
+              AND p2.id != p.id
+              AND p2.status IN ('completed', 'refunded')
+              AND strftime('%Y-%m', p2.date) = strftime('%Y-%m', p.date)
+          )
+        )
     `;
-    const params: string[] = [];
+    const params: string[] = [AUTO_PENDING_PLACEHOLDER_NOTE];
 
     if (auth.user.role !== 'admin') {
       query += " AND (s.created_by = ? OR s.instructor_id = ? OR (s.instructor_id IS NULL AND s.created_by IS NOT NULL))";
       params.push(auth.user.id, auth.user.id);
     }
 
-    query += " ORDER BY p.date DESC";
+    if (studentId) {
+      query += ' AND p.student_id = ?';
+      params.push(studentId);
+    }
+
+    if (status) {
+      query += ' AND p.status = ?';
+      params.push(status);
+    }
+
+    if (type) {
+      query += ' AND p.type = ?';
+      params.push(type);
+    }
+
+    if (dateFrom) {
+      query += ' AND p.date >= ?';
+      params.push(dateFrom);
+    }
+
+    if (dateTo) {
+      query += ' AND p.date <= ?';
+      params.push(dateTo);
+    }
+
+    query += " ORDER BY p.date DESC, p.created_at DESC";
 
     const { results } = await env.DB.prepare(query).bind(...params).all<PaymentRecord>();
     
@@ -146,9 +193,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
           AND id != ?
           AND status = 'pending'
           AND deleted_at IS NULL
-          AND notes LIKE 'Auto-generated pending monthly payment%'
+            AND notes LIKE ?
           AND strftime('%Y-%m', date) = ?
-      `).bind(now, studentId, paymentId, paymentMonth).run().catch(() => null);
+          `).bind(now, studentId, paymentId, AUTO_PENDING_PLACEHOLDER_NOTE, paymentMonth).run().catch(() => null);
     }
 
     // Return the full payment record so the client can immediately use it

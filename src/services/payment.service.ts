@@ -103,12 +103,18 @@ export class PaymentService {
           break;
       }
 
-      // Sum total amount
-      stats.totalAmount += payment.amount;
+      // Sum realized amount only (completed - refunded)
+      const realizedAmount = payment.status === 'completed'
+        ? payment.amount
+        : payment.status === 'refunded'
+          ? -payment.amount
+          : 0;
+
+      stats.totalAmount += realizedAmount;
 
       // Group by month
       const monthKey = new Date(payment.date).toISOString().slice(0, 7); // YYYY-MM
-      stats.monthlyRevenue[monthKey] = (stats.monthlyRevenue[monthKey] || 0) + payment.amount;
+      stats.monthlyRevenue[monthKey] = (stats.monthlyRevenue[monthKey] || 0) + realizedAmount;
     });
 
     return { data: stats, success: true };

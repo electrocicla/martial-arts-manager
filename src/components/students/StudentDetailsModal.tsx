@@ -136,7 +136,7 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
         />
 
         {/* Modal Content */}
-        <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden">
           {/* Header */}
           <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 px-6 py-6 rounded-t-2xl">
             <div className="flex items-center justify-between">

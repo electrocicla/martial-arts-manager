@@ -12,6 +12,8 @@ interface PaymentStats {
   nextPaymentDue: string | null;
 }
 
+const AUTO_PENDING_PLACEHOLDER_NOTE = 'Auto-generated pending monthly payment%';
+
 // GET /api/students/:id/payments - Get all payments for a student
 export async function onRequestGet({ request, env, params }: { request: Request; env: Env; params: { id: string } }) {
   try {
@@ -59,23 +61,36 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     // Build query based on filters
     let query = `
       SELECT 
-        id,
-        student_id,
-        amount,
-        date,
-        type,
-        notes,
-        status,
-        payment_method,
-        receipt_url,
-        created_at,
-        updated_at
-      FROM payments 
-      WHERE student_id = ? 
-        AND deleted_at IS NULL
+        p.id,
+        p.student_id,
+        p.amount,
+        p.date,
+        p.type,
+        p.notes,
+        p.status,
+        p.payment_method,
+        p.receipt_url,
+        p.created_at,
+        p.updated_at
+      FROM payments p
+      WHERE p.student_id = ? 
+        AND p.deleted_at IS NULL
+        AND NOT (
+          p.status = 'pending'
+          AND p.notes LIKE ?
+          AND EXISTS (
+            SELECT 1
+            FROM payments p2
+            WHERE p2.student_id = p.student_id
+              AND p2.deleted_at IS NULL
+              AND p2.id != p.id
+              AND p2.status IN ('completed', 'refunded')
+              AND strftime('%Y-%m', p2.date) = strftime('%Y-%m', p.date)
+          )
+        )
     `;
 
-    const queryParams: (string | null)[] = [studentId];
+    const queryParams: (string | null)[] = [studentId, AUTO_PENDING_PLACEHOLDER_NOTE];
 
     if (status) {
       query += ' AND status = ?';
@@ -109,6 +124,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
         if (payment.status === 'completed') {
           stats.completed++;
           stats.completedAmount += amount;
+          stats.totalAmount += amount;
           if (!stats.lastPaymentDate || payment.date > stats.lastPaymentDate) {
             stats.lastPaymentDate = payment.date;
           }
@@ -118,9 +134,9 @@ export async function onRequestGet({ request, env, params }: { request: Request;
           if (!stats.nextPaymentDue || payment.date < stats.nextPaymentDue) {
             stats.nextPaymentDue = payment.date;
           }
+        } else if (payment.status === 'refunded') {
+          stats.totalAmount -= amount;
         }
-        
-        stats.totalAmount += amount;
       });
     }
 

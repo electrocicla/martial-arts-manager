@@ -104,7 +104,15 @@ export function useDashboardData(): DashboardData {
           return joinDate >= monthStart && joinDate <= now;
         });
 
-        const revenueThisMonth = thisMonthPayments.reduce((sum, payment) => sum + payment.amount, 0);
+        const revenueThisMonth = thisMonthPayments.reduce((sum, payment) => {
+          if (payment.status === 'completed') {
+            return sum + payment.amount;
+          }
+          if (payment.status === 'refunded') {
+            return sum - payment.amount;
+          }
+          return sum;
+        }, 0);
 
         const upcomingClasses = classes.filter(cls => {
           const classDate = new Date(cls.date);
