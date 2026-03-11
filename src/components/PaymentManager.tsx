@@ -81,6 +81,18 @@ export default function PaymentManager() {
     });
   }, [payments, studentsById, debouncedSearchTerm, statusFilter, typeFilter]);
 
+  const filteredStudents = useMemo(() => {
+    const normalizedSearch = debouncedSearchTerm.trim().toLowerCase();
+
+    if (!normalizedSearch) {
+      return students;
+    }
+
+    return students.filter((student: Student) =>
+      student.name.toLowerCase().includes(normalizedSearch)
+    );
+  }, [students, debouncedSearchTerm]);
+
   const addPayment = async (data: PaymentFormData) => {
     try {
       const result = await createPayment(data);
@@ -204,7 +216,7 @@ export default function PaymentManager() {
                   {...register('studentId')}
                   options={[
                     { value: '', label: t('payments.form.selectStudent') },
-                    ...students.map((student: Student) => ({ value: student.id, label: student.name }))
+                    ...filteredStudents.map((student: Student) => ({ value: student.id, label: student.name }))
                   ]}
                 />
                 {errors.studentId && (
