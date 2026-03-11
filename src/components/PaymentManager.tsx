@@ -34,6 +34,7 @@ export default function PaymentManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [studentAutocompleteValue, setStudentAutocompleteValue] = useState('');
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -46,8 +47,10 @@ export default function PaymentManager() {
     register,
     handleSubmit,
     reset,
+    setValue,
+    clearErrors,
     formState: { errors, isSubmitting }
-  } = useForm({
+  } = useForm<PaymentFormData>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       studentId: '',
@@ -93,11 +96,61 @@ export default function PaymentManager() {
     );
   }, [students, debouncedSearchTerm]);
 
+  const autocompleteStudents = useMemo(() => {
+    const normalizedSearch = studentAutocompleteValue.trim().toLowerCase();
+
+    if (!normalizedSearch) {
+      return filteredStudents;
+    }
+
+    return filteredStudents.filter((student: Student) =>
+      student.name.toLowerCase().includes(normalizedSearch) ||
+      student.email.toLowerCase().includes(normalizedSearch)
+    );
+  }, [filteredStudents, studentAutocompleteValue]);
+
+  const formatStudentAutocompleteOption = (student: Student) => `${student.name} (${student.email})`;
+
+  const handleStudentAutocompleteChange = (value: string) => {
+    setStudentAutocompleteValue(value);
+
+    const normalizedValue = value.trim().toLowerCase();
+    if (!normalizedValue) {
+      setValue('studentId', '', { shouldDirty: true, shouldValidate: false });
+      return;
+    }
+
+    const exactLabelMatch = filteredStudents.find(
+      (student: Student) => formatStudentAutocompleteOption(student).toLowerCase() === normalizedValue
+    );
+
+    const exactEmailMatch = filteredStudents.find(
+      (student: Student) => student.email.toLowerCase() === normalizedValue
+    );
+
+    const exactNameMatches = filteredStudents.filter(
+      (student: Student) => student.name.toLowerCase() === normalizedValue
+    );
+
+    const matchedStudent = exactLabelMatch
+      ?? exactEmailMatch
+      ?? (exactNameMatches.length === 1 ? exactNameMatches[0] : undefined);
+
+    if (matchedStudent) {
+      setValue('studentId', matchedStudent.id, { shouldDirty: true, shouldValidate: true });
+      clearErrors('studentId');
+      return;
+    }
+
+    setValue('studentId', '', { shouldDirty: true, shouldValidate: false });
+  };
+
   const addPayment = async (data: PaymentFormData) => {
     try {
       const result = await createPayment(data);
       if (result) {
         reset();
+        setStudentAutocompleteValue('');
         showSuccess('Pago agregado exitosamente', {
           description: 'El pago ha sido registrado en el sistema.'
         });
@@ -212,13 +265,23 @@ export default function PaymentManager() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t('payments.form.student')}
                 </label>
-                <Select
-                  {...register('studentId')}
-                  options={[
-                    { value: '', label: t('payments.form.selectStudent') },
-                    ...filteredStudents.map((student: Student) => ({ value: student.id, label: student.name }))
-                  ]}
+                <Input
+                  id="payment-student-autocomplete"
+                  type="text"
+                  list="payment-student-options"
+                  value={studentAutocompleteValue}
+                  onChange={(e) => handleStudentAutocompleteChange(e.target.value)}
+                  onBlur={(e) => handleStudentAutocompleteChange(e.target.value)}
+                  placeholder={t('payments.form.studentAutocompletePlaceholder')}
+                  autoComplete="off"
                 />
+                <datalist id="payment-student-options">
+                  {autocompleteStudents.map((student: Student) => (
+                    <option key={student.id} value={formatStudentAutocompleteOption(student)} />
+                  ))}
+                </datalist>
+                <input type="hidden" {...register('studentId')} />
+                <p className="text-xs text-gray-500 mt-1">{t('payments.form.studentAutocompleteHint')}</p>
                 {errors.studentId && (
                   <p className="text-sm text-red-600 mt-1">{errors.studentId.message}</p>
                 )}

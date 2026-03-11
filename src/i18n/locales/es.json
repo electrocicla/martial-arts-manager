@@ -262,6 +262,8 @@
       "title": "Agregar Nuevo Pago",
       "student": "Estudiante",
       "selectStudent": "Seleccionar un estudiante",
+      "studentAutocompletePlaceholder": "Escribe nombre o correo del estudiante",
+      "studentAutocompleteHint": "Selecciona una sugerencia para completar el alumno",
       "amount": "Monto ($)",
       "paymentType": "Tipo de Pago",
       "paymentDate": "Fecha de Pago",
