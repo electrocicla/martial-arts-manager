@@ -501,6 +501,29 @@
     },
     "empty": {
       "noClassesScheduled": "Nenhuma aula agendada"
+    },
+    "enrollModal": {
+      "fetchError": "Erro ao carregar alunos inscritos",
+      "fetchLoadError": "Não foi possível carregar alunos inscritos",
+      "maxCapacity": "A aula atingiu a capacidade máxima",
+      "enrolledSuccess": "Aluno inscrito com sucesso",
+      "enrollError": "Erro ao inscrever aluno",
+      "unenrolledSuccess": "Aluno desinscrito com sucesso",
+      "unenrollError": "Erro ao desinscrever aluno",
+      "searchPlaceholder": "Buscar aluno por nome ou email...",
+      "loadingStudents": "Carregando alunos...",
+      "noStudentsFound": "Nenhum aluno encontrado",
+      "tryDifferentSearch": "Tente um termo de busca diferente",
+      "noStudentsRegistered": "Nenhum aluno registrado",
+      "inscribed": "Inscritos",
+      "slot": "vaga",
+      "slots": "vagas",
+      "fullClass": "Aula lotada",
+      "enroll": "Inscrever",
+      "searchResults": "{{count}} aluno(s)",
+      "inscribedLabel": "Inscrito",
+      "selectAll": "Selecionar todos",
+      "allInscribed": "Todos inscritos"
     }
   },
   "classesOnDate": "Aulas em {{date}}",

@@ -503,6 +503,29 @@
     },
     "empty": {
       "noClassesScheduled": "No classes scheduled"
+    },
+    "enrollModal": {
+      "fetchError": "Error loading enrolled students",
+      "fetchLoadError": "Could not load enrolled students",
+      "maxCapacity": "Class has reached maximum capacity",
+      "enrolledSuccess": "Student enrolled successfully",
+      "enrollError": "Error enrolling student",
+      "unenrolledSuccess": "Student unenrolled successfully",
+      "unenrollError": "Error unenrolling student",
+      "searchPlaceholder": "Search student by name or email...",
+      "loadingStudents": "Loading students...",
+      "noStudentsFound": "No students found",
+      "tryDifferentSearch": "Try a different search term",
+      "noStudentsRegistered": "No students registered",
+      "inscribed": "Enrolled",
+      "slot": "slot",
+      "slots": "slots",
+      "fullClass": "Class full",
+      "enroll": "Enroll",
+      "searchResults": "{{count}} student(s)",
+      "inscribedLabel": "Enrolled",
+      "selectAll": "Select all",
+      "allInscribed": "All enrolled"
     }
   },
   "classForm": {

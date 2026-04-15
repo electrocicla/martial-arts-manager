@@ -183,17 +183,17 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       disciplinesJson = JSON.stringify([{ discipline, belt }]);
     }
 
-    // Insert with created_by set to current user
+    // Insert with created_by and instructor_id set to current user
     await env.DB.prepare(`
       INSERT INTO students (
         id, name, email, phone, belt, discipline, disciplines, join_date, date_of_birth,
         emergency_contact_name, emergency_contact_phone, notes, is_active,
-        created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+        instructor_id, created_by, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
     `).bind(
       id, name, email, phone || null, belt, discipline, disciplinesJson, joinDate,
       dateOfBirth || null, emergencyContactName || null, emergencyContactPhone || null,
-      notes || null, auth.user.id, now, now
+      notes || null, auth.user.id, auth.user.id, now, now
     ).run();
 
     await ensureStudentHasInitialPayment(env.DB, {

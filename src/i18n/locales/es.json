@@ -502,7 +502,9 @@
       "fullClass": "Curso lleno",
       "enroll": "Inscribir",
       "searchResults": "{{count}} estudiante(s)",
-      "inscribedLabel": "Inscrito"
+      "inscribedLabel": "Inscrito",
+      "selectAll": "Seleccionar todos",
+      "allInscribed": "Todos inscritos"
     }
   },
   "classForm": {

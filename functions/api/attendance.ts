@@ -29,8 +29,10 @@ export async function onRequestGet({ env, request }: { env: Env; request: Reques
     // If classId is provided, verify ownership and return attendance for that class
     if (classId) {
       const classCheck = await env.DB.prepare(
-        "SELECT id FROM classes WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-      ).bind(classId, auth.user.id).first();
+        auth.user.role === 'admin'
+          ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
+          : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor = ?) AND deleted_at IS NULL"
+      ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first();
 
       if (!classCheck) {
         return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { 
@@ -47,13 +49,13 @@ export async function onRequestGet({ env, request }: { env: Env; request: Reques
 
     // No classId: return all attendance records that belong to classes owned by this user
     // Join with classes to ensure we only return records for this user's classes
-    const { results } = await env.DB.prepare(`
-      SELECT a.*
-      FROM attendance a
-      INNER JOIN classes c ON a.class_id = c.id
-      WHERE c.created_by = ?
-      ORDER BY a.created_at DESC
-    `).bind(auth.user.id).all<AttendanceRecord>();
+    const attendanceQuery = auth.user.role === 'admin'
+      ? `SELECT a.* FROM attendance a INNER JOIN classes c ON a.class_id = c.id WHERE c.deleted_at IS NULL ORDER BY a.created_at DESC`
+      : `SELECT a.* FROM attendance a INNER JOIN classes c ON a.class_id = c.id WHERE (c.created_by = ? OR c.instructor = ?) AND c.deleted_at IS NULL ORDER BY a.created_at DESC`;
+
+    const { results } = auth.user.role === 'admin'
+      ? await env.DB.prepare(attendanceQuery).all<AttendanceRecord>()
+      : await env.DB.prepare(attendanceQuery).bind(auth.user.id, auth.user.id).all<AttendanceRecord>();
 
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
@@ -96,14 +98,18 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       return false;
     })();
 
-    // Verify that both class and student belong to this user
+    // Verify that both class and student belong to this user (admins can access all)
     const classCheck = await env.DB.prepare(
-      "SELECT id FROM classes WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(classId, auth.user.id).first();
+      auth.user.role === 'admin'
+        ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first();
 
     const studentCheck = await env.DB.prepare(
-      "SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(studentId, auth.user.id).first();
+      auth.user.role === 'admin'
+        ? "SELECT id FROM students WHERE id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM students WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [studentId] : [studentId, auth.user.id, auth.user.id])).first();
 
     if (!classCheck || !studentCheck) {
       return new Response(JSON.stringify({ error: 'Class or student not found or access denied' }), { 

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, UserPlus, Search, Check, Loader2, Users, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { X, UserPlus, Search, Check, Loader2, Users, AlertCircle, ChevronDown, ChevronRight, CheckSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useStudents } from '../../hooks/useStudents';
 import { apiClient } from '../../lib/api-client';
@@ -7,6 +7,11 @@ import type { Student } from '../../types';
 import { useToast } from '../../hooks/useToast';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
+
+interface DisciplineGroup {
+  discipline: string;
+  students: Student[];
+}
 
 interface EnrollStudentsModalProps {
   isOpen: boolean;
@@ -134,6 +139,50 @@ export function EnrollStudentsModal({
     student.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const disciplineGroups = useMemo((): DisciplineGroup[] => {
+    const groupMap = new Map<string, Student[]>();
+    for (const student of filteredStudents) {
+      const discipline = student.discipline || 'Sin disciplina';
+      const group = groupMap.get(discipline);
+      if (group) {
+        group.push(student);
+      } else {
+        groupMap.set(discipline, [student]);
+      }
+    }
+    return Array.from(groupMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([discipline, groupStudents]) => ({ discipline, students: groupStudents }));
+  }, [filteredStudents]);
+
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  const toggleGroupCollapse = useCallback((discipline: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(discipline)) {
+        next.delete(discipline);
+      } else {
+        next.add(discipline);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleSelectAllInGroup = useCallback(async (groupStudents: Student[]) => {
+    const unenrolledInGroup = groupStudents.filter(s => !enrolledStudents.has(s.id));
+    if (unenrolledInGroup.length === 0) return;
+
+    for (const student of unenrolledInGroup) {
+      if (enrolledStudents.size >= maxStudents) break;
+      await handleEnroll(student.id);
+    }
+  }, [enrolledStudents, maxStudents, handleEnroll]);
+
+  const isGroupFullyEnrolled = useCallback((groupStudents: Student[]): boolean => {
+    return groupStudents.every(s => enrolledStudents.has(s.id));
+  }, [enrolledStudents]);
+
   const availableSlots = maxStudents - enrolledStudents.size;
 
   if (!isOpen) return null;
@@ -221,14 +270,14 @@ export function EnrollStudentsModal({
             </div>
           </div>
 
-          {/* Students List */}
-          <div className="max-h-[50vh] overflow-y-auto space-y-2 pr-1 sm:pr-2 custom-scrollbar">
+          {/* Students List - Grouped by Discipline */}
+          <div className="max-h-[50vh] overflow-y-auto space-y-4 pr-1 sm:pr-2 custom-scrollbar">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
                 <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 animate-spin text-red-500 mb-3" />
                 <p className="text-sm text-gray-400">{t('classes.enrollModal.loadingStudents')}</p>
               </div>
-            ) : filteredStudents.length === 0 ? (
+            ) : disciplineGroups.length === 0 ? (
               <div className="text-center py-16 bg-gray-800/30 rounded-xl border border-gray-700/50">
                 <div className="p-4 bg-gray-700/30 rounded-full w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 flex items-center justify-center">
                   <Users className="w-8 h-8 sm:w-10 sm:h-10 text-gray-500" />
@@ -239,57 +288,109 @@ export function EnrollStudentsModal({
                 </p>
               </div>
             ) : (
-              filteredStudents.map((student) => {
-                const isEnrolled = enrolledStudents.has(student.id);
-                const isProcessing = actionLoading === student.id;
+              disciplineGroups.map((group) => {
+                const isCollapsed = collapsedGroups.has(group.discipline);
+                const enrolledCount = group.students.filter(s => enrolledStudents.has(s.id)).length;
+                const allEnrolled = isGroupFullyEnrolled(group.students);
 
                 return (
-                  <div
-                    key={student.id}
-                    className={`
-                      flex items-center gap-3 p-3 sm:p-4 rounded-xl border transition-all duration-200
-                      ${isEnrolled 
-                        ? 'bg-gradient-to-r from-green-500/10 to-green-600/5 border-green-500/30 shadow-lg shadow-green-500/5' 
-                        : 'bg-gray-800/50 border-gray-700/50 hover:border-gray-600 hover:bg-gray-800/70'
-                      }
-                    `}
-                  >
-                    {/* Avatar */}
-                    <div className="avatar shrink-0">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg">
-                        <span className="text-white font-bold text-sm sm:text-base">
-                          {student.name.charAt(0).toUpperCase()}
+                  <div key={group.discipline} className="border border-gray-700/50 rounded-xl overflow-hidden">
+                    {/* Discipline Group Header */}
+                    <div
+                      className="flex items-center justify-between px-3 sm:px-4 py-2.5 bg-gray-800/80 cursor-pointer hover:bg-gray-800 transition-colors"
+                      onClick={() => toggleGroupCollapse(group.discipline)}
+                    >
+                      <div className="flex items-center gap-2">
+                        {isCollapsed ? (
+                          <ChevronRight className="w-4 h-4 text-gray-400" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-gray-400" />
+                        )}
+                        <span className="font-semibold text-sm sm:text-base text-white">
+                          {group.discipline}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          ({enrolledCount}/{group.students.length})
                         </span>
                       </div>
+
+                      {/* Select All Button */}
+                      <Button
+                        size="sm"
+                        variant={allEnrolled ? 'secondary' : 'success'}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!allEnrolled) {
+                            handleSelectAllInGroup(group.students);
+                          }
+                        }}
+                        disabled={allEnrolled || availableSlots === 0}
+                        leftIcon={<CheckSquare className="w-3.5 h-3.5" />}
+                        className="shrink-0 text-xs"
+                      >
+                        {allEnrolled ? t('classes.enrollModal.allInscribed') : t('classes.enrollModal.selectAll')}
+                      </Button>
                     </div>
 
-                    {/* Student Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm sm:text-base text-white truncate mb-0.5">
-                        {student.name}
+                    {/* Students in Group */}
+                    {!isCollapsed && (
+                      <div className="space-y-1 p-2">
+                        {group.students.map((student) => {
+                          const isEnrolled = enrolledStudents.has(student.id);
+                          const isProcessing = actionLoading === student.id;
+
+                          return (
+                            <div
+                              key={student.id}
+                              className={`
+                                flex items-center gap-3 p-3 sm:p-4 rounded-xl border transition-all duration-200
+                                ${isEnrolled 
+                                  ? 'bg-gradient-to-r from-green-500/10 to-green-600/5 border-green-500/30 shadow-lg shadow-green-500/5' 
+                                  : 'bg-gray-800/50 border-gray-700/50 hover:border-gray-600 hover:bg-gray-800/70'
+                                }
+                              `}
+                            >
+                              {/* Avatar */}
+                              <div className="avatar shrink-0">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg">
+                                  <span className="text-white font-bold text-sm sm:text-base">
+                                    {student.name.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Student Info */}
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-sm sm:text-base text-white truncate mb-0.5">
+                                  {student.name}
+                                </div>
+                                <div className="text-xs sm:text-sm text-gray-400 truncate">
+                                  {student.email}
+                                </div>
+                              </div>
+
+                              {/* Belt Badge */}
+                              <div className="badge badge-outline badge-sm shrink-0 hidden sm:flex">
+                                {student.belt || 'Sin grado'}
+                              </div>
+
+                              {/* Action Button */}
+                              <Button
+                                size="sm"
+                                variant="success"
+                                onClick={() => isEnrolled ? handleUnenroll(student.id) : handleEnroll(student.id)}
+                                disabled={isProcessing || (!isEnrolled && availableSlots === 0)}
+                                isLoading={isProcessing}
+                                leftIcon={isEnrolled ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                                className="shrink-0"
+                              >
+                                {isEnrolled ? t('classes.enrollModal.inscribed') : t('classes.enrollModal.enroll')}
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <div className="text-xs sm:text-sm text-gray-400 truncate">
-                        {student.email}
-                      </div>
-                    </div>
-
-                    {/* Belt Badge */}
-                    <div className="badge badge-outline badge-sm shrink-0 hidden sm:flex">
-                      {student.belt || 'Sin grado'}
-                    </div>
-
-                    {/* Action Button */}
-                    <Button
-                      size="sm"
-                      variant="success"
-                      onClick={() => isEnrolled ? handleUnenroll(student.id) : handleEnroll(student.id)}
-                      disabled={isProcessing || (!isEnrolled && availableSlots === 0)}
-                      isLoading={isProcessing}
-                      leftIcon={isEnrolled ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                      className="shrink-0"
-                    >
-                      {isEnrolled ? t('classes.enrollModal.inscribed') : t('classes.enrollModal.enroll')}
-                    </Button>
+                    )}
                   </div>
                 );
               })
