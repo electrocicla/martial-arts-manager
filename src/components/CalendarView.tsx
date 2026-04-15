@@ -45,7 +45,12 @@ export default function CalendarView() {
 
   // Only show session rows (child occurrences). Parent course rows have parent_course_id === null and is_recurring === 1
   const classesOnDate = selectedDate ? visibleClasses
-    .filter((c: Class) => c.date === selectedDate.toISOString().split('T')[0])
+    .filter((c: Class) => {
+      const y = selectedDate.getFullYear();
+      const m = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const d = String(selectedDate.getDate()).padStart(2, '0');
+      return c.date === `${y}-${m}-${d}`;
+    })
     .filter((c: Class) => (c.parent_course_id !== undefined && c.parent_course_id !== null) || c.is_recurring === 0)
     .sort((a: Class, b: Class) => a.time.localeCompare(b.time))
     : [];

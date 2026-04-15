@@ -22,7 +22,7 @@ export default function Attendance() {
     if (!user) return [] as Class[];
     if (user.role === 'admin') return classes;
     if (user.role === 'instructor') {
-      return classes.filter((cls) => cls.instructor === user.name || cls.instructor === user.id);
+      return classes.filter((cls) => cls.instructor_id === user.id || cls.created_by === user.id);
     }
     return [] as Class[];
   }, [classes, user]);

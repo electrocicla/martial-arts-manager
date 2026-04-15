@@ -4,20 +4,9 @@
  * Follows Dependency Inversion Principle by depending on abstractions
  */
 
-export interface ApiResponse<T = unknown> {
-  data?: T;
-  error?: string;
-  success: boolean;
-}
+import type { ApiResponse, PaginatedResponse } from '../types';
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type { ApiResponse, PaginatedResponse };
 
 export class ApiError extends Error {
   public status: number;

@@ -210,12 +210,19 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     const updateFields: string[] = [];
     const bindValues: (string | number)[] = [];
 
-    Object.entries(updates).forEach(([key, value]) => {
+    const ALLOWED_UPDATE_FIELDS = ['belt_level', 'exam_date', 'exam_time', 'location', 'max_candidates', 'notes'] as const;
+    for (const key of ALLOWED_UPDATE_FIELDS) {
+      const value = updates[key];
       if (value !== undefined) {
         updateFields.push(`${key} = ?`);
         bindValues.push(value);
       }
-    });
+    }
+    // Only admins can change examiner_id and status
+    if (auth.user.role === 'admin') {
+      if (updates.examiner_id !== undefined) { updateFields.push('examiner_id = ?'); bindValues.push(updates.examiner_id); }
+      if (updates.status !== undefined) { updateFields.push('status = ?'); bindValues.push(updates.status); }
+    }
 
     if (updateFields.length === 0) {
       return new Response(

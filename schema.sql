@@ -93,6 +93,7 @@ CREATE TABLE classes (
   time TEXT NOT NULL,
   location TEXT NOT NULL,
   instructor TEXT NOT NULL,
+  instructor_id TEXT,
   max_students INTEGER NOT NULL,
   description TEXT,
   is_recurring INTEGER NOT NULL DEFAULT 0,

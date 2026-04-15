@@ -28,10 +28,10 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       "SELECT DISTINCT location FROM classes WHERE deleted_at IS NULL AND created_by = ? ORDER BY location"
     ).bind(auth.user.id).all<{ location: string }>();
 
-    // Get unique instructors from classes scoped to this user
+    // Get unique instructors from classes scoped to this user (join with users to get names)
     const instructorsResult = await env.DB.prepare(
-      "SELECT DISTINCT instructor FROM classes WHERE deleted_at IS NULL AND created_by = ? ORDER BY instructor"
-    ).bind(auth.user.id).all<{ instructor: string }>();
+      "SELECT DISTINCT u.name as instructor FROM classes c JOIN users u ON c.instructor_id = u.id WHERE c.deleted_at IS NULL AND (c.created_by = ? OR c.instructor_id = ?) ORDER BY u.name"
+    ).bind(auth.user.id, auth.user.id).all<{ instructor: string }>();
 
     const dbDisciplines = disciplinesResult.results?.map(r => r.discipline) || [];
     const dbLocations = locationsResult.results?.map(r => r.location) || [];

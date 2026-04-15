@@ -31,7 +31,7 @@ export async function onRequestGet({ env, request }: { env: Env; request: Reques
       const classCheck = await env.DB.prepare(
         auth.user.role === 'admin'
           ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
-          : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor = ?) AND deleted_at IS NULL"
+          : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
       ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first();
 
       if (!classCheck) {
@@ -51,7 +51,7 @@ export async function onRequestGet({ env, request }: { env: Env; request: Reques
     // Join with classes to ensure we only return records for this user's classes
     const attendanceQuery = auth.user.role === 'admin'
       ? `SELECT a.* FROM attendance a INNER JOIN classes c ON a.class_id = c.id WHERE c.deleted_at IS NULL ORDER BY a.created_at DESC`
-      : `SELECT a.* FROM attendance a INNER JOIN classes c ON a.class_id = c.id WHERE (c.created_by = ? OR c.instructor = ?) AND c.deleted_at IS NULL ORDER BY a.created_at DESC`;
+      : `SELECT a.* FROM attendance a INNER JOIN classes c ON a.class_id = c.id WHERE (c.created_by = ? OR c.instructor_id = ?) AND c.deleted_at IS NULL ORDER BY a.created_at DESC`;
 
     const { results } = auth.user.role === 'admin'
       ? await env.DB.prepare(attendanceQuery).all<AttendanceRecord>()
@@ -102,7 +102,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
         ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor = ?) AND deleted_at IS NULL"
+        : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
     ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first();
 
     const studentCheck = await env.DB.prepare(

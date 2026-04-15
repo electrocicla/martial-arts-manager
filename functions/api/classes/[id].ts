@@ -9,6 +9,7 @@ interface ClassRecord {
   time: string;
   location: string;
   instructor: string;
+  instructor_id?: string;
   max_students: number;
   enrolled_count?: number;
   description?: string;
@@ -54,6 +55,7 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     if (body.time) { sets.push('time = ?'); values.push(body.time); }
     if (body.location) { sets.push('location = ?'); values.push(body.location); }
     if (body.instructor) { sets.push('instructor = ?'); values.push(body.instructor); }
+    if (body.instructorId) { sets.push('instructor_id = ?'); values.push(body.instructorId); }
     if (typeof body.maxStudents === 'number') { sets.push('max_students = ?'); values.push(body.maxStudents); }
     if (typeof body.description === 'string') { sets.push('description = ?'); values.push(body.description); }
     if (typeof body.isRecurring === 'boolean') { sets.push('is_recurring = ?'); values.push(body.isRecurring ? 1 : 0); }

@@ -7,46 +7,46 @@
 
 ## Phase 1 — CRITICAL Security & Data Integrity (Priority: Immediate)
 
-### P1-01 ⬜ Fix `classes.instructor` access control (CRITICAL)
+### P1-01 ✅ Fix `classes.instructor` access control (CRITICAL)
 - `classes.instructor` stores a name string, but attendance API compares it against `auth.user.id` (UUID)
 - `instructor = ?` will **never** match a user ID → non-creator instructors cannot manage attendance
 - **Fix:** Add `instructor_id TEXT` column to `classes`, migrate data, update all queries
 - **Files:** `functions/api/attendance.ts`, `functions/api/classes.ts`, `functions/api/classes/[id].ts`, `schema.sql`
 - **Migration:** New SQL migration to add column and backfill from `users.name` → `users.id`
 
-### P1-02 ⬜ Fix belt exam PUT — arbitrary column injection (CRITICAL)
+### P1-02 ✅ Fix belt exam PUT — arbitrary column injection (CRITICAL)
 - `Object.entries(updates)` iterates unvalidated request body keys into SQL column names
 - Attacker can set `created_by`, `examiner_id`, `status` etc.
 - **Fix:** Allowlist updatable fields explicitly
 - **Files:** `functions/api/belt-exams.ts` (PUT handler, ~L153-170)
 
-### P1-03 ⬜ Fix student self-profile — belt escalation (CRITICAL)
+### P1-03 ✅ Fix student self-profile — belt escalation (CRITICAL)
 - Student `PUT /api/student/profile` allows students to update their own `belt` field
 - **Fix:** Remove `belt` and `disciplines` from student-editable fields
 - **Files:** `functions/api/student/profile.ts`
 
-### P1-04 ⬜ Fix unauthenticated cleanup-expired-qr endpoint (CRITICAL)
+### P1-04 ✅ Fix unauthenticated cleanup-expired-qr endpoint (CRITICAL)
 - `GET /api/attendance/cleanup-expired-qr` has no auth — anyone can trigger QR cleanup + notification spam
 - **Fix:** Add admin-only auth check or shared secret header
 - **Files:** `functions/api/attendance/cleanup-expired-qr.ts`
 
-### P1-05 ⬜ Fix student/payments soft-delete filter (CRITICAL)
+### P1-05 ✅ Fix student/payments soft-delete filter (CRITICAL)
 - `SELECT * FROM payments WHERE student_id = ?` missing `AND deleted_at IS NULL`
 - Soft-deleted payments visible to students
 - **Files:** `functions/api/student/payments.ts`
 
-### P1-06 ⬜ Consolidate triple-duplicate type definitions (CRITICAL)
+### P1-06 ✅ Consolidate triple-duplicate type definitions (CRITICAL)
 - `Student`, `Payment`, `Class`, `Attendance` defined in `src/types.ts`, `src/types/index.ts`, AND `src/lib/api-client.ts`
 - `Discipline` type has silent drift between files
 - **Fix:** Delete `src/types.ts`, remove duplicates from `api-client.ts`, consolidate into `src/types/index.ts`
 
-### P1-07 ⬜ Fix validation.ts discipline enum drift (CRITICAL)
+### P1-07 ✅ Fix validation.ts discipline enum drift (CRITICAL)
 - Zod schema discipline enum is incomplete vs `constants.ts` DISCIPLINES
 - Valid discipline selections rejected by form validation
 - **Fix:** Generate enum from `DISCIPLINES` constant
 - **Files:** `src/lib/validation.ts`, `src/lib/constants.ts`
 
-### P1-08 ⬜ Fix CalendarView timezone bug (CRITICAL)
+### P1-08 ✅ Fix CalendarView timezone bug (CRITICAL)
 - `toISOString().split('T')[0]` converts to UTC, can shift date ±1 day
 - **Fix:** Use `parseLocalDate()` from `src/lib/utils.ts`
 - **Files:** `src/components/CalendarView.tsx`

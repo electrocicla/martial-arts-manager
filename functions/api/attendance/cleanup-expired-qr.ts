@@ -10,6 +10,7 @@
  */
 
 import { Env } from '../../types/index';
+import { authenticateUser } from '../../middleware/auth';
 import { ensureNotificationsSchema } from '../../utils/notifications';
 
 interface ExpiredQRCode {
@@ -32,9 +33,25 @@ interface QRNotification {
 
 /**
  * Scheduled handler - called by Cloudflare Cron Triggers
+ * Now requires admin authentication when called directly via HTTP
  */
-export async function onRequest({ env }: { env: Env }) {
+export async function onRequest({ env, request }: { env: Env; request: Request }) {
   try {
+    // Require admin auth for HTTP requests
+    const auth = await authenticateUser(request, env);
+    if (!auth.authenticated) {
+      return new Response(JSON.stringify({ error: auth.error }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    if (auth.user.role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Admin access required' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     const now = new Date().toISOString();
     
     // Find all expired QR codes

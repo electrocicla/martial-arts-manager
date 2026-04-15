@@ -9,6 +9,7 @@ interface ClassRecord {
   time: string;
   location: string;
   instructor: string;
+  instructor_id?: string;
   max_students: number;
   enrolled_count?: number;
   description?: string;
@@ -85,6 +86,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     const body = await request.json() as CreateClassRequest;
   const { id, name, discipline, date, time, location, instructor, maxStudents, description, isRecurring, recurrencePattern, parentCourseId } = body;
+  const instructorId = auth.user.id;
 
     const now = new Date().toISOString();
 
@@ -122,9 +124,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
             await env.DB.prepare(`
               INSERT INTO classes (
                 id, name, discipline, date, time, location, instructor, max_students,
-                description, is_recurring, recurrence_pattern, is_active, parent_course_id, created_by, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NULL, ?, ?, ?)
-            `).bind(parentId, name, discipline, date, time, location, instructor, maxStudents, description || null, 1, recurrencePattern, auth.user.id, now, now).run();
+                description, is_recurring, recurrence_pattern, is_active, parent_course_id, instructor_id, created_by, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NULL, ?, ?, ?, ?)
+            `).bind(parentId, name, discipline, date, time, location, instructor, maxStudents, description || null, 1, recurrencePattern, instructorId, auth.user.id, now, now).run();
           }
 
           // If children already exist for this parent, return first child to indicate idempotent success
@@ -154,14 +156,14 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         const insertStmt = env.DB.prepare(`
           INSERT INTO classes (
             id, name, discipline, date, time, location, instructor, max_students,
-            description, is_recurring, recurrence_pattern, is_active, parent_course_id, created_by, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
+            description, is_recurring, recurrence_pattern, is_active, parent_course_id, instructor_id, created_by, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
         `);
 
         for (const occ of toInsert) {
           await insertStmt.bind(
             occ.id, name, discipline, occ.dateStr, time, location, instructor, maxStudents,
-            description || null, 0, null, 1, parentId, auth.user.id, now, now
+            description || null, 0, null, 1, parentId, instructorId, auth.user.id, now, now
           ).run();
         }
 
@@ -175,11 +177,11 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     await env.DB.prepare(`
       INSERT INTO classes (
         id, name, discipline, date, time, location, instructor, max_students,
-        description, is_recurring, recurrence_pattern, is_active, parent_course_id, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
+        description, is_recurring, recurrence_pattern, is_active, parent_course_id, instructor_id, created_by, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
     `).bind(
       id, name, discipline, date, time, location, instructor, maxStudents,
-      description || null, isRecurring ? 1 : 0, recurrencePattern || null, parentId, auth.user.id, now, now
+      description || null, isRecurring ? 1 : 0, recurrencePattern || null, parentId, instructorId, auth.user.id, now, now
     ).run();
 
     // Fetch and return the created class
@@ -227,6 +229,7 @@ export async function onRequestPut(context: { request: Request; env: Env, params
     if (body.time) { sets.push('time = ?'); values.push(body.time); }
     if (body.location) { sets.push('location = ?'); values.push(body.location); }
     if (body.instructor) { sets.push('instructor = ?'); values.push(body.instructor); }
+    if (body.instructorId) { sets.push('instructor_id = ?'); values.push(body.instructorId); }
     if (typeof body.maxStudents === 'number') { sets.push('max_students = ?'); values.push(body.maxStudents); }
     if (typeof body.description === 'string') { sets.push('description = ?'); values.push(body.description); }
     if (typeof body.isRecurring === 'boolean') { sets.push('is_recurring = ?'); values.push(body.isRecurring ? 1 : 0); }

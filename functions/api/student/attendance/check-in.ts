@@ -147,7 +147,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       classRecord = await env.DB.prepare(`
         SELECT id, name, date, time, discipline, location
         FROM classes
-        WHERE (instructor = ? OR created_by = ?)
+        WHERE (instructor_id = ? OR created_by = ?)
           AND date = ?
           AND location = ?
           AND deleted_at IS NULL

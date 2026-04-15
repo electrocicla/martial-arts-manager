@@ -9,7 +9,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     }
 
     const { results } = await env.DB.prepare(
-      "SELECT * FROM payments WHERE student_id = ? ORDER BY date DESC"
+      "SELECT * FROM payments WHERE student_id = ? AND deleted_at IS NULL ORDER BY date DESC"
     ).bind(auth.user.student_id).all();
 
     return new Response(JSON.stringify(results), {

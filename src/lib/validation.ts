@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { DISCIPLINES } from './constants';
+
+const disciplineEnum = z.enum(DISCIPLINES as [string, ...string[]]);
 
 // =====================================
 // AUTHENTICATION SCHEMAS
@@ -41,7 +44,7 @@ export const studentSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().optional(),
   belt: z.string().min(1, 'Please select a belt level'),
-  discipline: z.enum(['Jiujitsu', 'MMA', 'Karate', 'Taekwondo', 'Boxing', 'Kenpo Karate']),
+  discipline: disciplineEnum,
   join_date: z.string().min(1, 'Join date is required'),
   date_of_birth: z.string().optional(),
   emergency_contact_name: z.string().optional(),
@@ -54,7 +57,7 @@ export const studentSchema = z.object({
 
 export const classSchema = z.object({
   name: z.string().min(2, 'Class name must be at least 2 characters'),
-  discipline: z.enum(['Jiujitsu', 'MMA', 'Karate', 'Taekwondo', 'Boxing', 'Kenpo Karate']),
+  discipline: disciplineEnum,
   date: z.string().min(1, 'Date is required'),
   time: z.string().min(1, 'Time is required'),
   location: z.string().min(1, 'Location is required'),
