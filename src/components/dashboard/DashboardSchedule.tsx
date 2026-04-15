@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, Loader2, ChevronRight } from 'lucide-react';
-import { getClassStatus } from '../../lib/dashboardUtils';
+import { getClassStatus } from '../../lib/classUtils';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/Button';
 
@@ -64,7 +64,7 @@ export default function DashboardSchedule({ todayClasses, isLoading }: Dashboard
           </div>
         ) : (
           todayClasses.map((cls) => {
-            const status = getClassStatus(cls.date, cls.time);
+            const { status } = getClassStatus(cls.date, cls.time);
 
             return (
               <div key={cls.id} className="card bg-base-200/50 backdrop-blur-sm border border-base-300/20 hover:bg-base-300/60 hover:border-primary/30 transition-all duration-300 active:scale-[0.98] rounded-xl shadow-md hover:shadow-lg">

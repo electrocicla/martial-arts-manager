@@ -5,7 +5,7 @@
  * and a dropdown to view/manage notifications
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bell, X, Check, Trash2, Loader2 } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
@@ -30,7 +30,7 @@ export default function NotificationBell() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -47,7 +47,7 @@ export default function NotificationBell() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchNotifications();
@@ -56,8 +56,7 @@ export default function NotificationBell() {
     const interval = setInterval(fetchNotifications, 30000);
     
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [fetchNotifications]);
 
   const markAsRead = async (notificationId: string) => {
     try {

@@ -109,7 +109,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Create new session
     const sessionId = generateUserId();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
 
     await createSession(env.DB, {
       id: sessionId,
@@ -149,7 +149,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     );
 
     // Set new refresh token as HTTP-only cookie
-    const cookieMaxAge = 7 * 24 * 60 * 60; // 7 days in seconds
+    const cookieMaxAge = 30 * 24 * 60 * 60; // 30 days in seconds
     response.headers.set('Set-Cookie', createRefreshTokenCookie(newRefreshToken, cookieMaxAge));
 
     return response;

@@ -8,6 +8,7 @@ import { prepareAvatarFile } from '../../lib/avatarUpload';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
+import Modal from '../ui/Modal';
 
 interface StudentDetailsModalProps {
   student: Student;
@@ -128,15 +129,9 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
   return (
     <>
       {/* Main Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
-        <div
-          className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
-          onClick={onClose}
-        />
-
+      <Modal isOpen={true} onClose={onClose} size="xl">
         {/* Modal Content */}
-        <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden">
+        <div className="max-h-[90vh] overflow-y-auto overflow-x-hidden">
           {/* Header */}
           <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 px-6 py-6 rounded-t-2xl">
             <div className="flex items-center justify-between">
@@ -383,20 +378,11 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
             </div>
           </div>
         </div>
-      </div>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            onClick={() => {
-              setShowDeleteConfirm(false);
-              setDeleteConfirmText('');
-            }}
-          />
-          
-          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+      <Modal isOpen={showDeleteConfirm} onClose={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }} size="sm">
+          <div className="p-6">
             <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full">
               <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
             </div>
@@ -445,8 +431,7 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
               </Button>
             </div>
           </div>
-        </div>
-      )}
+      </Modal>
     </>
   );
 }

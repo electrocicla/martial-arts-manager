@@ -190,10 +190,12 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
       });
     }
 
-    // Get student and verify ownership
+    // Get student and verify ownership (admin can access all)
     const { results } = await env.DB.prepare(
-      "SELECT avatar_url FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(studentId, auth.user.id).all<{ avatar_url?: string }>();
+      auth.user.role === 'admin'
+        ? "SELECT avatar_url FROM students WHERE id = ? AND deleted_at IS NULL"
+        : "SELECT avatar_url FROM students WHERE id = ? AND (created_by = ? OR instructor_id = ? OR id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [studentId] : [studentId, auth.user.id, auth.user.id, auth.user.student_id || ''])).all<{ avatar_url?: string }>();
 
     if (!results || results.length === 0) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
@@ -206,23 +208,33 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
     
     // Delete from R2 if avatar exists
     if (student.avatar_url) {
-      // Extract key from URL
-      const urlObj = new URL(student.avatar_url);
-      const key = urlObj.pathname.substring(1); // Remove leading slash
-      
+      // Extract R2 key from the avatar URL (format: /api/avatars?key=avatars/...)
+      let key: string | undefined;
       try {
-        await env.AVATARS.delete(key);
-      } catch (error) {
-        console.error('R2 delete error:', error);
-        // Continue even if R2 delete fails
+        if (student.avatar_url.startsWith('/api/avatars')) {
+          const urlObj = new URL(student.avatar_url, 'http://localhost');
+          key = urlObj.searchParams.get('key') || undefined;
+        } else if (student.avatar_url.startsWith('avatars/')) {
+          key = student.avatar_url;
+        }
+      } catch {
+        // If URL parsing fails, skip R2 deletion
+      }
+      
+      if (key) {
+        try {
+          await env.AVATARS.delete(key);
+        } catch (error) {
+          console.error('R2 delete error:', error);
+        }
       }
     }
 
     // Update student record to remove avatar URL
     const now = new Date().toISOString();
     await env.DB.prepare(
-      "UPDATE students SET avatar_url = NULL, updated_at = ?, updated_by = ? WHERE id = ? AND created_by = ?"
-    ).bind(now, auth.user.id, studentId, auth.user.id).run();
+      "UPDATE students SET avatar_url = NULL, updated_at = ?, updated_by = ? WHERE id = ?"
+    ).bind(now, auth.user.id, studentId).run();
 
     return new Response(JSON.stringify({ success: true }), { 
       status: 200,

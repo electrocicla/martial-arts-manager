@@ -16,8 +16,18 @@ export const getBeltColor = (belt: string): string => {
     'Orange': 'badge-secondary',
     'Green': 'badge-success',
     'Blue': 'badge-info',
+    'Purple': 'badge-primary',
     'Brown': 'badge-neutral',
-    'Black': 'badge-neutral'
+    'Black': 'badge-neutral',
+    'Red/White': 'badge-error',
+    'Red': 'badge-error',
+    'Black/Red': 'badge-neutral',
+    'Beginner': 'badge-ghost',
+    'Intermediate': 'badge-info',
+    'Advanced': 'badge-warning',
+    'Expert': 'badge-success',
+    'Professional': 'badge-primary',
+    'Elite': 'badge-accent'
   };
   return colors[belt] || 'badge-ghost';
 };

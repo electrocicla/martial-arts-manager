@@ -8,6 +8,7 @@ import AndroidApkInstallPrompt from './components/mobile/AndroidApkInstallPrompt
 import PullToRefresh from './components/mobile/PullToRefresh';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/ui/ToastProvider';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Lazy load components
 const LandingPage = lazy(() => import('./components/LandingPage'));
@@ -133,13 +134,15 @@ function AppWrapper() {
 
 function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <Router>
-          <AppWrapper />
-        </Router>
-      </ToastProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ToastProvider>
+          <Router>
+            <AppWrapper />
+          </Router>
+        </ToastProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

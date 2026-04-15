@@ -1,6 +1,7 @@
 import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
 import { ensureStudentHasInitialPayment } from '../utils/payment-provisioning';
+import { normalizeAvatarUrl } from '../utils/avatar';
 
 interface StudentRecord {
   id: string;
@@ -22,28 +23,6 @@ interface StudentRecord {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
-}
-
-function normalizeAvatarUrl(avatarUrl: unknown): string | undefined {
-  if (typeof avatarUrl !== 'string' || avatarUrl.trim().length === 0) {
-    return undefined;
-  }
-  if (avatarUrl.startsWith('/api/avatars')) {
-    return avatarUrl;
-  }
-  if (avatarUrl.startsWith('avatars/')) {
-    return `/api/avatars?key=${encodeURIComponent(avatarUrl)}`;
-  }
-  try {
-    const parsed = new URL(avatarUrl);
-    const key = parsed.pathname.startsWith('/') ? parsed.pathname.slice(1) : parsed.pathname;
-    if (key.startsWith('avatars/')) {
-      return `/api/avatars?key=${encodeURIComponent(key)}`;
-    }
-  } catch {
-    // ignore
-  }
-  return avatarUrl;
 }
 
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {

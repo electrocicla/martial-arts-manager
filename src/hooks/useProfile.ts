@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { apiClient } from '../lib/api-client';
 import type { Student } from '../types';
 
 interface ProfileData {
@@ -31,11 +32,6 @@ export function useProfile() {
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
 
-      const headers = {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      };
-
       // Student endpoint requires a valid student_id.
       // For admin/instructor (or students not linked yet), use auth/me directly.
       const shouldUseStudentEndpoint = user.role === 'student' && Boolean(user.student_id);
@@ -43,18 +39,18 @@ export function useProfile() {
       let profilePayload: Student | null = null;
 
       if (shouldUseStudentEndpoint) {
-        const profileRes = await fetch('/api/student/profile', { headers });
+        const profileRes = await apiClient.get<Student>('/api/student/profile');
 
-        if (profileRes.ok) {
-          profilePayload = await profileRes.json() as Student;
+        if (profileRes.success && profileRes.data) {
+          profilePayload = profileRes.data;
         } else {
           // Graceful fallback for legacy users when student profile is temporarily unavailable
-          const userRes = await fetch('/api/auth/me', { headers });
-          if (!userRes.ok) {
+          const userRes = await apiClient.get<{ user: { id: string; name: string; email: string; role: string; avatar_url?: string } }>('/api/auth/me');
+          if (!userRes.success || !userRes.data) {
             throw new Error('Failed to fetch profile data');
           }
 
-          const userData = await userRes.json();
+          const userData = userRes.data;
           profilePayload = {
             id: userData.user.id,
             name: userData.user.name,
@@ -78,12 +74,12 @@ export function useProfile() {
           } as Student;
         }
       } else {
-        const userRes = await fetch('/api/auth/me', { headers });
-        if (!userRes.ok) {
+        const userRes = await apiClient.get<{ user: { id: string; name: string; email: string; role: string; avatar_url?: string } }>('/api/auth/me');
+        if (!userRes.success || !userRes.data) {
           throw new Error('Failed to fetch profile data');
         }
 
-        const userData = await userRes.json();
+        const userData = userRes.data;
         profilePayload = {
           id: userData.user.id,
           name: userData.user.name,

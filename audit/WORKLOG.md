@@ -105,3 +105,67 @@
 ### P1-08: Fix CalendarView timezone bug ✅
 - Replaced `selectedDate.toISOString().split('T')[0]` with local date formatting using `getFullYear()/getMonth()/getDate()`
 - Prevents ±1 day shift when timezone offset crosses midnight
+
+---
+
+## Phase 2 — HIGH Priority (16/16 completed)
+
+### P2-01: Admin bypass for classes GET/PUT/DELETE ✅
+- Admin sees all classes in GET; instructors see own (`created_by` or `instructor_id`)
+- PUT/DELETE: admin bypasses ownership check
+- Files: `classes.ts`, `classes/[id].ts`
+
+### P2-02: Admin bypass for unenroll student DELETE ✅
+- Added admin bypass to DELETE handler in `classes/[classId]/students/[studentId].ts`
+
+### P2-03: Fix student-classes — add instructor_id ✅
+- Added admin bypass + `instructor_id` ownership check in `students/[id]/classes.ts`
+
+### P2-04: Fix avatar delete — broken R2 key extraction ✅
+- Fixed `new URL()` throwing on relative paths; now parses `/api/avatars?key=...` format
+
+### P2-05: Fix avatar delete — admin/instructor bypass ✅
+- Added admin/instructor bypass for avatar deletion ownership check
+
+### P2-06: Add rate limiting to auth endpoints ✅
+- Created `functions/utils/rate-limit.ts` (in-memory sliding window)
+- Login: 10 req/min/IP; Register: 5 req/min/IP
+
+### P2-07: Fix class comments — ownership check ✅
+- Blocked student role from accessing comments
+- Added instructor ownership check for class
+- Added DELETE handler (soft-delete, author-or-admin only)
+
+### P2-08: Add payments PUT/DELETE endpoints ✅
+- PUT: update amount, date, type, notes, status, payment_method with allowlist
+- DELETE: soft-delete via `deleted_at`
+- Both with admin bypass + instructor ownership check
+
+### P2-09: Standardize API access — replace raw fetch() ✅
+- Replaced raw `fetch()` with `apiClient` in 4 files
+- Kept raw fetch in AuthContext (circular dep) and StudentDetailsModal (FormData)
+
+### P2-10: Add Error Boundaries ✅
+- Created `src/components/ErrorBoundary.tsx` with reset + reload
+- Wrapped entire app in `App.tsx`
+
+### P2-11: Fix useGreeting interval performance ✅
+- Changed interval from 1000ms to 60000ms
+
+### P2-12: Migrate modals to shared Modal component ✅
+- Migrated 6 modals to shared `Modal` (escape, backdrop click, aria attrs)
+
+### P2-13: Remove/verify AppContext dead code ✅
+- Confirmed `useApp()` never called; deleted `AppContext.tsx`, removed from `main.tsx`
+
+### P2-14: Deduplicate utility functions ✅
+- `getClassStatus`: canonical in `classUtils.ts`, removed from `dashboardUtils.ts`
+- `getBeltColor`: canonical in `studentUtils.ts`, re-exported from `beltTestingUtils.ts`
+- `normalizeAvatarUrl`: removed local copies in `students.ts`/`students/[id].ts`, import from `utils/avatar.ts`
+
+### P2-15: Fix eslint-disable suppressions ✅
+- Fixed `NotificationBell`: `useCallback` for `fetchNotifications`
+- Verified remaining suppressions are legitimate
+
+### P2-16: Fix session expiry mismatch ✅
+- Aligned DB session expiry from 7→30 days to match JWT refresh token

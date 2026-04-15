@@ -7,6 +7,7 @@ import type { Student } from '../../types';
 import { useToast } from '../../hooks/useToast';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
+import Modal from '../ui/Modal';
 
 interface DisciplineGroup {
   discipline: string;
@@ -185,13 +186,11 @@ export function EnrollStudentsModal({
 
   const availableSlots = maxStudents - enrolledStudents.size;
 
-  if (!isOpen) return null;
-
   // note: enrollment updates call the API immediately and inform parent via onEnrollmentUpdated
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-3xl sm:max-w-4xl mx-auto bg-gradient-to-br from-gray-900 via-gray-900 to-gray-950 border border-gray-700/50 shadow-2xl p-0 max-h-[90vh] overflow-hidden rounded-lg">
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <div className="max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700/50 backdrop-blur-xl p-4 sm:p-6">
           <div className="flex items-start justify-between gap-4">
@@ -427,9 +426,6 @@ export function EnrollStudentsModal({
           </div>
         </div>
       </div>
-      
-      {/* Backdrop */}
-      <div className="modal-backdrop bg-black/60 backdrop-blur-sm" onClick={onClose} />
-    </div>
+    </Modal>
   );
 }

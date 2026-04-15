@@ -1,5 +1,6 @@
 import type { Student, Attendance, Class } from '../types';
 import { BELT_RANKINGS } from './constants';
+export { getBeltColor } from './studentUtils';
 
 export interface UpcomingTest {
   id: number;
@@ -128,8 +129,4 @@ export function calculateEligibleStudents(students: Student[], attendance: Atten
       readyStatus: classesAttended >= getRequiredClasses(student.belt) ? 'ready' : 'needs-more-practice'
     };
   });
-}
-
-export function getBeltColor(belt: string): string {
-  return BELT_COLORS[belt] || 'badge-ghost';
 }

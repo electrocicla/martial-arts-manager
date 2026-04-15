@@ -7,6 +7,7 @@ import { BELT_RANKINGS } from '../../lib/constants';
 import { DISCIPLINES } from '../../lib/constants';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
+import Modal from '../ui/Modal';
 
 interface StudentEditModalProps {
   isOpen: boolean;
@@ -122,18 +123,9 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <div className="max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
@@ -427,6 +419,6 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

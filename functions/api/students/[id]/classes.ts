@@ -15,10 +15,12 @@ export async function onRequestGet({ request, env, params }: { request: Request;
 
     const studentId = params.id;
 
-    // Verify student belongs to user
+    // Verify student belongs to user (admins can access all)
     const studentCheck = await env.DB.prepare(
-      "SELECT id FROM students WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(studentId, auth.user.id).first();
+      auth.user.role === 'admin'
+        ? "SELECT id FROM students WHERE id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM students WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [studentId] : [studentId, auth.user.id, auth.user.id])).first();
 
     if (!studentCheck) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 

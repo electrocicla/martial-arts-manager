@@ -55,78 +55,78 @@
 
 ## Phase 2 — HIGH Security & Consistency (Priority: Short-term)
 
-### P2-01 ⬜ Admin bypass for classes GET/PUT/DELETE
+### P2-01 ✅ Admin bypass for classes GET/PUT/DELETE
 - Admin cannot see/edit/delete classes created by other instructors
 - Inconsistent with enrollment and attendance APIs that grant admin full access
 - **Files:** `functions/api/classes.ts`, `functions/api/classes/[id].ts`
 
-### P2-02 ⬜ Admin bypass for unenroll student DELETE
+### P2-02 ✅ Admin bypass for unenroll student DELETE
 - DELETE handler checks `created_by` without admin override
 - POST/GET handlers in same file correctly handle admin
 - **Files:** `functions/api/classes/[classId]/students/[studentId].ts`
 
-### P2-03 ⬜ Fix student-classes check — add instructor_id
+### P2-03 ✅ Fix student-classes check — add instructor_id
 - Only checks `created_by`, not `instructor_id`
 - **Files:** `functions/api/students/[id]/classes.ts`
 
-### P2-04 ⬜ Fix avatar delete — broken R2 key extraction
+### P2-04 ✅ Fix avatar delete — broken R2 key extraction
 - `new URL(student.avatar_url)` throws on relative paths
 - R2 object never actually deleted
 - **Files:** `functions/api/students/avatar.ts`
 
-### P2-05 ⬜ Fix avatar delete — admin/instructor bypass
+### P2-05 ✅ Fix avatar delete — admin/instructor bypass
 - Avatar delete only checks `created_by`, no admin or instructor_id check
 - **Files:** `functions/api/students/avatar.ts`
 
-### P2-06 ⬜ Add rate limiting to auth endpoints
+### P2-06 ✅ Add rate limiting to auth endpoints
 - No rate limiting on login/register
 - Brute-force attacks unmitigated
 - **Files:** `functions/api/auth/login.ts`, `functions/api/auth/register.ts`
 
-### P2-07 ⬜ Fix class comments — ownership check
+### P2-07 ✅ Fix class comments — ownership check
 - Any authenticated user (including students) can create/read comments on any class
 - No DELETE handler
 - **Files:** `functions/api/classes/[classId]/comments.ts`
 
-### P2-08 ⬜ Add payments PUT/DELETE endpoints
+### P2-08 ✅ Add payments PUT/DELETE endpoints
 - Schema has `deleted_at`, `updated_by`, `status` but no edit/delete endpoints
 - **Files:** `functions/api/payments.ts`
 
-### P2-09 ⬜ Standardize API access — replace raw fetch()
+### P2-09 ✅ Standardize API access — replace raw fetch()
 - 7+ files use raw `fetch()` bypassing centralized auth/error handling
 - **Files:** `src/context/AuthContext.tsx`, `src/hooks/useProfile.ts`, `src/hooks/useStudentDashboardData.ts`, `src/hooks/usePendingApprovalsCount.ts`, `src/components/admin/PendingApprovals.tsx`, `src/components/students/StudentDetailsModal.tsx`
 
-### P2-10 ⬜ Add Error Boundaries
+### P2-10 ✅ Add Error Boundaries
 - No React Error Boundary — any render error crashes entire app
 - **Files:** `src/App.tsx` or new `src/components/ErrorBoundary.tsx`
 
-### P2-11 ⬜ Fix useGreeting interval performance
+### P2-11 ✅ Fix useGreeting interval performance
 - 1-second interval causes 86,400 unnecessary re-renders/day
 - **Fix:** Change to 60,000ms or compute once
 - **Files:** `src/hooks/useGreeting.ts`
 
-### P2-12 ⬜ Migrate modals to shared Modal component
+### P2-12 ✅ Migrate modals to shared Modal component
 - 6+ modals lack focus trap, `role="dialog"`, `aria-modal`
 - A proper `<Modal>` component exists but isn't used
 - **Files:** `StudentFormModal`, `StudentEditModal`, `StudentDetailsModal`, `ClassFormModal`, `ClassDetailsModal`, `EnrollStudentsModal`
 
-### P2-13 ⬜ Remove/verify AppContext dead code
+### P2-13 ✅ Remove/verify AppContext dead code
 - AppContext provides state but individual hooks fetch independently
 - Likely unused
 - **Files:** `src/context/AppContext.tsx`
 
-### P2-14 ⬜ Deduplicate utility functions
+### P2-14 ✅ Deduplicate utility functions
 - `getClassStatus()` in both `classUtils.ts` and `dashboardUtils.ts`
 - `getBeltColor()` in both `studentUtils.ts` and `beltTestingUtils.ts`
 - `normalizeAvatarUrl()` copy-pasted in 3 backend files
 - `disciplines` JSON parsing duplicated in 3 files
 
-### P2-15 ⬜ Fix eslint-disable suppressions
+### P2-15 ✅ Fix eslint-disable suppressions
 - `AuthContext.tsx`: stale closure in token refresh
 - `StudentFormModal/EditModal`: unmemoized `availableDisciplines`
 - `NotificationBell`: `fetchNotifications` not properly memoized
 
-### P2-16 ⬜ Fix session expiry mismatch
+### P2-16 ✅ Fix session expiry mismatch
 - JWT refresh token: 30 days, DB session: 7 days
 - After 7 days JWT valid but session lookup fails
 - **Files:** `functions/utils/jwt.ts`, `functions/api/auth/login.ts`

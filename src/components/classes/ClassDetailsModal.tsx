@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
+import Modal from '../ui/Modal';
 
 type CommentRecord = { id: string; comment: string; author_id: string; created_at: string };
 type RecurrencePattern = { frequency?: string; days?: number[]; endDate?: string };
@@ -95,9 +96,8 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative w-full max-w-3xl bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 border border-gray-700/50 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+      <div className="p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <h3 className="text-2xl font-bold text-white">{cls.name}</h3>
@@ -147,6 +147,6 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

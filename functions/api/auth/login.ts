@@ -7,6 +7,7 @@ import { createTokens } from '../../utils/jwt';
 import { findUserByEmail, createSession, updateUserLastLogin, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
 import { createRefreshTokenCookie } from '../../middleware/auth';
 import { normalizeAvatarUrl } from '../../utils/avatar';
+import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
 
 import { Env } from '../../types/index';
 
@@ -33,6 +34,11 @@ interface LoginResponse {
  */
 export async function onRequestPost({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
+    // Rate limit: 10 attempts per minute per IP
+    const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
+    const { allowed, retryAfterMs } = checkRateLimit(`login:${ip}`, 10, 60_000);
+    if (!allowed) return rateLimitResponse(retryAfterMs);
+
     // Parse request body
     const body = await request.json() as LoginRequest;
     const { email, password } = body;
@@ -119,7 +125,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Create session record
     const sessionId = generateUserId();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
 
     await createSession(env.DB, {
       id: sessionId,
@@ -169,7 +175,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     );
 
     // Set refresh token as HTTP-only cookie
-    const cookieMaxAge = 7 * 24 * 60 * 60; // 7 days in seconds
+    const cookieMaxAge = 30 * 24 * 60 * 60; // 30 days in seconds
     response.headers.set('Set-Cookie', createRefreshTokenCookie(refreshToken, cookieMaxAge));
 
     return response;

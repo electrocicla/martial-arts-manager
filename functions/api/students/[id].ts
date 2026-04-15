@@ -1,5 +1,6 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
+import { normalizeAvatarUrl } from '../../utils/avatar';
 
 interface StudentUpdateRequest {
   name?: string;
@@ -15,28 +16,6 @@ interface StudentUpdateRequest {
   notes?: string;
   is_active?: number;
   avatar_url?: string;
-}
-
-function normalizeAvatarUrl(avatarUrl: unknown): string | undefined {
-  if (typeof avatarUrl !== 'string' || avatarUrl.trim().length === 0) {
-    return undefined;
-  }
-  if (avatarUrl.startsWith('/api/avatars')) {
-    return avatarUrl;
-  }
-  if (avatarUrl.startsWith('avatars/')) {
-    return `/api/avatars?key=${encodeURIComponent(avatarUrl)}`;
-  }
-  try {
-    const parsed = new URL(avatarUrl);
-    const key = parsed.pathname.startsWith('/') ? parsed.pathname.slice(1) : parsed.pathname;
-    if (key.startsWith('avatars/')) {
-      return `/api/avatars?key=${encodeURIComponent(key)}`;
-    }
-  } catch {
-    // ignore
-  }
-  return avatarUrl;
 }
 
 function getString(record: Record<string, unknown>, key: string): string | undefined {

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
 import { Button } from '../ui/Button';
 import type { ClassFormData, Discipline, Class } from '../../types/index';
+import Modal from '../ui/Modal';
 
 interface ClassFormModalProps {
   isOpen: boolean;
@@ -205,18 +206,10 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 font-inter">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300 ease-out"
-        onClick={onClose}
-      ></div>
-      
+    <Modal isOpen={isOpen} onClose={onClose} size="lg" className="font-inter">
       {/* Modal Container */}
-      <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden border border-gray-700/50 animate-scale-in transform transition-all duration-300 ease-out">
+      <div className="max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 flex items-center justify-between transition-all duration-300 hover:from-red-700 hover:to-red-800">
           <h3 className="font-bold text-2xl text-white flex items-center gap-3 tracking-tight">
@@ -587,6 +580,6 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

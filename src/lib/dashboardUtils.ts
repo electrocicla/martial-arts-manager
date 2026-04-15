@@ -12,15 +12,6 @@ export const getGreeting = (currentTime: Date): string => {
 };
 
 /**
- * Determine class status based on date and time
- */
-export const getClassStatus = (date: string, time: string) => {
-  const now = new Date();
-  const classTime = new Date(`${date}T${time}`);
-  return classTime > now ? 'upcoming' : 'ongoing';
-};
-
-/**
  * Generate recent activity items from payments and classes
  */
 export const generateRecentActivity = (recentPayments: Payment[], todayClasses: Class[]) => {

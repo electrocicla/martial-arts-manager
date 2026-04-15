@@ -4,7 +4,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { apiClient } from '../lib/api-client';
 import { onDataEvent } from '../lib/dataEvents';
+
+interface PendingApprovalsData {
+  pending_users?: { id: string }[];
+  users?: { id: string }[];
+}
 
 export function usePendingApprovalsCount() {
   const [count, setCount] = useState(0);
@@ -25,15 +31,10 @@ export function usePendingApprovalsCount() {
     try {
       setLoading(true);
 
-      const response = await fetch('/api/auth/pending-approvals', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const result = await apiClient.get<PendingApprovalsData>('/api/auth/pending-approvals');
 
-      if (response.ok) {
-        const data = await response.json();
-        setCount(data.pending_users?.length || data.users?.length || 0);
+      if (result.success && result.data) {
+        setCount(result.data.pending_users?.length || result.data.users?.length || 0);
       }
     } catch (error) {
       console.error('Failed to fetch pending approvals count:', error);

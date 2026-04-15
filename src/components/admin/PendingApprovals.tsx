@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle, CheckCircle2, RefreshCw, UserCheck, XCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { apiClient } from '../../lib/api-client';
 import { dispatchDataEvent } from '../../lib/dataEvents';
 
 interface PendingUser {
@@ -40,19 +41,13 @@ export function PendingApprovals() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/auth/pending-approvals', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const result = await apiClient.get<PendingApprovalsResponse>('/api/auth/pending-approvals');
 
-      if (!response.ok) {
-        const data = (await response.json().catch(() => ({ error: 'Failed to fetch pending approvals' }))) as PendingApprovalsResponse;
-        throw new Error(data.error || 'Failed to fetch pending approvals');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch pending approvals');
       }
 
-      const data = (await response.json()) as PendingApprovalsResponse;
-      setPendingUsers(data.pending_users || data.users || []);
+      setPendingUsers(result.data?.pending_users || result.data?.users || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -74,18 +69,10 @@ export function PendingApprovals() {
       setProcessingId(userId);
       setError(null);
 
-      const response = await fetch('/api/auth/pending-approvals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ user_id: userId }),
-      });
+      const result = await apiClient.post<PendingApprovalsResponse>('/api/auth/pending-approvals', { user_id: userId });
 
-      if (!response.ok) {
-        const data = (await response.json().catch(() => ({ error: 'Failed to approve account' }))) as PendingApprovalsResponse;
-        throw new Error(data.error || 'Failed to approve account');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to approve account');
       }
 
       // Update local state immediately
@@ -114,16 +101,10 @@ export function PendingApprovals() {
       setProcessingId(userId);
       setError(null);
 
-      const response = await fetch(`/api/auth/pending-approvals?user_id=${encodeURIComponent(userId)}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const result = await apiClient.delete<PendingApprovalsResponse>(`/api/auth/pending-approvals?user_id=${encodeURIComponent(userId)}`);
 
-      if (!response.ok) {
-        const data = (await response.json().catch(() => ({ error: 'Failed to reject account' }))) as PendingApprovalsResponse;
-        throw new Error(data.error || 'Failed to reject account');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to reject account');
       }
 
       // Update local state immediately

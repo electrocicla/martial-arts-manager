@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { apiClient } from '../lib/api-client';
 import type { Student, Class, Payment } from '../types';
 
 interface StudentDashboardData {
@@ -40,31 +41,20 @@ export function useStudentDashboardData() {
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
 
-      const headers = {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      };
-
       const [profileRes, classesRes, paymentsRes] = await Promise.all([
-        fetch('/api/student/profile', { headers, credentials: 'include' }),
-        fetch('/api/student/classes', { headers, credentials: 'include' }),
-        fetch('/api/student/payments', { headers, credentials: 'include' })
+        apiClient.get<Student>('/api/student/profile'),
+        apiClient.get<Class[]>('/api/student/classes'),
+        apiClient.get<Payment[]>('/api/student/payments')
       ]);
 
-      if (!profileRes.ok || !classesRes.ok || !paymentsRes.ok) {
+      if (!profileRes.success || !classesRes.success || !paymentsRes.success) {
         throw new Error('Failed to fetch dashboard data');
       }
 
-      const [profile, classes, payments] = await Promise.all([
-        profileRes.json(),
-        classesRes.json(),
-        paymentsRes.json()
-      ]);
-
       setData({
-        profile,
-        classes,
-        payments,
+        profile: profileRes.data ?? null,
+        classes: classesRes.data ?? [],
+        payments: paymentsRes.data ?? [],
         isLoading: false,
         error: null
       });

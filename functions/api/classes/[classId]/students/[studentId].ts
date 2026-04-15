@@ -15,10 +15,12 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
 
     const { classId, studentId } = params;
 
-    // Verify class belongs to user
+    // Verify class belongs to user (admins can access all)
     const classCheck = await env.DB.prepare(
-      "SELECT id FROM classes WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(classId, auth.user.id).first();
+      auth.user.role === 'admin'
+        ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { 
