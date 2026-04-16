@@ -115,18 +115,3 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   }
 }
 
-/**
- * Generate a secure random session token
- */
-export function generateSessionToken(): string {
-  const array = crypto.getRandomValues(new Uint8Array(32));
-  return uint8ArrayToHex(array);
-}
-
-/**
- * Generate a secure random user ID
- */
-export function generateUserId(): string {
-  const array = crypto.getRandomValues(new Uint8Array(16));
-  return uint8ArrayToHex(array);
-}

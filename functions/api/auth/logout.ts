@@ -2,7 +2,7 @@
  * Logout endpoint - invalidate refresh token and clear cookies
  */
 
-import { deleteSession } from '../../utils/db';
+import { deleteSession, logAuditAction, getClientIP } from '../../utils/db';
 import { getRefreshTokenFromCookies, createClearRefreshTokenCookie } from '../../middleware/auth';
 
 // Cloudflare Workers D1 types
@@ -17,11 +17,26 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const refreshToken = getRefreshTokenFromCookies(request);
     
     if (refreshToken) {
+      // Get user_id from session before deleting
+      const session = await env.DB
+        .prepare('SELECT user_id FROM sessions WHERE refresh_token = ?')
+        .bind(refreshToken)
+        .first<{ user_id: string }>();
+
       // Delete session from database
       await deleteSession(env.DB, refreshToken);
 
-      // TODO: Log audit action (would need user ID from token)
-      // For now, we'll skip audit logging since we'd need to decode the token
+      // Non-blocking audit log
+      if (session?.user_id) {
+        logAuditAction(env.DB, {
+          id: crypto.randomUUID(),
+          user_id: session.user_id,
+          action: 'logout',
+          entity_type: 'session',
+          entity_id: session.user_id,
+          ip_address: getClientIP(request),
+        }).catch(err => console.error('Audit log error:', err));
+      }
     }
 
     // Create response that clears the refresh token cookie

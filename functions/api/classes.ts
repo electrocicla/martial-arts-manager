@@ -190,7 +190,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const createdClass = results?.[0];
 
     if (!createdClass) {
-      return new Response(JSON.stringify({ error: 'Failed to retrieve created class' }), { status: 500 });
+      return new Response(JSON.stringify({ error: 'Failed to retrieve created class' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
     // Non-blocking audit log

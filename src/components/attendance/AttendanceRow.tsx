@@ -22,7 +22,10 @@ export function AttendanceRow({ student, isPresent, onToggle }: AttendanceRowPro
           : 'bg-base-200 border-base-300 hover:border-base-content/20'
         }
       `}
+      role="button"
+      tabIndex={0}
       onClick={onToggle}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
     >
       <div className="card-body p-6">
         <div className="flex items-center justify-between gap-4">

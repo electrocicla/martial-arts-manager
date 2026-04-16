@@ -3,6 +3,7 @@ import type { Student, StudentFormData, Discipline } from '../../types/index';
 import { UserPlus, Mail, Phone, Calendar, X } from 'lucide-react';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../../hooks/useToast';
 import { BELT_RANKINGS } from '../../lib/constants';
 import { DISCIPLINES } from '../../lib/constants';
 import { Button } from '../ui/Button';
@@ -17,6 +18,7 @@ interface StudentFormModalProps {
 
 export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentFormModalProps) {
   const { t } = useTranslation();
+  const toast = useToast();
   const { disciplines } = useClassMetadata();
 
   // Combine metadata disciplines (from API) with the static list to ensure all options are available.
@@ -91,7 +93,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
 
   const handleSubmit = async () => {
     if (!newStudent.name || !newStudent.email) {
-      alert(t('studentForm.requiredField'));
+      toast.error(t('studentForm.requiredField'));
       return;
     }
 
@@ -127,7 +129,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
       setBirthMonth('');
       setBirthYear('');
     } else {
-      alert(result.error || t('studentForm.addFailed'));
+      toast.error(result.error || t('studentForm.addFailed'));
     }
   };
 

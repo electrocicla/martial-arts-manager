@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { classService, type ClassFilters, type ClassStats } from '../services';
 import type { Class, ClassFormData } from '../types/index';
+import { dispatchDataEvent, onDataEvent } from '../lib/dataEvents';
 
 interface UseClassesReturn {
   // Data
@@ -82,6 +83,7 @@ export function useClasses(initialFilters?: ClassFilters): UseClassesReturn {
       const response = await classService.create(payload);
       if (response.success && response.data) {
         setClasses(prev => [...prev, response.data!]);
+        dispatchDataEvent('classes');
         return response.data;
       } else {
         setError(response.error || 'Failed to create class');
@@ -112,12 +114,14 @@ export function useClasses(initialFilters?: ClassFilters): UseClassesReturn {
             const filtered = prev.filter(p => !ids.has(p.id));
             return [...filtered, ...updatedArray].sort((a,b)=> a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
           });
+          dispatchDataEvent('classes');
           return updatedArray[0] || null;
         }
 
         setClasses(prev => prev.map(cls =>
           cls.id === id ? response.data as Class : cls
         ));
+        dispatchDataEvent('classes');
         return response.data as Class;
       } else {
         setError(response.error || 'Failed to update class');
@@ -139,6 +143,7 @@ export function useClasses(initialFilters?: ClassFilters): UseClassesReturn {
       const response = await classService.delete(id);
       if (response.success) {
         setClasses(prev => prev.filter(cls => cls.id !== id));
+        dispatchDataEvent('classes');
         return true;
       } else {
         setError(response.error || 'Failed to delete class');
@@ -195,6 +200,11 @@ export function useClasses(initialFilters?: ClassFilters): UseClassesReturn {
     fetchClasses(currentFilters, controller.signal);
     return () => controller.abort();
   }, [fetchClasses, currentFilters]);
+
+  // Listen for external class mutations
+  useEffect(() => {
+    return onDataEvent('classes', refresh);
+  }, [refresh]);
 
   return {
     classes,

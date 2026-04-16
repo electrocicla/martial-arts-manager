@@ -8,7 +8,7 @@
 
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
-import { generateUserId } from '../../utils/hash';
+
 import { ensureStudentHasInitialPayment } from '../../utils/payment-provisioning';
 import { logAuditAction, getClientIP } from '../../utils/db';
 
@@ -167,7 +167,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
               .run();
           }
         } else {
-          linkedStudentId = generateUserId();
+          linkedStudentId = crypto.randomUUID();
 
           await env.DB.prepare(`
             INSERT INTO students (

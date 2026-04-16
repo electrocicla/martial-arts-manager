@@ -2,7 +2,7 @@
  * Register endpoint - create new user account
  */
 
-import { hashPassword, generateUserId } from '../../utils/hash';
+import { hashPassword } from '../../utils/hash';
 import { createTokens } from '../../utils/jwt';
 import { createUser, emailExists, createSession, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
 import { createRefreshTokenCookie } from '../../middleware/auth';
@@ -143,7 +143,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const passwordHash = await hashPassword(password);
 
     // Create user
-    const userId = generateUserId();
+    const userId = crypto.randomUUID();
     const user = await createUser(env.DB, {
       id: userId,
       email: normalizedEmail,
@@ -187,7 +187,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
                 .run();
             }
           } else {
-            studentId = generateUserId();
+            studentId = crypto.randomUUID();
 
             await env.DB.prepare(`
               INSERT INTO students (
@@ -262,7 +262,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     );
 
     // Create session record
-    const sessionId = generateUserId();
+    const sessionId = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
 
     await createSession(env.DB, {
@@ -276,7 +276,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Log audit action
     await logAuditAction(env.DB, {
-      id: generateUserId(),
+      id: crypto.randomUUID(),
       user_id: user.id,
       action: 'REGISTER',
       entity_type: 'USER',

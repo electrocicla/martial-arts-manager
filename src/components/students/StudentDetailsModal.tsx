@@ -3,6 +3,7 @@ import type { Student } from '../../types/index';
 import { X, Edit2, Trash2, Mail, Phone, Calendar, User, AlertTriangle, Camera, DollarSign } from 'lucide-react';
 import { getBeltColor } from '../../lib/studentUtils';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../../hooks/useToast';
 import StudentPaymentHistory from './StudentPaymentHistory';
 import { prepareAvatarFile } from '../../lib/avatarUpload';
 import { useAuth } from '../../context/AuthContext';
@@ -20,6 +21,7 @@ interface StudentDetailsModalProps {
 
 export default function StudentDetailsModal({ student, onClose, onEdit, onDelete, onAvatarUpdate }: StudentDetailsModalProps) {
   const { t } = useTranslation();
+  const toast = useToast();
   const { accessToken } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -62,7 +64,7 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
       onDelete(student.id);
       onClose();
     } else {
-      alert(t('students.deleteConfirmError') || 'Please type "delete" or "borrar" to confirm');
+      toast.error(t('students.deleteConfirmError') || 'Please type "delete" or "borrar" to confirm');
     }
   };
 
@@ -77,7 +79,7 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
     });
 
     if (!prepared.ok || !prepared.file) {
-      alert(prepared.error || t('students.avatarUploadError') || 'Failed to upload profile photo');
+      toast.error(prepared.error || t('students.avatarUploadError') || 'Failed to upload profile photo');
       e.target.value = '';
       return;
     }
@@ -91,7 +93,7 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
 
       // Get auth token
       if (!accessToken) {
-        alert('Authentication required');
+        toast.error('Authentication required');
         return;
       }
 
@@ -107,17 +109,17 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert(t('students.avatarUploadSuccess') || 'Profile photo uploaded successfully!');
+        toast.success(t('students.avatarUploadSuccess') || 'Profile photo uploaded successfully!');
         
         if (onAvatarUpdate) {
           onAvatarUpdate();
         }
       } else {
-        alert(data.error || t('students.avatarUploadError') || 'Failed to upload profile photo');
+        toast.error(data.error || t('students.avatarUploadError') || 'Failed to upload profile photo');
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert(t('students.avatarUploadError') || 'Failed to upload profile photo');
+      toast.error(t('students.avatarUploadError') || 'Failed to upload profile photo');
     } finally {
       setIsUploading(false);
       e.target.value = '';

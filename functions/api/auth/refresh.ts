@@ -5,7 +5,7 @@
 import { verifyJWT, createTokens } from '../../utils/jwt';
 import { findSessionByRefreshToken, findUserById, updateUserLastLogin, createSession, deleteSession } from '../../utils/db';
 import { getRefreshTokenFromCookies, createRefreshTokenCookie, createClearRefreshTokenCookie } from '../../middleware/auth';
-import { generateUserId } from '../../utils/hash';
+
 import { normalizeAvatarUrl } from '../../utils/avatar';
 
 import { Env } from '../../types/index';
@@ -108,7 +108,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     await deleteSession(env.DB, refreshToken);
 
     // Create new session
-    const sessionId = generateUserId();
+    const sessionId = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
 
     await createSession(env.DB, {

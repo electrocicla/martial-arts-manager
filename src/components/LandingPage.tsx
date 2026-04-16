@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +17,9 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
-import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';const LandingPage: React.FC = () => {
+import { FloatingElement, GlowingOrb } from './landing';
+
+const MartialArtsParticles = React.lazy(() => import('./landing/MartialArtsParticles'));const LandingPage: React.FC = () => {
   const { scrollY } = useScroll();
   const y2 = useTransform(scrollY, [0, 300], [0, -50]);
   const { t } = useTranslation();
@@ -73,7 +75,9 @@ import { MartialArtsParticles, FloatingElement, GlowingOrb } from './landing';co
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-red-900/20 to-black text-white overflow-hidden relative">
       {/* Animated Background */}
-      <MartialArtsParticles />
+      <Suspense fallback={null}>
+        <MartialArtsParticles />
+      </Suspense>
       
       {/* Background Orbs - Performance optimized */}
       {!performance.isLowEnd && (

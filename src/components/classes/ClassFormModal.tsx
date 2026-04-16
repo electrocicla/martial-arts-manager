@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, AlertCircle, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
+import { useToast } from '../../hooks/useToast';
 import { Button } from '../ui/Button';
 import type { ClassFormData, Discipline, Class } from '../../types/index';
 import Modal from '../ui/Modal';
@@ -46,6 +47,7 @@ const DAY_KEYS = [
 
 export default function ClassFormModal({ isOpen, onClose, onSubmit, initialData, onUpdate, initialApplyTo }: ClassFormModalProps) {
   const { t } = useTranslation();
+  const toast = useToast();
   const { disciplines, locations, instructors } = useClassMetadata();
   
   const [newClass, setNewClass] = useState<NewClassState>({
@@ -133,7 +135,7 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
 
   const handleSubmit = async () => {
     if (!newClass.name || !newClass.date || !newClass.time) {
-      alert(t('classForm.requiredField'));
+      toast.error(t('classForm.requiredField'));
       return;
     }
 
@@ -199,7 +201,7 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
         setShowCustomLocation(false);
         setShowCustomInstructor(false);
       } else {
-        alert(t('classForm.addFailed'));
+        toast.error(t('classForm.addFailed'));
       }
     } finally {
       setIsSubmitting(false);

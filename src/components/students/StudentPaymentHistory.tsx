@@ -29,7 +29,8 @@ interface PaymentStats {
 }
 
 export default function StudentPaymentHistory({ studentId }: { studentId: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'pt' ? 'pt-BR' : i18n.language === 'en' ? 'en-US' : 'es-MX';
   const [payments, setPayments] = useState<Payment[]>([]);
   const [stats, setStats] = useState<PaymentStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,7 +92,7 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-MX', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'MXN'
     }).format(amount);
@@ -103,7 +104,7 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
     const d = dateParts
       ? new Date(Number(dateParts[1]), Number(dateParts[2]) - 1, Number(dateParts[3]))
       : new Date(date);
-    return d.toLocaleDateString('es-MX', {
+    return d.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric'

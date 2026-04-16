@@ -99,7 +99,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
 
@@ -168,7 +168,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     }
 
     // Ensure we have an id
-    const paymentId = id ?? `${studentId}-${Date.now()}`;
+    const paymentId = id ?? crypto.randomUUID();
 
     // Insert payment with created_by
     await env.DB.prepare(`
@@ -217,7 +217,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     `).bind(paymentId).first<PaymentRecord>();
     return new Response(JSON.stringify(payment), { status: 201, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
 

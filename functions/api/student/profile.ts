@@ -6,7 +6,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated || !auth.user.student_id) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
     const student = await env.DB.prepare(
@@ -14,7 +14,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     ).bind(auth.user.student_id).first();
 
     if (!student) {
-      return new Response(JSON.stringify({ error: 'Student profile not found' }), { status: 404 });
+      return new Response(JSON.stringify({ error: 'Student profile not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
 
     const studentRecord = student as Record<string, unknown>;
@@ -37,7 +37,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
 
@@ -45,7 +45,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated || !auth.user.student_id) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
     const body = await request.json() as {
@@ -66,7 +66,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       const trimmed = email.trim().toLowerCase();
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(trimmed)) {
-        return new Response(JSON.stringify({ error: 'Invalid email format' }), { status: 400 });
+        return new Response(JSON.stringify({ error: 'Invalid email format' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
       }
 
       // Ensure uniqueness across both tables
@@ -74,14 +74,14 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
         .bind(trimmed, auth.user.id)
         .first<{ id: string }>();
       if (existingUser?.id) {
-        return new Response(JSON.stringify({ error: 'Email is already in use' }), { status: 409 });
+        return new Response(JSON.stringify({ error: 'Email is already in use' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
       }
 
       const existingStudent = await env.DB.prepare('SELECT id FROM students WHERE email = ? AND id != ? AND deleted_at IS NULL')
         .bind(trimmed, auth.user.student_id)
         .first<{ id: string }>();
       if (existingStudent?.id) {
-        return new Response(JSON.stringify({ error: 'Email is already in use' }), { status: 409 });
+        return new Response(JSON.stringify({ error: 'Email is already in use' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
       }
 
       normalizedEmail = trimmed;
@@ -123,6 +123,6 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

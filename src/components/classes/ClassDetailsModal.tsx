@@ -4,6 +4,7 @@ import type { Class as ClassType } from '../../types';
 import { classService } from '../../services/class.service';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../hooks/useToast';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
 import Modal from '../ui/Modal';
@@ -19,6 +20,7 @@ interface Props {
 
 export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
   const { t, i18n } = useTranslation();
+  const toast = useToast();
   const [comments, setComments] = useState<CommentRecord[]>([]);
   const [newComment, setNewComment] = useState('');
   const { isAuthenticated, refreshAuth } = useAuth();
@@ -36,7 +38,7 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
 
     // Require authentication
     if (!isAuthenticated) {
-      alert(t('classDetails.loginRequired') || 'Please log in to add comments');
+      toast.error(t('classDetails.loginRequired') || 'Please log in to add comments');
       // Optionally redirect to login
       window.location.href = '/login';
       return;
@@ -58,11 +60,11 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
       } else {
         // Show server error
         const msg = res.error || t('classDetails.addFailed') || 'Failed to add comment';
-        alert(msg);
+        toast.error(msg);
       }
     } catch (error) {
       console.error('[Add Comment Error]', error);
-      alert(t('classDetails.addFailed') || 'Failed to add comment');
+      toast.error(t('classDetails.addFailed') || 'Failed to add comment');
     }
   };
 

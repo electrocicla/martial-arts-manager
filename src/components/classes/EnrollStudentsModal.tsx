@@ -3,6 +3,7 @@ import { X, UserPlus, Search, Check, Loader2, Users, AlertCircle, ChevronDown, C
 import { useTranslation } from 'react-i18next';
 import { useStudents } from '../../hooks/useStudents';
 import { apiClient } from '../../lib/api-client';
+import { classService } from '../../services/class.service';
 import type { Student } from '../../types';
 import { useToast } from '../../hooks/useToast';
 import { Button } from '../ui/Button';
@@ -174,11 +175,30 @@ export function EnrollStudentsModal({
     const unenrolledInGroup = groupStudents.filter(s => !enrolledStudents.has(s.id));
     if (unenrolledInGroup.length === 0) return;
 
-    for (const student of unenrolledInGroup) {
-      if (enrolledStudents.size >= maxStudents) break;
-      await handleEnroll(student.id);
+    const idsToEnroll = unenrolledInGroup
+      .slice(0, maxStudents - enrolledStudents.size)
+      .map(s => s.id);
+    if (idsToEnroll.length === 0) return;
+
+    setActionLoading('batch');
+    setError(null);
+    try {
+      const res = await classService.batchEnroll(classId, idsToEnroll);
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to batch enroll');
+      }
+      setEnrolledStudents(prev => new Set([...prev, ...idsToEnroll]));
+      onEnrollmentUpdated?.();
+      toastSuccess(t('classes.enrollModal.enrolledSuccess'));
+    } catch (err: unknown) {
+      console.error('Error batch enrolling students:', err);
+      const msg = err instanceof Error ? err.message : t('classes.enrollModal.enrollError');
+      setError(msg);
+      toastError(msg);
+    } finally {
+      setActionLoading(null);
     }
-  }, [enrolledStudents, maxStudents, handleEnroll]);
+  }, [enrolledStudents, maxStudents, classId, onEnrollmentUpdated, toastSuccess, toastError, t]);
 
   const isGroupFullyEnrolled = useCallback((groupStudents: Student[]): boolean => {
     return groupStudents.every(s => enrolledStudents.has(s.id));

@@ -43,7 +43,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
 
     return new Response(JSON.stringify(results), { headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
 
@@ -74,7 +74,7 @@ export async function onRequestPost({ request, env, params }: { request: Request
     }
 
     const body = await request.json() as { comment?: string };
-    if (!body.comment) return new Response(JSON.stringify({ error: 'Missing comment body' }), { status: 400 });
+    if (!body.comment) return new Response(JSON.stringify({ error: 'Missing comment body' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 
     const now = new Date().toISOString();
     const id = crypto.randomUUID();
@@ -94,7 +94,7 @@ export async function onRequestPost({ request, env, params }: { request: Request
     const created = results?.[0];
     return new Response(JSON.stringify(created), { status: 201, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
 

@@ -214,3 +214,60 @@ export function getClientIP(request: Request): string {
 export function getUserAgent(request: Request): string {
   return request.headers.get('User-Agent') || 'unknown';
 }
+
+/**
+ * Cleanup expired QR codes using soft-delete.
+ * Returns the count of soft-deleted codes and details for notifications.
+ */
+export async function cleanupExpiredQRCodes(db: D1Database): Promise<{
+  deletedCount: number;
+  deletedQRs: Array<{
+    id: string;
+    code: string;
+    location: string;
+    instructor_id: string;
+    instructor_name: string;
+    instructor_email: string;
+    valid_until: string;
+  }>;
+}> {
+  const now = new Date().toISOString();
+
+  // Find all expired, active, non-deleted QR codes
+  const expiredQRs = await db.prepare(`
+    SELECT qr.*, u.name as instructor_name, u.email as instructor_email
+    FROM attendance_qr_codes qr
+    LEFT JOIN users u ON qr.instructor_id = u.id
+    WHERE qr.is_active = 1
+      AND qr.deleted_at IS NULL
+      AND qr.valid_until IS NOT NULL
+      AND qr.valid_until < ?
+  `).bind(now).all<{
+    id: string;
+    code: string;
+    location: string;
+    instructor_id: string;
+    instructor_name: string;
+    instructor_email: string;
+    valid_until: string;
+  }>();
+
+  if (!expiredQRs.results || expiredQRs.results.length === 0) {
+    return { deletedCount: 0, deletedQRs: [] };
+  }
+
+  const deletedQRs: typeof expiredQRs.results = [];
+
+  for (const qr of expiredQRs.results) {
+    try {
+      await db.prepare(`
+        UPDATE attendance_qr_codes SET deleted_at = ?, is_active = 0 WHERE id = ?
+      `).bind(now, qr.id).run();
+      deletedQRs.push(qr);
+    } catch (error) {
+      console.error(`Failed to soft-delete QR code ${qr.id}:`, error);
+    }
+  }
+
+  return { deletedCount: deletedQRs.length, deletedQRs };
+}

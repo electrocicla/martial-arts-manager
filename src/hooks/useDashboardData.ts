@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { studentService, classService, paymentService } from '../services';
-import { parseLocalDate } from '../lib/utils';
-import type { Student, Payment, Class } from '../types/index';
+import { analyticsService } from '../services';
+import type { Class, Payment } from '../types/index';
 
 export interface DashboardStats {
   totalStudents: number;
@@ -16,7 +15,7 @@ export interface DashboardStats {
 interface DashboardData {
   stats: DashboardStats;
   todayClasses: Class[];
-  recentStudents: Student[];
+  recentStudents: unknown[];
   recentPayments: Payment[];
   isLoading: boolean;
   error: string | null;
@@ -58,83 +57,28 @@ export function useDashboardData(): DashboardData {
       try {
         setData(prev => ({ ...prev, isLoading: true, error: null }));
 
-        // Fetch all data in parallel using services
-        const [studentsRes, classesRes, paymentsRes] = await Promise.all([
-          studentService.getAll(undefined, { signal }),
-          classService.getAll(undefined, { signal }),
-          paymentService.getAll(undefined, { signal }),
-        ]);
+        const res = await analyticsService.get({ signal });
 
         if (signal.aborted) return;
 
-        const students = studentsRes.data;
-        const classes = classesRes.data;
-        const payments = paymentsRes.data;
-
-        if (!students || !classes || !payments) {
+        if (!res.data) {
           throw new Error('Failed to fetch dashboard data');
         }
 
-        // Calculate stats
-        const now = new Date();
-        // Build today string using local parts to avoid UTC-date shift
-        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-        const weekStart = new Date(now);
-        weekStart.setDate(now.getDate() - now.getDay());
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        // nextMonthStart as upper bound so future-dated payments within the month are included
-        const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-
-        const todayClasses = classes.filter(cls => {
-          const classDate = cls.date;
-          return classDate === today;
-        });
-
-        const thisWeekClasses = classes.filter(cls => {
-          const classDate = parseLocalDate(cls.date);
-          return classDate >= weekStart && classDate <= now;
-        });
-
-        // Use parseLocalDate so "YYYY-MM-DD" strings are parsed as local midnight (not UTC),
-        // and use nextMonthStart as upper bound so admin-entered future dates within the
-        // current month are always counted in the monthly total.
-        const thisMonthPayments = payments.filter(payment => {
-          const paymentDate = parseLocalDate(payment.date);
-          return paymentDate >= monthStart && paymentDate < nextMonthStart;
-        });
-
-        const thisMonthStudents = students.filter(student => {
-          const joinDate = parseLocalDate(student.join_date);
-          return joinDate >= monthStart && joinDate <= now;
-        });
-
-        const revenueThisMonth = thisMonthPayments.reduce((sum, payment) => {
-          if (payment.status === 'completed') {
-            return sum + payment.amount;
-          }
-          if (payment.status === 'refunded') {
-            return sum - payment.amount;
-          }
-          return sum;
-        }, 0);
-
-        const upcomingClasses = classes.filter(cls => {
-          const classDate = new Date(cls.date);
-          return classDate > now;
-        });
+        const analytics = res.data;
 
         setData({
           stats: {
-            totalStudents: students.length,
-            activeStudents: students.filter(s => s.is_active === 1).length,
-            classesThisWeek: thisWeekClasses.length,
-            revenueThisMonth,
-            newEnrollments: thisMonthStudents.length,
-            upcomingClasses: upcomingClasses.length,
+            totalStudents: analytics.students.total,
+            activeStudents: analytics.students.active,
+            classesThisWeek: analytics.classes.thisWeek,
+            revenueThisMonth: analytics.payments.thisMonthRevenue,
+            newEnrollments: analytics.students.newThisMonth,
+            upcomingClasses: analytics.classes.upcomingClasses,
           },
-          todayClasses: todayClasses.slice(0, 5), // Show max 5 classes
-          recentStudents: students.slice(-5).reverse(), // Last 5 students
-          recentPayments: payments.slice(-5).reverse(), // Last 5 payments
+          todayClasses: analytics.classes.todayClasses as Class[],
+          recentStudents: analytics.recentStudents,
+          recentPayments: analytics.recentPayments as Payment[],
           isLoading: false,
           error: null,
         });

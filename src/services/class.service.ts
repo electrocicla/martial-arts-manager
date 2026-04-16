@@ -142,6 +142,10 @@ export class ClassService {
   async addComment(classId: string, comment: string): Promise<ApiResponse<{id:string;comment:string;author_id:string;created_at:string}>> {
     return apiClient.post<{id:string;comment:string;author_id:string;created_at:string}>(`/api/classes/${classId}/comments`, { comment });
   }
+
+  async batchEnroll(classId: string, studentIds: string[]): Promise<ApiResponse<{ enrolled: number; skipped: number }>> {
+    return apiClient.post<{ enrolled: number; skipped: number }>(`/api/classes/${classId}/students/batch`, { student_ids: studentIds });
+  }
 }
 
 // Create singleton instance

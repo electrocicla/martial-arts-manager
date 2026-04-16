@@ -7,6 +7,7 @@ export type D1BindValue = string | number | boolean | null | ArrayBuffer | Date;
 
 export interface D1Database {
   prepare(sql: string): D1PreparedStatement;
+  batch<T = unknown>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]>;
 }
 
 export interface D1PreparedStatement {
@@ -125,13 +126,23 @@ export interface Student {
 export interface Class {
   id: string;
   name: string;
-  instructor: string;
-  start_time: string;
-  end_time: string;
   discipline: string;
-  capacity: number;
-  enrolled_count: number;
+  date: string;
+  time: string;
+  location: string;
+  instructor: string;
+  instructor_id?: string;
+  max_students: number;
+  description?: string;
+  is_recurring: number;
+  recurrence_pattern?: string;
+  parent_course_id?: string;
+  is_active: number;
+  created_by?: string;
+  updated_by?: string;
   created_at: string;
+  updated_at: string;
+  deleted_at?: string;
 }
 
 // Payment types
@@ -139,10 +150,17 @@ export interface Payment {
   id: string;
   student_id: string;
   amount: number;
-  payment_date: string;
-  payment_method: string;
-  description?: string;
+  date: string;
+  type: string;
+  notes?: string;
+  status: string;
+  payment_method?: string;
+  receipt_url?: string;
+  created_by?: string;
+  updated_by?: string;
   created_at: string;
+  updated_at: string;
+  deleted_at?: string;
 }
 
 // Attendance types
@@ -150,9 +168,16 @@ export interface Attendance {
   id: string;
   student_id: string;
   class_id: string;
-  date: string;
-  status: 'present' | 'absent' | 'late';
+  attended: number;
+  check_in_time?: string;
+  check_in_method?: string;
+  qr_code_id?: string;
+  device_info?: string;
+  latitude?: number;
+  longitude?: number;
+  notes?: string;
   created_at: string;
+  updated_at: string;
 }
 
 // Auth types

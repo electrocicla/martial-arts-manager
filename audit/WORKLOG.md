@@ -279,3 +279,59 @@
 
 ### P3-14: Fix StudentDetailsModal prop mutation ?
 - Removed direct prop mutation
+
+---
+
+## Phase 4 — LOW Polish (16/16 completed)
+
+### P4-01: Standardize ID generation ?
+- Replaced all generateUserId() (hex) with crypto.randomUUID() in auth endpoints
+- Removed generateUserId/generateSessionToken from hash.ts
+
+### P4-02: Fix payment ID predictability ?
+- Replaced fallback `$`{studentId}-`$`{Date.now()} with crypto.randomUUID()
+
+### P4-03: Align backend types with schema ?
+- Fixed Class, Payment, Attendance interfaces in functions/types/index.ts
+
+### P4-04: Add Content-Type header to all error responses ?
+- Added missing Content-Type: application/json to 15+ error responses across 9 files
+
+### P4-05: Fix QR cleanup to use soft-delete ?
+- Changed DELETE to UPDATE SET deleted_at, is_active=0 in both cleanup handlers
+
+### P4-06: Deduplicate QR cleanup logic ?
+- Extracted cleanupExpiredQRCodes() into functions/utils/db.ts
+
+### P4-07: Fix useStudentStats wrong icon ?
+- Already fixed in P3-02 (DollarSign replaced with UserX)
+
+### P4-08: Fix hardcoded currency ?
+- StudentPaymentHistory now uses i18n.language-derived locale instead of hardcoded es-MX
+
+### P4-09: Lazy-load particle system ?
+- MartialArtsParticles loaded via React.lazy() with Suspense fallback
+
+### P4-10: Add batch enrollment endpoint ?
+- Created POST /api/classes/[classId]/students/batch with D1.batch()
+- Frontend handleSelectAllInGroup now uses single batch call
+
+### P4-11: Create dedicated analytics API ?
+- Created GET /api/analytics with SQL aggregates (18 queries via D1.batch())
+- useDashboardData now calls single endpoint instead of 3 separate services
+
+### P4-12: Add keyboard accessibility to AttendanceRow ?
+- Added role=button, tabIndex=0, onKeyDown (Enter/Space) to clickable div
+
+### P4-13: Fix useClasses dataEvent dispatch ?
+- Added dispatchDataEvent('classes') after create/update/delete mutations
+- Added onDataEvent listener for cross-hook sync
+
+### P4-14: Replace alert() with toast notifications ?
+- Replaced 15 alert() calls across 5 files with useToast hook
+
+### P4-15: Add class_comments FK on author_id ?
+- Added idx_class_comments_author_id index, updated schema.sql with FK constraint
+
+### P4-16: Add logout audit logging ?
+- Logout handler now logs audit action with user_id before session deletion

@@ -205,52 +205,52 @@
 
 ## Phase 4 — LOW Polish (Priority: Long-term)
 
-### P4-01 ⬜ Standardize ID generation
+### P4-01 ✅ Standardize ID generation
 - Mix of `crypto.randomUUID()`, `generateUserId()` (hex), and composite IDs
 
-### P4-02 ⬜ Fix payment ID predictability
+### P4-02 ✅ Fix payment ID predictability
 - Fallback `${studentId}-${Date.now()}` is guessable and can collide
 - Use `crypto.randomUUID()`
 
-### P4-03 ⬜ Align backend TypeScript types with schema
+### P4-03 ✅ Align backend TypeScript types with schema
 - `functions/types/index.ts` has stale `start_time`/`end_time`/`capacity` etc.
 
-### P4-04 ⬜ Add Content-Type header to all error responses
+### P4-04 ✅ Add Content-Type header to all error responses
 
-### P4-05 ⬜ Fix QR cleanup to use soft-delete
+### P4-05 ✅ Fix QR cleanup to use soft-delete
 - Hard-deletes QR codes despite `deleted_at` column existing
 
-### P4-06 ⬜ Deduplicate scheduled QR cleanup logic
+### P4-06 ✅ Deduplicate scheduled QR cleanup logic
 - Nearly identical logic in `_scheduled.ts` and `cleanup-expired-qr.ts`
 
-### P4-07 ⬜ Fix `useStudentStats` wrong icon
+### P4-07 ✅ Fix `useStudentStats` wrong icon
 - Uses `DollarSign` for "Inactive" stat card
 
-### P4-08 ⬜ Fix hardcoded currency in StudentPaymentHistory
+### P4-08 ✅ Fix hardcoded currency in StudentPaymentHistory
 - Hardcodes `'es-MX'` and `'MXN'`
 
-### P4-09 ⬜ Lazy-load particle system
+### P4-09 ✅ Lazy-load particle system
 - `performanceMonitor.ts` + `particlePool.ts` imported unconditionally
 
-### P4-10 ⬜ Add batch enrollment endpoint
+### P4-10 ✅ Add batch enrollment endpoint
 - `handleSelectAllInGroup` makes sequential API calls
 
-### P4-11 ⬜ Create dedicated analytics API
+### P4-11 ✅ Create dedicated analytics API
 - Currently fetches all students, payments, classes, attendance data
 - Should return pre-computed analytics
 
-### P4-12 ⬜ Add keyboard accessibility to AttendanceRow
+### P4-12 ✅ Add keyboard accessibility to AttendanceRow
 - Clickable div lacks `role="button"`, `tabIndex`, `onKeyDown`
 
-### P4-13 ⬜ Fix `useClasses` missing dataEvent dispatch
+### P4-13 ✅ Fix `useClasses` missing dataEvent dispatch
 - Does not dispatch `'classes'` event after mutations
 
-### P4-14 ⬜ Replace `alert()` and `window.confirm()` with toast/modal
+### P4-14 ✅ Replace `alert()` and `window.confirm()` with toast/modal
 - `StudentFormModal`, `StudentDetailsModal`, `ClassDetailsModal`, `PendingApprovals`
 
-### P4-15 ⬜ Add `class_comments` FK on `author_id`
+### P4-15 ✅ Add `class_comments` FK on `author_id`
 
-### P4-16 ⬜ Add logout audit logging
+### P4-16 ✅ Add logout audit logging
 
 ---
 

@@ -5,7 +5,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated || !auth.user.student_id) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
     // Get enrolled classes
@@ -21,6 +21,6 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500 });
+    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

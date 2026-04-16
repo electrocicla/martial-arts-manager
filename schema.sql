@@ -171,7 +171,8 @@ CREATE TABLE class_comments (
   created_at TEXT NOT NULL,
   updated_at TEXT,
   deleted_at TEXT,
-  FOREIGN KEY (class_id) REFERENCES classes(id)
+  FOREIGN KEY (class_id) REFERENCES classes(id),
+  FOREIGN KEY (author_id) REFERENCES users(id)
 );
 
 -- Attendance table
@@ -325,6 +326,7 @@ CREATE INDEX idx_enrollments_status ON class_enrollments(enrollment_status);
 
 -- Class comments indexes
 CREATE INDEX idx_class_comments_class_id ON class_comments(class_id);
+CREATE INDEX idx_class_comments_author_id ON class_comments(author_id);
 
 -- Attendance indexes
 CREATE INDEX idx_attendance_class_id ON attendance(class_id);
