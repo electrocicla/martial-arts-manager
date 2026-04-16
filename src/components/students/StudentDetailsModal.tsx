@@ -107,8 +107,6 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Update local student object with new avatar URL
-        student.avatar_url = data.avatarUrl;
         alert(t('students.avatarUploadSuccess') || 'Profile photo uploaded successfully!');
         
         if (onAvatarUpdate) {

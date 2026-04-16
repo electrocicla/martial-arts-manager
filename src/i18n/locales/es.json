@@ -634,8 +634,74 @@
     "noStudentsEnrolled": "Sin Estudiantes Inscritos",
     "enrollStudentsFirst": "Agrega estudiantes a esta clase para comenzar a seguir la asistencia",
     "enrollStudents": "Inscribir Estudiantes"
-  }
-  ,
+  },
+  "pendingApproval": {
+    "title": "Cuenta pendiente de aprobación",
+    "description": "Tu cuenta ha sido creada exitosamente, pero debe ser aprobada por un administrador o instructor antes de que puedas acceder al sistema.",
+    "whatIsNext": "¿Qué sigue?",
+    "adminWillReview": "Un administrador revisará tu solicitud pronto",
+    "emailNotification": "Recibirás un correo cuando tu cuenta sea aprobada",
+    "canSignIn": "Podrás iniciar sesión una vez que tu cuenta sea aprobada",
+    "needHelp": "¿Necesitas ayuda?",
+    "contactAdmin": "Si tienes preguntas o necesitas acelerar el proceso, contacta al administrador del gimnasio directamente.",
+    "backToLogin": "Volver al inicio de sesión",
+    "checkStatus": "Verificar estado",
+    "footer": "Hamarr Martial Arts Manager"
+  },
+  "pendingApprovals": {
+    "noPending": "Sin cuentas pendientes",
+    "allProcessed": "Todas las cuentas han sido procesadas",
+    "title": "Aprobaciones pendientes",
+    "subtitle": "Las cuentas nuevas requieren aprobación",
+    "registered": "Registrado",
+    "notes": "Notas",
+    "approveAccount": "Aprobar cuenta",
+    "rejectAccount": "Rechazar cuenta",
+    "processing": "Procesando...",
+    "confirmApprove": "¿Aprobar la cuenta de {{name}}?",
+    "confirmReject": "¿Rechazar la cuenta de {{name}}? Esto desactivará la cuenta.",
+    "noAuthToken": "Sin token de autenticación",
+    "approveError": "Error al aprobar la cuenta",
+    "rejectError": "Error al rechazar la cuenta"
+  },
+  "activity": {
+    "title": "Actividad Reciente",
+    "viewAll": "Ver Todo"
+  },
+  "login": {
+    "welcomeMessage": "Bienvenido de vuelta, guerrero. Accede a tu dojo.",
+    "enterEmail": "Ingresa tu correo",
+    "emailLabel": "Correo Electrónico",
+    "enterPassword": "Ingresa tu contraseña",
+    "passwordLabel": "Contraseña",
+    "signingIn": "Iniciando Sesión...",
+    "signIn": "Iniciar Sesión",
+    "noAccount": "¿No tienes cuenta?",
+    "signUp": "Regístrate",
+    "backToHome": "Volver al Inicio"
+  },
+  "studentStats": {
+    "totalStudents": "Total Estudiantes",
+    "active": "Activos",
+    "thisMonth": "Este Mes",
+    "inactive": "Inactivos"
+  },
+  "days": {
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mié",
+    "thu": "Jue",
+    "fri": "Vie",
+    "sat": "Sáb",
+    "sun": "Dom",
+    "monday": "Lunes",
+    "tuesday": "Martes",
+    "wednesday": "Miércoles",
+    "thursday": "Jueves",
+    "friday": "Viernes",
+    "saturday": "Sábado",
+    "sunday": "Domingo"
+  },
   "analytics": {
     "dashboardTitle": "Panel de Análisis",
     "dashboardSubtitle": "Rastrea métricas de rendimiento y crecimiento",

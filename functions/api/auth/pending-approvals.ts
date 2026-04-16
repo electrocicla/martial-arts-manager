@@ -10,6 +10,7 @@ import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 import { generateUserId } from '../../utils/hash';
 import { ensureStudentHasInitialPayment } from '../../utils/payment-provisioning';
+import { logAuditAction, getClientIP } from '../../utils/db';
 
 interface PendingUser {
   id: string;
@@ -39,8 +40,9 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       });
     }
 
-    // Get all pending approval accounts
-    const { results } = await env.DB.prepare(`
+    // Get pending approval accounts (instructors only see students)
+    const isInstructor = auth.user.role === 'instructor';
+    const query = `
       SELECT 
         id, 
         email, 
@@ -49,9 +51,10 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         created_at,
         registration_notes
       FROM users
-      WHERE is_approved = 0 AND is_active = 1
+      WHERE is_approved = 0 AND is_active = 1${isInstructor ? " AND role = 'student'" : ''}
       ORDER BY created_at DESC
-    `).all<PendingUser>();
+    `;
+    const { results } = await env.DB.prepare(query).all<PendingUser>();
 
     return new Response(JSON.stringify({ 
       pending_users: results || []
@@ -223,6 +226,16 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       });
     }
 
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: wasPending ? 'approve' : 'sync',
+      entity_type: 'user',
+      entity_id: user_id,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
+
     return new Response(JSON.stringify({ 
       success: true,
       message: wasPending
@@ -295,6 +308,16 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
     await env.DB.prepare(`
       UPDATE users SET is_active = 0, updated_at = ? WHERE id = ?
     `).bind(new Date().toISOString(), userId).run();
+
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: 'reject',
+      entity_type: 'user',
+      entity_id: userId,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
 
     return new Response(JSON.stringify({ 
       success: true,

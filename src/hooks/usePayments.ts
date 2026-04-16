@@ -46,12 +46,13 @@ export function usePayments(initialFilters?: PaymentFilters): UsePaymentsReturn 
   const [error, setError] = useState<string | null>(null);
   const [currentFilters, setCurrentFilters] = useState<PaymentFilters | undefined>(initialFilters);
 
-  const fetchPayments = useCallback(async (filters?: PaymentFilters) => {
+  const fetchPayments = useCallback(async (filters?: PaymentFilters, signal?: AbortSignal) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await paymentService.getAll(filters);
+      const response = await paymentService.getAll(filters, { signal });
+      if (signal?.aborted) return;
       if (response.success && response.data) {
         setPayments(response.data);
       } else {
@@ -199,7 +200,9 @@ export function usePayments(initialFilters?: PaymentFilters): UsePaymentsReturn 
 
   // Initial load
   useEffect(() => {
-    fetchPayments(currentFilters);
+    const controller = new AbortController();
+    fetchPayments(currentFilters, controller.signal);
+    return () => controller.abort();
   }, [fetchPayments, currentFilters]);
 
   // Refetch whenever another hook instance mutates payments data

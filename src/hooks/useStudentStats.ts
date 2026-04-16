@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Users, TrendingUp, Calendar, DollarSign } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Users, TrendingUp, Calendar, UserX } from 'lucide-react';
 import type { Student } from '../types/index';
 import type { ComponentType } from 'react';
 
@@ -16,6 +17,7 @@ interface StudentStatsItem {
  * Follows SRP by focusing only on statistics calculation logic
  */
 export const useStudentStats = (students: Student[], studentStats?: { total?: number; active?: number }): StudentStatsItem[] => {
+  const { t } = useTranslation();
   const stats = useMemo(() => {
     const totalStudents = studentStats?.total || students.length;
     const activeStudents = studentStats?.active || students.filter((s: Student) => s.is_active).length;
@@ -35,31 +37,31 @@ export const useStudentStats = (students: Student[], studentStats?: { total?: nu
 
     return [
       {
-        label: 'Total Students',
+        label: t('studentStats.totalStudents'),
         value: totalStudents,
         icon: Users,
         color: 'text-primary'
       },
       {
-        label: 'Active',
+        label: t('studentStats.active'),
         value: activeStudents,
         icon: TrendingUp,
         color: 'text-success'
       },
       {
-        label: 'This Month',
+        label: t('studentStats.thisMonth'),
         value: thisMonthStudents,
         icon: Calendar,
         color: 'text-info'
       },
       {
-        label: 'Inactive',
+        label: t('studentStats.inactive'),
         value: inactiveStudents,
-        icon: DollarSign,
+        icon: UserX,
         color: 'text-warning'
       },
     ];
-  }, [students, studentStats]);
+  }, [students, studentStats, t]);
 
   return stats;
 };

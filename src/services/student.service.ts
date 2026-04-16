@@ -23,7 +23,7 @@ export interface StudentStats {
 export class StudentService {
   private readonly endpoint = '/api/students';
 
-  async getAll(filters?: StudentFilters): Promise<ApiResponse<Student[]>> {
+  async getAll(filters?: StudentFilters, options?: { signal?: AbortSignal }): Promise<ApiResponse<Student[]>> {
     const params = new URLSearchParams();
 
     if (filters?.belt) params.append('belt', filters.belt);
@@ -34,7 +34,7 @@ export class StudentService {
     const query = params.toString();
     const endpoint = query ? `${this.endpoint}?${query}` : this.endpoint;
 
-    return apiClient.get<Student[]>(endpoint);
+    return apiClient.get<Student[]>(endpoint, { signal: options?.signal });
   }
 
   async getById(id: string): Promise<ApiResponse<Student>> {

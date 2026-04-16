@@ -135,11 +135,11 @@
 
 ## Phase 3 — MEDIUM Improvements (Priority: Medium-term)
 
-### P3-01 ⬜ Regenerate schema.sql from current DB state
+### P3-01 ✅ Regenerate schema.sql from current DB state
 - Missing 6+ tables and many columns added by migrations
 - **Files:** `schema.sql`, `migrations/`
 
-### P3-02 ⬜ Complete i18n coverage
+### P3-02 ✅ Complete i18n coverage
 - `PendingApprovalPage.tsx`: Zero i18n (all hardcoded English)
 - `PendingApprovals.tsx`: All strings hardcoded
 - `DashboardActivity.tsx`: Hardcoded English
@@ -147,57 +147,57 @@
 - `useStudentStats.ts`: Hardcoded English
 - `ClassFormModal.tsx`: `DAYS_OF_WEEK` hardcoded in Spanish
 
-### P3-03 ⬜ Extract large components (SRP)
+### P3-03 ✅ Extract large components (SRP)
 - `StudentManager.tsx` (~300+ lines): Extract `StudentList`, `StudentFilters`, `StudentStats`
 - `ClassManager.tsx` (~300+ lines): Extract sub-components
 - `PaymentManager.tsx`: Extract `PaymentForm`, `PaymentList`, `PaymentFilters`
 - `StudentProfile.tsx` (~300+ lines): Split into tab components
 
-### P3-04 ⬜ Centralize polling
+### P3-04 ✅ Centralize polling
 - `usePendingApprovalsCount` + `NotificationBell` both poll every 30s
 - Duplicate polling when both mounted
 - **Fix:** Shared context/provider for polling
 
-### P3-05 ⬜ Add AbortController to data-fetching hooks
+### P3-05 ✅ Add AbortController to data-fetching hooks
 - Hooks don't cancel requests on unmount
 - Potential "setState on unmounted component" warnings
 
-### P3-06 ⬜ Add audit logging to CRUD operations
+### P3-06 ✅ Add audit logging to CRUD operations
 - `audit_logs` table exists, `logAuditAction` utility exists
 - Only called during login/register
 - Should log: student create/update/delete, payment ops, class changes, approvals
 
-### P3-07 ⬜ Add missing DB indexes
+### P3-07 ✅ Add missing DB indexes
 - `idx_classes_created_by`, `idx_students_created_by`, `idx_students_instructor_id`
 - `idx_payments_student_date` (composite)
 
-### P3-08 ⬜ Clean expired sessions
+### P3-08 ✅ Clean expired sessions
 - 132 expired sessions in DB
 - `deleteExpiredSessions()` utility exists but never scheduled
 - **Fix:** Add to `_scheduled.ts` cron handler
 
-### P3-09 ⬜ Fix inconsistent error response format
+### P3-09 ✅ Fix inconsistent error response format
 - Some endpoints: `{ error: "msg" }`, others: `{ success: false, message: "msg" }`
 - **Fix:** Shared error response helper, standardize on one shape
 
-### P3-10 ⬜ Fix emailExists blocking re-registration
+### P3-10 ✅ Fix emailExists blocking re-registration
 - `emailExists` doesn't filter `is_active`, blocking rejected users from re-registering
 - **Files:** `functions/utils/db.ts`
 
-### P3-11 ⬜ Fix pending approvals scope
+### P3-11 ✅ Fix pending approvals scope
 - Instructors see ALL pending users, not just those who selected them
 - **Files:** `functions/api/auth/pending-approvals.ts`
 
-### P3-12 ⬜ Fix student delete — soft-delete user instead of hard-delete
+### P3-12 ✅ Fix student delete — soft-delete user instead of hard-delete
 - Student soft-deleted but linked user account hard-deleted
 - Destroys audit history
 - **Files:** `functions/api/students/[id].ts`
 
-### P3-13 ⬜ Fix metadata disciplines scope
+### P3-13 ✅ Fix metadata disciplines scope
 - Disciplines query is global, unlike locations and instructors which are scoped to user
 - **Files:** `functions/api/classes/metadata.ts`
 
-### P3-14 ⬜ Fix StudentDetailsModal prop mutation
+### P3-14 ✅ Fix StudentDetailsModal prop mutation
 - Directly mutates `student.avatar_url = data.avatarUrl` — should use callback to parent
 - **Files:** `src/components/students/StudentDetailsModal.tsx`
 

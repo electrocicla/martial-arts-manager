@@ -21,7 +21,7 @@ export function useStudentDashboardData() {
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal?: AbortSignal) => {
     if (!user) {
       setData(prev => ({ ...prev, isLoading: false, error: 'Not authenticated' }));
       return;
@@ -42,10 +42,12 @@ export function useStudentDashboardData() {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
 
       const [profileRes, classesRes, paymentsRes] = await Promise.all([
-        apiClient.get<Student>('/api/student/profile'),
-        apiClient.get<Class[]>('/api/student/classes'),
-        apiClient.get<Payment[]>('/api/student/payments')
+        apiClient.get<Student>('/api/student/profile', { signal }),
+        apiClient.get<Class[]>('/api/student/classes', { signal }),
+        apiClient.get<Payment[]>('/api/student/payments', { signal })
       ]);
+
+      if (signal?.aborted) return;
 
       if (!profileRes.success || !classesRes.success || !paymentsRes.success) {
         throw new Error('Failed to fetch dashboard data');
@@ -68,7 +70,9 @@ export function useStudentDashboardData() {
   }, [user, accessToken]);
 
   useEffect(() => {
-    fetchData();
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
   }, [fetchData]);
 
   return { ...data, refresh: fetchData };

@@ -2,6 +2,7 @@ import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
 import { ensureStudentHasInitialPayment } from '../utils/payment-provisioning';
 import { normalizeAvatarUrl } from '../utils/avatar';
+import { logAuditAction, getClientIP } from '../utils/db';
 
 interface StudentRecord {
   id: string;
@@ -189,6 +190,16 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: 'create',
+      entity_type: 'student',
+      entity_id: id,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
 
     return new Response(JSON.stringify({
       ...createdStudent,

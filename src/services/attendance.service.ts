@@ -33,7 +33,7 @@ export interface AttendanceStats {
 export class AttendanceService {
   private readonly endpoint = '/api/attendance';
 
-  async getAll(filters?: AttendanceFilters): Promise<ApiResponse<Attendance[]>> {
+  async getAll(filters?: AttendanceFilters, options?: { signal?: AbortSignal }): Promise<ApiResponse<Attendance[]>> {
     const params = new URLSearchParams();
 
     if (filters?.classId) params.append('classId', filters.classId);
@@ -46,7 +46,7 @@ export class AttendanceService {
     const query = params.toString();
     const endpoint = query ? `${this.endpoint}?${query}` : this.endpoint;
 
-    return apiClient.get<Attendance[]>(endpoint);
+    return apiClient.get<Attendance[]>(endpoint, { signal: options?.signal });
   }
 
   async getById(id: string): Promise<ApiResponse<Attendance>> {

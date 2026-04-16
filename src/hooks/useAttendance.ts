@@ -47,12 +47,13 @@ export function useAttendance(initialFilters?: AttendanceFilters): UseAttendance
   const [error, setError] = useState<string | null>(null);
   const [currentFilters, setCurrentFilters] = useState<AttendanceFilters | undefined>(initialFilters);
 
-  const fetchAttendance = useCallback(async (filters?: AttendanceFilters) => {
+  const fetchAttendance = useCallback(async (filters?: AttendanceFilters, signal?: AbortSignal) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await attendanceService.getAll(filters);
+      const response = await attendanceService.getAll(filters, { signal });
+      if (signal?.aborted) return;
       if (response.success && response.data) {
         setAttendance(response.data);
       } else {
@@ -229,7 +230,9 @@ export function useAttendance(initialFilters?: AttendanceFilters): UseAttendance
 
   // Initial load
   useEffect(() => {
-    fetchAttendance(currentFilters);
+    const controller = new AbortController();
+    fetchAttendance(currentFilters, controller.signal);
+    return () => controller.abort();
   }, [fetchAttendance, currentFilters]);
 
   // Refetch whenever another hook instance mutates attendance data

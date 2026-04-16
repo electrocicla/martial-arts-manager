@@ -12,6 +12,7 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 import { ensureNotificationsSchema } from '../../utils/notifications';
+import { errorResponse } from '../../utils/response';
 
 interface ExpiredQRCode {
   id: string;
@@ -170,12 +171,6 @@ export async function onRequest({ env, request }: { env: Env; request: Request }
 
   } catch (error) {
     console.error('QR cleanup error:', error);
-    return new Response(JSON.stringify({ 
-      success: false,
-      error: (error as Error).message 
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return errorResponse((error as Error).message, 500);
   }
 }

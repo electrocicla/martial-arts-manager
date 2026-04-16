@@ -1,4 +1,5 @@
 import { Activity, ChevronRight, DollarSign, BookOpen, Info, AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/Button';
 
 interface ActivityItem {
@@ -13,6 +14,7 @@ interface DashboardActivityProps {
 }
 
 export default function DashboardActivity({ recentActivity }: DashboardActivityProps) {
+  const { t } = useTranslation();
   const getIcon = (iconName: string, type: string) => {
     if (iconName === 'DollarSign') return <DollarSign className="w-5 h-5 text-emerald-500" />;
     if (iconName === 'BookOpen') return <BookOpen className="w-5 h-5 text-blue-500" />;
@@ -24,10 +26,10 @@ export default function DashboardActivity({ recentActivity }: DashboardActivityP
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center gap-2">
           <Activity className="w-5 h-5 text-primary" />
-          Recent Activity
+          {t('activity.title')}
         </h2>
         <Button variant="ghost" size="sm" rightIcon={<ChevronRight className="w-4 h-4" />}>
-          View All
+          {t('activity.viewAll')}
         </Button>
       </div>
 

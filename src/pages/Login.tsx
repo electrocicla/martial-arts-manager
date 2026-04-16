@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, AlertCircle, ArrowLeft, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
@@ -15,6 +16,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const {
     register,
@@ -97,7 +99,7 @@ export default function Login() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.6 }}
             >
-              Welcome back, warrior. Access your dojo.
+              {t('login.welcomeMessage')}
             </motion.p>
           </CardHeader>
 
@@ -125,8 +127,8 @@ export default function Login() {
                 <Input
                   {...register('email')}
                   type="email"
-                  placeholder="Enter your email"
-                  label="Email Address"
+                  placeholder={t('login.enterEmail')}
+                  label={t('login.emailLabel')}
                   error={errors.email?.message}
                   disabled={isLoading}
                   className="bg-slate-800/50 border-slate-600/50 text-white placeholder:text-slate-400"
@@ -137,8 +139,8 @@ export default function Login() {
                 <Input
                   {...register('password')}
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  label="Password"
+                  placeholder={t('login.enterPassword')}
+                  label={t('login.passwordLabel')}
                   error={errors.password?.message}
                   disabled={isLoading}
                   className="bg-slate-800/50 border-slate-600/50 text-white placeholder:text-slate-400"
@@ -169,7 +171,7 @@ export default function Login() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                 <span className="relative z-10 flex items-center justify-center gap-3">
                   <Zap className="w-5 h-5 text-yellow-300" />
-                  {isLoading ? 'Signing In...' : 'Sign In'}
+                  {isLoading ? t('login.signingIn') : t('login.signIn')}
                   <Zap className="w-5 h-5 text-yellow-300" />
                 </span>
               </Button>
@@ -182,12 +184,12 @@ export default function Login() {
               transition={{ duration: 0.6, delay: 1.0 }}
             >
               <p className="text-sm text-slate-300">
-                Don't have an account?{' '}
+                {t('login.noAccount')}{' '}
                 <Link
                   to="/register"
                   className="login-signup-link"
                 >
-                  Sign up
+                  {t('login.signUp')}
                 </Link>
               </p>
               
@@ -196,7 +198,7 @@ export default function Login() {
                 className="inline-flex items-center gap-2 mt-4 text-sm text-slate-300 hover:text-white transition-all duration-200 font-medium underline underline-offset-2 hover:underline-offset-4"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Back to Home
+                {t('login.backToHome')}
               </Link>
             </motion.div>
           </CardContent>

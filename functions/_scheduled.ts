@@ -7,6 +7,7 @@
 
 import { Env } from './types/index';
 import { ensureNotificationsSchema } from './utils/notifications';
+import { deleteExpiredSessions } from './utils/db';
 
 interface ExpiredQRCode {
   id: string;
@@ -28,6 +29,14 @@ export async function onScheduled({ env }: { env: Env }) {
     console.log('Running scheduled QR code cleanup...');
     
     const now = new Date().toISOString();
+
+    // Clean up expired sessions
+    try {
+      await deleteExpiredSessions(env.DB);
+      console.log('Expired sessions cleaned up');
+    } catch (error) {
+      console.error('Session cleanup error:', error);
+    }
     
     // Find all expired QR codes
     const expiredQRs = await env.DB.prepare(`

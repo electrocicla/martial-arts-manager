@@ -1,6 +1,7 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 import { normalizeAvatarUrl } from '../../utils/avatar';
+import { logAuditAction, getClientIP } from '../../utils/db';
 
 interface StudentUpdateRequest {
   name?: string;
@@ -209,6 +210,16 @@ export async function onRequestPut({ request, env, params }: { request: Request;
       ? { ...updatedStudent, avatar_url: normalizeAvatarUrl(updatedStudent.avatar_url) }
       : null;
 
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: 'update',
+      entity_type: 'student',
+      entity_id: studentId,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
+
     return new Response(
       JSON.stringify({ 
         message: 'Student updated successfully',
@@ -278,13 +289,21 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
     ).bind(student.email).first<{ id: string }>();
 
     if (userAccount) {
-      // Delete sessions first (due to foreign key constraints)
+      // Soft-delete user account (preserve audit history)
+      await db.prepare('UPDATE users SET is_active = 0, updated_at = ? WHERE id = ?').bind(now, userAccount.id).run();
+      // Clean up sessions (user can't log in anyway)
       await db.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userAccount.id).run();
-      // Delete audit logs
-      await db.prepare('DELETE FROM audit_logs WHERE user_id = ?').bind(userAccount.id).run();
-      // Delete user account
-      await db.prepare('DELETE FROM users WHERE id = ?').bind(userAccount.id).run();
     }
+
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: 'delete',
+      entity_type: 'student',
+      entity_id: studentId,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
 
     return new Response(
       JSON.stringify({ message: 'Student deleted successfully' }),

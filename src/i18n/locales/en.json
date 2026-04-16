@@ -588,8 +588,74 @@
     "noStudentsEnrolled": "No Students Enrolled",
     "enrollStudentsFirst": "Add students to this class to start tracking attendance",
     "enrollStudents": "Enroll Students"
-  }
-  ,
+  },
+  "pendingApproval": {
+    "title": "Account pending approval",
+    "description": "Your account has been created successfully, but it must be approved by an administrator or instructor before you can access the system.",
+    "whatIsNext": "What is next",
+    "adminWillReview": "An administrator will review your request soon",
+    "emailNotification": "You will receive an email when your account is approved",
+    "canSignIn": "You can sign in once your account is approved",
+    "needHelp": "Need help",
+    "contactAdmin": "If you have questions or need to speed up the process, contact the gym administrator directly.",
+    "backToLogin": "Back to login",
+    "checkStatus": "Check status",
+    "footer": "Hamarr Martial Arts Manager"
+  },
+  "pendingApprovals": {
+    "noPending": "No pending accounts",
+    "allProcessed": "All accounts have been processed",
+    "title": "Pending approvals",
+    "subtitle": "New accounts require approval",
+    "registered": "Registered",
+    "notes": "Notes",
+    "approveAccount": "Approve account",
+    "rejectAccount": "Reject account",
+    "processing": "Processing...",
+    "confirmApprove": "Approve the account for {{name}}?",
+    "confirmReject": "Reject the account for {{name}}? This will deactivate the account.",
+    "noAuthToken": "No authentication token",
+    "approveError": "Failed to approve account",
+    "rejectError": "Failed to reject account"
+  },
+  "activity": {
+    "title": "Recent Activity",
+    "viewAll": "View All"
+  },
+  "login": {
+    "welcomeMessage": "Welcome back, warrior. Access your dojo.",
+    "enterEmail": "Enter your email",
+    "emailLabel": "Email Address",
+    "enterPassword": "Enter your password",
+    "passwordLabel": "Password",
+    "signingIn": "Signing In...",
+    "signIn": "Sign In",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "backToHome": "Back to Home"
+  },
+  "studentStats": {
+    "totalStudents": "Total Students",
+    "active": "Active",
+    "thisMonth": "This Month",
+    "inactive": "Inactive"
+  },
+  "days": {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
+  },
   "analytics": {
     "dashboardTitle": "Analytics Dashboard",
     "dashboardSubtitle": "Track performance and growth metrics",

@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, AlertCircle, Save, Shield, Activity, Camera, Loader2, Mail, Phone, Calendar, Bell, Palette, Settings as SettingsIcon } from 'lucide-react';
+import { User, AlertCircle, Save, Shield, Loader2, Mail, Phone, Bell, Palette, Settings as SettingsIcon } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { NotificationSettings } from '../components/settings';
 import { AppearanceSettings } from '../components/settings';
 import { prepareAvatarFile } from '../lib/avatarUpload';
+import ProfileCard from '../components/profile/ProfileCard';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -58,7 +59,6 @@ export default function StudentProfile() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [disciplines, setDisciplines] = useState<DisciplineEntry[]>([toDisciplineEntry({ discipline: '', belt: '' })]);
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState('personal');
 
   const tabs = [
@@ -66,16 +66,6 @@ export default function StudentProfile() {
     { id: 'notifications', label: t('profile.tabs.notifications', 'Notifications'), icon: Bell },
     { id: 'appearance', label: t('profile.tabs.appearance', 'Appearance'), icon: Palette },
   ];
-
-  // Get user initials for avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const {
     register,
@@ -146,10 +136,6 @@ export default function StudentProfile() {
     }
   };
 
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
@@ -164,9 +150,7 @@ export default function StudentProfile() {
 
     if (!prepared.ok || !prepared.file) {
       setSaveError(prepared.error || t('profile.avatarUploadError', 'Failed to process the image.'));
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      e.target.value = '';
       return;
     }
 
@@ -208,9 +192,7 @@ export default function StudentProfile() {
     } finally {
       setAvatarUploading(false);
       // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      e.target.value = '';
     }
   };
 
@@ -306,69 +288,14 @@ export default function StudentProfile() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Profile Card */}
                 <div className="lg:col-span-1">
-                  <Card className="bg-gray-800/50 border-gray-700">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col items-center text-center">
-                        {/* Avatar Section */}
-                        <div className="relative mb-6">
-                          <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white text-4xl font-bold shadow-lg ring-4 ring-gray-700">
-                            {profile?.avatar_url ? (
-                              <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                            ) : (
-                              <span>{profile?.name ? getInitials(profile.name) : <User className="w-12 h-12" />}</span>
-                            )}
-                            {avatarUploading && (
-                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
-                                <Loader2 className="w-8 h-8 animate-spin text-white" />
-                              </div>
-                            )}
-                          </div>
-                          <button
-                            onClick={handleAvatarClick}
-                            disabled={avatarUploading}
-                            className="absolute bottom-0 right-0 w-10 h-10 bg-red-600 hover:bg-red-500 rounded-full flex items-center justify-center text-white transition-colors duration-200 shadow-lg shadow-red-900/40 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Camera className="w-5 h-5" />
-                          </button>
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/heic,image/heif"
-                            onChange={handleAvatarChange}
-                            className="hidden"
-                          />
-                        </div>
-
-                        {/* Profile Info */}
-                        <h2 className="text-2xl font-bold text-white mb-1">{profile?.name}</h2>
-                        <div className="text-gray-400 mb-4">
-                          {disciplines.length > 0 ? disciplines.map((d) => (
-                            <div key={d.id}>{d.discipline} - {d.belt}</div>
-                          )) : t('profile.noDisciplinesSet', 'No disciplines set')}
-                        </div>
-
-                        {/* Quick Stats */}
-                        <div className="w-full space-y-3">
-                          <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <Calendar className="w-5 h-5 text-blue-400" />
-                              <span className="text-sm text-gray-300">{t('profile.memberSince', 'Member since')}</span>
-                            </div>
-                            <span className="text-sm font-medium text-white">
-                              {profile?.join_date ? new Date(profile.join_date).getFullYear() : 'N/A'}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <Activity className="w-5 h-5 text-green-400" />
-                              <span className="text-sm text-gray-300">{t('profile.status', 'Status')}</span>
-                            </div>
-                            <span className="text-sm font-medium text-green-400">{t('profile.active', 'Active')}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ProfileCard
+                    name={profile?.name}
+                    avatarUrl={profile?.avatar_url}
+                    joinDate={profile?.join_date}
+                    disciplines={disciplines}
+                    avatarUploading={avatarUploading}
+                    onAvatarChange={handleAvatarChange}
+                  />
                 </div>
 
                 {/* Form Section */}

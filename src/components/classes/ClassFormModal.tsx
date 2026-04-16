@@ -34,14 +34,14 @@ interface NewClassState {
   };
 }
 
-const DAYS_OF_WEEK = [
-  { id: 1, label: 'Lun', fullLabel: 'Lunes' },
-  { id: 2, label: 'Mar', fullLabel: 'Martes' },
-  { id: 3, label: 'Mié', fullLabel: 'Miércoles' },
-  { id: 4, label: 'Jue', fullLabel: 'Jueves' },
-  { id: 5, label: 'Vie', fullLabel: 'Viernes' },
-  { id: 6, label: 'Sáb', fullLabel: 'Sábado' },
-  { id: 0, label: 'Dom', fullLabel: 'Domingo' },
+const DAY_KEYS = [
+  { id: 1, labelKey: 'days.mon', fullLabelKey: 'days.monday' },
+  { id: 2, labelKey: 'days.tue', fullLabelKey: 'days.tuesday' },
+  { id: 3, labelKey: 'days.wed', fullLabelKey: 'days.wednesday' },
+  { id: 4, labelKey: 'days.thu', fullLabelKey: 'days.thursday' },
+  { id: 5, labelKey: 'days.fri', fullLabelKey: 'days.friday' },
+  { id: 6, labelKey: 'days.sat', fullLabelKey: 'days.saturday' },
+  { id: 0, labelKey: 'days.sun', fullLabelKey: 'days.sunday' },
 ];
 
 export default function ClassFormModal({ isOpen, onClose, onSubmit, initialData, onUpdate, initialApplyTo }: ClassFormModalProps) {
@@ -504,7 +504,7 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                       </span>
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {DAYS_OF_WEEK.map((day) => (
+                      {DAY_KEYS.map((day) => (
                         <button
                           key={day.id}
                           type="button"
@@ -514,9 +514,9 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
                               ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md shadow-red-500/50 hover:from-red-700 hover:to-red-800'
                               : 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700 hover:text-gray-300 hover:border-gray-600'
                           }`}
-                          title={day.fullLabel}
+                          title={t(day.fullLabelKey)}
                         >
-                          {day.label}
+                          {t(day.labelKey)}
                         </button>
                       ))}
                     </div>

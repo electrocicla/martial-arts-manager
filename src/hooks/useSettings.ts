@@ -7,10 +7,11 @@ export function useSettings() {
   const [isLoading, setIsLoading] = useState(false);
   const { success, error } = useToast();
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (signal?: AbortSignal) => {
     setIsLoading(true);
     try {
-      const res = await settingsService.getAll();
+      const res = await settingsService.getAll({ signal });
+      if (signal?.aborted) return;
       if (res.success && res.data) {
         setSettings(res.data as Record<string, unknown>);
       } else {
@@ -35,7 +36,11 @@ export function useSettings() {
     return false;
   }, [success, error]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const controller = new AbortController();
+    load(controller.signal);
+    return () => controller.abort();
+  }, [load]);
 
   return { settings, isLoading, load, saveSection };
 }

@@ -1,19 +1,16 @@
 import { useState, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader } from './ui/Card';
 import { Input } from './ui/Input';
 import { Select } from './ui/Select';
-import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import { useToast } from '../hooks/useToast';
 import { useDebounce } from '../hooks/useDebounce';
-import { paymentSchema } from '../lib/validation';
 import { usePayments } from '../hooks/usePayments';
 import { useStudents } from '../hooks/useStudents';
-import { Search, Plus, DollarSign, Calendar, User } from 'lucide-react';
-import { parseLocalDate } from '../lib/utils';
+import { Search } from 'lucide-react';
+import PaymentForm from './payments/PaymentForm';
+import PaymentList from './payments/PaymentList';
 import type { Payment, PaymentFormData, Student } from '../types/index';
 
 export default function PaymentManager() {
@@ -26,7 +23,7 @@ export default function PaymentManager() {
 
   const { t } = useTranslation();
   const unknownStudentLabel = t('payments.labels.unknownStudent');
-  const loadingStudentsLabel = t('payments.labels.loadingStudents');
+  void unknownStudentLabel; // used by PaymentList
 
   const { success: showSuccess, error: showError } = useToast();
 
@@ -34,37 +31,12 @@ export default function PaymentManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [studentAutocompleteValue, setStudentAutocompleteValue] = useState('');
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const studentsById = useMemo(() => {
     return new Map(students.map((student: Student) => [student.id, student]));
   }, [students]);
-
-  // Form setup
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    clearErrors,
-    formState: { errors, isSubmitting }
-  } = useForm<PaymentFormData>({
-    resolver: zodResolver(paymentSchema),
-    defaultValues: {
-      studentId: '',
-      amount: 0,
-      type: 'monthly' as const,
-      notes: '',
-      // Use local date parts to avoid UTC midnight offset (toISOString returns UTC date)
-      date: (() => {
-        const now = new Date();
-        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-      })(),
-      status: 'completed' as const
-    }
-  });
 
   // Filtered payments
   const filteredPayments = useMemo(() => {
@@ -84,107 +56,26 @@ export default function PaymentManager() {
     });
   }, [payments, studentsById, debouncedSearchTerm, statusFilter, typeFilter]);
 
-  const filteredStudents = useMemo(() => {
-    const normalizedSearch = debouncedSearchTerm.trim().toLowerCase();
-
-    if (!normalizedSearch) {
-      return students;
-    }
-
-    return students.filter((student: Student) =>
-      student.name.toLowerCase().includes(normalizedSearch)
-    );
-  }, [students, debouncedSearchTerm]);
-
-  const autocompleteStudents = useMemo(() => {
-    const normalizedSearch = studentAutocompleteValue.trim().toLowerCase();
-
-    if (!normalizedSearch) {
-      return filteredStudents;
-    }
-
-    return filteredStudents.filter((student: Student) =>
-      student.name.toLowerCase().includes(normalizedSearch) ||
-      student.email.toLowerCase().includes(normalizedSearch)
-    );
-  }, [filteredStudents, studentAutocompleteValue]);
-
-  const formatStudentAutocompleteOption = (student: Student) => `${student.name} (${student.email})`;
-
-  const handleStudentAutocompleteChange = (value: string) => {
-    setStudentAutocompleteValue(value);
-
-    const normalizedValue = value.trim().toLowerCase();
-    if (!normalizedValue) {
-      setValue('studentId', '', { shouldDirty: true, shouldValidate: false });
-      return;
-    }
-
-    const exactLabelMatch = filteredStudents.find(
-      (student: Student) => formatStudentAutocompleteOption(student).toLowerCase() === normalizedValue
-    );
-
-    const exactEmailMatch = filteredStudents.find(
-      (student: Student) => student.email.toLowerCase() === normalizedValue
-    );
-
-    const exactNameMatches = filteredStudents.filter(
-      (student: Student) => student.name.toLowerCase() === normalizedValue
-    );
-
-    const matchedStudent = exactLabelMatch
-      ?? exactEmailMatch
-      ?? (exactNameMatches.length === 1 ? exactNameMatches[0] : undefined);
-
-    if (matchedStudent) {
-      setValue('studentId', matchedStudent.id, { shouldDirty: true, shouldValidate: true });
-      clearErrors('studentId');
-      return;
-    }
-
-    setValue('studentId', '', { shouldDirty: true, shouldValidate: false });
-  };
-
-  const addPayment = async (data: PaymentFormData) => {
+  const addPayment = async (data: PaymentFormData): Promise<boolean | undefined> => {
     try {
       const result = await createPayment(data);
       if (result) {
-        reset();
-        setStudentAutocompleteValue('');
         showSuccess('Pago agregado exitosamente', {
           description: 'El pago ha sido registrado en el sistema.'
         });
+        return true;
       } else {
         showError('Error al agregar pago', {
           description: 'Por favor intenta nuevamente.'
         });
+        return false;
       }
     } catch (error) {
       console.error('Error adding payment:', error);
       showError('Error al agregar pago', {
         description: 'Ocurrió un error inesperado.'
       });
-    }
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'completed': return 'success';
-      case 'pending': return 'warning';
-      case 'failed': return 'danger';
-      case 'refunded': return 'secondary';
-      default: return 'default';
-    }
-  };
-
-  const getTypeBadgeVariant = (type: string) => {
-    switch (type) {
-      case 'monthly': return 'default';
-      case 'drop-in': return 'secondary';
-      case 'private': return 'primary';
-      case 'equipment': return 'info';
-      case 'other': return 'default';
-      default: return 'default';
+      return false;
     }
   };
 
@@ -200,17 +91,7 @@ export default function PaymentManager() {
           {filteredPayments.length} {t('payments.totalPayments')}
         </Badge>
       </div>
-      {studentsLoading && (
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <span className="loading loading-spinner loading-xs text-primary" />
-          <span>{loadingStudentsLabel}</span>
-        </div>
-      )}
 
-      {/* Search and Filters */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold">{t('payments.search.filters')}</h3>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -251,193 +132,14 @@ export default function PaymentManager() {
       </Card>
 
       {/* Add Payment Form */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Plus className="h-5 w-5" />
-            {t('payments.form.title')}
-          </h3>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(addPayment)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('payments.form.student')}
-                </label>
-                <Input
-                  id="payment-student-autocomplete"
-                  type="text"
-                  list="payment-student-options"
-                  value={studentAutocompleteValue}
-                  onChange={(e) => handleStudentAutocompleteChange(e.target.value)}
-                  onBlur={(e) => handleStudentAutocompleteChange(e.target.value)}
-                  placeholder={t('payments.form.studentAutocompletePlaceholder')}
-                  autoComplete="off"
-                />
-                <datalist id="payment-student-options">
-                  {autocompleteStudents.map((student: Student) => (
-                    <option key={student.id} value={formatStudentAutocompleteOption(student)} />
-                  ))}
-                </datalist>
-                <input type="hidden" {...register('studentId')} />
-                <p className="text-xs text-gray-500 mt-1">{t('payments.form.studentAutocompleteHint')}</p>
-                {errors.studentId && (
-                  <p className="text-sm text-red-600 mt-1">{errors.studentId.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('payments.form.amount')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  {...register('amount', { valueAsNumber: true })}
-                  placeholder="0.00"
-                />
-                {errors.amount && (
-                  <p className="text-sm text-red-600 mt-1">{errors.amount.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('payments.form.paymentType')}
-                </label>
-                <Select
-                  {...register('type')}
-                  options={[
-                    { value: 'monthly', label: t('payments.filters.type.monthly') },
-                    { value: 'drop-in', label: t('payments.filters.type.dropIn') },
-                    { value: 'private', label: t('payments.filters.type.private') },
-                    { value: 'equipment', label: t('payments.filters.type.equipment') },
-                    { value: 'other', label: t('payments.filters.type.other') }
-                  ]}
-                />
-                {errors.type && (
-                  <p className="text-sm text-red-600 mt-1">{errors.type.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('payments.form.paymentDate')}
-                </label>
-                <Input
-                  type="date"
-                  {...register('date')}
-                />
-                {errors.date && (
-                  <p className="text-sm text-red-600 mt-1">{errors.date.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('payments.form.status')}
-                </label>
-                <Select
-                  {...register('status')}
-                  options={[
-                    { value: 'completed', label: t('payments.filters.status.completed') },
-                    { value: 'pending', label: t('payments.filters.status.pending') },
-                    { value: 'failed', label: t('payments.filters.status.failed') },
-                    { value: 'refunded', label: t('payments.filters.status.refunded') }
-                  ]}
-                />
-                {errors.status && (
-                  <p className="text-sm text-red-600 mt-1">{errors.status.message}</p>
-                )}
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('payments.form.notes')}
-                </label>
-                <Input
-                  {...register('notes')}
-                  placeholder={t('payments.form.notesPlaceholder')}
-                />
-                {errors.notes && (
-                  <p className="text-sm text-red-600 mt-1">{errors.notes.message}</p>
-                )}
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full md:w-auto"
-            >
-              {isSubmitting ? t('payments.form.submitting') : t('payments.form.submit')}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <PaymentForm
+        students={students}
+        studentsLoading={studentsLoading}
+        onSubmit={addPayment}
+      />
 
       {/* Payments List */}
-      <div className="space-y-4">
-        {filteredPayments.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-8">
-              <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">{t('payments.empty.title')}</p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredPayments.map((payment: Payment) => {
-            const studentName = studentsById.get(payment.student_id)?.name ?? payment.student_name ?? unknownStudentLabel;
-            const paymentAmount = typeof payment.amount === 'number' ? payment.amount : 0;
-            const paymentStatus = payment.status || 'completed';
-            const paymentType = payment.type || 'other';
-            
-            return (
-              <Card key={payment.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <User className="h-5 w-5 text-gray-400" />
-                        <span className="font-medium text-gray-900">
-                          {studentName}
-                        </span>
-                        <Badge variant={getTypeBadgeVariant(paymentType)}>
-                          {t(`payments.type.${paymentType.replace('-', '')}`)}
-                        </Badge>
-                        <Badge variant={getStatusBadgeVariant(paymentStatus)}>
-                          {t(`payments.status.${paymentStatus}`)}
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <DollarSign className="h-4 w-4" />
-                          <span className="font-semibold text-lg text-gray-900">
-                            ${paymentAmount.toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>
-                            {payment.date ? parseLocalDate(payment.date).toLocaleDateString('es-ES') : 'Sin fecha'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {payment.notes && (
-                        <p className="text-sm text-gray-600 mt-2">{payment.notes}</p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })
-        )}
-      </div>
+      <PaymentList payments={filteredPayments} studentsById={studentsById} />
     </div>
   );
 }

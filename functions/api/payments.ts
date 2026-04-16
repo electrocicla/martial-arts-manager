@@ -1,5 +1,6 @@
 import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
+import { logAuditAction, getClientIP } from '../utils/db';
 
 interface PaymentRecord {
   id: string;
@@ -197,6 +198,16 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
           AND strftime('%Y-%m', date) = ?
           `).bind(now, studentId, paymentId, AUTO_PENDING_PLACEHOLDER_NOTE, paymentMonth).run().catch(() => null);
     }
+
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: 'create',
+      entity_type: 'payment',
+      entity_id: paymentId,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
 
     // Return the full payment record so the client can immediately use it
     const payment = await env.DB.prepare(`

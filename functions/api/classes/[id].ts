@@ -1,5 +1,6 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
+import { logAuditAction, getClientIP } from '../../utils/db';
 
 interface ClassRecord {
   id: string;
@@ -103,6 +104,17 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     }
 
     await env.DB.prepare(sql).bind(...values).run();
+
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: 'update',
+      entity_type: 'class',
+      entity_id: id,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
+
     const { results } = await env.DB.prepare('SELECT * FROM classes WHERE id = ?').bind(id).all<ClassRecord>();
     return new Response(JSON.stringify(results?.[0] || {}), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
@@ -144,6 +156,17 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
         ? 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ? AND deleted_at IS NULL'
         : 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ? AND (created_by = ? OR instructor_id = ?)'
     ).bind(...(auth.user.role === 'admin' ? [now, now, auth.user.id, id] : [now, now, auth.user.id, id, auth.user.id, auth.user.id])).run();
+
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: 'delete',
+      entity_type: 'class',
+      entity_id: id,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
+
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });

@@ -5,11 +5,13 @@
 
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Clock, Info, Mail, RefreshCw } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
 export default function PendingApprovalPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Clear any stored tokens since user is not approved
@@ -33,31 +35,31 @@ export default function PendingApprovalPage() {
         {/* Content Card */}
         <div className="bg-gray-800 rounded-lg shadow-xl p-6 sm:p-8 border border-gray-700">
           <h1 className="text-2xl font-bold text-white text-center mb-4">
-            Account pending approval
+            {t('pendingApproval.title')}
           </h1>
 
           <div className="space-y-4 text-gray-300">
             <p className="text-center">
-              Your account has been created successfully, but it must be approved by an administrator or instructor before you can access the system.
+              {t('pendingApproval.description')}
             </p>
 
             <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
               <h2 className="font-semibold text-white mb-2 flex items-center gap-2">
                 <Info className="h-5 w-5 text-blue-400" />
-                What is next
+                {t('pendingApproval.whatIsNext')}
               </h2>
               <ul className="text-sm space-y-2 ml-7">
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>An administrator will review your request soon</span>
+                  <span>{t('pendingApproval.adminWillReview')}</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>You will receive an email when your account is approved</span>
+                  <span>{t('pendingApproval.emailNotification')}</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>You can sign in once your account is approved</span>
+                  <span>{t('pendingApproval.canSignIn')}</span>
                 </li>
               </ul>
             </div>
@@ -65,10 +67,10 @@ export default function PendingApprovalPage() {
             <div className="bg-blue-900 bg-opacity-30 rounded-lg p-4 border border-blue-700">
               <h2 className="font-semibold text-blue-300 mb-2 flex items-center gap-2">
                 <Mail className="h-5 w-5" />
-                Need help
+                {t('pendingApproval.needHelp')}
               </h2>
               <p className="text-sm text-blue-200">
-                If you have questions or need to speed up the process, contact the gym administrator directly.
+                {t('pendingApproval.contactAdmin')}
               </p>
             </div>
           </div>
@@ -82,7 +84,7 @@ export default function PendingApprovalPage() {
               leftIcon={<ArrowLeft className="h-5 w-5" />}
               onClick={handleBackToLogin}
             >
-              Back to login
+              {t('pendingApproval.backToLogin')}
             </Button>
 
             <Button
@@ -92,14 +94,14 @@ export default function PendingApprovalPage() {
               leftIcon={<RefreshCw className="h-5 w-5" />}
               onClick={() => window.location.reload()}
             >
-              Check status
+              {t('pendingApproval.checkStatus')}
             </Button>
           </div>
         </div>
 
         {/* Footer */}
         <p className="text-center text-gray-500 text-sm mt-6">
-          Hamarr Martial Arts Manager © {new Date().getFullYear()}
+          {t('pendingApproval.footer')} © {new Date().getFullYear()}
         </p>
       </div>
     </div>

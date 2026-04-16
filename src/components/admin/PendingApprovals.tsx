@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle, CheckCircle2, RefreshCw, UserCheck, XCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { apiClient } from '../../lib/api-client';
@@ -26,6 +27,7 @@ interface PendingApprovalsResponse {
 
 export function PendingApprovals() {
   const { accessToken } = useAuth();
+  const { t } = useTranslation();
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,12 +58,12 @@ export function PendingApprovals() {
   }, [accessToken]);
 
   const handleApprove = async (userId: string, userName: string) => {
-    if (!confirm(`Approve the account for ${userName}?`)) {
+    if (!confirm(t('pendingApprovals.confirmApprove', { name: userName }))) {
       return;
     }
 
     if (!accessToken) {
-      setError('No authentication token');
+      setError(t('pendingApprovals.noAuthToken'));
       return;
     }
 
@@ -72,7 +74,7 @@ export function PendingApprovals() {
       const result = await apiClient.post<PendingApprovalsResponse>('/api/auth/pending-approvals', { user_id: userId });
 
       if (!result.success) {
-        throw new Error(result.error || 'Failed to approve account');
+        throw new Error(result.error || t('pendingApprovals.approveError'));
       }
 
       // Update local state immediately
@@ -80,7 +82,7 @@ export function PendingApprovals() {
       dispatchDataEvent('pendingApprovals');
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to approve account');
+      setError(err instanceof Error ? err.message : t('pendingApprovals.approveError'));
       console.error('[PendingApprovals] Approve error:', err);
     } finally {
       setProcessingId(null);
@@ -88,12 +90,12 @@ export function PendingApprovals() {
   };
 
   const handleReject = async (userId: string, userName: string) => {
-    if (!confirm(`Reject the account for ${userName}? This will deactivate the account.`)) {
+    if (!confirm(t('pendingApprovals.confirmReject', { name: userName }))) {
       return;
     }
 
     if (!accessToken) {
-      setError('No authentication token');
+      setError(t('pendingApprovals.noAuthToken'));
       return;
     }
 
@@ -104,7 +106,7 @@ export function PendingApprovals() {
       const result = await apiClient.delete<PendingApprovalsResponse>(`/api/auth/pending-approvals?user_id=${encodeURIComponent(userId)}`);
 
       if (!result.success) {
-        throw new Error(result.error || 'Failed to reject account');
+        throw new Error(result.error || t('pendingApprovals.rejectError'));
       }
 
       // Update local state immediately
@@ -112,7 +114,7 @@ export function PendingApprovals() {
       dispatchDataEvent('pendingApprovals');
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to reject account');
+      setError(err instanceof Error ? err.message : t('pendingApprovals.rejectError'));
       console.error('[PendingApprovals] Reject error:', err);
     } finally {
       setProcessingId(null);
@@ -141,8 +143,8 @@ export function PendingApprovals() {
       <div className="bg-gray-800 rounded-lg p-6">
         <div className="text-center text-gray-400">
           <CheckCircle2 className="mx-auto h-12 w-12 mb-3" />
-          <p className="font-semibold">No pending accounts</p>
-          <p className="text-sm mt-1">All accounts have been processed</p>
+          <p className="font-semibold">{t('pendingApprovals.noPending')}</p>
+          <p className="text-sm mt-1">{t('pendingApprovals.allProcessed')}</p>
         </div>
       </div>
     );
@@ -175,8 +177,8 @@ export function PendingApprovals() {
             <AlertTriangle className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Pending approvals</h3>
-            <p className="text-sm text-gray-400">New accounts require approval</p>
+            <h3 className="text-lg font-semibold text-white">{t('pendingApprovals.title')}</h3>
+            <p className="text-sm text-gray-400">{t('pendingApprovals.subtitle')}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -205,7 +207,7 @@ export function PendingApprovals() {
                   <h4 className="text-white font-semibold text-base truncate mb-1">{user.name}</h4>
                   <p className="text-gray-400 text-sm truncate mb-2">{user.email}</p>
                   <div className="text-xs text-gray-500">
-                    Registered: {new Date(user.created_at).toLocaleString('en-US', {
+                    {t('pendingApprovals.registered')}: {new Date(user.created_at).toLocaleString(undefined, {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',
@@ -221,7 +223,7 @@ export function PendingApprovals() {
 
               {user.registration_notes && (
                 <div className="mt-3 p-3 bg-gray-800 rounded-lg border border-gray-600">
-                  <span className="font-semibold text-gray-300 text-xs">Notes:</span>
+                  <span className="font-semibold text-gray-300 text-xs">{t('pendingApprovals.notes')}:</span>
                   <p className="text-xs text-gray-300 mt-1">{user.registration_notes}</p>
                 </div>
               )}
@@ -236,12 +238,12 @@ export function PendingApprovals() {
                 {processingId === user.id ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                    Processing...
+                    {t('pendingApprovals.processing')}
                   </>
                 ) : (
                   <>
                     <UserCheck className="h-4 w-4 flex-shrink-0" />
-                    Approve account
+                    {t('pendingApprovals.approveAccount')}
                   </>
                 )}
               </button>
@@ -254,12 +256,12 @@ export function PendingApprovals() {
                 {processingId === user.id ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                    Processing...
+                    {t('pendingApprovals.processing')}
                   </>
                 ) : (
                   <>
                     <XCircle className="h-4 w-4 flex-shrink-0" />
-                    Reject account
+                    {t('pendingApprovals.rejectAccount')}
                   </>
                 )}
               </button>

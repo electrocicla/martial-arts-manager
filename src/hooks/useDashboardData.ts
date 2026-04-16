@@ -41,6 +41,8 @@ export function useDashboardData(): DashboardData {
   });
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
     async function fetchDashboardData() {
       if (user?.role === 'student') {
         setData(prev => ({ ...prev, isLoading: false }));
@@ -58,10 +60,12 @@ export function useDashboardData(): DashboardData {
 
         // Fetch all data in parallel using services
         const [studentsRes, classesRes, paymentsRes] = await Promise.all([
-          studentService.getAll(),
-          classService.getAll(),
-          paymentService.getAll(),
+          studentService.getAll(undefined, { signal }),
+          classService.getAll(undefined, { signal }),
+          paymentService.getAll(undefined, { signal }),
         ]);
+
+        if (signal.aborted) return;
 
         const students = studentsRes.data;
         const classes = classesRes.data;
@@ -145,6 +149,7 @@ export function useDashboardData(): DashboardData {
     }
 
     fetchDashboardData();
+    return () => controller.abort();
   }, [user?.role, accessToken]);
 
   return data;

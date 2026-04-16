@@ -157,7 +157,7 @@ export async function updateUserLastLogin(db: D1Database, userId: string): Promi
  */
 export async function emailExists(db: D1Database, email: string): Promise<boolean> {
   const result = await db
-    .prepare('SELECT COUNT(*) as count FROM users WHERE email = ?')
+    .prepare('SELECT COUNT(*) as count FROM users WHERE email = ? AND is_active = 1')
     .bind(email)
     .first<{ count: number }>();
   

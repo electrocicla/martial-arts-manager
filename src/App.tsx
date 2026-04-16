@@ -7,6 +7,7 @@ import BottomSlidingMenu from './components/layout/BottomSlidingMenu';
 import AndroidApkInstallPrompt from './components/mobile/AndroidApkInstallPrompt';
 import PullToRefresh from './components/mobile/PullToRefresh';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { PollingProvider } from './context/PollingContext';
 import { ToastProvider } from './components/ui/ToastProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -136,11 +137,13 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <ToastProvider>
-          <Router>
-            <AppWrapper />
-          </Router>
-        </ToastProvider>
+        <PollingProvider>
+          <ToastProvider>
+            <Router>
+              <AppWrapper />
+            </Router>
+          </ToastProvider>
+        </PollingProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

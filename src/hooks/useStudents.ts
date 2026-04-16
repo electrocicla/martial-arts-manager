@@ -42,12 +42,13 @@ export function useStudents(initialFilters?: StudentFilters): UseStudentsReturn 
   const [error, setError] = useState<string | null>(null);
   const [currentFilters, setCurrentFilters] = useState<StudentFilters | undefined>(initialFilters);
 
-  const fetchStudents = useCallback(async (filters?: StudentFilters) => {
+  const fetchStudents = useCallback(async (filters?: StudentFilters, signal?: AbortSignal) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await studentService.getAll(filters);
+      const response = await studentService.getAll(filters, { signal });
+      if (signal?.aborted) return;
       if (response.success && response.data) {
         setStudents(response.data);
       } else {
@@ -157,7 +158,9 @@ export function useStudents(initialFilters?: StudentFilters): UseStudentsReturn 
 
   // Initial load
   useEffect(() => {
-    fetchStudents(currentFilters);
+    const controller = new AbortController();
+    fetchStudents(currentFilters, controller.signal);
+    return () => controller.abort();
   }, [fetchStudents, currentFilters]);
 
   // Refetch whenever another hook instance mutates students data

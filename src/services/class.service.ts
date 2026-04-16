@@ -30,7 +30,7 @@ export interface ClassMetadata {
 export class ClassService {
   private readonly endpoint = '/api/classes';
 
-  async getAll(filters?: ClassFilters): Promise<ApiResponse<Class[]>> {
+  async getAll(filters?: ClassFilters, options?: { signal?: AbortSignal }): Promise<ApiResponse<Class[]>> {
     const params = new URLSearchParams();
 
     if (filters?.discipline) params.append('discipline', filters.discipline);
@@ -41,7 +41,7 @@ export class ClassService {
     const query = params.toString();
     const endpoint = query ? `${this.endpoint}?${query}` : this.endpoint;
 
-    return apiClient.get<Class[]>(endpoint);
+    return apiClient.get<Class[]>(endpoint, { signal: options?.signal });
   }
 
   async getById(id: string): Promise<ApiResponse<Class>> {
@@ -130,8 +130,8 @@ export class ClassService {
     return { data: upcoming, success: true };
   }
 
-  async getMetadata(): Promise<ApiResponse<ClassMetadata>> {
-    return apiClient.get<ClassMetadata>('/api/classes/metadata');
+  async getMetadata(options?: { signal?: AbortSignal }): Promise<ApiResponse<ClassMetadata>> {
+    return apiClient.get<ClassMetadata>('/api/classes/metadata', { signal: options?.signal });
   }
 
   // Fetch comments for a specific class (generated session)

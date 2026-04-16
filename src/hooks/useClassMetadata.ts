@@ -19,12 +19,14 @@ export function useClassMetadata(): UseClassMetadataReturn {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchMetadata = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        const response = await classService.getMetadata();
+        const response = await classService.getMetadata({ signal: controller.signal });
+        if (controller.signal.aborted) return;
         if (response.success && response.data) {
           setMetadata(response.data);
         } else {
@@ -50,6 +52,7 @@ export function useClassMetadata(): UseClassMetadataReturn {
     };
 
     fetchMetadata();
+    return () => controller.abort();
   }, []);
 
   return {

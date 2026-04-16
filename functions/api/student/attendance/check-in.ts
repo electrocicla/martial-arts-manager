@@ -8,6 +8,7 @@
 
 import { Env } from '../../../types/index';
 import { authenticateUser } from '../../../middleware/auth';
+import { errorResponse } from '../../../utils/response';
 
 interface CheckInRequest {
   qr_code: string;
@@ -43,36 +44,18 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     // Authenticate user
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: auth.error 
-      }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return errorResponse(auth.error || 'Authentication required', 401);
     }
 
     // Only students can check in via QR
     if (auth.user.role !== 'student') {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: 'Only students can check in with QR' 
-      }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return errorResponse('Only students can check in with QR', 403);
     }
 
     // Get student_id from user
     const studentId = auth.user.student_id;
     if (!studentId) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: 'No student profile is linked to this account' 
-      }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return errorResponse('No student profile is linked to this account', 404);
     }
 
     // Parse request body
@@ -80,13 +63,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const { qr_code, timestamp, latitude, longitude, device_info } = body;
 
     if (!qr_code) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: 'QR code not provided' 
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return errorResponse('QR code not provided', 400);
     }
 
     // Find the QR code in database
@@ -99,34 +76,16 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     `).bind(qr_code).first<QRCode>();
 
     if (!qrRecord) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: 'Invalid or expired QR code' 
-      }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return errorResponse('Invalid or expired QR code', 404);
     }
 
     // Check time validity if specified
     const now = new Date(timestamp || new Date().toISOString());
     if (qrRecord.valid_from && new Date(qrRecord.valid_from) > now) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: 'This QR code is not active yet' 
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return errorResponse('This QR code is not active yet', 400);
     }
     if (qrRecord.valid_until && new Date(qrRecord.valid_until) < now) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: 'This QR code has expired' 
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return errorResponse('This QR code has expired', 400);
     }
 
     // Find today's class for this location/instructor
@@ -162,13 +121,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     }
 
     if (!classRecord) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: 'No classes are scheduled for today at this location' 
-      }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return errorResponse('No classes are scheduled for today at this location', 404);
     }
 
     // Check if student is enrolled in this class
@@ -178,13 +131,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     `).bind(classRecord.id, studentId).first();
 
     if (!enrollment) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: 'You are not enrolled in this class' 
-      }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return errorResponse('You are not enrolled in this class', 403);
     }
 
     // Check for duplicate attendance
@@ -194,13 +141,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     `).bind(classRecord.id, studentId).first();
 
     if (existingAttendance) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        message: 'Attendance has already been recorded for this class' 
-      }), {
-        status: 409,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return errorResponse('Attendance has already been recorded for this class', 409);
     }
 
     // Create attendance record
@@ -248,12 +189,6 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
   } catch (error) {
     console.error('QR check-in error:', error);
-    return new Response(JSON.stringify({ 
-      success: false,
-      message: (error as Error).message || 'Failed to process the check-in' 
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return errorResponse((error as Error).message || 'Failed to process the check-in', 500);
   }
 }

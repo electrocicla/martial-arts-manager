@@ -1,8 +1,8 @@
 import { apiClient } from '../lib/api-client';
 
 export const settingsService = {
-  async getAll() {
-    return apiClient.get<Record<string, unknown>>('/api/settings');
+  async getAll(options?: { signal?: AbortSignal }) {
+    return apiClient.get<Record<string, unknown>>('/api/settings', { signal: options?.signal });
   },
 
   async saveSection(section: string, value: unknown) {

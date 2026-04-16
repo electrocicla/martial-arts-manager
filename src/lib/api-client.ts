@@ -105,8 +105,8 @@ export class ApiClient {
     }
   }
 
-  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { method: 'GET' });
+  async get<T>(endpoint: string, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'GET', signal: options?.signal });
   }
 
   async post<T>(endpoint: string, data?: unknown): Promise<ApiResponse<T>> {

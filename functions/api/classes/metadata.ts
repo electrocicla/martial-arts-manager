@@ -20,8 +20,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
 
     // Get unique disciplines from classes
     const disciplinesResult = await env.DB.prepare(
-      "SELECT DISTINCT discipline FROM classes WHERE deleted_at IS NULL ORDER BY discipline"
-    ).all<{ discipline: string }>();
+      "SELECT DISTINCT discipline FROM classes WHERE deleted_at IS NULL AND (created_by = ? OR instructor_id = ?) ORDER BY discipline"
+    ).bind(auth.user.id, auth.user.id).all<{ discipline: string }>();
 
     // Get unique locations from classes scoped to this user
     const locationsResult = await env.DB.prepare(

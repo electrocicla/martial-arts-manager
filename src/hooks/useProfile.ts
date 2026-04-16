@@ -17,7 +17,7 @@ export function useProfile() {
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal?: AbortSignal) => {
     if (!user) {
       setData(prev => ({ ...prev, isLoading: false, error: 'Not authenticated' }));
       return;
@@ -39,13 +39,13 @@ export function useProfile() {
       let profilePayload: Student | null = null;
 
       if (shouldUseStudentEndpoint) {
-        const profileRes = await apiClient.get<Student>('/api/student/profile');
+        const profileRes = await apiClient.get<Student>('/api/student/profile', { signal });
 
         if (profileRes.success && profileRes.data) {
           profilePayload = profileRes.data;
         } else {
           // Graceful fallback for legacy users when student profile is temporarily unavailable
-          const userRes = await apiClient.get<{ user: { id: string; name: string; email: string; role: string; avatar_url?: string } }>('/api/auth/me');
+          const userRes = await apiClient.get<{ user: { id: string; name: string; email: string; role: string; avatar_url?: string } }>('/api/auth/me', { signal });
           if (!userRes.success || !userRes.data) {
             throw new Error('Failed to fetch profile data');
           }
@@ -74,7 +74,7 @@ export function useProfile() {
           } as Student;
         }
       } else {
-        const userRes = await apiClient.get<{ user: { id: string; name: string; email: string; role: string; avatar_url?: string } }>('/api/auth/me');
+        const userRes = await apiClient.get<{ user: { id: string; name: string; email: string; role: string; avatar_url?: string } }>('/api/auth/me', { signal });
         if (!userRes.success || !userRes.data) {
           throw new Error('Failed to fetch profile data');
         }
@@ -103,12 +103,15 @@ export function useProfile() {
         } as Student;
       }
 
+      if (signal?.aborted) return;
+
       setData({
         profile: profilePayload,
         isLoading: false,
         error: null
       });
     } catch (err) {
+      if (signal?.aborted) return;
       setData(prev => ({
         ...prev,
         isLoading: false,
@@ -118,7 +121,9 @@ export function useProfile() {
   }, [user, accessToken]);
 
   useEffect(() => {
-    fetchData();
+    const controller = new AbortController();
+    fetchData(controller.signal);
+    return () => controller.abort();
   }, [fetchData]);
 
   return { ...data, refresh: fetchData };

@@ -587,6 +587,73 @@
     "enrollStudentsFirst": "Adicione alunos a esta aula para começar a rastrear presença",
     "enrollStudents": "Matricular Alunos"
   },
+  "pendingApproval": {
+    "title": "Conta pendente de aprovação",
+    "description": "Sua conta foi criada com sucesso, mas precisa ser aprovada por um administrador ou instrutor antes de você acessar o sistema.",
+    "whatIsNext": "O que vem a seguir",
+    "adminWillReview": "Um administrador revisará sua solicitação em breve",
+    "emailNotification": "Você receberá um e-mail quando sua conta for aprovada",
+    "canSignIn": "Você poderá entrar assim que sua conta for aprovada",
+    "needHelp": "Precisa de ajuda",
+    "contactAdmin": "Se você tiver dúvidas ou precisar acelerar o processo, entre em contato com o administrador da academia diretamente.",
+    "backToLogin": "Voltar ao login",
+    "checkStatus": "Verificar status",
+    "footer": "Hamarr Martial Arts Manager"
+  },
+  "pendingApprovals": {
+    "noPending": "Sem contas pendentes",
+    "allProcessed": "Todas as contas foram processadas",
+    "title": "Aprovações pendentes",
+    "subtitle": "Novas contas precisam de aprovação",
+    "registered": "Registrado",
+    "notes": "Notas",
+    "approveAccount": "Aprovar conta",
+    "rejectAccount": "Rejeitar conta",
+    "processing": "Processando...",
+    "confirmApprove": "Aprovar a conta de {{name}}?",
+    "confirmReject": "Rejeitar a conta de {{name}}? Isso desativará a conta.",
+    "noAuthToken": "Sem token de autenticação",
+    "approveError": "Falha ao aprovar a conta",
+    "rejectError": "Falha ao rejeitar a conta"
+  },
+  "activity": {
+    "title": "Atividade Recente",
+    "viewAll": "Ver Tudo"
+  },
+  "login": {
+    "welcomeMessage": "Bem-vindo de volta, guerreiro. Acesse seu dojo.",
+    "enterEmail": "Digite seu e-mail",
+    "emailLabel": "Endereço de E-mail",
+    "enterPassword": "Digite sua senha",
+    "passwordLabel": "Senha",
+    "signingIn": "Entrando...",
+    "signIn": "Entrar",
+    "noAccount": "Não tem conta?",
+    "signUp": "Cadastre-se",
+    "backToHome": "Voltar ao Início"
+  },
+  "studentStats": {
+    "totalStudents": "Total de Alunos",
+    "active": "Ativos",
+    "thisMonth": "Este Mês",
+    "inactive": "Inativos"
+  },
+  "days": {
+    "mon": "Seg",
+    "tue": "Ter",
+    "wed": "Qua",
+    "thu": "Qui",
+    "fri": "Sex",
+    "sat": "Sáb",
+    "sun": "Dom",
+    "monday": "Segunda",
+    "tuesday": "Terça",
+    "wednesday": "Quarta",
+    "thursday": "Quinta",
+    "friday": "Sexta",
+    "saturday": "Sábado",
+    "sunday": "Domingo"
+  },
   "analytics": {
     "dashboardTitle": "Painel de Análises",
     "dashboardSubtitle": "Rastreie métricas de desempenho e crescimento",

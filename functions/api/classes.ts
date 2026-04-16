@@ -1,5 +1,6 @@
 import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
+import { logAuditAction, getClientIP } from '../utils/db';
 
 interface ClassRecord {
   id: string;
@@ -191,6 +192,16 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (!createdClass) {
       return new Response(JSON.stringify({ error: 'Failed to retrieve created class' }), { status: 500 });
     }
+
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: 'create',
+      entity_type: 'class',
+      entity_id: id,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
 
     return new Response(JSON.stringify(createdClass), { 
       status: 201,

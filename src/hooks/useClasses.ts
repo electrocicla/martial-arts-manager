@@ -44,12 +44,13 @@ export function useClasses(initialFilters?: ClassFilters): UseClassesReturn {
   const [error, setError] = useState<string | null>(null);
   const [currentFilters, setCurrentFilters] = useState<ClassFilters | undefined>(initialFilters);
 
-  const fetchClasses = useCallback(async (filters?: ClassFilters) => {
+  const fetchClasses = useCallback(async (filters?: ClassFilters, signal?: AbortSignal) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await classService.getAll(filters);
+      const response = await classService.getAll(filters, { signal });
+      if (signal?.aborted) return;
       if (response.success && response.data) {
         setClasses(response.data);
       } else {
@@ -190,7 +191,9 @@ export function useClasses(initialFilters?: ClassFilters): UseClassesReturn {
 
   // Initial load
   useEffect(() => {
-    fetchClasses(currentFilters);
+    const controller = new AbortController();
+    fetchClasses(currentFilters, controller.signal);
+    return () => controller.abort();
   }, [fetchClasses, currentFilters]);
 
   return {

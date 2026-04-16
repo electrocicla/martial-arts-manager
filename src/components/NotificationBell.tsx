@@ -2,61 +2,30 @@
  * NotificationBell Component
  * 
  * Displays a bell icon with unread notification count
- * and a dropdown to view/manage notifications
+ * and a dropdown to view/manage notifications.
+ * Polling is centralized in PollingContext.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bell, X, Check, Trash2, Loader2 } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import { useAuth } from '../context/AuthContext';
+import { usePolling } from '../context/PollingContext';
 import { IconButton } from './ui/IconButton';
 import { Button } from './ui/Button';
-
-interface Notification {
-  id: string;
-  user_id: string;
-  message: string;
-  type: string;
-  read: number;
-  created_at: string;
-}
 
 export default function NotificationBell() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const {
+    notifications,
+    unreadCount,
+    notificationsLoading: loading,
+    setNotifications,
+    setUnreadCount,
+  } = usePolling();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const fetchNotifications = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      const response = await apiClient.get<{ notifications: Notification[] }>('/api/notifications');
-      
-      if (response.success && response.data) {
-        const notifs = response.data.notifications || [];
-        setNotifications(notifs);
-        setUnreadCount(notifs.filter(n => n.read === 0).length);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchNotifications();
-    
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
-    
-    return () => clearInterval(interval);
-  }, [fetchNotifications]);
 
   const markAsRead = async (notificationId: string) => {
     try {

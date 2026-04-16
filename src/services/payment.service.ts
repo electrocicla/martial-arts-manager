@@ -27,7 +27,7 @@ export interface PaymentStats {
 export class PaymentService {
   private readonly endpoint = '/api/payments';
 
-  async getAll(filters?: PaymentFilters): Promise<ApiResponse<Payment[]>> {
+  async getAll(filters?: PaymentFilters, options?: { signal?: AbortSignal }): Promise<ApiResponse<Payment[]>> {
     const params = new URLSearchParams();
 
     if (filters?.studentId) params.append('student_id', filters.studentId);
@@ -39,7 +39,7 @@ export class PaymentService {
     const query = params.toString();
     const endpoint = query ? `${this.endpoint}?${query}` : this.endpoint;
 
-    return apiClient.get<Payment[]>(endpoint);
+    return apiClient.get<Payment[]>(endpoint, { signal: options?.signal });
   }
 
   async getById(id: string): Promise<ApiResponse<Payment>> {
