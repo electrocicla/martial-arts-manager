@@ -236,7 +236,7 @@
 
 ---
 
-## Phase 3 — MEDIUM Improvements (14/14 completed)
+## Phase 3 ï¿½ MEDIUM Improvements (14/14 completed)
 
 ### P3-01: Regenerate schema.sql from current DB state ?
 - Regenerated full schema from live D1 database
@@ -271,7 +271,7 @@
 ### P3-11: Fix pending approvals scope ?
 - Instructors now only see pending student accounts
 
-### P3-12: Fix student delete — soft-delete user ?
+### P3-12: Fix student delete ï¿½ soft-delete user ?
 - Changed hard-delete to soft-delete (is_active = 0)
 
 ### P3-13: Fix metadata disciplines scope ?
@@ -282,7 +282,7 @@
 
 ---
 
-## Phase 4 — LOW Polish (16/16 completed)
+## Phase 4 ï¿½ LOW Polish (16/16 completed)
 
 ### P4-01: Standardize ID generation ?
 - Replaced all generateUserId() (hex) with crypto.randomUUID() in auth endpoints
