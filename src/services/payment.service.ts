@@ -62,11 +62,11 @@ export class PaymentService {
   }
 
   async update(id: string, data: Partial<Payment>): Promise<ApiResponse<Payment>> {
-    return apiClient.put<Payment>(`${this.endpoint}/${id}`, data);
+    return apiClient.put<Payment>(this.endpoint, { id, ...data });
   }
 
   async delete(id: string): Promise<ApiResponse<void>> {
-    return apiClient.delete<void>(`${this.endpoint}/${id}`);
+    return apiClient.delete<void>(`${this.endpoint}?id=${encodeURIComponent(id)}`);
   }
 
   async getStats(): Promise<ApiResponse<PaymentStats>> {

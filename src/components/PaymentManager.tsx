@@ -17,6 +17,10 @@ export default function PaymentManager() {
   const {
     payments,
     createPayment,
+    updatePayment,
+    deletePayment,
+    isUpdating,
+    isDeleting,
   } = usePayments();
 
   const { students, isLoading: studentsLoading } = useStudents();
@@ -79,6 +83,40 @@ export default function PaymentManager() {
     }
   };
 
+  const editPayment = async (id: string, data: Partial<PaymentFormData>): Promise<Payment | null> => {
+    try {
+      const result = await updatePayment(id, data);
+      if (result) {
+        showSuccess(t('payments.actions.editSuccess'));
+        return result;
+      } else {
+        showError(t('payments.actions.editError'));
+        return null;
+      }
+    } catch (error) {
+      console.error('Error editing payment:', error);
+      showError(t('payments.actions.editError'));
+      return null;
+    }
+  };
+
+  const removePayment = async (id: string): Promise<boolean> => {
+    try {
+      const result = await deletePayment(id);
+      if (result) {
+        showSuccess(t('payments.actions.deleteSuccess'));
+        return true;
+      } else {
+        showError(t('payments.actions.deleteError'));
+        return false;
+      }
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+      showError(t('payments.actions.deleteError'));
+      return false;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -92,6 +130,10 @@ export default function PaymentManager() {
         </Badge>
       </div>
 
+      {/* Search and Filters */}
+      <Card>
+        <CardHeader>
+          <h3 className="text-lg font-semibold">{t('payments.search.filters')}</h3>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -139,7 +181,14 @@ export default function PaymentManager() {
       />
 
       {/* Payments List */}
-      <PaymentList payments={filteredPayments} studentsById={studentsById} />
+      <PaymentList
+        payments={filteredPayments}
+        studentsById={studentsById}
+        onEdit={editPayment}
+        onDelete={removePayment}
+        isUpdating={isUpdating}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

@@ -292,6 +292,21 @@
     "labels": {
       "unknownStudent": "Estudiante desconocido",
       "loadingStudents": "Cargando estudiantes..."
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "confirmDelete": "¿Estás seguro de que deseas eliminar este pago?",
+      "confirmDeleteDescription": "Esta acción no se puede deshacer.",
+      "editTitle": "Editar Pago",
+      "editSuccess": "Pago actualizado exitosamente",
+      "editError": "Error al actualizar el pago",
+      "deleteSuccess": "Pago eliminado exitosamente",
+      "deleteError": "Error al eliminar el pago",
+      "saving": "Guardando...",
+      "deleting": "Eliminando..."
     }
   },
   "students": {

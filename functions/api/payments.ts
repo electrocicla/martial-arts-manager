@@ -228,23 +228,24 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       return new Response(JSON.stringify({ error: auth.error }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
+    // Only admins can edit payments
+    if (auth.user.role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Only admins can edit payments' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    }
+
     const body = await request.json() as Record<string, unknown>;
     const id = body['id'] as string | undefined;
     if (!id) {
       return new Response(JSON.stringify({ error: 'Payment id is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Verify payment exists and user has access
+    // Verify payment exists
     const payment = await env.DB.prepare(
-      auth.user.role === 'admin'
-        ? 'SELECT p.id, p.student_id FROM payments p WHERE p.id = ? AND p.deleted_at IS NULL'
-        : `SELECT p.id, p.student_id FROM payments p
-           INNER JOIN students s ON p.student_id = s.id
-           WHERE p.id = ? AND p.deleted_at IS NULL AND (s.created_by = ? OR s.instructor_id = ?)`
-    ).bind(...(auth.user.role === 'admin' ? [id] : [id, auth.user.id, auth.user.id])).first<{ id: string; student_id: string }>();
+      'SELECT p.id, p.student_id FROM payments p WHERE p.id = ? AND p.deleted_at IS NULL'
+    ).bind(id).first<{ id: string; student_id: string }>();
 
     if (!payment) {
-      return new Response(JSON.stringify({ error: 'Payment not found or access denied' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: 'Payment not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
 
     const sets: string[] = [];
@@ -273,104 +274,15 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     await env.DB.prepare(`UPDATE payments SET ${sets.join(', ')} WHERE id = ?`).bind(...values).run();
 
-    const updated = await env.DB.prepare(
-      'SELECT p.*, s.name as student_name FROM payments p INNER JOIN students s ON p.student_id = s.id WHERE p.id = ?'
-    ).bind(id).first<PaymentRecord>();
-
-    return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-  }
-}
-
-export async function onRequestDelete({ request, env }: { request: Request; env: Env }) {
-  try {
-    const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) {
-      return new Response(JSON.stringify({ error: auth.error }), { status: 401, headers: { 'Content-Type': 'application/json' } });
-    }
-
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
-    if (!id) {
-      return new Response(JSON.stringify({ error: 'Payment id is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
-    }
-
-    // Verify payment exists and user has access
-    const payment = await env.DB.prepare(
-      auth.user.role === 'admin'
-        ? 'SELECT p.id FROM payments p WHERE p.id = ? AND p.deleted_at IS NULL'
-        : `SELECT p.id FROM payments p
-           INNER JOIN students s ON p.student_id = s.id
-           WHERE p.id = ? AND p.deleted_at IS NULL AND (s.created_by = ? OR s.instructor_id = ?)`
-    ).bind(...(auth.user.role === 'admin' ? [id] : [id, auth.user.id, auth.user.id])).first();
-
-    if (!payment) {
-      return new Response(JSON.stringify({ error: 'Payment not found or access denied' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
-    }
-
-    const now = new Date().toISOString();
-    await env.DB.prepare(
-      'UPDATE payments SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ?'
-    ).bind(now, now, auth.user.id, id).run();
-
-    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-  }
-}
-
-export async function onRequestPut({ request, env }: { request: Request; env: Env }) {
-  try {
-    const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) {
-      return new Response(JSON.stringify({ error: auth.error }), { status: 401, headers: { 'Content-Type': 'application/json' } });
-    }
-
-    const body = await request.json() as Record<string, unknown>;
-    const id = body['id'] as string | undefined;
-    if (!id) {
-      return new Response(JSON.stringify({ error: 'Payment id is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
-    }
-
-    // Verify payment exists and user has access
-    const payment = await env.DB.prepare(
-      auth.user.role === 'admin'
-        ? 'SELECT p.id, p.student_id FROM payments p WHERE p.id = ? AND p.deleted_at IS NULL'
-        : `SELECT p.id, p.student_id FROM payments p
-           INNER JOIN students s ON p.student_id = s.id
-           WHERE p.id = ? AND p.deleted_at IS NULL AND (s.created_by = ? OR s.instructor_id = ?)`
-    ).bind(...(auth.user.role === 'admin' ? [id] : [id, auth.user.id, auth.user.id])).first<{ id: string; student_id: string }>();
-
-    if (!payment) {
-      return new Response(JSON.stringify({ error: 'Payment not found or access denied' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
-    }
-
-    const sets: string[] = [];
-    const values: (string | number | null)[] = [];
-
-    const ALLOWED_FIELDS: Record<string, string> = {
-      amount: 'amount', date: 'date', type: 'type', notes: 'notes',
-      status: 'status', paymentMethod: 'payment_method', payment_method: 'payment_method',
-    };
-
-    for (const [key, col] of Object.entries(ALLOWED_FIELDS)) {
-      if (body[key] !== undefined) {
-        sets.push(`${col} = ?`);
-        values.push(body[key] as string | number);
-      }
-    }
-
-    if (sets.length === 0) {
-      return new Response(JSON.stringify({ error: 'Nothing to update' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
-    }
-
-    const now = new Date().toISOString();
-    sets.push('updated_at = ?'); values.push(now);
-    sets.push('updated_by = ?'); values.push(auth.user.id);
-    values.push(id);
-
-    await env.DB.prepare(`UPDATE payments SET ${sets.join(', ')} WHERE id = ?`).bind(...values).run();
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: 'update',
+      entity_type: 'payment',
+      entity_id: id,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
 
     const updated = await env.DB.prepare(
       'SELECT p.*, s.name as student_name FROM payments p INNER JOIN students s ON p.student_id = s.id WHERE p.id = ?'
@@ -389,29 +301,40 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
       return new Response(JSON.stringify({ error: auth.error }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
+    // Only admins can delete payments
+    if (auth.user.role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Only admins can delete payments' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    }
+
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     if (!id) {
       return new Response(JSON.stringify({ error: 'Payment id is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Verify payment exists and user has access
+    // Verify payment exists
     const payment = await env.DB.prepare(
-      auth.user.role === 'admin'
-        ? 'SELECT p.id FROM payments p WHERE p.id = ? AND p.deleted_at IS NULL'
-        : `SELECT p.id FROM payments p
-           INNER JOIN students s ON p.student_id = s.id
-           WHERE p.id = ? AND p.deleted_at IS NULL AND (s.created_by = ? OR s.instructor_id = ?)`
-    ).bind(...(auth.user.role === 'admin' ? [id] : [id, auth.user.id, auth.user.id])).first();
+      'SELECT p.id FROM payments p WHERE p.id = ? AND p.deleted_at IS NULL'
+    ).bind(id).first();
 
     if (!payment) {
-      return new Response(JSON.stringify({ error: 'Payment not found or access denied' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ error: 'Payment not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
 
     const now = new Date().toISOString();
     await env.DB.prepare(
       'UPDATE payments SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ?'
     ).bind(now, now, auth.user.id, id).run();
+
+    // Non-blocking audit log
+    logAuditAction(env.DB, {
+      id: crypto.randomUUID(),
+      user_id: auth.user.id,
+      action: 'delete',
+      entity_type: 'payment',
+      entity_id: id,
+      ip_address: getClientIP(request),
+    }).catch(() => {});
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
