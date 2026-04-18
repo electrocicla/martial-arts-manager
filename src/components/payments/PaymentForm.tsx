@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronDown, X } from 'lucide-react';
 import { paymentSchema } from '../../lib/validation';
 import type { PaymentFormData, Student } from '../../types/index';
 
@@ -18,7 +18,10 @@ interface PaymentFormProps {
 
 export default function PaymentForm({ students, studentsLoading, onSubmit }: PaymentFormProps) {
   const { t } = useTranslation();
-  const [studentAutocompleteValue, setStudentAutocompleteValue] = useState('');
+  const [studentSearch, setStudentSearch] = useState('');
+  const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
@@ -42,54 +45,46 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
     }
   });
 
-  const autocompleteStudents = useMemo(() => {
-    const normalizedSearch = studentAutocompleteValue.trim().toLowerCase();
+  const filteredStudents = useMemo(() => {
+    const normalizedSearch = studentSearch.trim().toLowerCase();
     if (!normalizedSearch) return students;
     return students.filter((student: Student) =>
       student.name.toLowerCase().includes(normalizedSearch) ||
       student.email.toLowerCase().includes(normalizedSearch)
     );
-  }, [students, studentAutocompleteValue]);
+  }, [students, studentSearch]);
 
-  const formatStudentAutocompleteOption = (student: Student) => `${student.name} (${student.email})`;
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsStudentDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const handleStudentAutocompleteChange = (value: string) => {
-    setStudentAutocompleteValue(value);
+  const handleSelectStudent = (student: Student) => {
+    setSelectedStudent(student);
+    setValue('studentId', student.id, { shouldDirty: true, shouldValidate: true });
+    clearErrors('studentId');
+    setStudentSearch('');
+    setIsStudentDropdownOpen(false);
+  };
 
-    const normalizedValue = value.trim().toLowerCase();
-    if (!normalizedValue) {
-      setValue('studentId', '', { shouldDirty: true, shouldValidate: false });
-      return;
-    }
-
-    const exactLabelMatch = students.find(
-      (student: Student) => formatStudentAutocompleteOption(student).toLowerCase() === normalizedValue
-    );
-    const exactEmailMatch = students.find(
-      (student: Student) => student.email.toLowerCase() === normalizedValue
-    );
-    const exactNameMatches = students.filter(
-      (student: Student) => student.name.toLowerCase() === normalizedValue
-    );
-
-    const matchedStudent = exactLabelMatch
-      ?? exactEmailMatch
-      ?? (exactNameMatches.length === 1 ? exactNameMatches[0] : undefined);
-
-    if (matchedStudent) {
-      setValue('studentId', matchedStudent.id, { shouldDirty: true, shouldValidate: true });
-      clearErrors('studentId');
-      return;
-    }
-
+  const handleClearStudent = () => {
+    setSelectedStudent(null);
     setValue('studentId', '', { shouldDirty: true, shouldValidate: false });
+    setStudentSearch('');
   };
 
   const handleFormSubmit = async (data: PaymentFormData) => {
     const result = await onSubmit(data);
     if (result) {
       reset();
-      setStudentAutocompleteValue('');
+      setSelectedStudent(null);
+      setStudentSearch('');
     }
   };
 
@@ -114,23 +109,67 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {t('payments.form.student')}
               </label>
-              <Input
-                id="payment-student-autocomplete"
-                type="text"
-                list="payment-student-options"
-                value={studentAutocompleteValue}
-                onChange={(e) => handleStudentAutocompleteChange(e.target.value)}
-                onBlur={(e) => handleStudentAutocompleteChange(e.target.value)}
-                placeholder={t('payments.form.studentAutocompletePlaceholder')}
-                autoComplete="off"
-              />
-              <datalist id="payment-student-options">
-                {autocompleteStudents.map((student: Student) => (
-                  <option key={student.id} value={formatStudentAutocompleteOption(student)} />
-                ))}
-              </datalist>
-              <input type="hidden" {...register('studentId')} />
-              <p className="text-xs text-gray-500 mt-1">{t('payments.form.studentAutocompleteHint')}</p>
+              <div className="relative" ref={dropdownRef}>
+                {selectedStudent ? (
+                  <div className="flex items-center justify-between w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900">
+                    <div className="min-w-0">
+                      <span className="block truncate font-medium">{selectedStudent.name}</span>
+                      <span className="block truncate text-xs text-gray-500">{selectedStudent.email}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleClearStudent}
+                      className="ml-2 p-1 rounded-full hover:bg-gray-100 shrink-0"
+                    >
+                      <X className="h-4 w-4 text-gray-400" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      className="flex items-center w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white cursor-pointer"
+                      onClick={() => setIsStudentDropdownOpen(!isStudentDropdownOpen)}
+                    >
+                      <input
+                        type="text"
+                        value={studentSearch}
+                        onChange={(e) => {
+                          setStudentSearch(e.target.value);
+                          if (!isStudentDropdownOpen) setIsStudentDropdownOpen(true);
+                        }}
+                        onFocus={() => setIsStudentDropdownOpen(true)}
+                        placeholder={t('payments.form.studentAutocompletePlaceholder')}
+                        className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-400 min-w-0"
+                        autoComplete="off"
+                      />
+                      <ChevronDown className={`h-4 w-4 text-gray-400 shrink-0 ml-2 transition-transform ${isStudentDropdownOpen ? 'rotate-180' : ''}`} />
+                    </div>
+
+                    {isStudentDropdownOpen && (
+                      <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {filteredStudents.length === 0 ? (
+                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                            {studentsLoading ? t('payments.labels.loadingStudents') : t('payments.empty.title')}
+                          </div>
+                        ) : (
+                          filteredStudents.map((student: Student) => (
+                            <button
+                              key={student.id}
+                              type="button"
+                              className="w-full text-left px-4 py-3 hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none border-b border-gray-100 last:border-b-0"
+                              onClick={() => handleSelectStudent(student)}
+                            >
+                              <span className="block font-medium text-gray-900 truncate">{student.name}</span>
+                              <span className="block text-xs text-gray-500 truncate">{student.email}</span>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+                <input type="hidden" {...register('studentId')} />
+              </div>
               {errors.studentId && (
                 <p className="text-sm text-red-600 mt-1">{errors.studentId.message}</p>
               )}

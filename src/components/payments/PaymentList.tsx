@@ -5,6 +5,7 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
+import ConfirmModal from '../ui/ConfirmModal';
 import { DollarSign, Calendar, User, Pencil, Trash2, X, Check } from 'lucide-react';
 import { parseLocalDate } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
@@ -74,9 +75,9 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
     }
   };
 
-  const confirmDelete = async (id: string) => {
-    if (!onDelete) return;
-    const result = await onDelete(id);
+  const confirmDelete = async () => {
+    if (!deletingId || !onDelete) return;
+    const result = await onDelete(deletingId);
     if (result) {
       setDeletingId(null);
     }
@@ -94,101 +95,126 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
   }
 
   return (
-    <div className="space-y-4">
-      {payments.map((payment: Payment) => {
-        const studentName = studentsById.get(payment.student_id)?.name ?? payment.student_name ?? unknownStudentLabel;
-        const paymentAmount = typeof payment.amount === 'number' ? payment.amount : 0;
-        const paymentStatus = payment.status || 'completed';
-        const paymentType = payment.type || 'other';
-        const isEditing = editingId === payment.id;
-        const isConfirmingDelete = deletingId === payment.id;
+    <>
+      <ConfirmModal
+        isOpen={deletingId !== null}
+        title={t('payments.actions.delete')}
+        message={t('payments.actions.confirmDelete')}
+        confirmLabel={isDeleting ? t('payments.actions.deleting') : t('payments.actions.delete')}
+        cancelLabel={t('payments.actions.cancel')}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeletingId(null)}
+        isProcessing={isDeleting}
+      />
 
-        return (
-          <Card key={payment.id}>
-            <CardContent className="p-6">
-              {isEditing ? (
-                <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900">{t('payments.actions.editTitle')} — {studentName}</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.amount')}</label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={editData.amount ?? 0}
-                        onChange={(e) => setEditData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                      />
+      <div className="space-y-4">
+        {payments.map((payment: Payment) => {
+          const studentName = studentsById.get(payment.student_id)?.name ?? payment.student_name ?? unknownStudentLabel;
+          const paymentAmount = typeof payment.amount === 'number' ? payment.amount : 0;
+          const paymentStatus = payment.status || 'completed';
+          const paymentType = payment.type || 'other';
+          const isEditing = editingId === payment.id;
+
+          return (
+            <Card key={payment.id}>
+              <CardContent className="p-4 sm:p-6">
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-gray-900">{t('payments.actions.editTitle')} — {studentName}</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.amount')}</label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={editData.amount ?? 0}
+                          onChange={(e) => setEditData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.paymentDate')}</label>
+                        <Input
+                          type="date"
+                          value={editData.date ?? ''}
+                          onChange={(e) => setEditData(prev => ({ ...prev, date: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.paymentType')}</label>
+                        <Select
+                          value={editData.type ?? ''}
+                          onChange={(e) => setEditData(prev => ({ ...prev, type: e.target.value }))}
+                          options={[
+                            { value: 'monthly', label: t('payments.filters.type.monthly') },
+                            { value: 'drop-in', label: t('payments.filters.type.dropIn') },
+                            { value: 'private', label: t('payments.filters.type.private') },
+                            { value: 'equipment', label: t('payments.filters.type.equipment') },
+                            { value: 'other', label: t('payments.filters.type.other') },
+                          ]}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.status')}</label>
+                        <Select
+                          value={editData.status ?? ''}
+                          onChange={(e) => setEditData(prev => ({ ...prev, status: e.target.value }))}
+                          options={[
+                            { value: 'completed', label: t('payments.filters.status.completed') },
+                            { value: 'pending', label: t('payments.filters.status.pending') },
+                            { value: 'failed', label: t('payments.filters.status.failed') },
+                            { value: 'refunded', label: t('payments.filters.status.refunded') },
+                          ]}
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.notes')}</label>
+                        <Input
+                          value={editData.notes ?? ''}
+                          onChange={(e) => setEditData(prev => ({ ...prev, notes: e.target.value }))}
+                          placeholder={t('payments.form.notesPlaceholder')}
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.paymentDate')}</label>
-                      <Input
-                        type="date"
-                        value={editData.date ?? ''}
-                        onChange={(e) => setEditData(prev => ({ ...prev, date: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.paymentType')}</label>
-                      <Select
-                        value={editData.type ?? ''}
-                        onChange={(e) => setEditData(prev => ({ ...prev, type: e.target.value }))}
-                        options={[
-                          { value: 'monthly', label: t('payments.filters.type.monthly') },
-                          { value: 'drop-in', label: t('payments.filters.type.dropIn') },
-                          { value: 'private', label: t('payments.filters.type.private') },
-                          { value: 'equipment', label: t('payments.filters.type.equipment') },
-                          { value: 'other', label: t('payments.filters.type.other') },
-                        ]}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.status')}</label>
-                      <Select
-                        value={editData.status ?? ''}
-                        onChange={(e) => setEditData(prev => ({ ...prev, status: e.target.value }))}
-                        options={[
-                          { value: 'completed', label: t('payments.filters.status.completed') },
-                          { value: 'pending', label: t('payments.filters.status.pending') },
-                          { value: 'failed', label: t('payments.filters.status.failed') },
-                          { value: 'refunded', label: t('payments.filters.status.refunded') },
-                        ]}
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.notes')}</label>
-                      <Input
-                        value={editData.notes ?? ''}
-                        onChange={(e) => setEditData(prev => ({ ...prev, notes: e.target.value }))}
-                        placeholder={t('payments.form.notesPlaceholder')}
-                      />
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="outline" onClick={cancelEdit} disabled={isUpdating}>
+                        <X className="h-4 w-4 mr-1" />
+                        {t('payments.actions.cancel')}
+                      </Button>
+                      <Button onClick={saveEdit} disabled={isUpdating}>
+                        <Check className="h-4 w-4 mr-1" />
+                        {isUpdating ? t('payments.actions.saving') : t('payments.actions.save')}
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex gap-2 justify-end">
-                    <Button variant="outline" onClick={cancelEdit} disabled={isUpdating}>
-                      <X className="h-4 w-4 mr-1" />
-                      {t('payments.actions.cancel')}
-                    </Button>
-                    <Button onClick={saveEdit} disabled={isUpdating}>
-                      <Check className="h-4 w-4 mr-1" />
-                      {isUpdating ? t('payments.actions.saving') : t('payments.actions.save')}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <User className="h-5 w-5 text-gray-400" />
-                      <span className="font-medium text-gray-900">{studentName}</span>
-                      <Badge variant={getTypeBadgeVariant(paymentType)}>
-                        {t(`payments.type.${paymentType.replace('-', '')}`)}
-                      </Badge>
-                      <Badge variant={getStatusBadgeVariant(paymentStatus)}>
-                        {t(`payments.status.${paymentStatus}`)}
-                      </Badge>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Top row: student info + badges */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <User className="h-5 w-5 text-gray-400 shrink-0" />
+                        <span className="font-medium text-gray-900 truncate">{studentName}</span>
+                        <Badge variant={getTypeBadgeVariant(paymentType)}>
+                          {t(`payments.type.${paymentType.replace('-', '')}`)}
+                        </Badge>
+                        <Badge variant={getStatusBadgeVariant(paymentStatus)}>
+                          {t(`payments.status.${paymentStatus}`)}
+                        </Badge>
+                      </div>
+
+                      {isAdmin && (
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="outline" size="xs" onClick={() => startEdit(payment)} title={t('payments.actions.edit')}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="outline" size="xs" onClick={() => setDeletingId(payment.id)} title={t('payments.actions.delete')}>
+                            <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
+                    {/* Amount + date row */}
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                       <div className="flex items-center gap-1">
                         <DollarSign className="h-4 w-4" />
@@ -205,42 +231,15 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                     </div>
 
                     {payment.notes && (
-                      <p className="text-sm text-gray-600 mt-2">{payment.notes}</p>
+                      <p className="text-sm text-gray-600">{payment.notes}</p>
                     )}
                   </div>
-
-                  {isAdmin && (
-                    <div className="flex gap-2 ml-4 shrink-0">
-                      {isConfirmingDelete ? (
-                        <div className="flex flex-col items-end gap-2">
-                          <p className="text-sm text-red-600 font-medium">{t('payments.actions.confirmDelete')}</p>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => setDeletingId(null)} disabled={isDeleting}>
-                              {t('payments.actions.cancel')}
-                            </Button>
-                            <Button variant="danger" size="sm" onClick={() => confirmDelete(payment.id)} disabled={isDeleting}>
-                              {isDeleting ? t('payments.actions.deleting') : t('payments.actions.delete')}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <Button variant="outline" size="sm" onClick={() => startEdit(payment)} title={t('payments.actions.edit')}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => setDeletingId(payment.id)} title={t('payments.actions.delete')}>
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </>
   );
 }
