@@ -4,15 +4,17 @@ import { parseLocalDate } from '../../lib/utils';
 import DashboardHeader from './DashboardHeader';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Calendar, CreditCard, User, QrCode, ArrowRight } from 'lucide-react';
+import { Calendar, CreditCard, User, QrCode, ArrowRight, Clock, MapPin, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function StudentDashboard() {
   const { profile, classes, payments, isLoading, error } = useStudentDashboardData();
   const { greeting } = useGreeting();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [expandedClassId, setExpandedClassId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -129,25 +131,91 @@ export default function StudentDashboard() {
         {/* Recent Classes */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-bold text-white">{t('dashboard.student.myClasses')}</h3>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-red-400" />
+                <h3 className="text-lg font-bold text-white">{t('dashboard.student.myClasses')}</h3>
+              </div>
+              {classes.length > 5 && (
+                <span className="text-xs text-gray-500">{classes.length} {t('classes.plural', 'clases')}</span>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {classes.length === 0 ? (
-              <p className="text-gray-500">{t('dashboard.student.noClassesEnrolled')}</p>
+              <div className="text-center py-8">
+                <div className="p-3 rounded-full bg-gray-700/40 w-14 h-14 mx-auto mb-3 flex items-center justify-center">
+                  <Calendar className="w-7 h-7 text-gray-500" />
+                </div>
+                <p className="text-gray-500 text-sm">{t('dashboard.student.noClassesEnrolled')}</p>
+              </div>
             ) : (
-              <div className="space-y-4">
-                {classes.slice(0, 5).map(cls => (
-                  <div key={cls.id} className="flex items-center justify-between border-b border-gray-800 pb-4 last:border-0 last:pb-0">
-                    <div>
-                      <p className="font-medium text-white">{cls.name}</p>
-                      <p className="text-sm text-gray-500">{cls.discipline}</p>
+              <div className="space-y-3">
+                {classes.slice(0, 6).map(cls => {
+                  const isExpanded = expandedClassId === cls.id;
+                  const hasDescription = cls.description && cls.description.trim().length > 0;
+                  return (
+                    <div
+                      key={cls.id}
+                      className="rounded-xl border border-gray-700/50 bg-gray-800/40 overflow-hidden transition-all duration-200 hover:border-gray-600/60"
+                    >
+                      {/* Class Header Row */}
+                      <div className="flex items-start gap-3 p-3">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                          <BookOpen className="w-5 h-5 text-red-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-semibold text-white text-sm leading-tight">{cls.name}</p>
+                            <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20">
+                              {cls.discipline}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                            <span className="flex items-center gap-1 text-xs text-gray-400">
+                              <Calendar className="w-3 h-3 text-gray-500" />
+                              {new Date(cls.date).toLocaleDateString('es-ES', { weekday: 'short', month: 'short', day: 'numeric' })}
+                            </span>
+                            <span className="flex items-center gap-1 text-xs text-gray-400">
+                              <Clock className="w-3 h-3 text-gray-500" />
+                              {cls.time}
+                            </span>
+                            {cls.location && (
+                              <span className="flex items-center gap-1 text-xs text-gray-400">
+                                <MapPin className="w-3 h-3 text-gray-500" />
+                                {cls.location}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {hasDescription && (
+                          <button
+                            onClick={() => setExpandedClassId(isExpanded ? null : cls.id)}
+                            className="flex-shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all"
+                            title={isExpanded ? 'Ocultar descripción' : 'Ver descripción / objetivo'}
+                          >
+                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Description / Objective (expandable) */}
+                      {hasDescription && isExpanded && (
+                        <div className="px-3 pb-3 pt-0">
+                          <div className="rounded-lg bg-blue-900/20 border border-blue-500/20 p-3">
+                            <div className="flex items-center gap-1.5 mb-1.5">
+                              <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+                              <span className="text-xs font-semibold text-blue-400 uppercase tracking-wide">
+                                Objetivo / Descripción
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">{cls.description}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-white">{new Date(cls.date).toLocaleDateString()}</p>
-                      <p className="text-sm text-gray-500">{cls.time}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>

@@ -17,6 +17,7 @@ interface AttendanceRecord {
   class_time: string;
   discipline: string;
   location: string;
+  description: string | null;
   attended: number;
   check_in_time: string | null;
   check_in_method: string;
@@ -70,6 +71,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         c.time as class_time,
         c.discipline,
         c.location,
+        c.description,
         a.attended,
         a.check_in_time,
         COALESCE(a.check_in_method, 'manual') as check_in_method,

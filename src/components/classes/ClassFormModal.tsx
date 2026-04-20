@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, AlertCircle, X } from 'lucide-react';
+import { Plus, AlertCircle, X, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useClassMetadata } from '../../hooks/useClassMetadata';
 import { useToast } from '../../hooks/useToast';
@@ -551,9 +551,15 @@ type RecurrencePattern = { frequency?: 'daily' | 'weekly' | 'monthly'; days?: nu
 
             {/* Description Section */}
             <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wider">
-                Descripción
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-red-400 uppercase tracking-wider">
+                  {t('classForm.description')}
+                </h4>
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                  <Eye className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-xs text-blue-400 font-medium">{t('classForm.descriptionHint', 'Visible para alumnos')}</span>
+                </div>
+              </div>
               
               <div className="form-control transform transition-all duration-300 hover:translate-x-1">
                 <textarea

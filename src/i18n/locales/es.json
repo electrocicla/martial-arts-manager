@@ -445,16 +445,18 @@
     "december": "Diciembre"
   },
   "classes": {
-    "title": "Gestión de Cursos",
-    "subtitle": "Cursos programados esta semana",
-    "singular": "curso",
-    "plural": "cursos",
+    "title": "Gestión de Clases",
+    "subtitle": "Clases programadas esta semana",
+    "singular": "clase",
+    "plural": "clases",
     "actions": {
       "duplicateWeek": "Duplicar Semana",
-  "addClass": "Agregar Curso",
+  "addClass": "Agregar Clase",
       "attendance": "Asistencia",
+      "attendanceShort": "Asist.",
       "edit": "Editar",
-  "scheduleFirstClass": "Programar Primer Curso"
+      "students": "Estudiantes",
+  "scheduleFirstClass": "Programar Primera Clase"
     },
     "stats": {
       "totalClasses": "Total de Clases",
@@ -478,7 +480,7 @@
     },
     "table": {
       "headers": {
-        "class": "Curso",
+        "class": "Clase",
         "dateTime": "Fecha y Hora",
         "location": "Ubicación",
         "instructor": "Instructor",
@@ -487,21 +489,24 @@
         "actions": "Acciones"
       }
     },
-    "empty": {
-      "noClassesScheduled": "Sin cursos programados",
-      "startCreateSchedule": "Comienza a crear tu horario de cursos",
-      "noClassesFound": "No se encontraron cursos"
+    "labels": {
+      "instructor": "Instructor"
     },
-    "deleteConfirmTitle": "¿Eliminar Curso?",
-    "deleteConfirmMessage": "Esta acción eliminará el curso. Para confirmar, escriba 'delete' o 'borrar'",
+    "empty": {
+      "noClassesScheduled": "Sin clases programadas",
+      "startCreateSchedule": "Comienza a crear tu horario de clases",
+      "noClassesFound": "No se encontraron clases"
+    },
+    "deleteConfirmTitle": "¿Eliminar Clase?",
+    "deleteConfirmMessage": "Esta acción eliminará la clase. Para confirmar, escriba 'delete' o 'borrar'",
     "deleteConfirmPlaceholder": "Escriba aquí...",
     "deleteConfirmError": "Por favor escriba 'delete' o 'borrar' para confirmar",
-    "deleteSuccess": "Curso eliminado correctamente",
-    "deleteError": "Error al eliminar el curso",
+    "deleteSuccess": "Clase eliminada correctamente",
+    "deleteError": "Error al eliminar la clase",
     "enrollModal": {
       "fetchError": "Error al cargar estudiantes inscritos",
       "fetchLoadError": "No se pudo cargar los estudiantes inscritos",
-      "maxCapacity": "El curso ha alcanzado su capacidad máxima",
+      "maxCapacity": "La clase ha alcanzado su capacidad máxima",
       "enrolledSuccess": "Estudiante inscrito correctamente",
       "enrollError": "Error al inscribir estudiante",
       "unenrolledSuccess": "Estudiante desinscrito correctamente",
@@ -514,17 +519,19 @@
       "inscribed": "Inscritos",
       "slot": "cupo",
       "slots": "cupos",
-      "fullClass": "Curso lleno",
+      "fullClass": "Clase llena",
       "enroll": "Inscribir",
       "searchResults": "{{count}} estudiante(s)",
       "inscribedLabel": "Inscrito",
       "selectAll": "Seleccionar todos",
-      "allInscribed": "Todos inscritos"
+      "allInscribed": "Todos inscritos",
+      "filterByDiscipline": "Filtrar por disciplina",
+      "allDisciplines": "Todas"
     }
   },
   "classForm": {
-    "title": "Programar Nuevo Curso",
-    "className": "Nombre del Curso",
+    "title": "Programar Nueva Clase",
+    "className": "Nombre de la Clase",
     "classNamePlaceholder": "ej., BJJ Adultos",
     "discipline": "Disciplina",
     "date": "Fecha",
@@ -532,21 +539,24 @@
     "location": "Ubicación",
     "instructor": "Instructor",
     "maxStudents": "Máximo de Estudiantes",
-  "recurringClass": "Curso Recurrente",
-  "recurringSetupMessage": "Configurar horario recurrente para este curso",
-    "description": "Descripción",
-  "descriptionPlaceholder": "Descripción del curso...",
+  "recurringClass": "Clase Recurrente",
+  "recurringSetupMessage": "Configurar horario recurrente para esta clase",
+    "description": "Descripción / Objetivo de la Clase",
+  "descriptionPlaceholder": "Describe el objetivo y contenido de la clase (visible para los alumnos)...",
+  "descriptionHint": "Esta descripción será visible para los alumnos en su sección de clases",
     "cancel": "Cancelar",
-    "scheduleClass": "Programar Curso",
-    "scheduling": "Agregando curso...",
+    "scheduleClass": "Programar Clase",
+    "updateClass": "Actualizar Clase",
+    "scheduling": "Creando clase...",
+    "updating": "Actualizando clase...",
     "requiredField": "Por favor complete los campos requeridos",
-    "addFailed": "Error al agregar el curso"
+    "addFailed": "Error al agregar la clase"
     ,
   "noDescription": "Sin descripción",
   "recurrence": "Recurrencia",
     "applyTo": "Aplicar cambios a",
     "applyToSingle": "Sólo esta sesión",
-    "applyToAll": "Todas las sesiones del curso"
+    "applyToAll": "Todas las sesiones de la clase"
   },
   "classDetails": {
     "comments": "Comentarios",

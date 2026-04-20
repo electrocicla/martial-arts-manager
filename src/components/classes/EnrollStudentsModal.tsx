@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { X, UserPlus, Search, Check, Loader2, Users, AlertCircle, ChevronDown, ChevronRight, CheckSquare } from 'lucide-react';
+import { X, UserPlus, Search, Check, Loader2, Users, AlertCircle, ChevronDown, ChevronRight, CheckSquare, Filter } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useStudents } from '../../hooks/useStudents';
 import { apiClient } from '../../lib/api-client';
@@ -37,6 +37,7 @@ export function EnrollStudentsModal({
   const { students } = useStudents();
   const { success: toastSuccess, error: toastError } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [disciplineFilter, setDisciplineFilter] = useState<string>('all');
   const [enrolledStudents, setEnrolledStudents] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -136,10 +137,27 @@ export function EnrollStudentsModal({
     }
   };
 
-  const filteredStudents = students.filter(student =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = students.filter(student => {
+    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDiscipline = disciplineFilter === 'all' || (student.discipline || 'Sin disciplina') === disciplineFilter;
+    return matchesSearch && matchesDiscipline;
+  });
+
+  // All disciplines from the full student list (not filtered) for quick buttons
+  const allDisciplines = useMemo((): Array<{ name: string; total: number; enrolled: number }> => {
+    const map = new Map<string, { total: number; enrolled: number }>();
+    for (const s of students) {
+      const d = s.discipline || 'Sin disciplina';
+      const existing = map.get(d) || { total: 0, enrolled: 0 };
+      existing.total++;
+      if (enrolledStudents.has(s.id)) existing.enrolled++;
+      map.set(d, existing);
+    }
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, counts]) => ({ name, ...counts }));
+  }, [students, enrolledStudents]);
 
   const disciplineGroups = useMemo((): DisciplineGroup[] => {
     const groupMap = new Map<string, Student[]>();
@@ -171,8 +189,7 @@ export function EnrollStudentsModal({
     });
   }, []);
 
-  const handleSelectAllInGroup = useCallback(async (groupStudents: Student[]) => {
-    const unenrolledInGroup = groupStudents.filter(s => !enrolledStudents.has(s.id));
+  const handleSelectAllInGroup = useCallback(async (groupStudents: Student[]) => {    const unenrolledInGroup = groupStudents.filter(s => !enrolledStudents.has(s.id));
     if (unenrolledInGroup.length === 0) return;
 
     const idsToEnroll = unenrolledInGroup
@@ -200,9 +217,13 @@ export function EnrollStudentsModal({
     }
   }, [enrolledStudents, maxStudents, classId, onEnrollmentUpdated, toastSuccess, toastError, t]);
 
-  const isGroupFullyEnrolled = useCallback((groupStudents: Student[]): boolean => {
-    return groupStudents.every(s => enrolledStudents.has(s.id));
+  const isGroupFullyEnrolled = useCallback((groupStudents: Student[]): boolean => {    return groupStudents.every(s => enrolledStudents.has(s.id));
   }, [enrolledStudents]);
+
+  const handleEnrollDiscipline = useCallback(async (disciplineName: string) => {
+    const disciplineStudents = students.filter(s => (s.discipline || 'Sin disciplina') === disciplineName);
+    await handleSelectAllInGroup(disciplineStudents);
+  }, [students, handleSelectAllInGroup]);
 
   const availableSlots = maxStudents - enrolledStudents.size;
 
@@ -260,6 +281,62 @@ export function EnrollStudentsModal({
 
         {/* Content */}
         <div className="p-4 sm:p-6">
+          {/* Discipline Quick-Select Buttons */}
+          {allDisciplines.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Filter className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  {t('classes.enrollModal.filterByDiscipline')}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setDisciplineFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 border ${
+                    disciplineFilter === 'all'
+                      ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-900/30'
+                      : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600 hover:bg-gray-700'
+                  }`}
+                >
+                  {t('classes.enrollModal.allDisciplines')}
+                  <span className="ml-1.5 opacity-70">({students.length})</span>
+                </button>
+                {allDisciplines.map((disc) => {
+                  const isActive = disciplineFilter === disc.name;
+                  const allEnrolled = disc.enrolled === disc.total;
+                  return (
+                    <div key={disc.name} className="flex items-center gap-1">
+                      <button
+                        onClick={() => setDisciplineFilter(isActive ? 'all' : disc.name)}
+                        className={`px-3 py-1.5 rounded-l-lg text-xs font-semibold transition-all duration-200 border-y border-l ${
+                          isActive
+                            ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-900/30'
+                            : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600 hover:bg-gray-700'
+                        }`}
+                      >
+                        {disc.name}
+                        <span className="ml-1.5 opacity-70">({disc.enrolled}/{disc.total})</span>
+                      </button>
+                      <button
+                        onClick={() => handleEnrollDiscipline(disc.name)}
+                        disabled={allEnrolled || availableSlots === 0 || actionLoading === 'batch'}
+                        title={`Inscribir todos de ${disc.name}`}
+                        className={`px-2 py-1.5 rounded-r-lg text-xs font-semibold transition-all duration-200 border-y border-r ${
+                          allEnrolled
+                            ? 'bg-green-900/30 border-green-700/50 text-green-500 cursor-default'
+                            : 'bg-gray-700 border-gray-600 text-green-400 hover:bg-green-700 hover:border-green-600 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed'
+                        }`}
+                      >
+                        {allEnrolled ? <Check className="w-3.5 h-3.5" /> : <CheckSquare className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Error Message */}
           {error && (
             <div className="alert alert-error mb-4 shadow-lg">

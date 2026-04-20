@@ -482,7 +482,9 @@
       "duplicateWeek": "Duplicate Week",
       "addClass": "Add Class",
       "attendance": "Attendance",
+      "attendanceShort": "Attend.",
       "edit": "Edit",
+      "students": "Students",
       "scheduleFirstClass": "Schedule First Class"
     },
     "stats": {
@@ -516,6 +518,9 @@
         "actions": "Actions"
       }
     },
+    "labels": {
+      "instructor": "Instructor"
+    },
     "empty": {
       "noClassesScheduled": "No classes scheduled"
     },
@@ -528,6 +533,8 @@
       "unenrolledSuccess": "Student unenrolled successfully",
       "unenrollError": "Error unenrolling student",
       "searchPlaceholder": "Search student by name or email...",
+      "filterByDiscipline": "Filter by discipline",
+      "allDisciplines": "All",
       "loadingStudents": "Loading students...",
       "noStudentsFound": "No students found",
       "tryDifferentSearch": "Try a different search term",
@@ -555,12 +562,21 @@
     "maxStudents": "Max Students",
     "recurringClass": "Recurring Class",
     "recurringSetupMessage": "Set up recurring schedule for this class",
-    "description": "Description",
-    "descriptionPlaceholder": "Class description...",
+    "description": "Description / Class Objective",
+    "descriptionPlaceholder": "Describe the objective and content of this class (visible to students)...",
+    "descriptionHint": "Visible to students",
     "cancel": "Cancel",
     "scheduleClass": "Schedule Class",
+    "updateClass": "Update Class",
+    "scheduling": "Creating class...",
+    "updating": "Updating class...",
     "requiredField": "Please fill in required fields",
-    "addFailed": "Failed to add class"
+    "addFailed": "Failed to add class",
+    "noDescription": "No description",
+    "recurrence": "Recurrence",
+    "applyTo": "Apply changes to",
+    "applyToSingle": "Only this session",
+    "applyToAll": "All sessions of this class"
   },
   "common": {
     "loading": "Loading...",

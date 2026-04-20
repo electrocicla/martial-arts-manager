@@ -17,6 +17,7 @@ import {
   TrendingUp,
   MapPin,
   History,
+  BookOpen,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../lib/api-client';
@@ -30,6 +31,7 @@ interface AttendanceRecord {
   class_time: string;
   discipline: string;
   location: string;
+  description: string | null;
   attended: number;
   check_in_time: string | null;
   check_in_method: 'manual' | 'qr' | 'geofence';
@@ -201,15 +203,15 @@ export default function StudentAttendance() {
                   key={record.id}
                   className="px-4 py-3 hover:bg-gray-800/30 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                  <div className="flex items-start gap-3">
+                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mt-0.5 ${
                       record.attended ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                     }`}>
                       {record.attended ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-white truncate">{record.class_name}</span>
                         <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">
                           {record.discipline}
@@ -229,10 +231,16 @@ export default function StudentAttendance() {
                           {record.location}
                         </span>
                       </div>
+                      {record.description && (
+                        <div className="mt-2 flex items-start gap-1.5 text-xs text-blue-300/80 bg-blue-900/15 border border-blue-500/15 rounded-lg px-2.5 py-1.5">
+                          <BookOpen className="w-3 h-3 text-blue-400 shrink-0 mt-0.5" />
+                          <span className="leading-relaxed line-clamp-2">{record.description}</span>
+                        </div>
+                      )}
                     </div>
 
                     {record.check_in_method === 'qr' && (
-                      <div className="flex-shrink-0" title="QR Check-in">
+                      <div className="flex-shrink-0 mt-0.5" title="QR Check-in">
                         <QrCode className="w-4 h-4 text-blue-400" />
                       </div>
                     )}
