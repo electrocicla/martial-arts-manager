@@ -8,7 +8,7 @@ import { BELT_RANKINGS } from '../../lib/constants';
 import { DISCIPLINES } from '../../lib/constants';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
-import Modal from '../ui/Modal';
+import { Modal } from '../ui/Modal';
 
 interface StudentFormModalProps {
   isOpen: boolean;

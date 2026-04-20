@@ -124,6 +124,7 @@ export function PollingProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePolling() {
   const ctx = useContext(PollingContext);
   if (!ctx) throw new Error('usePolling must be used within a PollingProvider');

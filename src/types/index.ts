@@ -87,6 +87,8 @@ export interface ClassEntity {
   instructor_id?: string;
   max_students: number;
   enrolled_count?: number;
+  enrolled_student_ids?: string[];
+  parent_course_id?: string | null;
   description?: string;
   is_recurring: number;
   recurrence_pattern?: string; // JSON string
@@ -203,8 +205,8 @@ export interface PaymentFormData {
   studentId: string;
   amount: number;
   date: string;
-  type: string;
-  status?: string;
+  type: 'monthly' | 'drop-in' | 'private' | 'equipment' | 'other';
+  status?: 'completed' | 'pending' | 'failed' | 'refunded';
   paymentMethod?: string;
   notes?: string;
 }

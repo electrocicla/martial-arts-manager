@@ -55,8 +55,8 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
     setEditData({
       amount: payment.amount,
       date: payment.date,
-      type: payment.type,
-      status: payment.status,
+      type: payment.type as PaymentFormData['type'],
+      status: payment.status as PaymentFormData['status'],
       notes: payment.notes || '',
     });
   };
@@ -144,7 +144,7 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.paymentType')}</label>
                         <Select
                           value={editData.type ?? ''}
-                          onChange={(e) => setEditData(prev => ({ ...prev, type: e.target.value }))}
+                          onChange={(e) => setEditData(prev => ({ ...prev, type: e.target.value as PaymentFormData['type'] }))}
                           options={[
                             { value: 'monthly', label: t('payments.filters.type.monthly') },
                             { value: 'drop-in', label: t('payments.filters.type.dropIn') },
@@ -158,7 +158,7 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.status')}</label>
                         <Select
                           value={editData.status ?? ''}
-                          onChange={(e) => setEditData(prev => ({ ...prev, status: e.target.value }))}
+                          onChange={(e) => setEditData(prev => ({ ...prev, status: e.target.value as PaymentFormData['status'] }))}
                           options={[
                             { value: 'completed', label: t('payments.filters.status.completed') },
                             { value: 'pending', label: t('payments.filters.status.pending') },

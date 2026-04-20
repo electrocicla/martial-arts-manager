@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import React from 'react';
-import { BookOpen, Plus, Calendar, Users, Copy, List, Clock, TrendingUp } from 'lucide-react';
+import { BookOpen, Plus, Calendar, Users, Copy, List, TrendingUp } from 'lucide-react';
 import { useClasses } from '../hooks/useClasses';
 import { useClassMetadata } from '../hooks/useClassMetadata';
 import { useNavigate } from 'react-router-dom';

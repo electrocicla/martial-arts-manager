@@ -9,7 +9,7 @@ import { prepareAvatarFile } from '../../lib/avatarUpload';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
-import Modal from '../ui/Modal';
+import { Modal } from '../ui/Modal';
 
 interface StudentDetailsModalProps {
   student: Student;

@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../hooks/useToast';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
-import Modal from '../ui/Modal';
+import { Modal } from '../ui/Modal';
 
 type CommentRecord = { id: string; comment: string; author_id: string; created_at: string };
 type RecurrencePattern = { frequency?: string; days?: number[]; endDate?: string };

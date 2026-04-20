@@ -8,7 +8,7 @@ import type { Student } from '../../types';
 import { useToast } from '../../hooks/useToast';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
-import Modal from '../ui/Modal';
+import { Modal } from '../ui/Modal';
 
 interface DisciplineGroup {
   discipline: string;

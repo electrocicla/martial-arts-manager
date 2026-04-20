@@ -98,7 +98,7 @@ export async function onRequestPost({ request, env, params }: { request: Request
   }
 }
 
-export async function onRequestDelete({ request, env, params }: { request: Request; env: Env; params: { classId?: string } }) {
+export async function onRequestDelete({ request, env }: { request: Request; env: Env; params: { classId?: string } }) {
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {

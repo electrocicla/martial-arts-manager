@@ -5,7 +5,7 @@ import { useClassMetadata } from '../../hooks/useClassMetadata';
 import { useToast } from '../../hooks/useToast';
 import { Button } from '../ui/Button';
 import type { ClassFormData, Discipline, Class } from '../../types/index';
-import Modal from '../ui/Modal';
+import { Modal } from '../ui/Modal';
 
 interface ClassFormModalProps {
   isOpen: boolean;
