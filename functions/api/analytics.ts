@@ -231,7 +231,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       recentPayments: results[17].results ?? [],
     };
 
-    return new Response(JSON.stringify({ data: response }), {
+    return new Response(JSON.stringify(response), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

@@ -66,7 +66,7 @@ export function PollingProvider({ children }: { children: ReactNode }) {
   }, [user, accessToken]);
 
   const fetchNotifications = useCallback(async () => {
-    if (!user) return;
+    if (!user || !accessToken) return;
 
     try {
       setNotificationsLoading(true);
@@ -81,7 +81,7 @@ export function PollingProvider({ children }: { children: ReactNode }) {
     } finally {
       setNotificationsLoading(false);
     }
-  }, [user]);
+  }, [user, accessToken]);
 
   // Single polling interval for both
   useEffect(() => {
