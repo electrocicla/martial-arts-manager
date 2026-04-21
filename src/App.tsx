@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
@@ -9,6 +9,7 @@ import PullToRefresh from './components/mobile/PullToRefresh';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PollingProvider } from './context/PollingContext';
 import { ToastProvider } from './components/ui/ToastProvider';
+import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Lazy load components
@@ -40,13 +41,6 @@ const LoadingSpinner = () => (
 
 // Main app content for authenticated users
 function AppContent() {
-  useEffect(() => {
-    // Set dark theme by default
-    document.documentElement.setAttribute('data-theme', 'dark');
-    document.documentElement.classList.add('dark');
-    document.body.classList.add('dark');
-  }, []);
-
   return (
     <PullToRefresh>
     <div className="min-h-screen bg-gray-900">
@@ -80,13 +74,6 @@ function AppContent() {
 // Main app wrapper with authentication
 function AppWrapper() {
   const { isAuthenticated, isLoading } = useAuth();
-
-  useEffect(() => {
-    // Set dark theme globally by default
-    document.documentElement.setAttribute('data-theme', 'dark');
-    document.documentElement.classList.add('dark');
-    document.body.classList.add('dark');
-  }, []);
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -136,15 +123,17 @@ function AppWrapper() {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <PollingProvider>
-          <ToastProvider>
-            <Router>
-              <AppWrapper />
-            </Router>
-          </ToastProvider>
-        </PollingProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <PollingProvider>
+            <ToastProvider>
+              <Router>
+                <AppWrapper />
+              </Router>
+            </ToastProvider>
+          </PollingProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
