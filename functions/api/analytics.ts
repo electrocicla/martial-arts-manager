@@ -64,7 +64,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     queries.push(
       bindScope(env.DB.prepare(
         isAdmin
-          ? `SELECT COUNT(*) as count FROM students WHERE deleted_at IS NULL AND join_date >= ?2 AND join_date < ?3`
+          ? `SELECT COUNT(*) as count FROM students WHERE deleted_at IS NULL AND join_date >= ?1 AND join_date < ?2`
           : `SELECT COUNT(*) as count FROM students WHERE deleted_at IS NULL AND join_date >= ?2 AND join_date < ?3 AND (created_by = ?1 OR instructor_id = ?1 OR instructor_id IS NULL)`
       ), isAdmin, userId, monthStart, nextMonthStart)
     );
@@ -94,7 +94,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     queries.push(
       bindScope(env.DB.prepare(
         isAdmin
-          ? `SELECT COALESCE(SUM(CASE WHEN status = 'completed' THEN amount WHEN status = 'refunded' THEN -amount ELSE 0 END), 0) as total FROM payments WHERE deleted_at IS NULL AND date >= ?2 AND date < ?3`
+          ? `SELECT COALESCE(SUM(CASE WHEN status = 'completed' THEN amount WHEN status = 'refunded' THEN -amount ELSE 0 END), 0) as total FROM payments WHERE deleted_at IS NULL AND date >= ?1 AND date < ?2`
           : `SELECT COALESCE(SUM(CASE WHEN status = 'completed' THEN amount WHEN status = 'refunded' THEN -amount ELSE 0 END), 0) as total FROM payments WHERE deleted_at IS NULL AND date >= ?2 AND date < ?3 AND (created_by = ?1)`
       ), isAdmin, userId, monthStart, nextMonthStart)
     );
@@ -103,7 +103,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     queries.push(
       bindScope(env.DB.prepare(
         isAdmin
-          ? `SELECT COUNT(*) as count FROM payments WHERE deleted_at IS NULL AND date >= ?2 AND date < ?3`
+          ? `SELECT COUNT(*) as count FROM payments WHERE deleted_at IS NULL AND date >= ?1 AND date < ?2`
           : `SELECT COUNT(*) as count FROM payments WHERE deleted_at IS NULL AND date >= ?2 AND date < ?3 AND (created_by = ?1)`
       ), isAdmin, userId, monthStart, nextMonthStart)
     );
@@ -133,7 +133,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     queries.push(
       bindScope(env.DB.prepare(
         isAdmin
-          ? `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND date >= ?2 AND date <= ?3`
+          ? `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND date >= ?1 AND date <= ?2`
           : `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND date >= ?2 AND date <= ?3 AND (created_by = ?1 OR instructor_id = ?1)`
       ), isAdmin, userId, weekStartStr, todayStr)
     );
@@ -142,7 +142,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     queries.push(
       bindScope(env.DB.prepare(
         isAdmin
-          ? `SELECT * FROM classes WHERE deleted_at IS NULL AND date = ?2 ORDER BY time ASC LIMIT 5`
+          ? `SELECT * FROM classes WHERE deleted_at IS NULL AND date = ?1 ORDER BY time ASC LIMIT 5`
           : `SELECT * FROM classes WHERE deleted_at IS NULL AND date = ?2 AND (created_by = ?1 OR instructor_id = ?1) ORDER BY time ASC LIMIT 5`
       ), isAdmin, userId, todayStr)
     );
@@ -151,7 +151,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     queries.push(
       bindScope(env.DB.prepare(
         isAdmin
-          ? `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND date > ?2`
+          ? `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND date > ?1`
           : `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND date > ?2 AND (created_by = ?1 OR instructor_id = ?1)`
       ), isAdmin, userId, todayStr)
     );
