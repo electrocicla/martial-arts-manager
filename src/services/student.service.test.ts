@@ -57,7 +57,7 @@ describe('StudentService', () => {
 
       const result = await service.getAll()
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/students')
+      expect(apiClient.get).toHaveBeenCalledWith('/api/students', { signal: undefined })
       expect(result).toEqual({
         success: true,
         data: mockStudents,
@@ -80,7 +80,8 @@ describe('StudentService', () => {
       await service.getAll(filters)
 
       expect(apiClient.get).toHaveBeenCalledWith(
-        '/api/students?belt=blue&discipline=jiu-jitsu&is_active=true&search=john'
+        '/api/students?belt=blue&discipline=jiu-jitsu&is_active=true&search=john',
+        { signal: undefined }
       )
     })
   })
