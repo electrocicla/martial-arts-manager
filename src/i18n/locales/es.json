@@ -145,7 +145,12 @@
       "viewSchedule": "Ver Horario",
       "viewPayments": "Ver Pagos",
       "myClasses": "Mis Clases",
-      "noClassesEnrolled": "No estás inscrito en ninguna clase."
+      "noClassesEnrolled": "No estás inscrito en ninguna clase.",
+      "classObjective": "Objetivo / Descripción",
+      "showDescription": "Ver descripción / objetivo",
+      "hideDescription": "Ocultar descripción",
+      "taughtBy": "Profesor",
+      "viewAllClasses": "Ver todas mis clases"
     },
     "greeting": {
       "morning": "Buenos días",

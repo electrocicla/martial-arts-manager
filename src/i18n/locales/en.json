@@ -147,7 +147,12 @@
       "viewSchedule": "View Schedule",
       "viewPayments": "View Payments",
       "myClasses": "My Classes",
-      "noClassesEnrolled": "You are not enrolled in any classes."
+      "noClassesEnrolled": "You are not enrolled in any classes.",
+      "classObjective": "Objective / Description",
+      "showDescription": "Show description / objective",
+      "hideDescription": "Hide description",
+      "taughtBy": "Instructor",
+      "viewAllClasses": "View all my classes"
     },
     "greeting": {
       "morning": "Good morning",
