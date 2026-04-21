@@ -335,3 +335,40 @@
 
 ### P4-16: Add logout audit logging ?
 - Logout handler now logs audit action with user_id before session deletion
+
+---
+
+## Post-Master-Plan — UX / i18n / Feature Session (2026-04-16)
+
+Beyond the 54-item tech-debt plan, this session shipped a batch of product-level polish and a mini-feature drop:
+
+### Jiu-Jitsu sub-categories + multi-discipline students
+- Added 'Brazilian Jiu-Jitsu Gi', 'Brazilian Jiu-Jitsu No-Gi', 'Brazilian Jiu-Jitsu Kids' alongside existing BJJ/Jiujitsu entries in src/lib/constants.ts (with full belt ladders in BELT_RANKINGS).
+- New QUICK_DISCIPLINE_FILTERS export powering the filter-chip toolbar (bjj-gi, bjj-nogi, bjj-kids, bjj-all, mma).
+- Extended API allowlist in unctions/api/classes/metadata.ts with the new BJJ sub-categories + Boxing.
+- StudentFormData gained optional disciplines?: { discipline: string; belt: string }[].
+- New reusable src/components/students/MultiDisciplineEditor.tsx used in StudentFormModal, StudentEditModal, and inline in StudentProfile for self-edits. Supports add/remove rows, auto-resets belt on discipline change, picks first unused discipline on add, accessible labels.
+- Service layer src/services/student.service.ts now forwards the full disciplines array on create/update; legacy discipline/elt preserved from the primary row for backward compat.
+
+### Quick-filter chip bar on Student Manager
+- New src/components/students/DisciplineFilterChips.tsx — horizontal scroll-snap toolbar with 'All' chip + BJJ group chips + MMA chip + dynamic chips for any remaining disciplines with count > 0.
+- StudentManager now filters against the union of student.discipline and student.disciplines[].discipline so multi-discipline students match any selected filter.
+
+### i18n fix — 'Cursos' ? 'Clases' (Spanish)
+- Updated 9 keys in src/i18n/locales/es.json: 
+av.classes, dashboard.stats.todayClasses + classesThisWeek + 
+oClasses, dashboard.quickActions.scheduleClass, dashboard.metrics.totalClasses, classesOnDate, nalytics.averagePerClass, nalytics.byClass. Mobile and desktop labels now read 'Clases' everywhere.
+
+### Belt Testing v2 hero
+- src/components/belttesting/AdminBeltTesting.tsx hero refreshed with FadeUp title, gradient accent blur, and three animated Stat cards (replaces the old daisyUI stats block that the user flagged as 'ugly and old').
+
+### PR 2 chrome — theme toggle
+- Added Sun/Moon theme toggle button to desktop Header (src/components/layout/Header.tsx), wired to useTheme().toggle from the existing theme provider.
+
+### Quality gates
+- pnpm typecheck: clean
+- pnpm lint: clean (fixed one broken JSX block in StudentProfile introduced during an earlier multi-replace pass)
+- pnpm test:run: 43 passed, 2 pre-existing failures in student.service.test.ts (unrelated signal arg mismatch from commit d6f15dd)
+- pnpm build: clean (6.5s)
+- Deployed preview: https://feature-dashboard-uiux-revam.martial-arts-manager.pages.dev (commit d57d7b9)
+
