@@ -5,21 +5,37 @@
 // Martial Arts Disciplines
 export const DISCIPLINES: string[] = [
   'Brazilian Jiu-Jitsu',
+  'Brazilian Jiu-Jitsu Gi',
+  'Brazilian Jiu-Jitsu No-Gi',
+  'Brazilian Jiu-Jitsu Kids',
+  'MMA',
   'Karate',
   'Taekwondo',
   'Kickboxing',
   'Muay Thai',
-  'MMA',
-  'Jiujitsu',
   'Boxing',
   'Kenpo Karate',
   'Weightlifting',
-  'Brazilian Jiu-Jitsu Kids',
+  'Jiujitsu',
+];
+
+/**
+ * Quick-filter chip groups surfaced in the Students list UI.
+ * Order here drives the order of the chip bar.
+ */
+export const QUICK_DISCIPLINE_FILTERS: { id: string; label: string; matches: string[] }[] = [
+  { id: 'bjj-gi', label: 'BJJ Gi', matches: ['Brazilian Jiu-Jitsu Gi'] },
+  { id: 'bjj-nogi', label: 'BJJ No-Gi', matches: ['Brazilian Jiu-Jitsu No-Gi'] },
+  { id: 'bjj-kids', label: 'BJJ Kids', matches: ['Brazilian Jiu-Jitsu Kids'] },
+  { id: 'bjj-all', label: 'All BJJ', matches: ['Brazilian Jiu-Jitsu', 'Brazilian Jiu-Jitsu Gi', 'Brazilian Jiu-Jitsu No-Gi', 'Brazilian Jiu-Jitsu Kids', 'Jiujitsu'] },
+  { id: 'mma', label: 'MMA', matches: ['MMA'] },
 ];
 
 // Belt Rankings by Discipline
 export const BELT_RANKINGS: Record<string, string[]> = {
   'Brazilian Jiu-Jitsu': ['White', 'Blue', 'Purple', 'Brown', 'Black', 'Red/White', 'Red', 'Black/Red'],
+  'Brazilian Jiu-Jitsu Gi': ['White', 'Blue', 'Purple', 'Brown', 'Black', 'Red/White', 'Red', 'Black/Red'],
+  'Brazilian Jiu-Jitsu No-Gi': ['White', 'Blue', 'Purple', 'Brown', 'Black', 'Red/White', 'Red', 'Black/Red'],
   Karate: ['White', 'Yellow', 'Orange', 'Green', 'Blue', 'Purple', 'Brown', 'Black'],
   Taekwondo: ['White', 'Yellow', 'Green', 'Blue', 'Red', 'Black'],
   Kickboxing: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],

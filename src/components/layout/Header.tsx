@@ -2,18 +2,20 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Search, Menu, User, LogOut, ChevronDown, Settings
+  Search, Menu, User, LogOut, ChevronDown, Settings, Sun, Moon
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import NotificationBell from '../NotificationBell';
 import { useTranslation } from 'react-i18next';
 import { navigationItems, quickActions } from '../../lib/mobileMenuConfig';
+import { useTheme } from '../../context/useTheme';
 
 export default function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { resolved, toggle } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -279,6 +281,16 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggle}
+            className="p-2 text-gray-300 hover:text-white hover:bg-gray-700/60 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
+            aria-label={resolved === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            title={resolved === 'dark' ? 'Light theme' : 'Dark theme'}
+          >
+            {resolved === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+
           {/* Notification Bell */}
           <NotificationBell />
           

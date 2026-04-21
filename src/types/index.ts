@@ -181,6 +181,11 @@ export interface StudentFormData {
   phone?: string;
   discipline: Discipline | '';
   belt: string;
+  /**
+   * Optional multi-discipline payload. When present, backend stores the full array
+   * and the legacy `discipline`/`belt` fields mirror the first entry.
+   */
+  disciplines?: { discipline: string; belt: string }[];
   dateOfBirth?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;

@@ -9,6 +9,7 @@ import { DISCIPLINES } from '../../lib/constants';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
 import { Modal } from '../ui/Modal';
+import { MultiDisciplineEditor, type DisciplineEntry } from './MultiDisciplineEditor';
 
 interface StudentEditModalProps {
   isOpen: boolean;
@@ -40,6 +41,13 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
     notes: student.notes || '',
   });
 
+  // Seed multi-discipline editor from student.disciplines if present, otherwise from single discipline/belt.
+  const [disciplineEntries, setDisciplineEntries] = useState<DisciplineEntry[]>(
+    (student.disciplines && student.disciplines.length > 0)
+      ? student.disciplines.map(d => ({ discipline: d.discipline, belt: d.belt }))
+      : [{ discipline: defaultDiscipline, belt: defaultBelt }],
+  );
+
   // Date of birth selectors state
   const [birthDay, setBirthDay] = useState('');
   const [birthMonth, setBirthMonth] = useState('');
@@ -66,8 +74,8 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
   }, [availableDisciplines]);
 
   const belts = BELT_RANKINGS[editStudent.discipline as Discipline] || [];
-  const isWeightlifting = String(editStudent.discipline).toLowerCase().includes('weight') || String(editStudent.discipline).toLowerCase().includes('weightlifting');
-  const secondaryLabel = isWeightlifting ? (t('studentForm.expertise') || 'Expertise') : (t('studentForm.beltRank') || 'Belt rank');
+  // Note: belt-list lookup retained so callers using the legacy first-entry sync still work.
+  void belts;
 
   // Generate arrays for date selectors
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -104,13 +112,15 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
       return;
     }
 
-    // Transform to StudentFormData format (camelCase)
+    // Transform to StudentFormData format (camelCase). First entry mirrors legacy discipline/belt.
+    const primary = disciplineEntries[0] ?? { discipline: editStudent.discipline, belt: editStudent.belt };
     const updateData: Partial<StudentFormData> = {
       name: editStudent.name,
       email: editStudent.email,
       phone: editStudent.phone || undefined,
-      belt: editStudent.belt,
-      discipline: editStudent.discipline as Discipline,
+      belt: primary.belt,
+      discipline: primary.discipline as Discipline,
+      disciplines: disciplineEntries.length > 0 ? disciplineEntries : undefined,
       dateOfBirth: editStudent.date_of_birth || undefined,
       emergencyContactName: editStudent.emergency_contact_name || undefined,
       emergencyContactPhone: editStudent.emergency_contact_phone || undefined,
@@ -293,53 +303,15 @@ export default function StudentEditModal({ isOpen, onClose, student, onSubmit }:
                 <div className="w-1 h-6 bg-green-500 rounded-full mr-3"></div>
                 {t('studentForm.martialArtsInfo')}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {secondaryLabel}
-                  </label>
-                  <select
-                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    value={editStudent.belt}
-                    onChange={(e) => setEditStudent({...editStudent, belt: e.target.value})}
-                  >
-                    {belts.map((belt: string) => (
-                      <option key={belt} value={belt} className="bg-white dark:bg-gray-700">
-                        {isWeightlifting
-                          ? belt
-                          : t(`studentForm.belts.${belt.toLowerCase().replace(/\//g, '').replace(/\s/g, '')}`)
-                        }
-                        {!isWeightlifting && !t(`studentForm.belts.${belt.toLowerCase().replace(/\//g, '').replace(/\s/g, '')}`).includes('studentForm.belts') ? '' : ` ${belt}`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('studentForm.discipline')}
-                  </label>
-                  <select
-                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    value={editStudent.discipline}
-                    onChange={(e) => {
-                      const newDiscipline = e.target.value as Discipline;
-                      const newBelts = BELT_RANKINGS[newDiscipline] || [];
-                      setEditStudent({
-                        ...editStudent, 
-                        discipline: newDiscipline,
-                        belt: newBelts[0] || 'White'
-                      });
-                    }}
-                  >
-                    {availableDisciplines.map(disc => (
-                      <option key={disc} value={disc} className="bg-white dark:bg-gray-700">
-                        {disc}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <p className="text-xs text-base-content/60 mb-3">
+                {t('profile.disciplines', 'Disciplines')}
+              </p>
+              <MultiDisciplineEditor
+                value={disciplineEntries}
+                onChange={setDisciplineEntries}
+                preferred={availableDisciplines}
+                idPrefix={`edit-${student.id}`}
+              />
             </div>
 
             {/* Emergency Contact */}
