@@ -2,18 +2,20 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Search, Menu, User, LogOut, ChevronDown, Settings
+  Search, Menu, User, LogOut, ChevronDown, Settings, Sun, Moon
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import NotificationBell from '../NotificationBell';
 import { useTranslation } from 'react-i18next';
 import { navigationItems, quickActions } from '../../lib/mobileMenuConfig';
+import { useTheme } from '../../context/useTheme';
 
 export default function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { resolved, toggle } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -279,6 +281,36 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Command Palette Launcher */}
+          <button
+            onClick={() => {
+              const evt = new KeyboardEvent('keydown', {
+                key: 'k', ctrlKey: true, metaKey: true, bubbles: true,
+              });
+              window.dispatchEvent(evt);
+            }}
+            className="hidden lg:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-700/60 hover:bg-gray-700 border border-gray-600/60 hover:border-red-500/40 transition-all text-xs text-gray-300"
+            aria-label={t('common.commandPalette', 'Command palette')}
+            title={t('common.commandPalette', 'Command palette')}
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span className="text-gray-400">{t('common.searchPlaceholder')}</span>
+            <span className="ml-2 inline-flex items-center gap-0.5">
+              <kbd className="px-1 py-0.5 text-[10px] font-mono rounded bg-gray-800 border border-gray-600">⌘</kbd>
+              <kbd className="px-1 py-0.5 text-[10px] font-mono rounded bg-gray-800 border border-gray-600">K</kbd>
+            </span>
+          </button>
+
+          {/* Theme Toggle */}
+          <button
+            onClick={toggle}
+            className="p-2 text-gray-300 hover:text-white hover:bg-gray-700/60 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
+            aria-label={resolved === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            title={resolved === 'dark' ? 'Light theme' : 'Dark theme'}
+          >
+            {resolved === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+
           {/* Notification Bell */}
           <NotificationBell />
           

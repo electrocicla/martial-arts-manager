@@ -13,6 +13,7 @@ import { NotificationSettings } from '../components/settings';
 import { AppearanceSettings } from '../components/settings';
 import { prepareAvatarFile } from '../lib/avatarUpload';
 import ProfileCard from '../components/profile/ProfileCard';
+import { DISCIPLINES, BELT_RANKINGS } from '../lib/constants';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -371,14 +372,9 @@ export default function StudentProfile() {
                                       className="select select-bordered bg-gray-700 border-gray-600 text-white focus:border-primary w-full"
                                     >
                                       <option value="">{t('common.select', 'Select')}</option>
-                                      <option value="BJJ">BJJ</option>
-                                      <option value="Jiu-Jitsu">Jiu-Jitsu</option>
-                                      <option value="Karate">Karate</option>
-                                      <option value="Muay Thai">Muay Thai</option>
-                                      <option value="Boxing">Boxing</option>
-                                      <option value="Fitness">Fitness</option>
-                                      <option value="Musculación">Musculación</option>
-                                      <option value="Other">Other</option>
+                                      {DISCIPLINES.map((d) => (
+                                        <option key={d} value={d}>{d}</option>
+                                      ))}
                                     </select>
                                   </div>
                                   <div className="flex-1">
@@ -392,24 +388,9 @@ export default function StudentProfile() {
                                       className="select select-bordered bg-gray-700 border-gray-600 text-white focus:border-primary w-full"
                                     >
                                       <option value="">{t('common.select', 'Select')}</option>
-                                      {disc.discipline === 'BJJ' || disc.discipline === 'Jiu-Jitsu' ? (
-                                        <>
-                                          <option value="white">{t('belts.white')}</option>
-                                          <option value="blue">{t('belts.blue')}</option>
-                                          <option value="purple">{t('belts.purple')}</option>
-                                          <option value="brown">{t('belts.brown')}</option>
-                                          <option value="black">{t('belts.black')}</option>
-                                        </>
-                                      ) : disc.discipline === 'Musculación' || disc.discipline === 'Fitness' ? (
-                                        <>
-                                          <option value="beginner">{t('studentForm.belts.beginner')}</option>
-                                          <option value="intermediate">{t('studentForm.belts.intermediate')}</option>
-                                          <option value="advanced">{t('studentForm.belts.advanced')}</option>
-                                          <option value="expert">{t('studentForm.belts.expert')}</option>
-                                        </>
-                                      ) : (
-                                        <option value="other">Other</option>
-                                      )}
+                                      {(BELT_RANKINGS[disc.discipline] ?? ['Beginner', 'Intermediate', 'Advanced', 'Expert']).map((b) => (
+                                        <option key={b} value={b}>{b}</option>
+                                      ))}
                                     </select>
                                   </div>
                                   {disciplines.length > 1 && (

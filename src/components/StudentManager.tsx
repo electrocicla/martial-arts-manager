@@ -2,8 +2,9 @@ import { useState, useMemo } from 'react';
 import type { Student, StudentFormData, Discipline } from '../types/index';
 import { Users, Search, Download, Upload, UserPlus, TrendingUp, Calendar, DollarSign } from 'lucide-react';
 import { useStudents } from '../hooks/useStudents';
-import { DISCIPLINES, BELT_RANKINGS } from '../lib/constants';
+import { BELT_RANKINGS } from '../lib/constants';
 import { StudentFormModal, StudentDetailsModal, StudentEditModal } from './students';
+import DisciplineFilterChips from './students/DisciplineFilterChips';
 import StudentGrid from './students/StudentGrid';
 import StudentTable from './students/StudentTable';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +21,8 @@ export default function StudentManager() {
     refresh,
   } = useStudents();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterDiscipline, setFilterDiscipline] = useState('all');
+  // Multi-select discipline filter: empty array = All.
+  const [selectedDisciplines, setSelectedDisciplines] = useState<string[]>([]);
   const [filterBelt, setFilterBelt] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -28,11 +30,23 @@ export default function StudentManager() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Calculate student counts by discipline
+  /** Returns every discipline a student belongs to (legacy + new array). */
+  const studentDisciplines = (s: Student): string[] => {
+    const arr = s.disciplines?.map(d => d.discipline) ?? [];
+    if (s.discipline) arr.push(s.discipline);
+    return arr;
+  };
+
+  // Calculate student counts by discipline (honors multi-discipline students)
   const disciplineCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     students.forEach((student) => {
-      counts[student.discipline] = (counts[student.discipline] || 0) + 1;
+      const seen = new Set<string>();
+      studentDisciplines(student).forEach((d) => {
+        if (seen.has(d)) return;
+        seen.add(d);
+        counts[d] = (counts[d] || 0) + 1;
+      });
     });
     return counts;
   }, [students]);
@@ -56,13 +70,15 @@ export default function StudentManager() {
     return Array.from(belts).sort();
   }, []);
 
-  // Get belt ranks for selected discipline (or all if no discipline selected)
+  // Get belt ranks for the currently selected discipline(s), falling back to all.
   const availableBelts = useMemo(() => {
-    if (filterDiscipline === 'all') {
-      return allBeltRanks;
-    }
-    return BELT_RANKINGS[filterDiscipline as Discipline] || [];
-  }, [filterDiscipline, allBeltRanks]);
+    if (selectedDisciplines.length === 0) return allBeltRanks;
+    const belts = new Set<string>();
+    selectedDisciplines.forEach((d) => {
+      (BELT_RANKINGS[d as Discipline] || []).forEach((b) => belts.add(b));
+    });
+    return belts.size > 0 ? Array.from(belts) : allBeltRanks;
+  }, [selectedDisciplines, allBeltRanks]);
 
   // Filter students
   const filteredStudents = useMemo(() => {
@@ -72,8 +88,10 @@ export default function StudentManager() {
         student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         student.email?.toLowerCase().includes(searchQuery.toLowerCase());
 
+      const studentDiscs = studentDisciplines(student);
       const matchesDiscipline =
-        filterDiscipline === 'all' || student.discipline === filterDiscipline;
+        selectedDisciplines.length === 0 ||
+        selectedDisciplines.some((d) => studentDiscs.includes(d));
 
       const matchesBelt =
         filterBelt === 'all' || student.belt === filterBelt;
@@ -85,7 +103,7 @@ export default function StudentManager() {
 
       return matchesSearch && matchesDiscipline && matchesBelt && matchesStatus;
     });
-  }, [students, searchQuery, filterDiscipline, filterBelt, filterStatus]);
+  }, [students, searchQuery, selectedDisciplines, filterBelt, filterStatus]);
 
   const stats = [
     { label: t('students.stats.totalStudents'), value: studentStats?.total || students.length, icon: Users, color: 'text-primary' },
@@ -194,24 +212,6 @@ export default function StudentManager() {
 
             {/* Filters */}
             <div className="flex gap-3 flex-wrap">
-              {/* Discipline Filter with Counts */}
-              <select 
-                className="px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                value={filterDiscipline}
-                onChange={(e) => {
-                  setFilterDiscipline(e.target.value);
-                  // Reset belt filter when changing discipline
-                  setFilterBelt('all');
-                }}
-              >
-                <option value="all">{t('students.filters.allDisciplines')} ({students.length})</option>
-                {DISCIPLINES.map(discipline => (
-                  <option key={discipline} value={discipline}>
-                    {discipline} ({disciplineCounts[discipline] || 0})
-                  </option>
-                ))}
-              </select>
-
               {/* Belt Filter with Counts - Dynamic based on discipline */}
               <select 
                 className="px-4 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
@@ -219,10 +219,10 @@ export default function StudentManager() {
                 onChange={(e) => setFilterBelt(e.target.value)}
               >
                 <option value="all">
-                  {filterDiscipline === 'all' 
-                    ? t('students.filters.allBelts') 
-                    : t('students.filters.allBeltsInDiscipline', { discipline: filterDiscipline })} 
-                  ({filteredStudents.length})
+                  {selectedDisciplines.length === 0
+                    ? t('students.filters.allBelts')
+                    : t('students.filters.allBeltsInDiscipline', { discipline: selectedDisciplines.join(', ') })}
+                  {' '}({filteredStudents.length})
                 </option>
                 {availableBelts.map((belt: string) => (
                   <option key={belt} value={belt}>
@@ -260,6 +260,18 @@ export default function StudentManager() {
                 </Button>
               </div>
             </div>
+          </div>
+
+          {/* Discipline quick-filter chip bar */}
+          <div className="mt-4">
+            <DisciplineFilterChips
+              selected={selectedDisciplines}
+              counts={disciplineCounts}
+              onChange={(next) => {
+                setSelectedDisciplines(next);
+                setFilterBelt('all');
+              }}
+            />
           </div>
         </div>
 

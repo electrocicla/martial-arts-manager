@@ -9,6 +9,8 @@ import type { Student, StudentFormData } from '../types/index';
 export interface StudentFilters {
   belt?: string;
   discipline?: string;
+  /** Multi-discipline filter; matches if a student has ANY of the listed disciplines. */
+  disciplines?: string[];
   isActive?: boolean;
   search?: string;
 }
@@ -28,6 +30,10 @@ export class StudentService {
 
     if (filters?.belt) params.append('belt', filters.belt);
     if (filters?.discipline) params.append('discipline', filters.discipline);
+    if (filters?.disciplines && filters.disciplines.length > 0) {
+      // Server may not yet honor multi-discipline; we filter again client-side after fetch.
+      params.append('disciplines', filters.disciplines.join(','));
+    }
     if (filters?.isActive !== undefined) params.append('is_active', filters.isActive.toString());
     if (filters?.search) params.append('search', filters.search);
 
@@ -42,7 +48,7 @@ export class StudentService {
   }
 
   async create(data: StudentFormData): Promise<ApiResponse<Student>> {
-    const payload = {
+    const payload: Record<string, unknown> = {
       id: crypto.randomUUID(),
       name: data.name,
       email: data.email,
@@ -55,19 +61,23 @@ export class StudentService {
       emergencyContactPhone: data.emergencyContactPhone || undefined,
       notes: data.notes || undefined,
     };
+    if (data.disciplines && data.disciplines.length > 0) {
+      payload.disciplines = data.disciplines;
+    }
 
     return apiClient.post<Student>(this.endpoint, payload);
   }
 
   async update(id: string, data: Partial<StudentFormData>): Promise<ApiResponse<Student>> {
     // Transform to camelCase for backend (which expects camelCase in body)
-    const payload: Record<string, string | number | null> = { id };
+    const payload: Record<string, unknown> = { id };
 
     if (data.name !== undefined) payload.name = data.name;
     if (data.email !== undefined) payload.email = data.email;
     if (data.phone !== undefined) payload.phone = data.phone;
     if (data.belt !== undefined) payload.belt = data.belt;
     if (data.discipline !== undefined) payload.discipline = data.discipline;
+    if (data.disciplines !== undefined) payload.disciplines = data.disciplines;
     if (data.dateOfBirth !== undefined) payload.dateOfBirth = data.dateOfBirth;
     if (data.emergencyContactName !== undefined) payload.emergencyContactName = data.emergencyContactName;
     if (data.emergencyContactPhone !== undefined) payload.emergencyContactPhone = data.emergencyContactPhone;

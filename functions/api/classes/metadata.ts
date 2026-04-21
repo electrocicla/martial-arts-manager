@@ -39,12 +39,16 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
 
     const allDisciplines = Array.from(new Set([
       'Brazilian Jiu-Jitsu',
+      'Brazilian Jiu-Jitsu Gi',
+      'Brazilian Jiu-Jitsu No-Gi',
+      'Brazilian Jiu-Jitsu Kids',
+      'MMA',
       'Karate',
       'Kenpo Karate',
       'Kickboxing',
-      'MMA',
       'Muay Thai',
       'Taekwondo',
+      'Boxing',
       'Weightlifting',
       ...dbDisciplines,
     ]));

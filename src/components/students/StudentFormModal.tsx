@@ -9,6 +9,7 @@ import { DISCIPLINES } from '../../lib/constants';
 import { Button } from '../ui/Button';
 import { IconButton } from '../ui/IconButton';
 import { Modal } from '../ui/Modal';
+import { MultiDisciplineEditor, type DisciplineEntry } from './MultiDisciplineEditor';
 
 interface StudentFormModalProps {
   isOpen: boolean;
@@ -40,6 +41,11 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
     notes: '',
   });
 
+  // Multi-discipline editor state. First entry mirrors `discipline`/`belt` for back-compat.
+  const [disciplineEntries, setDisciplineEntries] = useState<DisciplineEntry[]>([
+    { discipline: defaultDiscipline, belt: defaultBelt },
+  ]);
+
   // When metadata loads, ensure the form discipline is in sync with availableDisciplines
   useEffect(() => {
     // If availableDisciplines changed and the current discipline is no longer valid,
@@ -57,10 +63,6 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
   const [birthDay, setBirthDay] = useState('');
   const [birthMonth, setBirthMonth] = useState('');
   const [birthYear, setBirthYear] = useState('');
-
-  const belts = BELT_RANKINGS[newStudent.discipline as Discipline] || [];
-  const isWeightlifting = String(newStudent.discipline).toLowerCase().includes('weight') || String(newStudent.discipline).toLowerCase().includes('weightlifting');
-  const secondaryLabel = isWeightlifting ? (t('studentForm.expertise') || 'Expertise') : (t('studentForm.beltRank') || 'Belt rank');
 
   // Generate arrays for date selectors
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -97,12 +99,14 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
       return;
     }
 
+    const primary = disciplineEntries[0] ?? { discipline: newStudent.discipline, belt: newStudent.belt };
     const studentData: StudentFormData = {
       name: newStudent.name,
       email: newStudent.email,
       phone: newStudent.phone || undefined,
-      belt: newStudent.belt,
-      discipline: newStudent.discipline as Discipline,
+      belt: primary.belt,
+      discipline: primary.discipline as Discipline,
+      disciplines: disciplineEntries.length > 0 ? disciplineEntries : undefined,
       dateOfBirth: newStudent.date_of_birth || undefined,
       emergencyContactName: newStudent.emergency_contact_name || undefined,
       emergencyContactPhone: newStudent.emergency_contact_phone || undefined,
@@ -124,6 +128,7 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
         emergency_contact_phone: '',
         notes: '',
       });
+      setDisciplineEntries([{ discipline: availableDisciplines[0] || 'Brazilian Jiu-Jitsu', belt: BELT_RANKINGS[availableDisciplines[0] as Discipline]?.[0] || 'White' }]);
       // Reset date selectors
       setBirthDay('');
       setBirthMonth('');
@@ -298,52 +303,15 @@ export default function StudentFormModal({ isOpen, onClose, onSubmit }: StudentF
                 <div className="w-1 h-6 bg-green-500 rounded-full mr-3"></div>
                 {t('studentForm.martialArtsInfo')}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {secondaryLabel}
-                  </label>
-                  <select
-                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    value={newStudent.belt}
-                    onChange={(e) => setNewStudent({...newStudent, belt: e.target.value})}
-                  >
-                    {belts.map((belt: string) => (
-                      <option key={belt} value={belt} className="bg-white dark:bg-gray-700">
-                        {isWeightlifting
-                          ? belt
-                          : t(`studentForm.belts.${belt.toLowerCase().replace(/\//g, '').replace(/\s/g, '')}`)
-                        }
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('studentForm.discipline')}
-                  </label>
-                  <select
-                    className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    value={newStudent.discipline}
-                    onChange={(e) => {
-                      const newDiscipline = e.target.value as Discipline;
-                      const newBelts = BELT_RANKINGS[newDiscipline] || [];
-                      setNewStudent({
-                        ...newStudent, 
-                        discipline: newDiscipline,
-                        belt: newBelts[0] || 'White'
-                      });
-                    }}
-                  >
-                    {availableDisciplines.map(disc => (
-                      <option key={disc} value={disc} className="bg-white dark:bg-gray-700">
-                        {disc}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <p className="text-xs text-base-content/60 mb-3">
+                {t('profile.disciplines', 'Disciplines')} — {t('profile.beltNote', 'Add one or more disciplines with their respective belt/rank.')}
+              </p>
+              <MultiDisciplineEditor
+                value={disciplineEntries}
+                onChange={setDisciplineEntries}
+                preferred={availableDisciplines}
+                idPrefix="new-student"
+              />
             </div>
 
             {/* Emergency Contact */}

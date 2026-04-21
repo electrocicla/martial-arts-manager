@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
 import { Button } from '../ui/Button';
 import { TabButton } from '../ui/TabButton';
+import { Stat } from '../ui';
+import { FadeUp, Stagger } from '../ui/effects/Motion';
 import CreateExamModal from './CreateExamModal';
 import AssignStudentModal from './AssignStudentModal';
 
@@ -87,71 +89,62 @@ export default function AdminBeltTesting({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 pb-24 md:pb-10">
-      {/* Modern Header with Glass Effect */}
-      <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 backdrop-blur-sm border-b border-base-300">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-primary to-primary/50 shadow-lg">
-                <Award className="w-10 h-10 text-primary-content" />
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-black text-base-content bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  {label(t, 'beltTesting.admin.title', 'Belt Testing Management')}
-                </h1>
-                <p className="text-base text-base-content/70 mt-1">
-                  {label(t, 'beltTesting.admin.subtitle', 'Manage belt examinations and student progress')}
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="primary"
-              size="lg"
-              leftIcon={<Plus className="w-6 h-6" />}
-              onClick={() => setShowCreateModal(true)}
-            >
-              {label(t, 'beltTesting.admin.createExam', 'Create Exam')}
-            </Button>
-          </div>
+    <div className="min-h-screen bg-base-100 pb-24 md:pb-10">
+      {/* v2 Hero Header */}
+      <div className="relative overflow-hidden border-b border-base-300">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-gradient-to-br from-red-600/10 via-transparent to-red-900/20"
+        />
+        <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-red-500/10 blur-3xl -z-10" aria-hidden="true" />
 
-          {/* Modern Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-            <div className="stats shadow-lg bg-base-200 border border-base-300">
-              <div className="stat">
-                <div className="stat-figure text-primary">
-                  <Calendar className="w-8 h-8" />
+        <div className="max-w-7xl mx-auto px-6 py-10">
+          <FadeUp>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center shadow-lg shadow-red-600/30 ring-1 ring-red-500/30">
+                  <Award className="w-7 h-7 text-white drop-shadow" />
                 </div>
-                <div className="stat-title">{label(t, 'beltTesting.admin.scheduledExams', 'Scheduled Exams')}</div>
-                <div className="stat-value text-primary">{scheduledExams.length}</div>
-                <div className="stat-desc">{label(t, 'beltTesting.admin.upcoming', 'Upcoming tests')}</div>
-              </div>
-            </div>
-            
-            <div className="stats shadow-lg bg-base-200 border border-base-300">
-              <div className="stat">
-                <div className="stat-figure text-success">
-                  <Users className="w-8 h-8" />
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-black tracking-tight text-base-content">
+                    {label(t, 'beltTesting.admin.title', 'Belt Testing Management')}
+                  </h1>
+                  <p className="text-sm md:text-base text-base-content/60 mt-1">
+                    {label(t, 'beltTesting.admin.subtitle', 'Manage belt examinations and student progress')}
+                  </p>
                 </div>
-                <div className="stat-title">{label(t, 'beltTesting.admin.readyStudents', 'Ready Students')}</div>
-                <div className="stat-value text-success">{readyStudents.length}</div>
-                <div className="stat-desc">{label(t, 'beltTesting.admin.eligibleForTesting', 'Eligible for testing')}</div>
               </div>
+              <Button
+                variant="primary"
+                size="lg"
+                leftIcon={<Plus className="w-5 h-5" />}
+                onClick={() => setShowCreateModal(true)}
+              >
+                {label(t, 'beltTesting.admin.createExam', 'Create Exam')}
+              </Button>
             </div>
-            
-            <div className="stats shadow-lg bg-base-200 border border-base-300">
-              <div className="stat">
-                <div className="stat-figure text-secondary">
-                  <CheckCircle className="w-8 h-8" />
-                </div>
-                <div className="stat-title">{label(t, 'beltTesting.admin.completedTests', 'Completed Tests')}</div>
-                <div className="stat-value text-secondary">{completedExams.length}</div>
-                <div className="stat-desc">{label(t, 'beltTesting.admin.thisMonth', 'This month')}</div>
-              </div>
-            </div>
-          </div>
+          </FadeUp>
 
-          {/* Modern Tabs */}
+          {/* v2 Stats grid */}
+          <Stagger className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+            <Stat
+              label={label(t, 'beltTesting.admin.scheduledExams', 'Scheduled Exams')}
+              value={scheduledExams.length}
+              icon={<Calendar className="w-6 h-6" />}
+            />
+            <Stat
+              label={label(t, 'beltTesting.admin.readyStudents', 'Ready Students')}
+              value={readyStudents.length}
+              icon={<Users className="w-6 h-6" />}
+            />
+            <Stat
+              label={label(t, 'beltTesting.admin.completedTests', 'Completed Tests')}
+              value={completedExams.length}
+              icon={<CheckCircle className="w-6 h-6" />}
+            />
+          </Stagger>
+
+          {/* Tabs */}
           <div className="flex gap-2 mt-8">
             <TabButton
               isActive={selectedTab === 'exams'}

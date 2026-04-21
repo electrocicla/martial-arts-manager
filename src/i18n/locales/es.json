@@ -3,7 +3,7 @@
     "dashboard": "Panel de Control",
     "profile": "Mi Perfil",
     "students": "Estudiantes",
-  "classes": "Cursos",
+  "classes": "Clases",
     "payments": "Pagos",
     "attendance": "Asistencia",
     "analytics": "Análisis",
@@ -155,13 +155,13 @@
     "stats": {
       "totalStudents": "Total de Estudiantes",
       "activeStudents": "Estudiantes Activos",
-  "todayClasses": "Cursos de Hoy",
+  "todayClasses": "Clases de Hoy",
       "monthlyRevenue": "Ingresos Mensuales",
       "active": "activos",
       "registeredMembers": "miembros registrados",
-  "classesThisWeek": "Cursos Esta Semana",
+  "classesThisWeek": "Clases Esta Semana",
       "sessionsThisWeek": "sesiones esta semana",
-  "noClasses": "Sin cursos",
+  "noClasses": "Sin clases",
       "scheduled": "programadas",
       "revenueThisMonth": "Ingresos Este Mes",
       "noRevenue": "Sin ingresos",
@@ -175,7 +175,7 @@
     "quickActions": {
       "title": "Acciones Rápidas",
       "addStudent": "Agregar Estudiante",
-  "scheduleClass": "Programar Curso",
+  "scheduleClass": "Programar Clase",
       "recordPayment": "Registrar Pago",
       "markAttendance": "Marcar Asistencia",
       "checkInOut": "Registrar entrada/salida estudiantes",
@@ -194,7 +194,7 @@
       "welcomeMessage": "¡Bienvenido! Comienza agregando tu primer estudiante para poner en marcha la gestión de tu dojo.",
       "totalStudents": "Total de Estudiantes",
       "monthlyRevenue": "Ingresos Mensuales",
-  "totalClasses": "Total de Cursos",
+  "totalClasses": "Total de Clases",
       "earning": "Ganando",
       "scheduled": "Programadas"
     },
@@ -215,7 +215,7 @@
       "scheduleNewClass": "Programar Nueva Clase"
     }
   },
-  "classesOnDate": "Cursos el {{date}}",
+  "classesOnDate": "Clases el {{date}}",
 
   "payments": {
     "title": "Gestión de Pagos",
@@ -648,7 +648,10 @@
     "account": "Cuenta",
     "searchPlaceholder": "Buscar estudiantes, clases...",
     "or": "o",
-    "back": "Volver"
+    "back": "Volver",
+    "commandPalette": "Paleta de comandos",
+    "noResults": "Sin resultados",
+    "navigate": "navegar"
   },
   "attendance": {
     "title": "Marcar Asistencia",
@@ -751,9 +754,9 @@
       "comingSoon": "Desglose detallado de ingresos pronto...",
       "description": "Rastrea tus fuentes de ingresos, tendencias de pago y crecimiento financiero a lo largo del tiempo."
       ,"totalRevenue": "Ingresos Totales",
-      "averagePerClass": "Promedio por curso",
+      "averagePerClass": "Promedio por clase",
       "growthRate": "Tasa de crecimiento",
-      "byClass": "Por curso",
+      "byClass": "Por clase",
       "byClassSubtitle": "Distribución de ingresos por disciplina",
       "monthlyTrend": "Tendencia mensual",
       "monthlyTrendSubtitle": "Tendencias de ingresos y estudiantes por mes",
