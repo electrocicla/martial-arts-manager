@@ -281,6 +281,26 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Command Palette Launcher */}
+          <button
+            onClick={() => {
+              const evt = new KeyboardEvent('keydown', {
+                key: 'k', ctrlKey: true, metaKey: true, bubbles: true,
+              });
+              window.dispatchEvent(evt);
+            }}
+            className="hidden lg:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-700/60 hover:bg-gray-700 border border-gray-600/60 hover:border-red-500/40 transition-all text-xs text-gray-300"
+            aria-label={t('common.commandPalette', 'Command palette')}
+            title={t('common.commandPalette', 'Command palette')}
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span className="text-gray-400">{t('common.searchPlaceholder')}</span>
+            <span className="ml-2 inline-flex items-center gap-0.5">
+              <kbd className="px-1 py-0.5 text-[10px] font-mono rounded bg-gray-800 border border-gray-600">⌘</kbd>
+              <kbd className="px-1 py-0.5 text-[10px] font-mono rounded bg-gray-800 border border-gray-600">K</kbd>
+            </span>
+          </button>
+
           {/* Theme Toggle */}
           <button
             onClick={toggle}

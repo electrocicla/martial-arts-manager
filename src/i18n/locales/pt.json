@@ -590,7 +590,10 @@
     "navigation": "Navegação",
     "account": "Conta",
     "searchPlaceholder": "Buscar alunos, aulas...",
-    "back": "Voltar"
+    "back": "Voltar",
+    "commandPalette": "Paleta de comandos",
+    "noResults": "Sem resultados",
+    "navigate": "navegar"
   },
   "attendance": {
     "title": "Marcar Presença",

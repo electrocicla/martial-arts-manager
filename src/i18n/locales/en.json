@@ -608,7 +608,10 @@
     "navigation": "Navigation",
     "account": "Account",
     "searchPlaceholder": "Search students, classes...",
-    "back": "Back"
+    "back": "Back",
+    "commandPalette": "Command palette",
+    "noResults": "No results",
+    "navigate": "navigate"
   },
   "attendance": {
     "title": "Mark Attendance",

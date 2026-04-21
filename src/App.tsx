@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
 import BottomSlidingMenu from './components/layout/BottomSlidingMenu';
+import { CommandPalette } from './components/ui/CommandPalette';
 import AndroidApkInstallPrompt from './components/mobile/AndroidApkInstallPrompt';
 import PullToRefresh from './components/mobile/PullToRefresh';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -66,12 +67,11 @@ function AppContent() {
         </Suspense>
       </main>
       <BottomSlidingMenu />
+      <CommandPalette />
     </div>
     </PullToRefresh>
   );
 }
-
-// Main app wrapper with authentication
 function AppWrapper() {
   const { isAuthenticated, isLoading } = useAuth();
 

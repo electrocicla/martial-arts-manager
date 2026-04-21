@@ -1,10 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Award } from 'lucide-react';
+import { Award, Search } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { navigationItems } from '../../lib/mobileMenuConfig';
 import { usePendingApprovalsCount } from '../../hooks/usePendingApprovalsCount';
+import { Kbd } from '../ui/Kbd';
 
 export default function Sidebar() {
   const location = useLocation();
@@ -112,9 +113,32 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* Footer Section - Quick Actions */}
-      <div className="p-3 border-t border-gray-800/50 bg-gray-900/80 backdrop-blur-sm">
-        <div className="text-xs text-gray-400 text-center">
+      {/* Footer Section - Command Palette Launcher */}
+      <div className="p-3 border-t border-gray-800/50 bg-gray-900/80 backdrop-blur-sm space-y-2">
+        <button
+          type="button"
+          onClick={() => {
+            const evt = new KeyboardEvent('keydown', {
+              key: 'k',
+              ctrlKey: true,
+              metaKey: true,
+              bubbles: true,
+            });
+            window.dispatchEvent(evt);
+          }}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 hover:border-red-500/40 transition-all group"
+          aria-label={t('common.commandPalette', 'Command palette')}
+        >
+          <Search className="w-4 h-4 text-gray-400 group-hover:text-red-400 transition-colors" />
+          <span className="flex-1 text-left text-xs text-gray-400 group-hover:text-gray-200 transition-colors">
+            {t('common.searchPlaceholder')}
+          </span>
+          <span className="flex items-center gap-0.5">
+            <Kbd>⌘</Kbd>
+            <Kbd>K</Kbd>
+          </span>
+        </button>
+        <div className="text-xs text-gray-500 text-center">
           {t('common.appName')} v1.0
         </div>
       </div>

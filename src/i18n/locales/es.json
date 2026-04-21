@@ -648,7 +648,10 @@
     "account": "Cuenta",
     "searchPlaceholder": "Buscar estudiantes, clases...",
     "or": "o",
-    "back": "Volver"
+    "back": "Volver",
+    "commandPalette": "Paleta de comandos",
+    "noResults": "Sin resultados",
+    "navigate": "navegar"
   },
   "attendance": {
     "title": "Marcar Asistencia",
