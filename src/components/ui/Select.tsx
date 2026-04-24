@@ -36,7 +36,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       w-full appearance-none rounded-lg font-medium transition-colors duration-200 
       focus:outline-none focus:ring-2 focus:ring-offset-2 
       disabled:cursor-not-allowed disabled:opacity-50
-      bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyMCAyMCI+PHBhdGggc3Ryb2tlPSIjNjI3NTk0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41IiBkPSJtNiA4IDQgNCA0LTQiLz48L3N2Zz4=')]
+      bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAyMCAyMCI+PHBhdGggc3Ryb2tlPSIjOWNhM2FmIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMS41IiBkPSJtNiA4IDQgNCA0LTQiLz48L3N2Zz4=')]
       bg-[length:20px_20px] bg-[right_12px_center] bg-no-repeat
     `;
     
@@ -50,20 +50,20 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     // Variant styles with comprehensive state management
     const variantStyles = {
       default: `
-        border border-gray-300 bg-white text-gray-900
+        border border-gray-600 bg-gray-800 text-gray-100
         hover:border-gray-400 focus:border-indigo-500 focus:ring-indigo-500
         dark:border-gray-600 dark:bg-gray-800 dark:text-white
         dark:hover:border-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400
       `,
       filled: `
-        border-0 bg-gray-100 text-gray-900
-        hover:bg-gray-200 focus:bg-white focus:ring-indigo-500
+        border-0 bg-gray-700 text-gray-100
+        hover:bg-gray-600 focus:bg-gray-800 focus:ring-indigo-400
         dark:bg-gray-700 dark:text-white
         dark:hover:bg-gray-600 dark:focus:bg-gray-800 dark:focus:ring-indigo-400
       `,
       outlined: `
-        border-2 border-gray-200 bg-transparent text-gray-900
-        hover:border-gray-300 focus:border-indigo-500 focus:ring-indigo-500
+        border-2 border-gray-600 bg-transparent text-gray-100
+        hover:border-gray-400 focus:border-indigo-500 focus:ring-indigo-500
         dark:border-gray-600 dark:text-white
         dark:hover:border-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400
       `

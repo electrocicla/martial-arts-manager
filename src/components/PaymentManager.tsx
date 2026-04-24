@@ -122,8 +122,8 @@ export default function PaymentManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{t('payments.title')}</h2>
-          <p className="text-gray-600">{t('payments.subtitle')}</p>
+          <h2 className="text-2xl font-bold text-white">{t('payments.title')}</h2>
+          <p className="text-gray-300">{t('payments.subtitle')}</p>
         </div>
         <Badge variant="secondary" className="px-3 py-1">
           {filteredPayments.length} {t('payments.totalPayments')}
@@ -133,12 +133,12 @@ export default function PaymentManager() {
       {/* Search and Filters */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">{t('payments.search.filters')}</h3>
+          <h3 className="text-lg font-semibold text-white">{t('payments.search.filters')}</h3>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300 h-4 w-4" />
               <Input
                 placeholder={t('payments.search.placeholder')}
                 value={searchTerm}

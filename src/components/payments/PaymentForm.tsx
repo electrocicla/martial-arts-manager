@@ -91,14 +91,14 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
   return (
     <Card>
       <CardHeader>
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Plus className="h-5 w-5" />
+        <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
+          <Plus className="h-5 w-5 text-indigo-400" />
           {t('payments.form.title')}
         </h3>
       </CardHeader>
       <CardContent>
         {studentsLoading && (
-          <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-300 mb-4">
             <span className="loading loading-spinner loading-xs text-primary" />
             <span>{t('payments.labels.loadingStudents')}</span>
           </div>
@@ -106,28 +106,29 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-200 mb-1.5">
                 {t('payments.form.student')}
               </label>
               <div className="relative" ref={dropdownRef}>
                 {selectedStudent ? (
-                  <div className="flex items-center justify-between w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-900">
+                  <div className="flex items-center justify-between w-full px-4 py-2.5 border border-gray-600 rounded-lg bg-gray-800 text-white">
                     <div className="min-w-0">
-                      <span className="block truncate font-medium">{selectedStudent.name}</span>
-                      <span className="block truncate text-xs text-gray-500">{selectedStudent.email}</span>
+                      <span className="block truncate font-medium text-white">{selectedStudent.name}</span>
+                      <span className="block truncate text-xs text-gray-300">{selectedStudent.email}</span>
                     </div>
                     <button
                       type="button"
                       onClick={handleClearStudent}
-                      className="ml-2 p-1 rounded-full hover:bg-gray-100 shrink-0"
+                      className="ml-2 p-1 rounded-full hover:bg-gray-700 shrink-0"
+                      aria-label={t('common.clear', 'Clear')}
                     >
-                      <X className="h-4 w-4 text-gray-400" />
+                      <X className="h-4 w-4 text-gray-300" />
                     </button>
                   </div>
                 ) : (
                   <>
                     <div
-                      className="flex items-center w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white cursor-pointer"
+                      className="flex items-center w-full px-4 py-2.5 border border-gray-600 rounded-lg bg-gray-800 cursor-pointer hover:border-indigo-400 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/40 transition-colors"
                       onClick={() => setIsStudentDropdownOpen(!isStudentDropdownOpen)}
                     >
                       <input
@@ -139,16 +140,16 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
                         }}
                         onFocus={() => setIsStudentDropdownOpen(true)}
                         placeholder={t('payments.form.studentAutocompletePlaceholder')}
-                        className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-400 min-w-0"
+                        className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 min-w-0"
                         autoComplete="off"
                       />
-                      <ChevronDown className={`h-4 w-4 text-gray-400 shrink-0 ml-2 transition-transform ${isStudentDropdownOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`h-4 w-4 text-gray-300 shrink-0 ml-2 transition-transform ${isStudentDropdownOpen ? 'rotate-180' : ''}`} />
                     </div>
 
                     {isStudentDropdownOpen && (
-                      <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-50 mt-1 w-full bg-gray-800 border border-gray-600 rounded-lg shadow-xl shadow-black/40 max-h-60 overflow-y-auto">
                         {filteredStudents.length === 0 ? (
-                          <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                          <div className="px-4 py-3 text-sm text-gray-300 text-center">
                             {studentsLoading ? t('payments.labels.loadingStudents') : t('payments.empty.title')}
                           </div>
                         ) : (
@@ -156,11 +157,11 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
                             <button
                               key={student.id}
                               type="button"
-                              className="w-full text-left px-4 py-3 hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none border-b border-gray-100 last:border-b-0"
+                              className="w-full text-left px-4 py-3 hover:bg-indigo-500/20 focus:bg-indigo-500/20 focus:outline-none border-b border-gray-700 last:border-b-0"
                               onClick={() => handleSelectStudent(student)}
                             >
-                              <span className="block font-medium text-gray-900 truncate">{student.name}</span>
-                              <span className="block text-xs text-gray-500 truncate">{student.email}</span>
+                              <span className="block font-medium text-white truncate">{student.name}</span>
+                              <span className="block text-xs text-gray-300 truncate">{student.email}</span>
                             </button>
                           ))
                         )}
@@ -171,12 +172,12 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
                 <input type="hidden" {...register('studentId')} />
               </div>
               {errors.studentId && (
-                <p className="text-sm text-red-600 mt-1">{errors.studentId.message}</p>
+                <p className="text-sm text-red-400 mt-1 font-medium">{errors.studentId.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-200 mb-1.5">
                 {t('payments.form.amount')}
               </label>
               <Input
@@ -187,12 +188,12 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
                 placeholder="0.00"
               />
               {errors.amount && (
-                <p className="text-sm text-red-600 mt-1">{errors.amount.message}</p>
+                <p className="text-sm text-red-400 mt-1 font-medium">{errors.amount.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-200 mb-1.5">
                 {t('payments.form.paymentType')}
               </label>
               <Select
@@ -206,22 +207,22 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
                 ]}
               />
               {errors.type && (
-                <p className="text-sm text-red-600 mt-1">{errors.type.message}</p>
+                <p className="text-sm text-red-400 mt-1 font-medium">{errors.type.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-200 mb-1.5">
                 {t('payments.form.paymentDate')}
               </label>
               <Input type="date" {...register('date')} />
               {errors.date && (
-                <p className="text-sm text-red-600 mt-1">{errors.date.message}</p>
+                <p className="text-sm text-red-400 mt-1 font-medium">{errors.date.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-200 mb-1.5">
                 {t('payments.form.status')}
               </label>
               <Select
@@ -234,12 +235,12 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
                 ]}
               />
               {errors.status && (
-                <p className="text-sm text-red-600 mt-1">{errors.status.message}</p>
+                <p className="text-sm text-red-400 mt-1 font-medium">{errors.status.message}</p>
               )}
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-200 mb-1.5">
                 {t('payments.form.notes')}
               </label>
               <Input
@@ -247,7 +248,7 @@ export default function PaymentForm({ students, studentsLoading, onSubmit }: Pay
                 placeholder={t('payments.form.notesPlaceholder')}
               />
               {errors.notes && (
-                <p className="text-sm text-red-600 mt-1">{errors.notes.message}</p>
+                <p className="text-sm text-red-400 mt-1 font-medium">{errors.notes.message}</p>
               )}
             </div>
           </div>

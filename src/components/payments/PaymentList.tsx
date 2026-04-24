@@ -87,8 +87,8 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
     return (
       <Card>
         <CardContent className="text-center py-8">
-          <DollarSign className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">{t('payments.empty.title')}</p>
+          <DollarSign className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-300">{t('payments.empty.title')}</p>
         </CardContent>
       </Card>
     );
@@ -120,10 +120,10 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
               <CardContent className="p-4 sm:p-6">
                 {isEditing ? (
                   <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900">{t('payments.actions.editTitle')} — {studentName}</h4>
+                    <h4 className="font-semibold text-white">{t('payments.actions.editTitle')} — {studentName}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.amount')}</label>
+                        <label className="block text-sm font-semibold text-gray-200 mb-1.5">{t('payments.form.amount')}</label>
                         <Input
                           type="number"
                           step="0.01"
@@ -133,7 +133,7 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.paymentDate')}</label>
+                        <label className="block text-sm font-semibold text-gray-200 mb-1.5">{t('payments.form.paymentDate')}</label>
                         <Input
                           type="date"
                           value={editData.date ?? ''}
@@ -141,7 +141,7 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.paymentType')}</label>
+                        <label className="block text-sm font-semibold text-gray-200 mb-1.5">{t('payments.form.paymentType')}</label>
                         <Select
                           value={editData.type ?? ''}
                           onChange={(e) => setEditData(prev => ({ ...prev, type: e.target.value as PaymentFormData['type'] }))}
@@ -155,7 +155,7 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.status')}</label>
+                        <label className="block text-sm font-semibold text-gray-200 mb-1.5">{t('payments.form.status')}</label>
                         <Select
                           value={editData.status ?? ''}
                           onChange={(e) => setEditData(prev => ({ ...prev, status: e.target.value as PaymentFormData['status'] }))}
@@ -168,7 +168,7 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                         />
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('payments.form.notes')}</label>
+                        <label className="block text-sm font-semibold text-gray-200 mb-1.5">{t('payments.form.notes')}</label>
                         <Input
                           value={editData.notes ?? ''}
                           onChange={(e) => setEditData(prev => ({ ...prev, notes: e.target.value }))}
@@ -192,8 +192,8 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                     {/* Top row: student info + badges */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
-                        <User className="h-5 w-5 text-gray-400 shrink-0" />
-                        <span className="font-medium text-gray-900 truncate">{studentName}</span>
+                        <User className="h-5 w-5 text-gray-300 shrink-0" />
+                        <span className="font-semibold text-white truncate">{studentName}</span>
                         <Badge variant={getTypeBadgeVariant(paymentType)}>
                           {t(`payments.type.${paymentType.replace('-', '')}`)}
                         </Badge>
@@ -208,22 +208,22 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
                           <Button variant="outline" size="xs" onClick={() => setDeletingId(payment.id)} title={t('payments.actions.delete')}>
-                            <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                            <Trash2 className="h-3.5 w-3.5 text-red-400" />
                           </Button>
                         </div>
                       )}
                     </div>
 
                     {/* Amount + date row */}
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-4 text-sm text-gray-300">
                       <div className="flex items-center gap-1">
-                        <DollarSign className="h-4 w-4" />
-                        <span className="font-semibold text-lg text-gray-900">
+                        <DollarSign className="h-4 w-4 text-emerald-400" />
+                        <span className="font-bold text-lg text-white">
                           ${paymentAmount.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-4 w-4 text-indigo-400" />
                         <span>
                           {payment.date ? parseLocalDate(payment.date).toLocaleDateString('es-ES') : 'Sin fecha'}
                         </span>
@@ -231,7 +231,7 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                     </div>
 
                     {payment.notes && (
-                      <p className="text-sm text-gray-600">{payment.notes}</p>
+                      <p className="text-sm text-gray-300">{payment.notes}</p>
                     )}
                   </div>
                 )}
