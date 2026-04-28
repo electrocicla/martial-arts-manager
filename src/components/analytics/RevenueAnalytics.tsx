@@ -3,7 +3,8 @@ import { label } from '../../lib/i18nUtils';
 import type { RevenueByClass, MonthlyTrend, RevenueByDiscipline } from '../../lib/analyticsUtils';
 import DisciplineRevenue from './DisciplineRevenue';
 import MoneyValue from '../ui/MoneyValue';
-import { usePrivacy, MONEY_MASK } from '../../context/PrivacyContext';
+import { usePrivacy } from '../../hooks/usePrivacy';
+import { MONEY_MASK } from '../../context/privacyContext.shared';
 
 interface RevenueAnalyticsProps {
   revenueByClass: RevenueByClass[];

@@ -3,7 +3,8 @@
  * preference (see PrivacyContext). When privacy is on, the amount is masked
  * with bullets, similar to bank apps.
  */
-import { usePrivacy, MONEY_MASK } from '../../context/PrivacyContext';
+import { usePrivacy } from '../../hooks/usePrivacy';
+import { MONEY_MASK } from '../../context/privacyContext.shared';
 
 interface MoneyValueProps {
   /** Numeric amount. Ignored when `formatted` is provided. */

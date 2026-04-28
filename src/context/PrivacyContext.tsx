@@ -6,40 +6,33 @@
  * are masked until the user reveals them). Students never have values masked.
  *
  * Persisted in localStorage so the preference survives reloads.
+ *
+ * Only exports a single React component (PrivacyProvider) so that
+ * react-refresh/only-export-components is satisfied.
+ * Constants and the hook live in:
+ *   - src/context/privacyContext.shared.ts  (MONEY_MASK, PrivacyContextValue, PrivacyContext)
+ *   - src/hooks/usePrivacy.ts               (usePrivacy)
  */
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react';
 import { useAuth } from './AuthContext';
+import {
+  PrivacyContext,
+  PRIVACY_STORAGE_KEY,
+  type PrivacyContextValue,
+} from './privacyContext.shared';
 
-const STORAGE_KEY = 'hamarr_money_hidden';
 const MASK_TEXT = '••••••';
-
-interface PrivacyContextValue {
-  /** Whether financial values should be hidden in the UI. */
-  hidden: boolean;
-  /** Whether the toggle is available to the current user. */
-  canToggle: boolean;
-  /** Toggle the hidden state. */
-  toggle: () => void;
-  /** Explicitly set the hidden state. */
-  setHidden: (next: boolean) => void;
-  /** Mask helper for plain text usages. */
-  mask: (value: string) => string;
-}
-
-const PrivacyContext = createContext<PrivacyContextValue | undefined>(undefined);
 
 function readStored(): boolean | null {
   if (typeof window === 'undefined') return null;
   try {
-    const v = window.localStorage.getItem(STORAGE_KEY);
+    const v = window.localStorage.getItem(PRIVACY_STORAGE_KEY);
     if (v === 'true') return true;
     if (v === 'false') return false;
   } catch {
@@ -51,7 +44,7 @@ function readStored(): boolean | null {
 function writeStored(value: boolean): void {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(STORAGE_KEY, value ? 'true' : 'false');
+    window.localStorage.setItem(PRIVACY_STORAGE_KEY, value ? 'true' : 'false');
   } catch {
     /* noop */
   }
@@ -61,14 +54,12 @@ export function PrivacyProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const canToggle = user?.role === 'admin' || user?.role === 'instructor';
 
-  // Default: hidden when admin/instructor, visible otherwise.
   const [hidden, setHiddenState] = useState<boolean>(() => {
     const stored = readStored();
     if (stored !== null) return stored;
     return true;
   });
 
-  // When the user changes (login/logout), reset to safe defaults.
   useEffect(() => {
     if (!canToggle) {
       setHiddenState(false);
@@ -112,19 +103,3 @@ export function PrivacyProvider({ children }: { children: ReactNode }) {
   return <PrivacyContext.Provider value={value}>{children}</PrivacyContext.Provider>;
 }
 
-export function usePrivacy(): PrivacyContextValue {
-  const ctx = useContext(PrivacyContext);
-  if (!ctx) {
-    // Safe fallback when used outside the provider (e.g. tests).
-    return {
-      hidden: false,
-      canToggle: false,
-      toggle: () => {},
-      setHidden: () => {},
-      mask: (v: string) => v,
-    };
-  }
-  return ctx;
-}
-
-export const MONEY_MASK = MASK_TEXT;

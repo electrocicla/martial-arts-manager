@@ -4,7 +4,7 @@
  */
 import { Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { usePrivacy } from '../../context/PrivacyContext';
+import { usePrivacy } from '../../hooks/usePrivacy';
 
 interface Props {
   className?: string;

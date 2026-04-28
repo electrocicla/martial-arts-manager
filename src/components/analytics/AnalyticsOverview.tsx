@@ -3,7 +3,8 @@ import { TrendingUp, TrendingDown, Activity, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
 import MoneyValue from '../ui/MoneyValue';
-import { usePrivacy, MONEY_MASK } from '../../context/PrivacyContext';
+import { usePrivacy } from '../../hooks/usePrivacy';
+import { MONEY_MASK } from '../../context/privacyContext.shared';
 
 interface AnalyticsOverviewProps {
   revenueByClass: RevenueByClass[];
