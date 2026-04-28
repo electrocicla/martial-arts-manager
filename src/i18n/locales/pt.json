@@ -600,6 +600,10 @@
     "noResults": "Sem resultados",
     "navigate": "navegar"
   },
+  "privacy": {
+    "showAmounts": "Mostrar valores",
+    "hideAmounts": "Ocultar valores"
+  },
   "attendance": {
     "title": "Marcar Presença",
     "present": "Presente",

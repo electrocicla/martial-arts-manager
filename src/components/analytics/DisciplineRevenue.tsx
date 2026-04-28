@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
 import type { RevenueByDiscipline } from '../../lib/analyticsUtils';
+import MoneyValue from '../ui/MoneyValue';
 
 interface Props {
   data: RevenueByDiscipline[];
@@ -24,7 +25,9 @@ export default function DisciplineRevenue({ data }: Props) {
           <div key={idx} className="group">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-semibold text-gray-200 group-hover:text-white transition-colors">{d.discipline}</span>
-              <span className="text-sm font-bold text-gray-100">${d.revenue.toLocaleString()}</span>
+              <span className="text-sm font-bold text-gray-100">
+                <MoneyValue amount={d.revenue} />
+              </span>
             </div>
             <div className="relative w-full bg-gray-800 rounded-full h-3 overflow-hidden">
               <div

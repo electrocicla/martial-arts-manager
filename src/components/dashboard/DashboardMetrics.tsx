@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Target, Activity, Users, Calendar, DollarSign, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/Button';
+import MoneyValue from '../ui/MoneyValue';
 import type { DashboardStats } from '../../hooks/useDashboardData';
 
 interface DashboardMetricsProps {
@@ -56,7 +57,9 @@ export default function DashboardMetrics({ dashboardStats, isLoading }: Dashboar
               <div>
                 <div className="flex justify-between items-center text-sm sm:text-base mb-2">
                   <span className="font-medium">{t('dashboard.metrics.monthlyRevenue')}</span>
-                  <span className="font-bold text-secondary">${dashboardStats.revenueThisMonth.toLocaleString()}</span>
+                  <span className="font-bold text-secondary">
+                    <MoneyValue amount={dashboardStats.revenueThisMonth} />
+                  </span>
                 </div>
                 <div className="relative">
                   <progress className="progress progress-secondary w-full h-3" value={dashboardStats.revenueThisMonth > 0 ? "100" : "0"} max="100"></progress>

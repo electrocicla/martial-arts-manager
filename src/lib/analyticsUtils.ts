@@ -10,6 +10,10 @@ export interface KPIMetric {
   icon: ComponentType<{ className?: string }>;
   color: string;
   bgColor: string;
+  /** When true, the value should be rendered through MoneyValue and respect privacy. */
+  isMoney?: boolean;
+  /** Numeric amount used when `isMoney` is true. */
+  rawAmount?: number;
 }
 
 export interface RevenueByClass {
@@ -94,7 +98,9 @@ export function calculateKPIs(
       trend: thisMonthRevenue >= lastMonthRevenue ? 'up' : 'down',
       icon: DollarSign,
       color: 'text-success',
-      bgColor: 'bg-success/20'
+      bgColor: 'bg-success/20',
+      isMoney: true,
+      rawAmount: totalRevenue,
     },
     {
       title: 'Active Students',
@@ -121,7 +127,9 @@ export function calculateKPIs(
       trend: 'neutral',
       icon: TrendingUp,
       color: 'text-warning',
-      bgColor: 'bg-warning/20'
+      bgColor: 'bg-warning/20',
+      isMoney: true,
+      rawAmount: thisMonthRevenue,
     },
   ];
 }

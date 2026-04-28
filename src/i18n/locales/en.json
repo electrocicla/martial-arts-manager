@@ -618,6 +618,10 @@
     "noResults": "No results",
     "navigate": "navigate"
   },
+  "privacy": {
+    "showAmounts": "Show amounts",
+    "hideAmounts": "Hide amounts"
+  },
   "attendance": {
     "title": "Mark Attendance",
     "present": "Present",

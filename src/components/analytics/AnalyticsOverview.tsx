@@ -2,6 +2,8 @@ import type { RevenueByClass, StudentProgress, MonthlyTrend } from '../../lib/an
 import { TrendingUp, TrendingDown, Activity, Target } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
+import MoneyValue from '../ui/MoneyValue';
+import { usePrivacy, MONEY_MASK } from '../../context/PrivacyContext';
 
 interface AnalyticsOverviewProps {
   revenueByClass: RevenueByClass[];
@@ -15,6 +17,7 @@ export default function AnalyticsOverview({
   monthlyTrends
 }: AnalyticsOverviewProps) {
   const { t } = useTranslation();
+  const { hidden } = usePrivacy();
   // Calculate dynamic max values for charts
   const maxRevenue = Math.max(...revenueByClass.map(item => item.revenue), 1);
   const maxMonthlyRevenue = Math.max(...monthlyTrends.map(item => item.revenue), 1);
@@ -51,7 +54,7 @@ export default function AnalyticsOverview({
                     {item.class}
                   </span>
                   <span className="text-sm font-bold text-gray-100">
-                    ${item.revenue.toLocaleString()}
+                    <MoneyValue amount={item.revenue} />
                   </span>
                 </div>
                 <div className="relative w-full bg-gray-800 rounded-full h-3 overflow-hidden">
@@ -145,7 +148,7 @@ export default function AnalyticsOverview({
                       <div
                         className="bg-gradient-to-t from-red-700 to-red-500 rounded-t-lg transition-all duration-700 hover:from-red-600 hover:to-red-400 shadow-lg group-hover:shadow-red-900/50 cursor-pointer"
                         style={{ height: `${(month.revenue / maxMonthlyRevenue) * 100}%` }}
-                        title={`${label(t, 'analytics.revenue.totalRevenue', 'Revenue')}: $${month.revenue}`}
+                        title={`${label(t, 'analytics.revenue.totalRevenue', 'Revenue')}: ${hidden ? MONEY_MASK : `$${month.revenue}`}`}
                       ></div>
                     </div>
                     <div className="relative flex-1 flex flex-col justify-end">

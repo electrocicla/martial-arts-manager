@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { label } from '../../lib/i18nUtils';
 import type { RevenueByClass, MonthlyTrend, RevenueByDiscipline } from '../../lib/analyticsUtils';
 import DisciplineRevenue from './DisciplineRevenue';
+import MoneyValue from '../ui/MoneyValue';
+import { usePrivacy, MONEY_MASK } from '../../context/PrivacyContext';
 
 interface RevenueAnalyticsProps {
   revenueByClass: RevenueByClass[];
@@ -11,6 +13,12 @@ interface RevenueAnalyticsProps {
 
 export default function RevenueAnalytics({ revenueByClass, monthlyTrends, revenueByDiscipline }: RevenueAnalyticsProps) {
   const { t } = useTranslation();
+  const { hidden } = usePrivacy();
+
+  const totalRevenue = revenueByClass.reduce((sum, item) => sum + item.revenue, 0);
+  const averagePerClass = revenueByClass.length > 0
+    ? Math.round(totalRevenue / revenueByClass.length)
+    : 0;
 
   return (
     <div className="space-y-8">
@@ -25,7 +33,9 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends, revenu
             </div>
             <div>
               <p className="text-sm text-gray-400">{label(t, 'analytics.revenue.totalRevenue', 'Total Revenue')}</p>
-              <p className="text-2xl font-bold text-gray-100">${revenueByClass.reduce((sum, item) => sum + item.revenue, 0).toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-100">
+                <MoneyValue amount={totalRevenue} />
+              </p>
             </div>
           </div>
         </div>
@@ -38,7 +48,9 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends, revenu
             </div>
             <div>
               <p className="text-sm text-gray-400">{label(t, 'analytics.revenue.averagePerClass', 'Average per class')}</p>
-              <p className="text-2xl font-bold text-gray-100">${revenueByClass.length > 0 ? Math.round(revenueByClass.reduce((sum, item) => sum + item.revenue, 0) / revenueByClass.length).toLocaleString() : 0}</p>
+              <p className="text-2xl font-bold text-gray-100">
+                <MoneyValue amount={averagePerClass} />
+              </p>
             </div>
           </div>
         </div>
@@ -80,7 +92,7 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends, revenu
                       {item.class}
                     </span>
                     <span className="text-sm font-bold text-gray-100">
-                      ${item.revenue.toLocaleString()}
+                      <MoneyValue amount={item.revenue} />
                     </span>
                   </div>
                   <div className="relative w-full bg-gray-800 rounded-full h-3 overflow-hidden">
@@ -123,7 +135,7 @@ export default function RevenueAnalytics({ revenueByClass, monthlyTrends, revenu
                       <div
                         className="bg-gradient-to-t from-green-600 to-green-500 rounded-t-lg transition-all duration-700 hover:from-green-500 hover:to-green-400 shadow-lg group-hover:shadow-green-900/50 cursor-pointer min-h-[10px]"
                         style={{ height: `${height}%`, width: '80%' }}
-                        title={`${label(t, 'analytics.revenue.totalRevenue', 'Revenue')}: $${month.revenue.toLocaleString()}`}
+                        title={`${label(t, 'analytics.revenue.totalRevenue', 'Revenue')}: ${hidden ? MONEY_MASK : `$${month.revenue.toLocaleString()}`}`}
                       ></div>
                     </div>
                     <span className="text-xs font-bold text-gray-300 group-hover:text-white transition-colors">

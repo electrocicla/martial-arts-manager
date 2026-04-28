@@ -8,6 +8,7 @@ import { CommandPalette } from './components/ui/CommandPalette';
 import AndroidApkInstallPrompt from './components/mobile/AndroidApkInstallPrompt';
 import PullToRefresh from './components/mobile/PullToRefresh';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { PrivacyProvider } from './context/PrivacyContext';
 import { PollingProvider } from './context/PollingContext';
 import { ToastProvider } from './components/ui/ToastProvider';
 import { ThemeProvider } from './context/ThemeContext';
@@ -125,13 +126,15 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <PollingProvider>
-            <ToastProvider>
-              <Router>
-                <AppWrapper />
-              </Router>
-            </ToastProvider>
-          </PollingProvider>
+          <PrivacyProvider>
+            <PollingProvider>
+              <ToastProvider>
+                <Router>
+                  <AppWrapper />
+                </Router>
+              </ToastProvider>
+            </PollingProvider>
+          </PrivacyProvider>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>

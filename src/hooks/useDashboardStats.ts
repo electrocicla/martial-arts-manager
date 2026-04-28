@@ -46,6 +46,8 @@ export const useDashboardStats = (dashboardStats: LocalDashboardStats, isLoading
       description: t('dashboard.stats.totalEarnings'),
       color: 'text-success',
       bgColor: 'bg-success/10',
+      isMoney: true as const,
+      rawAmount: dashboardStats.revenueThisMonth,
     },
     {
       title: t('dashboard.stats.newEnrollments'),

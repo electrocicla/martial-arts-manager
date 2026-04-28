@@ -7,6 +7,7 @@ import {
 import { cn } from '../../lib/utils';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import NotificationBell from '../NotificationBell';
+import MoneyVisibilityToggle from './MoneyVisibilityToggle';
 import { useTranslation } from 'react-i18next';
 import { navigationItems, quickActions } from '../../lib/mobileMenuConfig';
 import { useTheme } from '../../context/useTheme';
@@ -111,6 +112,8 @@ export default function Header() {
               {user?.role === 'student' ? <User className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
               {user?.role === 'student' ? t('nav.profile') : t('nav.settings')}
             </button>
+
+            <MoneyVisibilityToggle variant="mobile" />
 
             <div className="border-t border-gray-700 my-2 pt-2">
               <button
@@ -310,6 +313,9 @@ export default function Header() {
           >
             {resolved === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
+
+          {/* Money Visibility Toggle (admin/instructor) */}
+          <MoneyVisibilityToggle />
 
           {/* Notification Bell */}
           <NotificationBell />

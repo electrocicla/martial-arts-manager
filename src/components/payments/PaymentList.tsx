@@ -9,6 +9,7 @@ import ConfirmModal from '../ui/ConfirmModal';
 import { DollarSign, Calendar, User, Pencil, Trash2, X, Check } from 'lucide-react';
 import { parseLocalDate } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
+import MoneyValue from '../ui/MoneyValue';
 import type { Payment, PaymentFormData, Student } from '../../types/index';
 
 interface PaymentListProps {
@@ -219,7 +220,7 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                       <div className="flex items-center gap-1">
                         <DollarSign className="h-4 w-4 text-emerald-400" />
                         <span className="font-bold text-lg text-white">
-                          ${paymentAmount.toFixed(2)}
+                          <MoneyValue amount={paymentAmount} format={(n) => `$${n.toFixed(2)}`} />
                         </span>
                       </div>
                       <div className="flex items-center gap-1">

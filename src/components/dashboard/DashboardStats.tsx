@@ -1,4 +1,5 @@
 import React from 'react';
+import MoneyValue from '../ui/MoneyValue';
 
 interface StatItem {
   title: string;
@@ -9,6 +10,8 @@ interface StatItem {
   description: string;
   color: string;
   bgColor: string;
+  isMoney?: boolean;
+  rawAmount?: number;
 }
 
 interface DashboardStatsProps {
@@ -26,7 +29,11 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
                 <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-base-content" />
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-base-content mb-1">
-                {stat.value}
+                {stat.isMoney && typeof stat.rawAmount === 'number' && stat.value !== '...' ? (
+                  <MoneyValue amount={stat.rawAmount} />
+                ) : (
+                  stat.value
+                )}
               </h3>
               <p className="text-xs text-base-content/60 font-medium leading-tight">{stat.title}</p>
               <div className={`text-xs mt-2 font-bold ${

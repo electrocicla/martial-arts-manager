@@ -1,4 +1,5 @@
 import type { KPIMetric } from '../../lib/analyticsUtils';
+import MoneyValue from '../ui/MoneyValue';
 
 interface KPICardsProps {
   kpis: KPIMetric[];
@@ -31,7 +32,11 @@ export default function KPICards({ kpis }: KPICardsProps) {
             
             <div className="space-y-2">
               <h3 className="text-3xl lg:text-4xl font-black text-gray-100 group-hover:text-white motion-safe:transition-colors">
-                {kpi.value}
+                {kpi.isMoney && typeof kpi.rawAmount === 'number' ? (
+                  <MoneyValue amount={kpi.rawAmount} />
+                ) : (
+                  kpi.value
+                )}
               </h3>
               <p className="text-sm font-medium text-gray-400 group-hover:text-gray-300 motion-safe:transition-colors">
                 {kpi.title}

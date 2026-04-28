@@ -658,6 +658,10 @@
     "noResults": "Sin resultados",
     "navigate": "navegar"
   },
+  "privacy": {
+    "showAmounts": "Mostrar montos",
+    "hideAmounts": "Ocultar montos"
+  },
   "attendance": {
     "title": "Marcar Asistencia",
     "present": "Presente",

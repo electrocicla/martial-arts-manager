@@ -18,15 +18,19 @@ export const generateRecentActivity = (recentPayments: Payment[], todayClasses: 
   return [
     ...(recentPayments.slice(0, 2).map(payment => ({
       icon: 'DollarSign',
+      // Text is shown only when privacy is OFF; otherwise the renderer hides the
+      // amount portion. Keep a stable label so the renderer can replace it.
       text: `Payment received: $${payment.amount}`,
       time: parseLocalDate(payment.date).toLocaleDateString(),
-      type: 'info' as const
+      type: 'info' as const,
+      amount: payment.amount,
     }))),
     ...todayClasses.slice(0, 2).map(cls => ({
       icon: 'BookOpen',
       text: `Class scheduled: ${cls.name}`,
       time: new Date(`${cls.date}T${cls.time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      type: 'warning' as const
+      type: 'warning' as const,
+      amount: undefined as number | undefined,
     }))
   ];
 };

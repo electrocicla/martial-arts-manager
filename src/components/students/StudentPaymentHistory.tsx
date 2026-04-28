@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { DollarSign, Calendar, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../lib/api-client';
+import MoneyValue from '../ui/MoneyValue';
 
 interface Payment {
   id: string;
@@ -131,7 +132,7 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
                 <TrendingUp className="w-5 h-5 text-blue-400" />
               </div>
               <span className="text-2xl font-bold text-white">
-                {formatCurrency(stats.totalAmount)}
+                <MoneyValue amount={stats.totalAmount} format={formatCurrency} />
               </span>
             </div>
             <div className="text-sm text-blue-300 font-medium">
@@ -149,7 +150,7 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
                 <CheckCircle className="w-5 h-5 text-green-400" />
               </div>
               <span className="text-2xl font-bold text-white">
-                {formatCurrency(stats.completedAmount)}
+                <MoneyValue amount={stats.completedAmount} format={formatCurrency} />
               </span>
             </div>
             <div className="text-sm text-green-300 font-medium">
@@ -167,7 +168,7 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
                 <Clock className="w-5 h-5 text-yellow-400" />
               </div>
               <span className="text-2xl font-bold text-white">
-                {formatCurrency(stats.pendingAmount)}
+                <MoneyValue amount={stats.pendingAmount} format={formatCurrency} />
               </span>
             </div>
             <div className="text-sm text-yellow-300 font-medium">
@@ -302,7 +303,7 @@ export default function StudentPaymentHistory({ studentId }: { studentId: string
                     payment.status === 'refunded' ? 'text-gray-400' :
                     'text-red-400'
                   }`}>
-                    {formatCurrency(payment.amount)}
+                    <MoneyValue amount={payment.amount} format={formatCurrency} />
                   </div>
                 </div>
               </div>
