@@ -23,18 +23,23 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
   const toast = useToast();
   const [comments, setComments] = useState<CommentRecord[]>([]);
   const [newComment, setNewComment] = useState('');
-  const { isAuthenticated, refreshAuth } = useAuth();
+  const { isAuthenticated, refreshAuth, user } = useAuth();
+  const canManageComments = user?.role === 'admin' || user?.role === 'instructor';
 
   useEffect(() => {
-    if (!isOpen || !cls) return;
+    if (!isOpen || !cls || !canManageComments) {
+      setComments([]);
+      return;
+    }
+
     (async () => {
       const res = await classService.getComments(cls.id);
       if (res.success && res.data) setComments(res.data as CommentRecord[]);
     })();
-  }, [isOpen, cls]);
+  }, [isOpen, cls, canManageComments]);
 
   const handleAdd = async () => {
-    if (!cls || !newComment.trim()) return;
+    if (!cls || !newComment.trim() || !canManageComments) return;
 
     // Require authentication
     if (!isAuthenticated) {
@@ -129,25 +134,27 @@ export default function ClassDetailsModal({ isOpen, onClose, cls }: Props) {
           </div>
         )}
 
-        <div className="mb-4">
-          <h4 className="font-semibold text-white mb-2">{t('classDetails.comments') || 'Comentarios'}</h4>
-          <div className="space-y-2 mb-3">
-            <textarea placeholder={t('classDetails.commentPlaceholder') || ''} value={newComment} onChange={(e)=>setNewComment(e.target.value)} className="textarea textarea-bordered w-full bg-gray-800 border-gray-700 text-white" rows={3} />
-            <div className="flex justify-end gap-2">
-              <Button variant="primary" size="sm" onClick={handleAdd}>{t('classDetails.addComment') || 'Agregar'}</Button>
+        {canManageComments && (
+          <div className="mb-4">
+            <h4 className="font-semibold text-white mb-2">{t('classDetails.comments') || 'Comentarios'}</h4>
+            <div className="space-y-2 mb-3">
+              <textarea placeholder={t('classDetails.commentPlaceholder') || ''} value={newComment} onChange={(e)=>setNewComment(e.target.value)} className="textarea textarea-bordered w-full bg-gray-800 border-gray-700 text-white" rows={3} />
+              <div className="flex justify-end gap-2">
+                <Button variant="primary" size="sm" onClick={handleAdd}>{t('classDetails.addComment') || 'Agregar'}</Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {comments.length === 0 && <div className="text-sm text-gray-400">{t('classDetails.noComments') || 'No hay comentarios'}</div>}
+              {comments.map(c => (
+                <div key={c.id} className="p-3 bg-gray-800/50 rounded-lg border border-gray-700/40">
+                  <div className="text-sm text-gray-200 whitespace-pre-wrap">{c.comment}</div>
+                  <div className="text-xs text-gray-400 mt-2">{new Date(c.created_at).toLocaleString()}</div>
+                </div>
+              ))}
             </div>
           </div>
-
-          <div className="space-y-2">
-            {comments.length === 0 && <div className="text-sm text-gray-400">{t('classDetails.noComments') || 'No hay comentarios'}</div>}
-            {comments.map(c => (
-              <div key={c.id} className="p-3 bg-gray-800/50 rounded-lg border border-gray-700/40">
-                <div className="text-sm text-gray-200 whitespace-pre-wrap">{c.comment}</div>
-                <div className="text-xs text-gray-400 mt-2">{new Date(c.created_at).toLocaleString()}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </Modal>
   );

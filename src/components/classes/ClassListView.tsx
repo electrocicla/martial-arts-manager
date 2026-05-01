@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, User, Users, Edit, UserPlus } from 'lucide-react';
+import { BookOpen, Calendar, Clock, Eye, MapPin, User, Users, Edit, UserPlus } from 'lucide-react';
 import { getDisciplineColor, getClassStatus } from '../../lib/classUtils';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/Button';
@@ -9,9 +9,10 @@ interface ClassListViewProps {
   onEnroll: (cls: Class) => void;
   onAttendance: (cls: Class) => void;
   onEdit: (cls: Class) => void;
+  onViewDetails: (cls: Class) => void;
 }
 
-export default function ClassListView({ classes, onEnroll, onAttendance, onEdit }: ClassListViewProps) {
+export default function ClassListView({ classes, onEnroll, onAttendance, onEdit, onViewDetails }: ClassListViewProps) {
   const { t } = useTranslation();
 
   if (classes.length === 0) {
@@ -76,6 +77,13 @@ export default function ClassListView({ classes, onEnroll, onAttendance, onEdit 
                   <Button
                     variant="secondary"
                     size="sm"
+                    title={t('common.details')}
+                    onClick={() => onViewDetails(cls)}
+                    leftIcon={<Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                  />
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     title={t('classes.actions.edit')}
                     onClick={() => onEdit(cls)}
                     leftIcon={<Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
@@ -137,6 +145,23 @@ export default function ClassListView({ classes, onEnroll, onAttendance, onEdit 
                   <span className="text-gray-400">{t('classes.labels.instructor')}</span>
                   <span className="font-semibold text-white truncate">{cls.instructor}</span>
                 </div>
+                {cls.description && (
+                  <button
+                    type="button"
+                    onClick={() => onViewDetails(cls)}
+                    className="mt-3 flex w-full items-start gap-2 rounded-lg border border-blue-500/20 bg-blue-950/20 p-3 text-left transition-colors hover:border-blue-400/40 hover:bg-blue-950/30"
+                  >
+                    <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-blue-300" />
+                    <span className="min-w-0">
+                      <span className="block text-xs font-semibold uppercase text-blue-300">
+                        {t('dashboard.student.classObjective')}
+                      </span>
+                      <span className="mt-1 block line-clamp-2 text-sm leading-relaxed text-gray-300">
+                        {cls.description}
+                      </span>
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
           </div>

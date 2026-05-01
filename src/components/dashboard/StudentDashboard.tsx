@@ -15,6 +15,7 @@ export default function StudentDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [expandedClassId, setExpandedClassId] = useState<string | null>(null);
+  const [showAllClasses, setShowAllClasses] = useState(false);
 
   if (isLoading) {
     return (
@@ -44,6 +45,7 @@ export default function StudentDashboard() {
   }
 
   const nextClass = classes.find(c => new Date(c.date + ' ' + c.time) > new Date());
+  const displayedClasses = showAllClasses ? classes : classes.slice(0, 6);
 
   return (
     <div className="bg-gray-900 mobile-dashboard md:pb-4 md:pt-4">
@@ -151,7 +153,7 @@ export default function StudentDashboard() {
               </div>
             ) : (
               <div className="space-y-3">
-                {classes.slice(0, 6).map(cls => {
+                {displayedClasses.map(cls => {
                   const isExpanded = expandedClassId === cls.id;
                   const hasDescription = cls.description && cls.description.trim().length > 0;
                   return (
@@ -232,10 +234,13 @@ export default function StudentDashboard() {
                 })}
                 {classes.length > 6 && (
                   <button
-                    onClick={() => navigate('/calendar')}
+                    onClick={() => setShowAllClasses(prev => !prev)}
                     className="w-full mt-2 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-700/50 bg-gray-800/30 text-sm text-gray-300 hover:text-white hover:bg-gray-700/40 hover:border-gray-600/60 transition-all"
+                    aria-expanded={showAllClasses}
                   >
-                    {t('dashboard.student.viewAllClasses')}
+                    {showAllClasses
+                      ? t('dashboard.student.showFewerClasses', 'Show fewer classes')
+                      : t('dashboard.student.viewAllClasses')}
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 )}

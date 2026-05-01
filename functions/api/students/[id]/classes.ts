@@ -38,9 +38,25 @@ export async function onRequestGet({ request, env, params }: { request: Request;
         COUNT(CASE WHEN a.attended = 1 THEN 1 END) as attendance_count,
         COUNT(a.id) as total_sessions
       FROM classes c
-      INNER JOIN class_enrollments ce ON c.id = ce.class_id
+      INNER JOIN class_enrollments ce
+        ON ce.student_id = ?
+        AND ce.enrollment_status = 'active'
+        AND (
+          ce.class_id = c.id
+          OR ce.class_id = c.parent_course_id
+        )
       LEFT JOIN attendance a ON a.class_id = c.id AND a.student_id = ce.student_id
-      WHERE ce.student_id = ? AND ce.enrollment_status = 'active' AND c.deleted_at IS NULL
+      WHERE c.deleted_at IS NULL
+        AND NOT (
+          c.parent_course_id IS NULL
+          AND c.is_recurring = 1
+          AND EXISTS (
+            SELECT 1
+            FROM classes child
+            WHERE child.parent_course_id = c.id
+              AND child.deleted_at IS NULL
+          )
+        )
       GROUP BY c.id, ce.enrolled_at, ce.enrollment_status
       ORDER BY c.date DESC, c.time ASC
     `).bind(studentId).all();

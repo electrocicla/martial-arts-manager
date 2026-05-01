@@ -150,7 +150,8 @@
       "showDescription": "Ver descripción / objetivo",
       "hideDescription": "Ocultar descripción",
       "taughtBy": "Profesor",
-      "viewAllClasses": "Ver todas mis clases"
+      "viewAllClasses": "Ver todas mis clases",
+      "showFewerClasses": "Ver menos clases"
     },
     "greeting": {
       "morning": "Buenos días",

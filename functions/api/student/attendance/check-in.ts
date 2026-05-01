@@ -37,6 +37,7 @@ interface ClassInfo {
   time: string;
   discipline: string;
   location: string;
+  parent_course_id?: string | null;
 }
 
 export async function onRequestPost({ request, env }: { request: Request; env: Env }) {
@@ -96,7 +97,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (qrRecord.class_id) {
       // QR is linked to a specific class
       classRecord = await env.DB.prepare(`
-        SELECT id, name, date, time, discipline, location
+        SELECT id, name, date, time, discipline, location, parent_course_id
         FROM classes
         WHERE id = ? AND deleted_at IS NULL
       `).bind(qrRecord.class_id).first<ClassInfo>();
@@ -104,7 +105,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       // Find a class happening today at this location/instructor
       // Allow check-in within 30 minutes before and 60 minutes after class start
       classRecord = await env.DB.prepare(`
-        SELECT id, name, date, time, discipline, location
+        SELECT id, name, date, time, discipline, location, parent_course_id
         FROM classes
         WHERE (instructor_id = ? OR created_by = ?)
           AND date = ?
@@ -127,8 +128,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     // Check if student is enrolled in this class
     const enrollment = await env.DB.prepare(`
       SELECT id FROM class_enrollments
-      WHERE class_id = ? AND student_id = ?
-    `).bind(classRecord.id, studentId).first();
+      WHERE student_id = ?
+        AND enrollment_status = 'active'
+        AND (class_id = ? OR (? IS NOT NULL AND class_id = ?))
+    `).bind(studentId, classRecord.id, classRecord.parent_course_id ?? null, classRecord.parent_course_id ?? null).first();
 
     if (!enrollment) {
       return errorResponse('You are not enrolled in this class', 403);

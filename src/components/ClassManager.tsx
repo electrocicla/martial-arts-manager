@@ -208,6 +208,7 @@ export default function ClassManager() {
         ) : (
           <ClassListView
             classes={filteredClasses}
+            onViewDetails={(cls) => { setSelectedClass(cls); setShowDetailsModal(true); }}
             onEnroll={(cls) => { setSelectedClass(cls); setShowEnrollModal(true); }}
             onAttendance={(cls) => navigate(`/attendance/${cls.id}`)}
             onEdit={(cls) => { setEditingClass(cls); setShowAddModal(true); }}

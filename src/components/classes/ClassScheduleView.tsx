@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, User, Users, Edit, UserPlus, Plus } from 'lucide-react';
+import { Calendar, Clock, Eye, MapPin, User, Users, Edit, UserPlus, Plus } from 'lucide-react';
 import { getDisciplineColor, getClassStatus } from '../../lib/classUtils';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/Button';
@@ -116,9 +116,14 @@ export default function ClassScheduleView({
                         {cls.description && (
                           <p className="text-xs text-base-content/60 mt-3 line-clamp-2">{cls.description}</p>
                         )}
-                        <div className="mt-2">
-                          <button className="text-xs text-gray-400 underline" onClick={() => onViewDetails(cls)}>
-                            Ver Detalles
+                        <div className="mt-3">
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-700/60 px-2.5 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:border-blue-400/40 hover:bg-blue-950/30 hover:text-white"
+                            onClick={() => onViewDetails(cls)}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            {t('common.details')}
                           </button>
                         </div>
                       </div>

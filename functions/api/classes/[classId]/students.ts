@@ -38,9 +38,9 @@ export async function onRequestPost({ request, env, params }: { request: Request
     // Verify class exists and belongs to user (admins can manage any class)
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id, max_students FROM classes WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id, max_students FROM classes WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id])).first<{ id: string; max_students: number }>();
+        ? "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND deleted_at IS NULL"
+        : "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first<{ id: string; max_students: number; parent_course_id?: string | null }>();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { 
@@ -65,8 +65,8 @@ export async function onRequestPost({ request, env, params }: { request: Request
 
     // Check if already enrolled
     const existing = await env.DB.prepare(
-      "SELECT id FROM class_enrollments WHERE class_id = ? AND student_id = ?"
-    ).bind(classId, studentId).first();
+      "SELECT id FROM class_enrollments WHERE student_id = ? AND (class_id = ? OR (? IS NOT NULL AND class_id = ?))"
+    ).bind(studentId, classId, classCheck.parent_course_id ?? null, classCheck.parent_course_id ?? null).first();
 
     if (existing) {
       return new Response(JSON.stringify({ error: 'Student already enrolled in this class' }), { 
@@ -77,8 +77,8 @@ export async function onRequestPost({ request, env, params }: { request: Request
 
     // Check class capacity
     const enrolledCount = await env.DB.prepare(
-      "SELECT COUNT(*) as count FROM class_enrollments WHERE class_id = ? AND enrollment_status = 'active'"
-    ).bind(classId).first<{ count: number }>();
+      "SELECT COUNT(DISTINCT student_id) as count FROM class_enrollments WHERE enrollment_status = 'active' AND (class_id = ? OR (? IS NOT NULL AND class_id = ?))"
+    ).bind(classId, classCheck.parent_course_id ?? null, classCheck.parent_course_id ?? null).first<{ count: number }>();
 
     if (enrolledCount && enrolledCount.count >= classCheck.max_students) {
       return new Response(JSON.stringify({ error: 'Class is full' }), { 
@@ -135,8 +135,8 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
         ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id FROM classes WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id])).first();
+        : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { 
@@ -155,10 +155,12 @@ export async function onRequestGet({ request, env, params }: { request: Request;
         a.check_in_time
       FROM students s
       INNER JOIN class_enrollments ce ON s.id = ce.student_id
-      LEFT JOIN attendance a ON a.student_id = s.id AND a.class_id = ce.class_id
-      WHERE ce.class_id = ? AND ce.enrollment_status = 'active' AND s.deleted_at IS NULL
+      LEFT JOIN attendance a ON a.student_id = s.id AND a.class_id = ?
+      WHERE (ce.class_id = ? OR ce.class_id = (SELECT parent_course_id FROM classes WHERE id = ?))
+        AND ce.enrollment_status = 'active'
+        AND s.deleted_at IS NULL
       ORDER BY s.name ASC
-    `).bind(classId).all();
+    `).bind(classId, classId, classId).all();
 
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' }

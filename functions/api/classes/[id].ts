@@ -71,39 +71,39 @@ export async function onRequestPut({ request, env, params }: { request: Request;
 
     sets.push('updated_at = ?'); values.push(new Date().toISOString());
     sets.push('updated_by = ?'); values.push(auth.user.id);
+    const updateValues = [...values];
 
     const sql = auth.user.role === 'admin'
       ? `UPDATE classes SET ${sets.join(', ')} WHERE id = ? AND deleted_at IS NULL`
       : `UPDATE classes SET ${sets.join(', ')} WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL`;
-    if (auth.user.role === 'admin') {
-      values.push(id);
-    } else {
-      values.push(id, auth.user.id, auth.user.id);
-    }
+    const singleUpdateValues = auth.user.role === 'admin'
+      ? [...updateValues, id]
+      : [...updateValues, id, auth.user.id, auth.user.id];
 
     if (applyTo === 'all') {
       const { results: parentRes } = await env.DB.prepare(
         auth.user.role === 'admin'
-          ? 'SELECT parent_course_id FROM classes WHERE id = ? AND deleted_at IS NULL'
-          : 'SELECT parent_course_id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL'
-      ).bind(...(auth.user.role === 'admin' ? [id] : [id, auth.user.id, auth.user.id])).all<{ parent_course_id?: string }>();
-      const parentId = parentRes?.[0]?.parent_course_id;
+          ? 'SELECT id, parent_course_id, is_recurring FROM classes WHERE id = ? AND deleted_at IS NULL'
+          : 'SELECT id, parent_course_id, is_recurring FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL'
+      ).bind(...(auth.user.role === 'admin' ? [id] : [id, auth.user.id, auth.user.id])).all<{ id: string; parent_course_id?: string | null; is_recurring: number }>();
+      const parentRow = parentRes?.[0];
+      const parentId = parentRow?.parent_course_id || (parentRow?.is_recurring === 1 ? parentRow.id : undefined);
       if (parentId) {
         const updateSql = auth.user.role === 'admin'
-          ? `UPDATE classes SET ${sets.join(', ')} WHERE parent_course_id = ? AND deleted_at IS NULL`
-          : `UPDATE classes SET ${sets.join(', ')} WHERE parent_course_id = ? AND (created_by = ? OR instructor_id = ?)`;
-        const updateValues = auth.user.role === 'admin'
-          ? [...values, parentId]
-          : [...values, parentId, auth.user.id, auth.user.id];
-        await env.DB.prepare(updateSql).bind(...updateValues).run();
+          ? `UPDATE classes SET ${sets.join(', ')} WHERE (parent_course_id = ? OR id = ?) AND deleted_at IS NULL`
+          : `UPDATE classes SET ${sets.join(', ')} WHERE (parent_course_id = ? OR id = ?) AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL`;
+        const recurringUpdateValues = auth.user.role === 'admin'
+          ? [...updateValues, parentId, parentId]
+          : [...updateValues, parentId, parentId, auth.user.id, auth.user.id];
+        await env.DB.prepare(updateSql).bind(...recurringUpdateValues).run();
         const { results } = auth.user.role === 'admin'
-          ? await env.DB.prepare('SELECT * FROM classes WHERE parent_course_id = ? ORDER BY date, time').bind(parentId).all<ClassRecord>()
-          : await env.DB.prepare('SELECT * FROM classes WHERE parent_course_id = ? AND (created_by = ? OR instructor_id = ?) ORDER BY date, time').bind(parentId, auth.user.id, auth.user.id).all<ClassRecord>();
+          ? await env.DB.prepare('SELECT * FROM classes WHERE (parent_course_id = ? OR id = ?) AND deleted_at IS NULL ORDER BY date, time').bind(parentId, parentId).all<ClassRecord>()
+          : await env.DB.prepare('SELECT * FROM classes WHERE (parent_course_id = ? OR id = ?) AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL ORDER BY date, time').bind(parentId, parentId, auth.user.id, auth.user.id).all<ClassRecord>();
         return new Response(JSON.stringify(results || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
     }
 
-    await env.DB.prepare(sql).bind(...values).run();
+    await env.DB.prepare(sql).bind(...singleUpdateValues).run();
 
     // Non-blocking audit log
     logAuditAction(env.DB, {
@@ -136,16 +136,17 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
       // fetch parent_course_id for this class
       const { results: parentRes } = await env.DB.prepare(
         auth.user.role === 'admin'
-          ? 'SELECT parent_course_id FROM classes WHERE id = ? AND deleted_at IS NULL'
-          : 'SELECT parent_course_id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL'
-      ).bind(...(auth.user.role === 'admin' ? [id] : [id, auth.user.id, auth.user.id])).all<{ parent_course_id?: string }>();
-      const parentId = parentRes?.[0]?.parent_course_id;
+          ? 'SELECT id, parent_course_id, is_recurring FROM classes WHERE id = ? AND deleted_at IS NULL'
+          : 'SELECT id, parent_course_id, is_recurring FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL'
+      ).bind(...(auth.user.role === 'admin' ? [id] : [id, auth.user.id, auth.user.id])).all<{ id: string; parent_course_id?: string | null; is_recurring: number }>();
+      const parentRow = parentRes?.[0];
+      const parentId = parentRow?.parent_course_id || (parentRow?.is_recurring === 1 ? parentRow.id : undefined);
       if (parentId) {
         await env.DB.prepare(
           auth.user.role === 'admin'
-            ? 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE parent_course_id = ? AND deleted_at IS NULL'
-            : 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE parent_course_id = ? AND (created_by = ? OR instructor_id = ?)'
-        ).bind(...(auth.user.role === 'admin' ? [now, now, auth.user.id, parentId] : [now, now, auth.user.id, parentId, auth.user.id, auth.user.id])).run();
+            ? 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE (parent_course_id = ? OR id = ?) AND deleted_at IS NULL'
+            : 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE (parent_course_id = ? OR id = ?) AND (created_by = ? OR instructor_id = ?)'
+        ).bind(...(auth.user.role === 'admin' ? [now, now, auth.user.id, parentId, parentId] : [now, now, auth.user.id, parentId, parentId, auth.user.id, auth.user.id])).run();
         return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
     }

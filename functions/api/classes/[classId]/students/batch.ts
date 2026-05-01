@@ -33,9 +33,9 @@ export async function onRequestPost({ request, env, params }: { request: Request
     // Verify class exists and user has access
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id, max_students FROM classes WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id, max_students FROM classes WHERE id = ? AND created_by = ? AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id])).first<{ id: string; max_students: number }>();
+        ? "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND deleted_at IS NULL"
+        : "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first<{ id: string; max_students: number; parent_course_id?: string | null }>();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), {
@@ -45,16 +45,17 @@ export async function onRequestPost({ request, env, params }: { request: Request
     }
 
     // Get current enrollment count
+    const parentClassId = classCheck.parent_course_id ?? null;
     const enrolledCount = await env.DB.prepare(
-      "SELECT COUNT(*) as count FROM class_enrollments WHERE class_id = ? AND enrollment_status = 'active'"
-    ).bind(classId).first<{ count: number }>();
+      "SELECT COUNT(DISTINCT student_id) as count FROM class_enrollments WHERE enrollment_status = 'active' AND (class_id = ? OR (? IS NOT NULL AND class_id = ?))"
+    ).bind(classId, parentClassId, parentClassId).first<{ count: number }>();
 
     const currentCount = enrolledCount?.count ?? 0;
 
     // Get already-enrolled student IDs to skip them
     const { results: existingRows } = await env.DB.prepare(
-      `SELECT student_id FROM class_enrollments WHERE class_id = ? AND student_id IN (${student_ids.map(() => '?').join(',')})`
-    ).bind(classId, ...student_ids).all<{ student_id: string }>();
+      `SELECT student_id FROM class_enrollments WHERE (class_id = ? OR (? IS NOT NULL AND class_id = ?)) AND student_id IN (${student_ids.map(() => '?').join(',')})`
+    ).bind(classId, parentClassId, parentClassId, ...student_ids).all<{ student_id: string }>();
 
     const alreadyEnrolled = new Set((existingRows ?? []).map(r => r.student_id));
     const toEnroll = student_ids.filter(id => !alreadyEnrolled.has(id));

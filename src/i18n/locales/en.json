@@ -152,7 +152,8 @@
       "showDescription": "Show description / objective",
       "hideDescription": "Hide description",
       "taughtBy": "Instructor",
-      "viewAllClasses": "View all my classes"
+      "viewAllClasses": "View all my classes",
+      "showFewerClasses": "Show fewer classes"
     },
     "greeting": {
       "morning": "Good morning",

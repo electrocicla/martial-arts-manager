@@ -7,7 +7,7 @@ import ClassDetailsModal from './classes/ClassDetailsModal';
 import ClassFormModal from './classes/ClassFormModal';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { Clock, MapPin, User } from 'lucide-react';
+import { BookOpen, Clock, Eye, MapPin, User } from 'lucide-react';
 import { Button } from './ui/Button';
 
 // Get browser locale for react-calendar
@@ -28,17 +28,19 @@ export default function CalendarView() {
   const [editingClass, setEditingClass] = useState<Class | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
+  const canManageClasses = user?.role === 'admin' || user?.role === 'instructor';
 
-  // Role-based visibility: admins see all, instructors see classes they instruct, students see classes they're enrolled in (client-side best-effort)
+  // API scopes classes by role; this prevents stale data from leaking between role changes.
   const visibleClasses = classes.filter((c: Class) => {
     if (!user) return false;
     if (user.role === 'admin') return true;
-    if (user.role === 'instructor') return (c.instructor === user.name || c.instructor === user.id);
+    if (user.role === 'instructor') {
+      return c.instructor_id === user.id || c.created_by === user.id || c.instructor === user.name;
+    }
     if (user.role === 'student') {
-      // prefer explicit enrolled ids if present, otherwise fall back to enrolled_count > 0 (best-effort)
       const enrolledIds = c.enrolled_student_ids;
-      if (Array.isArray(enrolledIds)) return enrolledIds.includes(user.id);
-      return (c.enrolled_count ?? 0) > 0 ? true : false;
+      const studentId = user.student_id ?? user.id;
+      return Array.isArray(enrolledIds) ? enrolledIds.includes(studentId) : true;
     }
     return false;
   });
@@ -111,13 +113,16 @@ export default function CalendarView() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        className="checkbox checkbox-sm"
-                        checked={!!selectedIds[c.id]}
-                        onChange={(e) => { e.stopPropagation(); setSelectedIds(prev => ({ ...prev, [c.id]: !!e.target.checked })); }}
-                      />
-                      {(user?.role === 'admin' || user?.role === 'instructor') && (
+                      {canManageClasses && (
+                        <input
+                          type="checkbox"
+                          className="checkbox checkbox-sm"
+                          checked={!!selectedIds[c.id]}
+                          onChange={(e) => { e.stopPropagation(); setSelectedIds(prev => ({ ...prev, [c.id]: !!e.target.checked })); }}
+                          aria-label={t('common.select')}
+                        />
+                      )}
+                      {canManageClasses && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -129,6 +134,31 @@ export default function CalendarView() {
                       )}
                     </div>
                   </div>
+                  {c.description && (
+                    <div className="mt-3 rounded-lg border border-blue-500/20 bg-blue-950/20 p-3">
+                      <div className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase text-blue-300">
+                        <BookOpen className="h-3.5 w-3.5" />
+                        {t('dashboard.student.classObjective')}
+                      </div>
+                      <p className="line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-gray-300">
+                        {c.description}
+                      </p>
+                    </div>
+                  )}
+                  <div className="mt-3 flex justify-end">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedClass(c);
+                        setShowDetails(true);
+                      }}
+                      leftIcon={<Eye className="h-4 w-4" />}
+                    >
+                      {t('common.details')}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -137,30 +167,26 @@ export default function CalendarView() {
           )}
 
           {/* Bulk Actions Toolbar */}
-          {Object.values(selectedIds).some(Boolean) && (
+          {canManageClasses && Object.values(selectedIds).some(Boolean) && (
             <div className="mt-4 flex items-center justify-between gap-4">
               <div className="text-sm text-gray-300">{Object.values(selectedIds).filter(Boolean).length} selected</div>
               <div className="flex items-center gap-2">
-                {(user?.role === 'admin' || user?.role === 'instructor') && (
-                  <>
-                    <Button size="sm" variant="primary" onClick={async () => {
-                      const ids = Object.keys(selectedIds).filter(id => selectedIds[id]);
-                      if (ids.length === 0) return;
-                      const first = visibleClasses.find(v => v.id === ids[0]);
-                      if (!first) return;
-                      setEditingClass(first);
-                      setShowEditModal(true);
-                    }}>Bulk Edit</Button>
-                    <Button size="sm" variant="ghost" onClick={async () => {
-                      const ids = Object.keys(selectedIds).filter(id => selectedIds[id]);
-                      for (const id of ids) {
-                        await deleteClass(id);
-                      }
-                      setSelectedIds({});
-                      await refresh();
-                    }}>Delete Selected</Button>
-                  </>
-                )}
+                <Button size="sm" variant="primary" onClick={async () => {
+                  const ids = Object.keys(selectedIds).filter(id => selectedIds[id]);
+                  if (ids.length === 0) return;
+                  const first = visibleClasses.find(v => v.id === ids[0]);
+                  if (!first) return;
+                  setEditingClass(first);
+                  setShowEditModal(true);
+                }}>Bulk Edit</Button>
+                <Button size="sm" variant="ghost" onClick={async () => {
+                  const ids = Object.keys(selectedIds).filter(id => selectedIds[id]);
+                  for (const id of ids) {
+                    await deleteClass(id);
+                  }
+                  setSelectedIds({});
+                  await refresh();
+                }}>Delete Selected</Button>
                 <Button size="sm" variant="ghost" onClick={() => setSelectedIds({})}>Clear</Button>
               </div>
             </div>
