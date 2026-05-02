@@ -220,6 +220,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (result.success) {
           setUser(result.user);
           setAccessToken(result.accessToken);
+          // Immediately sync token with apiClient to avoid race conditions
+          // (PollingContext effects run before AuthContext effects in the same commit)
+          apiClient.setAccessToken(result.accessToken);
           return true;
         }
       }
@@ -229,6 +232,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.status === 401) {
         setUser(null);
         setAccessToken(null);
+        apiClient.setAccessToken(null);
       }
     } catch (error) {
       console.error('Token refresh failed:', error);

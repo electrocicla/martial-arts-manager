@@ -51,6 +51,8 @@ export function PollingProvider({ children }: { children: ReactNode }) {
       return;
     }
     if (!accessToken) return;
+    // Ensure singleton is in sync (guards against React effect ordering race)
+    apiClient.setAccessToken(accessToken);
 
     try {
       setPendingApprovalsLoading(true);
@@ -67,6 +69,8 @@ export function PollingProvider({ children }: { children: ReactNode }) {
 
   const fetchNotifications = useCallback(async () => {
     if (!user || !accessToken) return;
+    // Ensure singleton is in sync (guards against React effect ordering race)
+    apiClient.setAccessToken(accessToken);
 
     try {
       setNotificationsLoading(true);

@@ -71,22 +71,27 @@ export default function Header() {
           <h1 className="text-xl font-bold text-white">{t('common.appName')}</h1>
         </button>
 
-        {/* Right: User Avatar + Quick Account Menu */}
-        <div className="relative">
-          <button
-            onClick={() => {
-              setMobileAccountOpen(!mobileAccountOpen);
-              setMobileMenuOpen(false);
-            }}
-            className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-600"
-            aria-label={t('common.account')}
-          >
-            {user?.avatar_url ? (
-              <img src={user.avatar_url} alt={user?.name || 'User'} className="w-8 h-8 rounded-full object-cover" />
-            ) : (
-              <User className="w-4 h-4 text-gray-300" />
-            )}
-          </button>
+        {/* Right: Money toggle + User Avatar */}
+        <div className="flex items-center gap-2">
+          <MoneyVisibilityToggle
+            className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+          />
+          <div className="relative">
+            <button
+              onClick={() => {
+                setMobileAccountOpen(!mobileAccountOpen);
+                setMobileMenuOpen(false);
+              }}
+              className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border border-gray-600"
+              aria-label={t('common.account')}
+            >
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} alt={user?.name || 'User'} className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <User className="w-4 h-4 text-gray-300" />
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -248,6 +253,10 @@ export default function Header() {
                     <User className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
                     <span>{t('nav.profile')}</span>
                   </button>
+                  <MoneyVisibilityToggle
+                    variant="mobile"
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors gap-3"
+                  />
                   <button 
                     onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                     className="flex items-center w-full p-3 text-left text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
