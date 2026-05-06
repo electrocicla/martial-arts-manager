@@ -62,3 +62,6 @@ docs/
 # Development and AI assistant files
 CLAUDE.md
 worklog.md
+
+# Throwaway debugging screenshots
+Screenshot_*.png
