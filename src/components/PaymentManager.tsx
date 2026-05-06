@@ -23,13 +23,15 @@ export default function PaymentManager() {
   const [activeTab, setActiveTab] = useState<PaymentTabId>('manage');
   const [overdueCount, setOverdueCount] = useState<number>(0);
 
-  if (user?.role === 'student') {
-    return <Navigate to="/my-payments" replace />;
-  }
-
   const handleOverdueCountChange = useCallback((count: number) => {
     setOverdueCount(count);
   }, []);
+
+  // Student users do not have access to the staff payments console;
+  // redirect AFTER hooks so React's rules-of-hooks aren't violated.
+  if (user?.role === 'student') {
+    return <Navigate to="/my-payments" replace />;
+  }
 
   return (
     <div className="space-y-6">
