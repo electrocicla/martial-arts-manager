@@ -97,6 +97,14 @@ export const navigationItems: NavigationItem[] = [
     roles: ['admin']
   },
   {
+    id: 'my-payments',
+    nameKey: 'nav.myPayments',
+    href: '/my-payments',
+    icon: DollarSign,
+    color: 'text-emerald-400',
+    roles: ['student']
+  },
+  {
     id: 'analytics',
     nameKey: 'nav.analytics',
     href: '/analytics',

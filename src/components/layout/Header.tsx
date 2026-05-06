@@ -338,9 +338,9 @@ export default function Header() {
                   )}
                 </div>
               </div>
-              <div className="hidden md:block text-left">
-                <p className="text-sm font-semibold text-gray-200 leading-none">{user?.name || 'User'}</p>
-                <p className="text-xs text-gray-400 capitalize mt-1">{user?.role || 'Member'}</p>
+              <div className="hidden md:block text-left min-w-0 max-w-[12rem]">
+                <p className="text-sm font-semibold text-gray-200 leading-none truncate">{user?.name || 'User'}</p>
+                <p className="text-xs text-gray-400 capitalize mt-1 truncate">{user?.role || 'Member'}</p>
               </div>
               <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
             </button>
