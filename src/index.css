@@ -67,22 +67,25 @@
   --shadow-strike: 0 0 0 1px var(--color-strike-500), 0 12px 32px -8px oklch(0.62 0.24 25 / 0.4);
 }
 
-/* Light theme */
+/* Light theme — "Dojo Paper". Warm off-white inspired by traditional
+   rice paper / sun-bleached canvas, with red brand kept identical.
+   Never pure white — it stays gentle on the eyes and respects the
+   martial arts visual language (paper + ink + red belt). */
 :root[data-theme="light"] {
   color-scheme: light;
-  --color-surface-0: oklch(0.98 0 0);
-  --color-surface-1: oklch(1.00 0 0);
-  --color-surface-2: oklch(0.96 0 0);
-  --color-surface-3: oklch(0.92 0 0);
-  --color-border:        oklch(0.85 0 0 / 0.8);
-  --color-border-strong: oklch(0.72 0 0);
-  --color-ink-primary:   oklch(0.18 0 0);
-  --color-ink-secondary: oklch(0.36 0 0);
-  --color-ink-muted:     oklch(0.50 0 0);
-  --color-ink-disabled:  oklch(0.70 0 0);
-  --shadow-card: 0 1px 0 oklch(0 0 0 / 0.02) inset, 0 4px 16px -8px oklch(0 0 0 / 0.12);
-  --shadow-pop:  0 1px 0 oklch(0 0 0 / 0.04) inset, 0 12px 32px -12px oklch(0 0 0 / 0.18);
-  --shadow-strike: 0 0 0 1px var(--color-strike-500), 0 8px 24px -8px oklch(0.62 0.24 25 / 0.3);
+  --color-surface-0: oklch(0.965 0.006 30);   /* canvas — warm rice paper */
+  --color-surface-1: oklch(0.985 0.004 30);   /* card  — lifted paper */
+  --color-surface-2: oklch(0.945 0.008 30);   /* elevated — panel */
+  --color-surface-3: oklch(0.910 0.012 30);   /* hover — ink wash */
+  --color-border:        oklch(0.82 0.012 30 / 0.8);
+  --color-border-strong: oklch(0.68 0.020 30);
+  --color-ink-primary:   oklch(0.20 0.020 25);   /* deep sumi-e ink */
+  --color-ink-secondary: oklch(0.36 0.015 25);
+  --color-ink-muted:     oklch(0.50 0.012 25);
+  --color-ink-disabled:  oklch(0.70 0.008 25);
+  --shadow-card: 0 1px 0 oklch(1 0 0 / 0.6) inset, 0 4px 16px -8px oklch(0.40 0.05 25 / 0.18);
+  --shadow-pop:  0 1px 0 oklch(1 0 0 / 0.7) inset, 0 12px 32px -12px oklch(0.40 0.05 25 / 0.24);
+  --shadow-strike: 0 0 0 1px var(--color-strike-500), 0 8px 24px -8px oklch(0.62 0.24 25 / 0.35);
 }
 
 /* Make tokens available as Tailwind v4 utilities (bg-surface-1, text-ink-primary, etc.) */
@@ -871,6 +874,153 @@ p, span, div {
   text-shadow: 0 0 25px rgba(251, 191, 36, 1), 0 0 40px rgba(245, 158, 11, 0.6);
   text-decoration-color: #ffffff;
   transform: scale(1.05);
+}
+
+/* ============================================================
+   LIGHT THEME OVERRIDES — Tailwind dark utility remapping
+   ------------------------------------------------------------
+   The codebase has hundreds of components hard-coded with
+   bg-gray-900 / bg-gray-800 / bg-black / text-gray-200 / etc.
+   Refactoring every component is impractical. Instead we
+   remap the most common dark Tailwind utilities to light
+   equivalents only when [data-theme="light"] is active. This
+   single block flips the entire app to a martial-arts-aligned
+   "Dojo Paper" light theme without touching components.
+   ============================================================ */
+:root[data-theme="light"] {
+  /* ---- Surface backgrounds ---- */
+  & .bg-black,
+  & .bg-gray-900,
+  & .bg-slate-900,
+  & .bg-zinc-900,
+  & .bg-neutral-900 {
+    background-color: var(--color-surface-0);
+  }
+  & .bg-gray-800,
+  & .bg-slate-800,
+  & .bg-zinc-800,
+  & .bg-neutral-800 {
+    background-color: var(--color-surface-1);
+  }
+  & .bg-gray-700,
+  & .bg-slate-700,
+  & .bg-zinc-700 {
+    background-color: var(--color-surface-2);
+  }
+
+  /* ---- Translucent surface backgrounds (most-used variants) ---- */
+  & .bg-black\/80,
+  & .bg-black\/60,
+  & .bg-black\/50,
+  & .bg-black\/40,
+  & .bg-gray-900\/80,
+  & .bg-gray-900\/60,
+  & .bg-gray-900\/50,
+  & .bg-gray-900\/40,
+  & .bg-gray-900\/30 {
+    background-color: oklch(0.985 0.004 30 / 0.85);
+  }
+  & .bg-gray-800\/90,
+  & .bg-gray-800\/80,
+  & .bg-gray-800\/70,
+  & .bg-gray-800\/60,
+  & .bg-gray-800\/50,
+  & .bg-gray-800\/40,
+  & .bg-gray-800\/30,
+  & .bg-gray-800\/20 {
+    background-color: oklch(0.945 0.008 30 / 0.85);
+  }
+  & .hover\:bg-gray-800:hover,
+  & .hover\:bg-gray-700:hover,
+  & .hover\:bg-gray-800\/70:hover,
+  & .hover\:bg-gray-800\/80:hover {
+    background-color: var(--color-surface-3);
+  }
+
+  /* ---- Borders ---- */
+  & .border-gray-900,
+  & .border-gray-800,
+  & .border-gray-700,
+  & .border-gray-600,
+  & .border-slate-700,
+  & .border-slate-600,
+  & .border-zinc-700,
+  & .border-neutral-700 {
+    border-color: var(--color-border);
+  }
+  & .border-gray-700\/50,
+  & .border-gray-700\/60,
+  & .border-gray-700\/70,
+  & .border-gray-800\/50 {
+    border-color: oklch(0.82 0.012 30 / 0.5);
+  }
+  & .hover\:border-gray-600:hover,
+  & .hover\:border-gray-500:hover {
+    border-color: var(--color-border-strong);
+  }
+
+  /* ---- Text colors ---- */
+  & .text-white,
+  & .text-gray-50,
+  & .text-gray-100 {
+    color: var(--color-ink-primary);
+  }
+  & .text-gray-200,
+  & .text-gray-300,
+  & .text-slate-200,
+  & .text-slate-300 {
+    color: var(--color-ink-secondary);
+  }
+  & .text-gray-400,
+  & .text-gray-500,
+  & .text-slate-400,
+  & .text-zinc-400,
+  & .text-neutral-400 {
+    color: var(--color-ink-muted);
+  }
+  & .placeholder-gray-400::placeholder,
+  & .placeholder-gray-500::placeholder,
+  & .placeholder\:text-gray-500::placeholder,
+  & .placeholder\:text-slate-400::placeholder {
+    color: var(--color-ink-disabled);
+  }
+  & .hover\:text-white:hover,
+  & .hover\:text-gray-100:hover,
+  & .hover\:text-gray-200:hover {
+    color: var(--color-ink-primary);
+  }
+
+  /* ---- Body & html safety net ---- */
+  & body,
+  & html {
+    background-color: var(--color-surface-0);
+    color: var(--color-ink-primary);
+  }
+
+  /* ---- DaisyUI legacy overrides defined earlier in this file ---- */
+  & .text-base-content { color: var(--color-ink-primary); }
+  & .bg-base-100 { background-color: var(--color-surface-0); }
+  & .bg-base-200 { background-color: var(--color-surface-1); }
+  & .bg-base-300 { background-color: var(--color-surface-2); }
+  & .border-base-300 { border-color: var(--color-border); }
+
+  /* ---- Card & input legacy CSS earlier in this file ---- */
+  & .card {
+    background-color: var(--color-surface-1);
+    border-color: var(--color-border);
+    color: var(--color-ink-primary);
+  }
+  & .card-title { color: var(--color-ink-primary); }
+  & .input, & .select, & .textarea {
+    background-color: var(--color-surface-1);
+    color: var(--color-ink-primary);
+    border-color: var(--color-border);
+  }
+
+  /* ---- Headings inherit the deep ink ---- */
+  & h1, & h2, & h3, & h4, & h5, & h6 {
+    color: var(--color-ink-primary);
+  }
 }
 
 /* ============================================
