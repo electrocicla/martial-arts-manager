@@ -147,6 +147,37 @@ function RadialGauge({ percent, label: gaugeLabel, current, required, icon, tone
   );
 }
 
+interface RoadmapChipProps {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  tone: 'blue' | 'red' | 'amber';
+  subLabel?: string;
+}
+
+const ROADMAP_CHIP_TONES: Record<RoadmapChipProps['tone'], string> = {
+  blue:  'bg-blue-500/10  text-blue-600   ring-blue-500/30',
+  red:   'bg-red-500/10   text-red-600    ring-red-500/30',
+  amber: 'bg-amber-500/10 text-amber-700  ring-amber-500/30',
+};
+
+function RoadmapChip({ icon, label: chipLabel, value, tone, subLabel }: RoadmapChipProps) {
+  return (
+    <div className={`rounded-xl ring-1 px-3 py-2.5 ${ROADMAP_CHIP_TONES[tone]}`}>
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold opacity-80">
+        {icon}
+        <span className="truncate">{chipLabel}</span>
+      </div>
+      <div className="mt-1 flex items-baseline gap-1">
+        <span className="text-lg md:text-xl font-black tabular-nums">{value.toLocaleString()}</span>
+        {subLabel && (
+          <span className="text-[10px] font-semibold opacity-70 tracking-wide">({subLabel})</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function StatusBadge({ status }: { status: ProgressionEvaluation['status'] }) {
   const config: Record<ProgressionEvaluation['status'], { tone: string; icon: React.ReactNode; text: string }> = {
     'on-track':       { tone: 'bg-blue-500/15 text-blue-400 border-blue-500/40',           icon: <TrendingUp className="w-4 h-4" />,   text: 'On track' },
@@ -386,46 +417,86 @@ export default function StudentBeltTesting({
           </div>
         </Section>
 
-        {/* Roadmap */}
+        {/* Roadmap — vertical stepper, far more legible than the
+            zebra table that had no padding and no current-row emphasis. */}
         <Section
           title={label(t, 'beltTesting.student.roadmapTitle', 'Progression roadmap')}
           description={label(t, 'beltTesting.student.roadmapDesc', 'Preview of upcoming requirements as you advance.')}
         >
-          <Surface variant="raised" radius="lg" className="p-0 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="table table-zebra w-full">
-                <thead>
-                  <tr className="text-base-content/70">
-                    <th>{label(t, 'beltTesting.student.tier', 'Tier')}</th>
-                    <th>{label(t, 'beltTesting.student.classes', 'Classes')}</th>
-                    <th>{label(t, 'beltTesting.student.sparring', 'Sparring')}</th>
-                    <th>{label(t, 'beltTesting.student.tournaments', 'Tournaments')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {roadmap.map((tier) => {
-                    const isCurrent = tier.index === progression.tierIndex;
-                    return (
-                      <tr key={tier.index} className={isCurrent ? 'bg-primary/10' : ''}>
-                        <td className="font-bold text-base-content">
-                          <div className="flex items-center gap-2">
-                            <span className="badge badge-outline">#{tier.index + 1}</span>
-                            <span>{tier.label}</span>
-                          </div>
-                        </td>
-                        <td className="tabular-nums">{tier.classes.toLocaleString()}</td>
-                        <td className="tabular-nums">{tier.sparrings.toLocaleString()}</td>
-                        <td className="tabular-nums text-base-content/70">
-                          {tier.tournaments.toLocaleString()}{' '}
-                          <span className="text-xs">({label(t, 'beltTesting.student.optional', 'optional')})</span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </Surface>
+          <ol className="relative space-y-4 md:space-y-5 pl-6 md:pl-8 border-l-2 border-dashed border-base-300">
+            {roadmap.map((tier, idx) => {
+              const isCurrent = tier.index === progression.tierIndex;
+              const isFirst = idx === 0;
+              return (
+                <li key={tier.index} className="relative">
+                  {/* Step marker bubble on the timeline */}
+                  <span
+                    aria-hidden="true"
+                    className={[
+                      'absolute -left-[35px] md:-left-[41px] top-5 flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full text-sm font-black shadow-md ring-4 ring-base-100 transition-transform',
+                      isCurrent
+                        ? 'bg-gradient-to-br from-red-500 to-red-700 text-white scale-110'
+                        : 'bg-base-200 text-base-content/60 border border-base-300',
+                    ].join(' ')}
+                  >
+                    {tier.index + 1}
+                  </span>
+
+                  <Surface
+                    variant="raised"
+                    radius="lg"
+                    className={[
+                      'p-5 md:p-6 transition-all duration-300',
+                      isCurrent
+                        ? 'ring-2 ring-red-500/50 shadow-lg shadow-red-500/10 bg-red-500/5'
+                        : 'hover:shadow-md hover:-translate-y-0.5',
+                    ].join(' ')}
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {isCurrent && (
+                          <Flame className="w-5 h-5 text-red-500 shrink-0" aria-hidden="true" />
+                        )}
+                        <div className="min-w-0">
+                          <p className={`text-base md:text-lg font-extrabold tracking-tight truncate ${isCurrent ? 'text-red-600' : 'text-base-content'}`}>
+                            {isFirst
+                              ? label(t, 'beltTesting.student.roadmapCurrent', 'Current rank-up')
+                              : `${label(t, 'beltTesting.student.roadmapNext', 'Rank-up')} #${idx + 1}`}
+                          </p>
+                          <p className="text-xs text-base-content/60 mt-0.5">
+                            {label(t, 'beltTesting.student.tier', 'Tier')} #{tier.index + 1}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Three metric chips */}
+                      <div className="grid grid-cols-3 gap-2 md:gap-3 md:min-w-[420px]">
+                        <RoadmapChip
+                          icon={<GraduationCap className="w-4 h-4" />}
+                          label={label(t, 'beltTesting.student.classes', 'Classes')}
+                          value={tier.classes}
+                          tone="blue"
+                        />
+                        <RoadmapChip
+                          icon={<Swords className="w-4 h-4" />}
+                          label={label(t, 'beltTesting.student.sparring', 'Sparring')}
+                          value={tier.sparrings}
+                          tone="red"
+                        />
+                        <RoadmapChip
+                          icon={<Trophy className="w-4 h-4" />}
+                          label={label(t, 'beltTesting.student.tournaments', 'Tournaments')}
+                          value={tier.tournaments}
+                          tone="amber"
+                          subLabel={label(t, 'beltTesting.student.optional', 'optional')}
+                        />
+                      </div>
+                    </div>
+                  </Surface>
+                </li>
+              );
+            })}
+          </ol>
         </Section>
 
         {/* Upcoming exams */}

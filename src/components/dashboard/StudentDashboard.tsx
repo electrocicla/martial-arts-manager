@@ -52,7 +52,7 @@ export default function StudentDashboard() {
     <div className="bg-gray-900 mobile-dashboard md:pb-4 md:pt-4">
       <DashboardHeader greeting={greeting} />
 
-      <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto space-y-8 mobile-dashboard-content dashboard-content">
+      <div className="px-4 sm:px-6 pt-3 pb-6 sm:pt-4 max-w-7xl mx-auto space-y-8 mobile-dashboard-content dashboard-content">
 
         {/* Attendance quick access (replaces redundant dashboard QR scanner) */}
         <Card className="border border-red-500/20 bg-gradient-to-br from-red-900/20 to-gray-900">

@@ -11,14 +11,21 @@
  */
 
 import { useCallback, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import PaymentTabs, { type PaymentTabId } from './payments/PaymentTabs';
 import PaymentManageView from './payments/manage/PaymentManageView';
 import PaymentHistoryView from './payments/history/PaymentHistoryView';
 import OverdueStudentsView from './payments/overdue/OverdueStudentsView';
+import { useAuth } from '../context/AuthContext';
 
 export default function PaymentManager() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<PaymentTabId>('manage');
   const [overdueCount, setOverdueCount] = useState<number>(0);
+
+  if (user?.role === 'student') {
+    return <Navigate to="/my-payments" replace />;
+  }
 
   const handleOverdueCountChange = useCallback((count: number) => {
     setOverdueCount(count);

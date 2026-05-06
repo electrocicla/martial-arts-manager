@@ -10,13 +10,13 @@ export default function DashboardHeader({ greeting }: DashboardHeaderProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-base-200/50 to-base-300/30 px-4 sm:px-6 pt-4 pb-6">
+    <div className="relative overflow-hidden bg-gradient-to-br from-base-200/50 to-base-300/30 px-4 sm:px-6 pt-3 pb-3 sm:pt-4 sm:pb-4">
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
       <div className="absolute top-0 right-0 w-32 sm:w-48 h-32 sm:h-48 bg-primary/10 rounded-full filter blur-2xl" />
       <div className="absolute bottom-0 left-0 w-40 sm:w-64 h-40 sm:h-64 bg-secondary/10 rounded-full filter blur-2xl" />
 
       <div className="relative max-w-7xl mx-auto">
-        <div className="mb-6">
+        <div className="mb-2 sm:mb-3">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-base-content leading-tight">
             {greeting}, <span className="text-primary font-black">{user?.name?.split(' ')[0] || 'User'}!</span>
           </h1>
