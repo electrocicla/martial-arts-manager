@@ -82,9 +82,9 @@
   --color-border:        oklch(0.82 0.012 30 / 0.8);
   --color-border-strong: oklch(0.68 0.020 30);
   --color-ink-primary:   oklch(0.20 0.020 25);   /* deep sumi-e ink */
-  --color-ink-secondary: oklch(0.36 0.015 25);
-  --color-ink-muted:     oklch(0.50 0.012 25);
-  --color-ink-disabled:  oklch(0.70 0.008 25);
+  --color-ink-secondary: oklch(0.32 0.018 25);
+  --color-ink-muted:     oklch(0.42 0.016 25);
+  --color-ink-disabled:  oklch(0.62 0.010 25);
   --shadow-card: 0 1px 0 oklch(1 0 0 / 0.6) inset, 0 4px 16px -8px oklch(0.40 0.05 25 / 0.18);
   --shadow-pop:  0 1px 0 oklch(1 0 0 / 0.7) inset, 0 12px 32px -12px oklch(0.40 0.05 25 / 0.24);
   --shadow-strike: 0 0 0 1px var(--color-strike-500), 0 8px 24px -8px oklch(0.62 0.24 25 / 0.35);
@@ -1084,6 +1084,40 @@ p, span, div {
   & .hover\:text-red-400:hover {
     color: var(--color-strike-800);
   }
+
+  /* ---- Colored badge/tag/text utilities — dark UI ships them as 200/300/400
+         (very light hues meant for dark backgrounds). On light bg they vanish.
+         Map the whole accent ladder to readable -700/-800 equivalents. ---- */
+  & .text-yellow-200,  & .text-yellow-300,  & .text-yellow-400  { color: oklch(0.50 0.16 85)  !important; }
+  & .text-amber-200,   & .text-amber-300,   & .text-amber-400   { color: oklch(0.50 0.17 70)  !important; }
+  & .text-orange-200,  & .text-orange-300,  & .text-orange-400  { color: oklch(0.52 0.18 50)  !important; }
+  & .text-emerald-200, & .text-emerald-300, & .text-emerald-400 { color: oklch(0.48 0.14 160) !important; }
+  & .text-green-200,   & .text-green-300,   & .text-green-400   { color: oklch(0.48 0.14 145) !important; }
+  & .text-teal-200,    & .text-teal-300,    & .text-teal-400    { color: oklch(0.48 0.12 190) !important; }
+  & .text-cyan-200,    & .text-cyan-300,    & .text-cyan-400    { color: oklch(0.50 0.12 215) !important; }
+  & .text-sky-200,     & .text-sky-300,     & .text-sky-400     { color: oklch(0.50 0.14 230) !important; }
+  & .text-blue-200,    & .text-blue-300,    & .text-blue-400    { color: oklch(0.50 0.18 255) !important; }
+  & .text-indigo-200,  & .text-indigo-300,  & .text-indigo-400  { color: oklch(0.46 0.20 275) !important; }
+  & .text-violet-200,  & .text-violet-300,  & .text-violet-400  { color: oklch(0.48 0.22 295) !important; }
+  & .text-purple-200,  & .text-purple-300,  & .text-purple-400  { color: oklch(0.48 0.20 305) !important; }
+  & .text-fuchsia-200, & .text-fuchsia-300, & .text-fuchsia-400 { color: oklch(0.50 0.22 330) !important; }
+  & .text-pink-200,    & .text-pink-300,    & .text-pink-400    { color: oklch(0.52 0.20 0)   !important; }
+  & .text-rose-200,    & .text-rose-300,    & .text-rose-400    { color: oklch(0.52 0.22 15)  !important; }
+
+  /* Translucent colored backgrounds keep their hue but get a touch more
+     opacity so they read on the warm canvas. */
+  & [class*="bg-yellow-500\/"],
+  & [class*="bg-amber-500\/"]   { background-color: oklch(0.85 0.12 85 / 0.30) !important; }
+  & [class*="bg-orange-500\/"]  { background-color: oklch(0.85 0.13 50 / 0.28) !important; }
+  & [class*="bg-emerald-500\/"],
+  & [class*="bg-green-500\/"]   { background-color: oklch(0.86 0.10 150 / 0.28) !important; }
+  & [class*="bg-blue-500\/"],
+  & [class*="bg-sky-500\/"]     { background-color: oklch(0.86 0.10 235 / 0.28) !important; }
+  & [class*="bg-indigo-500\/"]  { background-color: oklch(0.85 0.12 275 / 0.28) !important; }
+  & [class*="bg-purple-500\/"],
+  & [class*="bg-violet-500\/"]  { background-color: oklch(0.85 0.13 300 / 0.28) !important; }
+  & [class*="bg-pink-500\/"],
+  & [class*="bg-rose-500\/"]    { background-color: oklch(0.86 0.13 5 / 0.28)   !important; }
 }
 
 /* ============================================
