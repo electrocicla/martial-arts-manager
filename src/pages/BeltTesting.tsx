@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { StudentBeltTesting, AdminBeltTesting } from '../components/belttesting';
+import ReadyStudentsPanel from '../components/belttesting/ReadyStudentsPanel';
 import { useStudents } from '../hooks/useStudents';
 import { useAttendance } from '../hooks/useAttendance';
 import { calculateEligibleStudents } from '../lib/beltTestingUtils';
@@ -204,14 +205,19 @@ function AdminBeltTestingView() {
   const eligibleStudents = calculateEligibleStudents(students, attendance);
 
   return (
-    <AdminBeltTesting
-      exams={exams}
-      eligibleStudents={eligibleStudents}
-      onCreateExam={handleCreateExam}
-      onUpdateExam={handleUpdateExam}
-      onDeleteExam={handleDeleteExam}
-      onAssignStudent={handleAssignStudent}
-    />
+    <div className="min-h-screen bg-base-100">
+      <AdminBeltTesting
+        exams={exams}
+        eligibleStudents={eligibleStudents}
+        onCreateExam={handleCreateExam}
+        onUpdateExam={handleUpdateExam}
+        onDeleteExam={handleDeleteExam}
+        onAssignStudent={handleAssignStudent}
+      />
+      <div className="px-4 sm:px-6 max-w-7xl mx-auto pb-12">
+        <ReadyStudentsPanel students={students} />
+      </div>
+    </div>
   );
 }
 

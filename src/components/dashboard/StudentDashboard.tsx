@@ -2,6 +2,7 @@ import { useStudentDashboardData } from '../../hooks/useStudentDashboardData';
 import { useGreeting } from '../../hooks/useGreeting';
 import { parseLocalDate } from '../../lib/utils';
 import DashboardHeader from './DashboardHeader';
+import StudentBeltProgressionWidget from './StudentBeltProgressionWidget';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Calendar, CreditCard, User, QrCode, ArrowRight, Clock, MapPin, BookOpen, ChevronDown, ChevronUp, GraduationCap } from 'lucide-react';
@@ -147,6 +148,9 @@ export default function StudentDashboard() {
             </div>
           </button>
         </div>
+
+        {/* Belt progression widget */}
+        <StudentBeltProgressionWidget />
 
         {/* Recent Classes */}
         <Card>
