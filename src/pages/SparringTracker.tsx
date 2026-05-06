@@ -305,7 +305,7 @@ export default function SparringTracker() {
                   <li key={student.id}>
                     <Surface variant="raised" radius="md" className="p-4 h-full flex flex-col gap-3">
                       <div className="flex items-center gap-3">
-                        <Avatar src={student.avatar_url} name={student.name} size="md" />
+                        <Avatar src={student.avatar_url} alt={student.name} fallback={(student.name?.[0] ?? '?').toUpperCase()} size="md" />
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-base-content truncate">{student.name}</p>
                           <div className="flex items-center gap-2 text-xs text-base-content/60">

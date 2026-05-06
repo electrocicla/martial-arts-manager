@@ -46,7 +46,8 @@ export interface ProgressionRequirements {
 
 export interface ProgressionProgress {
   currentBelt: string;
-  nextBelt: string | null;
+  /** Optional override; if omitted, derived from the belt ladder. */
+  nextBelt?: string | null;
   discipline: string;
   classesAttended: number;
   sparringSessions: number;

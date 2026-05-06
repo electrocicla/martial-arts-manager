@@ -129,7 +129,7 @@ export default function ReadyStudentsPanel({ students }: ReadyStudentsPanelProps
                     className={`p-4 border ${isReady ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-amber-500/30'}`}
                   >
                     <div className="flex items-start gap-3">
-                      <Avatar src={student.avatar_url} name={student.name} size="md" />
+                      <Avatar src={student.avatar_url} alt={student.name} fallback={(student.name?.[0] ?? '?').toUpperCase()} size="md" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-bold text-base-content truncate">{student.name}</p>
