@@ -23,7 +23,13 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'en',
+    // Default UI language is Spanish; the LanguageDetector below promotes
+    // a previously persisted choice or the user's browser/device language
+    // (en-US -> en, pt-BR -> pt) when supported.
+    fallbackLng: 'es',
+    supportedLngs: ['en', 'es', 'pt'],
+    nonExplicitSupportedLngs: true,
+    load: 'languageOnly',
     debug: import.meta.env.DEV,
 
     interpolation: {
@@ -39,5 +45,14 @@ i18n
       useSuspense: false,
     },
   });
+
+// Keep <html lang> in sync with the active language for SEO and a11y.
+if (typeof document !== 'undefined') {
+  const sync = (lng: string) => {
+    document.documentElement.setAttribute('lang', (lng || 'es').split('-')[0]);
+  };
+  sync(i18n.language);
+  i18n.on('languageChanged', sync);
+}
 
 export default i18n;

@@ -75,40 +75,86 @@ export default {
   daisyui: {
     themes: [
       {
-        martial: {
+        dark: {
           "primary": "#E0022A",
           "primary-focus": "#B90023",
           "primary-content": "#FFFFFF",
-          
+
           "secondary": "#F97316",
           "secondary-focus": "#EA580C",
           "secondary-content": "#FFFFFF",
-          
+
           "accent": "#FCD34D",
           "accent-focus": "#FBBF24",
           "accent-content": "#000000",
-          
+
           "neutral": "#1F2937",
           "neutral-focus": "#111827",
           "neutral-content": "#F3F4F6",
-          
+
           "base-100": "#0F0F0F",
           "base-200": "#1A1A1A",
           "base-300": "#242424",
           "base-content": "#E5E7EB",
-          
+
           "info": "#0EA5E9",
           "info-content": "#FFFFFF",
-          
+
           "success": "#22C55E",
           "success-content": "#FFFFFF",
-          
+
           "warning": "#F59E0B",
           "warning-content": "#000000",
-          
+
           "error": "#DC2626",
           "error-content": "#FFFFFF",
-          
+
+          "--rounded-box": "0.75rem",
+          "--rounded-btn": "0.5rem",
+          "--rounded-badge": "1.9rem",
+          "--animation-btn": "0.25s",
+          "--animation-input": "0.2s",
+          "--btn-focus-scale": "0.98",
+          "--border-btn": "2px",
+          "--tab-border": "2px",
+          "--tab-radius": "0.5rem",
+        },
+      },
+      {
+        light: {
+          "primary": "#E0022A",
+          "primary-focus": "#B90023",
+          "primary-content": "#FFFFFF",
+
+          "secondary": "#F97316",
+          "secondary-focus": "#EA580C",
+          "secondary-content": "#FFFFFF",
+
+          "accent": "#F59E0B",
+          "accent-focus": "#D97706",
+          "accent-content": "#1F2937",
+
+          "neutral": "#E5E7EB",
+          "neutral-focus": "#D1D5DB",
+          "neutral-content": "#1F2937",
+
+          "base-100": "#FAFAFA",
+          "base-200": "#F3F4F6",
+          "base-300": "#E5E7EB",
+          "base-content": "#111827",
+
+          "info": "#0284C7",
+          "info-content": "#FFFFFF",
+
+          "success": "#16A34A",
+          "success-content": "#FFFFFF",
+
+          "warning": "#D97706",
+          "warning-content": "#FFFFFF",
+
+          "error": "#DC2626",
+          "error-content": "#FFFFFF",
+
           "--rounded-box": "0.75rem",
           "--rounded-btn": "0.5rem",
           "--rounded-badge": "1.9rem",
@@ -121,7 +167,7 @@ export default {
         },
       },
     ],
-    darkTheme: "martial",
+    darkTheme: "dark",
     base: true,
     styled: true,
     utils: true,

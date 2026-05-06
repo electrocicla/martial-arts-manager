@@ -62,6 +62,7 @@ export interface Student {
   belt: string;
   discipline: string;
   disciplines?: { discipline: string; belt: string }[]; // New array format
+  preferred_disciplines?: string[];
   join_date: string;
   date_of_birth?: string;
   emergency_contact_name?: string;

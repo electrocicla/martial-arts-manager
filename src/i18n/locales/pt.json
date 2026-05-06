@@ -110,6 +110,9 @@
       "personalInformation": "Informações pessoais",
       "emailSupportNote": "Alterações de e-mail exigem suporte da equipe.",
       "emergencyNamePlaceholder": "Nome do contato de emergência",
+      "disciplineSelection": "Seleção de modalidade",
+      "disciplineSelectionDescription": "Escolha as modalidades que você treina ou quer que a equipe considere. Mudanças de faixa e graduação seguem gerenciadas pelo instrutor.",
+      "noDisciplineSelected": "Selecione pelo menos uma modalidade para que a equipe entenda seu foco de treino.",
       "trainingNotes": "Notas de treino",
       "trainingNotesPlaceholder": "Alergias, lesões, objetivos ou outros detalhes que a equipe deve saber.",
       "success": "Perfil atualizado com sucesso.",
@@ -151,8 +154,8 @@
           "description": "Deve estar disponível antes de treinos de maior risco."
         },
         "training": {
-          "label": "Atribuição de treino",
-          "description": "Modalidade e graduação são mantidas pela equipe."
+          "label": "Perfil de treino",
+          "description": "Sua seleção de modalidades ajuda a equipe a planejar aulas enquanto a graduação segue gerenciada por instrutores."
         }
       }
     },

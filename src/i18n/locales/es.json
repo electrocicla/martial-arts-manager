@@ -110,6 +110,9 @@
       "personalInformation": "Información personal",
       "emailSupportNote": "Los cambios de correo requieren soporte del equipo.",
       "emergencyNamePlaceholder": "Nombre del contacto de emergencia",
+      "disciplineSelection": "Selección de disciplina",
+      "disciplineSelectionDescription": "Elige las disciplinas que entrenas o que quieres que el equipo tenga en cuenta. Los cambios de cinturón y rango siguen bajo gestión del instructor.",
+      "noDisciplineSelected": "Selecciona al menos una disciplina para que el equipo entienda tu enfoque de entrenamiento.",
       "trainingNotes": "Notas de entrenamiento",
       "trainingNotesPlaceholder": "Alergias, lesiones, objetivos u otros detalles que el equipo deba saber.",
       "success": "Perfil actualizado correctamente.",
@@ -151,8 +154,8 @@
           "description": "Debe estar disponible antes de entrenamientos de mayor riesgo."
         },
         "training": {
-          "label": "Asignación de entrenamiento",
-          "description": "La disciplina y el rango los mantiene el equipo."
+          "label": "Perfil de entrenamiento",
+          "description": "Tu selección de disciplinas ayuda al equipo a planificar clases mientras el rango sigue gestionado por instructores."
         }
       }
     },

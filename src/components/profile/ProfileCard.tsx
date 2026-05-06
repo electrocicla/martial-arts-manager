@@ -83,8 +83,8 @@ export default function ProfileCard({
           <h2 className="text-2xl font-bold text-white mb-1">{name}</h2>
           {email && <div className="mb-3 max-w-full truncate text-sm text-gray-400">{email}</div>}
           <div className="text-gray-400 mb-4">
-            {disciplines.length > 0 ? disciplines.map((d) => (
-              <div key={d.id}>{d.discipline} - {d.belt}</div>
+            {disciplines.length > 0 ? disciplines.map((disciplineEntry) => (
+              <div key={disciplineEntry.id}>{disciplineEntry.discipline} - {disciplineEntry.belt}</div>
             )) : t('profile.noDisciplinesSet', 'No disciplines set')}
           </div>
 

@@ -5,7 +5,9 @@ import { z } from 'zod';
 import {
   AlertCircle,
   Calendar,
+  CheckCircle2,
   ClipboardCheck,
+  Circle,
   Image as ImageIcon,
   Loader2,
   Mail,
@@ -16,12 +18,15 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useClassMetadata } from '../hooks/useClassMetadata';
 import { useProfile } from '../hooks/useProfile';
 import { apiClient } from '../lib/api-client';
 import { prepareAvatarFile } from '../lib/avatarUpload';
+import { DISCIPLINES } from '../lib/constants';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
+import type { Student } from '../types';
 import ProfileCard from '../components/profile/ProfileCard';
 import ProfileCompletionPanel from '../components/profile/ProfileCompletionPanel';
 import type { ProfileCompletionItem } from '../components/profile/ProfileCompletionPanel';
@@ -56,14 +61,53 @@ const toDisciplineEntry = (entry: { discipline: string; belt: string }): Trainin
 
 const hasText = (value: string | undefined): boolean => Boolean(value?.trim());
 
+const toUniqueStrings = (values: string[]): string[] => {
+  const uniqueValues = new Set<string>();
+  values.forEach((value) => {
+    const trimmed = value.trim();
+    if (trimmed.length > 0) {
+      uniqueValues.add(trimmed);
+    }
+  });
+
+  return Array.from(uniqueValues);
+};
+
+const createTrainingEntries = (profile: Student): TrainingDisciplineEntry[] => {
+  const hasAssignedTraining = profile.discipline && profile.belt && profile.discipline !== 'Not assigned' && profile.belt !== 'Not assigned';
+  const initialDisciplines = profile.disciplines && profile.disciplines.length > 0
+    ? profile.disciplines
+    : (hasAssignedTraining ? [{ discipline: profile.discipline, belt: profile.belt }] : []);
+
+  return initialDisciplines.map(toDisciplineEntry);
+};
+
+const createProfileFormDefaults = (profile: Student): ProfileFormData => ({
+  name: profile.name,
+  phone: profile.phone || '',
+  date_of_birth: profile.date_of_birth || '',
+  emergency_contact_name: profile.emergency_contact_name || '',
+  emergency_contact_phone: profile.emergency_contact_phone || '',
+  notes: profile.notes || '',
+});
+
+const createPreferredDisciplines = (preferredDisciplines: string[] | undefined, trainingEntries: TrainingDisciplineEntry[]): string[] => {
+  const preferredValues = toUniqueStrings(preferredDisciplines ?? []);
+  if (preferredValues.length > 0) return preferredValues;
+
+  return toUniqueStrings(trainingEntries.map((entry) => entry.discipline));
+};
+
 export default function StudentProfile() {
   const { profile, isLoading, error: loadError, refresh } = useProfile();
   const { t } = useTranslation();
   const { user, refreshAuth, accessToken } = useAuth();
+  const { disciplines: metadataDisciplines } = useClassMetadata();
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [disciplines, setDisciplines] = useState<TrainingDisciplineEntry[]>([]);
+  const [selectedDisciplines, setSelectedDisciplines] = useState<string[]>([]);
   const [avatarUploading, setAvatarUploading] = useState(false);
 
   const {
@@ -78,25 +122,26 @@ export default function StudentProfile() {
   useEffect(() => {
     if (!profile) return;
 
-    const hasAssignedTraining = profile.discipline && profile.belt && profile.discipline !== 'Not assigned' && profile.belt !== 'Not assigned';
-    const initialDisciplines = profile.disciplines && profile.disciplines.length > 0
-      ? profile.disciplines
-      : (hasAssignedTraining ? [{ discipline: profile.discipline, belt: profile.belt }] : []);
-
-    setDisciplines(initialDisciplines.map(toDisciplineEntry));
-    reset({
-      name: profile.name,
-      phone: profile.phone || '',
-      date_of_birth: profile.date_of_birth || '',
-      emergency_contact_name: profile.emergency_contact_name || '',
-      emergency_contact_phone: profile.emergency_contact_phone || '',
-      notes: profile.notes || '',
-    });
+    const trainingEntries = createTrainingEntries(profile);
+    setDisciplines(trainingEntries);
+    setSelectedDisciplines(createPreferredDisciplines(profile.preferred_disciplines, trainingEntries));
+    reset(createProfileFormDefaults(profile));
   }, [profile, reset]);
+
+  const disciplineOptions = useMemo(
+    () => toUniqueStrings([
+      ...metadataDisciplines,
+      ...DISCIPLINES,
+      ...disciplines.map((entry) => entry.discipline),
+      ...selectedDisciplines,
+    ]),
+    [disciplines, metadataDisciplines, selectedDisciplines]
+  );
 
   const completionItems = useMemo<ProfileCompletionItem[]>(() => {
     const emergencyComplete = hasText(profile?.emergency_contact_name) && hasText(profile?.emergency_contact_phone);
     const trainingComplete = disciplines.some((discipline) => hasText(discipline.discipline) && hasText(discipline.belt));
+    const disciplineSelectionComplete = selectedDisciplines.some((discipline) => hasText(discipline));
 
     return [
       {
@@ -136,13 +181,13 @@ export default function StudentProfile() {
       },
       {
         id: 'training',
-        label: t('profileV2.readiness.items.training.label', 'Training assignment'),
-        description: t('profileV2.readiness.items.training.description', 'Discipline and rank are maintained by staff.'),
-        complete: trainingComplete,
+        label: t('profileV2.readiness.items.training.label', 'Training profile'),
+        description: t('profileV2.readiness.items.training.description', 'Your discipline selection helps staff plan classes while rank stays instructor-managed.'),
+        complete: trainingComplete || disciplineSelectionComplete,
         icon: ClipboardCheck,
       },
     ];
-  }, [disciplines, profile, t]);
+  }, [disciplines, profile, selectedDisciplines, t]);
 
   const completionPercentage = useMemo(() => {
     const completedCount = completionItems.filter((item) => item.complete).length;
@@ -155,7 +200,10 @@ export default function StudentProfile() {
     setSaveSuccess(false);
 
     try {
-      const response = await apiClient.put<{ success: boolean }>('/api/account/profile', data);
+      const response = await apiClient.put<{ success: boolean }>('/api/account/profile', {
+        ...data,
+        preferred_disciplines: selectedDisciplines,
+      });
       if (!response.success) {
         throw new Error(response.error || t('profileV2.errors.updateFailed', 'Failed to update profile'));
       }
@@ -169,6 +217,26 @@ export default function StudentProfile() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDisciplineToggle = (discipline: string) => {
+    setSelectedDisciplines((currentDisciplines) => (
+      currentDisciplines.includes(discipline)
+        ? currentDisciplines.filter((currentDiscipline) => currentDiscipline !== discipline)
+        : [...currentDisciplines, discipline]
+    ));
+  };
+
+  const handleCancel = () => {
+    if (!profile) {
+      reset();
+      setSelectedDisciplines([]);
+      return;
+    }
+
+    const trainingEntries = createTrainingEntries(profile);
+    reset(createProfileFormDefaults(profile));
+    setSelectedDisciplines(createPreferredDisciplines(profile.preferred_disciplines, trainingEntries));
   };
 
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -347,6 +415,48 @@ export default function StudentProfile() {
                   </div>
 
                   <div className="border-t border-gray-700 pt-6">
+                    <div className="mb-4 flex items-start gap-3">
+                      <ClipboardCheck className="mt-0.5 h-5 w-5 text-red-400" />
+                      <div>
+                        <h3 id="profile-discipline-selection" className="text-lg font-medium text-white">
+                          {t('profileV2.form.disciplineSelection', 'Discipline selection')}
+                        </h3>
+                        <p className="text-sm text-gray-400">
+                          {t('profileV2.form.disciplineSelectionDescription', 'Choose the disciplines you train or want staff to keep in mind. Belt and rank changes stay instructor-managed.')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-labelledby="profile-discipline-selection">
+                      {disciplineOptions.map((discipline) => {
+                        const selected = selectedDisciplines.includes(discipline);
+                        return (
+                          <button
+                            key={discipline}
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={() => handleDisciplineToggle(discipline)}
+                            className={`flex min-h-12 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors ${
+                              selected
+                                ? 'border-red-500/60 bg-red-600/20 text-red-100'
+                                : 'border-gray-700 bg-gray-900/40 text-gray-300 hover:border-gray-600 hover:bg-gray-800'
+                            }`}
+                          >
+                            {selected ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <Circle className="h-4 w-4 shrink-0 text-gray-500" />}
+                            <span>{discipline}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {selectedDisciplines.length === 0 && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        {t('profileV2.form.noDisciplineSelected', 'Select at least one discipline so staff can understand your training focus.')}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="border-t border-gray-700 pt-6">
                     <h3 className="mb-4 flex items-center gap-2 text-lg font-medium text-white">
                       <Shield className="h-5 w-5 text-yellow-400" />
                       {t('profile.emergencyContact', 'Emergency contact')}
@@ -416,7 +526,7 @@ export default function StudentProfile() {
                         </>
                       )}
                     </Button>
-                    <Button type="button" variant="outline" onClick={() => reset()} fullWidth>
+                    <Button type="button" variant="outline" onClick={handleCancel} fullWidth>
                       {t('profile.cancel', 'Cancel')}
                     </Button>
                   </div>

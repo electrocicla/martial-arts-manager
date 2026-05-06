@@ -166,8 +166,8 @@ html {
 
 body {
   overscroll-behavior: none;
-  background-color: #000000; /* Pure black for martial arts theme */
-  color: #f3f4f6; /* gray-100 */
+  background-color: var(--color-surface-0);
+  color: var(--color-ink-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-feature-settings: 'cv11', 'ss01';
   font-variant-numeric: tabular-nums;

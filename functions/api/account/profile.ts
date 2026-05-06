@@ -11,11 +11,14 @@ interface AccountProfileExtras {
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   notes?: string;
+  preferred_disciplines?: string[];
 }
 
 interface AccountProfilePayload extends AccountProfileExtras {
   name?: string;
 }
+
+type AccountProfileStringField = Exclude<keyof AccountProfilePayload, 'preferred_disciplines'>;
 
 interface DisciplineAssignment {
   discipline: string;
@@ -33,9 +36,24 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-function readOptionalString(record: Record<string, unknown>, key: keyof AccountProfilePayload): string | undefined {
+function readOptionalString(record: Record<string, unknown>, key: AccountProfileStringField): string | undefined {
   const value = record[key];
   return typeof value === 'string' ? value : undefined;
+}
+
+function normalizeStringList(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+
+  const values = new Set<string>();
+  value.forEach((item) => {
+    if (typeof item !== 'string') return;
+    const trimmed = item.trim();
+    if (trimmed.length > 0 && trimmed.length <= 80) {
+      values.add(trimmed);
+    }
+  });
+
+  return Array.from(values).slice(0, 20);
 }
 
 function parsePayload(value: unknown): AccountProfilePayload | null {
@@ -48,6 +66,7 @@ function parsePayload(value: unknown): AccountProfilePayload | null {
     emergency_contact_name: readOptionalString(value, 'emergency_contact_name'),
     emergency_contact_phone: readOptionalString(value, 'emergency_contact_phone'),
     notes: readOptionalString(value, 'notes'),
+    preferred_disciplines: normalizeStringList(value.preferred_disciplines),
   };
 }
 
@@ -64,6 +83,7 @@ function parseSettingsExtras(value: string | undefined): AccountProfileExtras {
       emergency_contact_name: readOptionalString(parsed, 'emergency_contact_name'),
       emergency_contact_phone: readOptionalString(parsed, 'emergency_contact_phone'),
       notes: readOptionalString(parsed, 'notes'),
+      preferred_disciplines: normalizeStringList(parsed.preferred_disciplines) ?? [],
     };
   } catch {
     return {};
@@ -134,6 +154,7 @@ function createAccountSettingsUpsert(env: Env, ownerId: string, payload: Account
     emergency_contact_name: payload.emergency_contact_name?.trim() ?? '',
     emergency_contact_phone: payload.emergency_contact_phone?.trim() ?? '',
     notes: payload.notes?.trim() ?? '',
+    preferred_disciplines: payload.preferred_disciplines ?? [],
   });
 
   return env.DB.prepare(
@@ -159,11 +180,17 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         return jsonResponse({ error: 'Student profile not found' }, { status: 404 });
       }
 
+      const settingsRow = await env.DB.prepare('SELECT value FROM settings WHERE owner_id = ? AND section = ? LIMIT 1')
+        .bind(auth.user.id, ACCOUNT_PROFILE_SECTION)
+        .first<{ value: string }>();
+      const extras = parseSettingsExtras(settingsRow?.value);
+
       return jsonResponse({
         ...student,
         role: auth.user.role,
         avatar_url: normalizeAvatarUrl(student.avatar_url),
         disciplines: parseDisciplines(student.disciplines),
+        preferred_disciplines: extras.preferred_disciplines ?? [],
       });
     }
 
@@ -222,9 +249,9 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (auth.user.student_id) {
       const studentUpdate = createStudentUpdate(env, auth.user.student_id, payload, now);
       if (studentUpdate) statements.push(studentUpdate);
-    } else {
-      statements.push(createAccountSettingsUpsert(env, auth.user.id, payload, now));
     }
+
+    statements.push(createAccountSettingsUpsert(env, auth.user.id, payload, now));
 
     if (statements.length > 0) {
       await env.DB.batch(statements);

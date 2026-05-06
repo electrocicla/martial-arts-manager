@@ -110,6 +110,9 @@
       "personalInformation": "Personal information",
       "emailSupportNote": "Email changes require staff support.",
       "emergencyNamePlaceholder": "Emergency contact name",
+      "disciplineSelection": "Discipline selection",
+      "disciplineSelectionDescription": "Choose the disciplines you train or want staff to keep in mind. Belt and rank changes stay instructor-managed.",
+      "noDisciplineSelected": "Select at least one discipline so staff can understand your training focus.",
       "trainingNotes": "Training notes",
       "trainingNotesPlaceholder": "Allergies, injuries, goals, or other details staff should know.",
       "success": "Profile updated successfully.",
@@ -151,8 +154,8 @@
           "description": "Must be available before higher-risk training sessions."
         },
         "training": {
-          "label": "Training assignment",
-          "description": "Discipline and rank are maintained by staff."
+          "label": "Training profile",
+          "description": "Your discipline selection helps staff plan classes while rank stays instructor-managed."
         }
       }
     },
