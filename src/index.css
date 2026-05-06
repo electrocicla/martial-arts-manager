@@ -1074,6 +1074,55 @@ p, span, div {
     --tw-gradient-to: var(--color-surface-1) !important;
   }
 
+  /* ---- Gradient stops with opacity suffix (from-gray-900/80, etc.).
+         Catches the StudentClasses StatCard, CalendarView shell,
+         StudentBeltProgressionWidget, alert banners, etc. ---- */
+  & [class*="from-black\/"],
+  & [class*="from-gray-900\/"],
+  & [class*="from-slate-900\/"] {
+    --tw-gradient-from: oklch(0.985 0.004 30 / 0.85) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, transparent) !important;
+  }
+  & [class*="from-gray-800\/"],
+  & [class*="from-slate-800\/"] {
+    --tw-gradient-from: oklch(0.965 0.006 30 / 0.85) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, transparent) !important;
+  }
+  & [class*="via-black\/"],
+  & [class*="via-gray-900\/"] {
+    --tw-gradient-via: oklch(0.985 0.004 30 / 0.85) !important;
+  }
+  & [class*="via-gray-800\/"] {
+    --tw-gradient-via: oklch(0.945 0.008 30 / 0.85) !important;
+  }
+  & [class*="to-black\/"],
+  & [class*="to-gray-900\/"],
+  & [class*="to-gray-950\/"],
+  & [class*="to-slate-900\/"] {
+    --tw-gradient-to: oklch(0.985 0.004 30 / 0.85) !important;
+  }
+  & [class*="to-gray-800\/"],
+  & [class*="to-slate-800\/"] {
+    --tw-gradient-to: oklch(0.965 0.006 30 / 0.85) !important;
+  }
+
+  /* ---- Colored dark gradient stops (from-red-900/20, via-amber-900/20
+         etc. used by the missed-class banner and belt progression widget). ---- */
+  & [class*="from-red-900\/"],   & [class*="from-rose-900\/"],   & [class*="from-red-950\/"]   { --tw-gradient-from: oklch(0.92 0.05 25 / 0.55) !important; }
+  & [class*="from-amber-900\/"], & [class*="from-orange-900\/"], & [class*="from-orange-950\/"] { --tw-gradient-from: oklch(0.93 0.06 70 / 0.55) !important; }
+  & [class*="from-emerald-900\/"], & [class*="from-green-900\/"]                              { --tw-gradient-from: oklch(0.93 0.05 150 / 0.55) !important; }
+  & [class*="from-blue-900\/"],  & [class*="from-indigo-900\/"], & [class*="from-sky-900\/"]   { --tw-gradient-from: oklch(0.93 0.05 255 / 0.55) !important; }
+  & [class*="from-purple-900\/"],& [class*="from-violet-900\/"]                                { --tw-gradient-from: oklch(0.93 0.05 295 / 0.55) !important; }
+
+  & [class*="via-red-900\/"],    & [class*="via-rose-900\/"]                                   { --tw-gradient-via: oklch(0.92 0.05 25 / 0.55) !important; }
+  & [class*="via-amber-900\/"],  & [class*="via-orange-900\/"]                                 { --tw-gradient-via: oklch(0.93 0.06 70 / 0.55) !important; }
+
+  & [class*="to-red-900\/"],     & [class*="to-rose-900\/"],     & [class*="to-red-950\/"]     { --tw-gradient-to: oklch(0.92 0.05 25 / 0.55) !important; }
+  & [class*="to-amber-900\/"],   & [class*="to-orange-900\/"],   & [class*="to-orange-950\/"]  { --tw-gradient-to: oklch(0.93 0.06 70 / 0.55) !important; }
+  & [class*="to-emerald-900\/"]                                                                  { --tw-gradient-to: oklch(0.93 0.05 150 / 0.55) !important; }
+  & [class*="to-blue-900\/"],    & [class*="to-indigo-900\/"],   & [class*="to-sky-900\/"]     { --tw-gradient-to: oklch(0.93 0.05 255 / 0.55) !important; }
+  & [class*="to-purple-900\/"],  & [class*="to-violet-900\/"]                                  { --tw-gradient-to: oklch(0.93 0.05 295 / 0.55) !important; }
+
   /* ---- Selected/illegible light-red text on light bg — darken to brand red ---- */
   & .text-red-200,
   & .text-red-300,
