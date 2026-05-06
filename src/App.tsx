@@ -25,6 +25,7 @@ const AttendanceManager = lazy(() => import('./components/AttendanceManager'));
 const Attendance = lazy(() => import('./pages/Attendance'));
 const StudentAttendance = lazy(() => import('./pages/StudentAttendance'));
 const BeltTesting = lazy(() => import('./pages/BeltTesting'));
+const SparringTracker = lazy(() => import('./pages/SparringTracker'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const StudentProfile = lazy(() => import('./pages/StudentProfile'));
 const StudentPayments = lazy(() => import('./pages/StudentPayments'));
@@ -64,6 +65,7 @@ function AppContent() {
             <Route path="/attendance/:classId" element={<AttendanceManager />} />
             <Route path="/my-attendance" element={<StudentAttendance />} />
             <Route path="/belt-testing" element={<BeltTesting />} />
+            <Route path="/sparring-tracker" element={<SparringTracker />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/profile" element={<StudentProfile />} />
             <Route path="/my-payments" element={<StudentPayments />} />

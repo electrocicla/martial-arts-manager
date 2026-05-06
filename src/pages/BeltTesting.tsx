@@ -3,8 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { StudentBeltTesting, AdminBeltTesting } from '../components/belttesting';
 import { useStudents } from '../hooks/useStudents';
 import { useAttendance } from '../hooks/useAttendance';
-import { calculateEligibleStudents, getNextBelt, getRequiredClasses } from '../lib/beltTestingUtils';
+import { calculateEligibleStudents } from '../lib/beltTestingUtils';
 import { apiClient } from '../lib/api-client';
+import { progressionService } from '../services/progression.service';
+import type { ProgressionEvaluation } from '../lib/beltProgression';
 import type { Student } from '../types/index';
 
 interface BeltExam {
@@ -46,16 +48,16 @@ interface ExamAssignment {
 function StudentBeltTestingView({ studentId }: { studentId: string }) {
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [assignments, setAssignments] = useState<ExamAssignment[]>([]);
+  const [progression, setProgression] = useState<ProgressionEvaluation | null>(null);
   const [loading, setLoading] = useState(true);
-  const [attendanceCount, setAttendanceCount] = useState(0);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [profileRes, assignmentsRes, attendanceRes] = await Promise.all([
+        const [profileRes, assignmentsRes, progressionRes] = await Promise.all([
           apiClient.get<{ student: Student }>(`/api/students/${studentId}`),
           apiClient.get<ExamAssignment[]>('/api/belt-exams/assignments'),
-          apiClient.get<{ stats: { attended: number } }>('/api/student/attendance'),
+          progressionService.getMyProgression(),
         ]);
         if (profileRes.success && profileRes.data) {
           setCurrentStudent(profileRes.data.student);
@@ -63,8 +65,8 @@ function StudentBeltTestingView({ studentId }: { studentId: string }) {
         if (assignmentsRes.success && assignmentsRes.data) {
           setAssignments(assignmentsRes.data);
         }
-        if (attendanceRes.success && attendanceRes.data?.stats) {
-          setAttendanceCount(attendanceRes.data.stats.attended);
+        if (progressionRes.success && progressionRes.data) {
+          setProgression(progressionRes.data.progression);
         }
       } catch (error) {
         console.error('Failed to load student belt testing data:', error);
@@ -93,20 +95,12 @@ function StudentBeltTestingView({ studentId }: { studentId: string }) {
     );
   }
 
-  const requiredClasses = getRequiredClasses(currentStudent.belt);
-  const nextBelt = getNextBelt(currentStudent.belt, currentStudent.discipline);
-
-  const studentProgress = {
-    currentBelt: currentStudent.belt,
-    classesAttended: attendanceCount,
-    requiredClasses,
-    nextBelt,
-  };
-
   return (
     <StudentBeltTesting
+      studentName={currentStudent.name}
+      discipline={currentStudent.discipline}
       assignments={assignments}
-      studentProgress={studentProgress}
+      progression={progression}
     />
   );
 }

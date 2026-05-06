@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Home,
   Settings,
+  Swords,
   Users,
   User
 } from 'lucide-react';
@@ -72,6 +73,14 @@ export const navigationItems: NavigationItem[] = [
     icon: Award,
     color: 'text-yellow-500',
     roles: ['admin', 'instructor', 'student']
+  },
+  {
+    id: 'sparring-tracker',
+    nameKey: 'nav.sparringTracker',
+    href: '/sparring-tracker',
+    icon: Swords,
+    color: 'text-amber-500',
+    roles: ['admin', 'instructor']
   },
   {
     id: 'students',
