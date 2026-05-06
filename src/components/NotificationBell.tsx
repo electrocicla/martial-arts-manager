@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { usePolling } from '../context/PollingContext';
 import { IconButton } from './ui/IconButton';
 import { Button } from './ui/Button';
+import PaymentConfirmationCard from './PaymentConfirmationCard';
 
 export default function NotificationBell() {
   const { t } = useTranslation();
@@ -59,11 +60,26 @@ export default function NotificationBell() {
   };
 
   const markAllAsRead = async () => {
-    const unreadNotifications = notifications.filter(n => n.read === 0);
-    
+    const unreadNotifications = notifications.filter(
+      (n) =>
+        n.read === 0 &&
+        !(n.requires_confirmation === 1 && !n.confirmed_at),
+    );
+
     for (const notification of unreadNotifications) {
       await markAsRead(notification.id);
     }
+  };
+
+  const handleConfirmed = (notificationId: string) => {
+    setNotifications((prev) =>
+      prev.map((n) =>
+        n.id === notificationId
+          ? { ...n, read: 1, confirmed_at: new Date().toISOString() }
+          : n,
+      ),
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
   };
 
   if (!user) return null;
@@ -137,50 +153,68 @@ export default function NotificationBell() {
               </div>
             ) : (
               <ul className="menu p-2">
-                {notifications.map((notification) => (
-                  <li key={notification.id}>
-                    <div
-                      className={`flex items-start gap-3 p-3 rounded-xl ${
-                        notification.read === 0
-                          ? 'bg-primary/10 hover:bg-primary/20'
-                          : 'hover:bg-base-300'
-                      }`}
-                    >
-                      <div className="flex-1">
-                        <p className={`text-sm ${notification.read === 0 ? 'font-semibold' : ''}`}>
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-base-content/60 mt-1">
-                          {new Date(notification.created_at).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="flex gap-1">
-                        {notification.read === 0 && (
+                {notifications.map((notification) => {
+                  const isPaymentPending =
+                    notification.action_type === 'payment_pending' &&
+                    notification.requires_confirmation === 1 &&
+                    !notification.confirmed_at;
+
+                  if (isPaymentPending) {
+                    return (
+                      <li key={notification.id}>
+                        <PaymentConfirmationCard
+                          notification={notification}
+                          onConfirmed={handleConfirmed}
+                        />
+                      </li>
+                    );
+                  }
+
+                  return (
+                    <li key={notification.id}>
+                      <div
+                        className={`flex items-start gap-3 p-3 rounded-xl ${
+                          notification.read === 0
+                            ? 'bg-primary/10 hover:bg-primary/20'
+                            : 'hover:bg-base-300'
+                        }`}
+                      >
+                        <div className="flex-1">
+                          <p className={`text-sm ${notification.read === 0 ? 'font-semibold' : ''}`}>
+                            {notification.message}
+                          </p>
+                          <p className="text-xs text-base-content/60 mt-1">
+                            {new Date(notification.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="flex gap-1">
+                          {notification.read === 0 && (
+                            <IconButton
+                              onClick={() => markAsRead(notification.id)}
+                              variant="ghost"
+                              size="xs"
+                              shape="circle"
+                              aria-label={t('notifications.markRead', 'Mark as read')}
+                              title={t('notifications.markRead', 'Mark as read')}
+                            >
+                              <Check className="w-4 h-4" />
+                            </IconButton>
+                          )}
                           <IconButton
-                            onClick={() => markAsRead(notification.id)}
+                            onClick={() => deleteNotification(notification.id)}
                             variant="ghost"
                             size="xs"
                             shape="circle"
-                            aria-label={t('notifications.markRead', 'Mark as read')}
-                            title={t('notifications.markRead', 'Mark as read')}
+                            aria-label={t('notifications.delete', 'Delete')}
+                            title={t('notifications.delete', 'Delete')}
                           >
-                            <Check className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" />
                           </IconButton>
-                        )}
-                        <IconButton
-                          onClick={() => deleteNotification(notification.id)}
-                          variant="ghost"
-                          size="xs"
-                          shape="circle"
-                          aria-label={t('notifications.delete', 'Delete')}
-                          title={t('notifications.delete', 'Delete')}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </IconButton>
+                        </div>
                       </div>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>

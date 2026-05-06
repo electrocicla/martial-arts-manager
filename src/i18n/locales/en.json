@@ -312,7 +312,72 @@
       "deleteSuccess": "Payment deleted successfully",
       "deleteError": "Error deleting payment",
       "saving": "Saving...",
-      "deleting": "Deleting..."
+      "deleting": "Deleting...",
+      "addSuccess": "Payment added successfully",
+      "addSuccessDescription": "The payment has been recorded.",
+      "addError": "Failed to add payment",
+      "tryAgain": "Please try again."
+    },
+    "tabs": {
+      "manage": "Manage",
+      "history": "History",
+      "overdue": "Overdue"
+    },
+    "history": {
+      "title": "Payment history",
+      "subtitle": "Aggregated monthly view of all recorded payments.",
+      "noPaymentsInMonth": "No payments registered for this month yet.",
+      "totals": {
+        "netRevenue": "Net revenue",
+        "paymentsRecorded": "payments recorded",
+        "completed": "Completed",
+        "pending": "Pending",
+        "monthsTracked": "Months tracked"
+      },
+      "month": {
+        "netAmount": "Net",
+        "totalPayments": "Total",
+        "expand": "Show details",
+        "collapse": "Collapse"
+      },
+      "table": {
+        "student": "Student",
+        "amount": "Amount",
+        "type": "Type",
+        "status": "Status",
+        "method": "Method",
+        "dateTime": "Date & time",
+        "notes": "Notes"
+      },
+      "empty": {
+        "title": "No payment history yet",
+        "description": "Once payments are recorded they will appear here grouped by month."
+      },
+      "error": {
+        "title": "Could not load payment history"
+      }
+    },
+    "overdue": {
+      "title": "Overdue students",
+      "subtitle": "Students who have not paid the current month past the due date.",
+      "dueOn": "Due on",
+      "daysOverdue": "Days overdue",
+      "expectedAmount": "Expected amount",
+      "lastPayment": "Last payment",
+      "discipline": "Discipline",
+      "sendReminder": "Send pending payment notification",
+      "sending": "Sending…",
+      "sentSuccess": "Reminder sent to {{name}}",
+      "sentSuccessDescription": "The student must press confirm in the app to acknowledge it.",
+      "sentError": "Could not send reminder",
+      "noUserAccount": "This student does not have a linked user account to receive notifications.",
+      "empty": {
+        "title": "All payments are up to date",
+        "description": "No students have a pending monthly payment past the due date."
+      },
+      "error": {
+        "title": "Could not load overdue students"
+      }
     }
   },
   "students": {
@@ -617,7 +682,8 @@
     "back": "Back",
     "commandPalette": "Command palette",
     "noResults": "No results",
-    "navigate": "navigate"
+    "navigate": "navigate",
+    "refresh": "Refresh"
   },
   "privacy": {
     "showAmounts": "Show amounts",
@@ -766,6 +832,24 @@
       "classes": "classes",
       "avgAttendance": "Avg. attendance",
       "totalStudents": "Total students"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markRead": "Mark as read",
+    "markAllRead": "Mark all as read",
+    "all": "All",
+    "delete": "Delete",
+    "payment": {
+      "title": "Pending payment reminder",
+      "month": "Month",
+      "daysOverdue": "Days overdue",
+      "amount": "Amount",
+      "confirmRequired": "You must press Confirm to acknowledge this reminder.",
+      "confirm": "Confirm",
+      "confirming": "Confirming…",
+      "confirmFailed": "Could not confirm. Please try again."
     }
   }
 }

@@ -7,7 +7,22 @@ export interface NotificationRecord {
   type: string;
   read: 0 | 1;
   created_at: string;
+  requires_confirmation?: 0 | 1;
+  confirmed_at?: string | null;
+  action_type?: string | null;
+  metadata?: string | null;
+  confirmation_notify_user_id?: string | null;
 }
+
+const NOTIFICATIONS_EXTENDED_COLUMNS: Array<{ name: string; ddl: string }> = [
+  { name: 'requires_confirmation', ddl: 'ALTER TABLE notifications ADD COLUMN requires_confirmation INTEGER NOT NULL DEFAULT 0' },
+  { name: 'confirmed_at', ddl: 'ALTER TABLE notifications ADD COLUMN confirmed_at TEXT' },
+  { name: 'action_type', ddl: 'ALTER TABLE notifications ADD COLUMN action_type TEXT' },
+  { name: 'metadata', ddl: 'ALTER TABLE notifications ADD COLUMN metadata TEXT' },
+  { name: 'confirmation_notify_user_id', ddl: 'ALTER TABLE notifications ADD COLUMN confirmation_notify_user_id TEXT' },
+];
+
+const DUPLICATE_COLUMN_REGEX = /duplicate column name/i;
 
 const MISSING_NOTIFICATIONS_TABLE_REGEX = /no such table:\s*notifications/i;
 
@@ -76,6 +91,27 @@ export async function ensureNotificationsSchema(db: D1Database): Promise<void> {
 
   await db.prepare(`
     CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, read)
+  `).run();
+
+  // Idempotently add extended columns introduced for forced-confirmation flows.
+  for (const column of NOTIFICATIONS_EXTENDED_COLUMNS) {
+    try {
+      await db.prepare(column.ddl).run();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!DUPLICATE_COLUMN_REGEX.test(message)) {
+        throw error;
+      }
+    }
+  }
+
+  await db.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_notifications_action_type ON notifications(action_type)
+  `).run();
+
+  await db.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_notifications_requires_confirmation
+      ON notifications(user_id, requires_confirmation, confirmed_at)
   `).run();
 }
 

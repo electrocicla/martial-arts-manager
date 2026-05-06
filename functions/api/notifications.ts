@@ -13,6 +13,8 @@ import { NotificationRecord, ensureNotificationsSchema, withNotificationsTable }
 interface NotificationOwnershipRecord {
   id: string;
   user_id: string;
+  requires_confirmation?: 0 | 1 | null;
+  confirmed_at?: string | null;
 }
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
@@ -38,14 +40,17 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     const unreadOnly = url.searchParams.get('unread') === 'true';
 
     let query = `
-      SELECT * FROM notifications
-      WHERE user_id = ?
+      SELECT id, user_id, message, type, read, created_at,
+             requires_confirmation, confirmed_at, action_type, metadata,
+             confirmation_notify_user_id
+        FROM notifications
+       WHERE user_id = ?
     `;
-    
+
     if (unreadOnly) {
       query += ' AND read = 0';
     }
-    
+
     query += ' ORDER BY created_at DESC LIMIT 50';
 
     const notifications = await withNotificationsTable(env.DB, async () => {
@@ -83,7 +88,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     // Verify ownership
     const notification = await withNotificationsTable(env.DB, () => env.DB.prepare(`
-      SELECT id, user_id FROM notifications WHERE id = ?
+      SELECT id, user_id, requires_confirmation, confirmed_at FROM notifications WHERE id = ?
     `).bind(notificationId).first<NotificationOwnershipRecord>());
 
     if (!notification) {
@@ -92,6 +97,13 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     if (notification.user_id !== auth.user.id) {
       return createJsonResponse({ error: 'Access denied' }, 403);
+    }
+
+    if (notification.requires_confirmation === 1 && !notification.confirmed_at) {
+      return createJsonResponse(
+        { error: 'This notification requires explicit confirmation before being dismissed' },
+        409,
+      );
     }
 
     // Mark as read
@@ -126,7 +138,7 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     // Verify ownership
     const notification = await withNotificationsTable(env.DB, () => env.DB.prepare(`
-      SELECT id, user_id FROM notifications WHERE id = ?
+      SELECT id, user_id, requires_confirmation, confirmed_at FROM notifications WHERE id = ?
     `).bind(notificationId).first<NotificationOwnershipRecord>());
 
     if (!notification) {
@@ -135,6 +147,13 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     if (notification.user_id !== auth.user.id) {
       return createJsonResponse({ error: 'Access denied' }, 403);
+    }
+
+    if (notification.requires_confirmation === 1 && !notification.confirmed_at) {
+      return createJsonResponse(
+        { error: 'This notification requires explicit confirmation before being deleted' },
+        409,
+      );
     }
 
     // Delete notification

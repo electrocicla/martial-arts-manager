@@ -155,6 +155,92 @@ export class PaymentService {
   async markAsPaid(id: string): Promise<ApiResponse<Payment>> {
     return this.update(id, { status: 'completed' });
   }
+
+  async getMonthlyHistory(): Promise<ApiResponse<PaymentHistoryResponse>> {
+    return apiClient.get<PaymentHistoryResponse>(`${this.endpoint}/history`);
+  }
+
+  async getOverdueStudents(): Promise<ApiResponse<OverdueStudentsResponse>> {
+    return apiClient.get<OverdueStudentsResponse>(`${this.endpoint}/overdue`);
+  }
+
+  async notifyOverdueStudent(payload: NotifyOverduePayload): Promise<ApiResponse<NotifyOverdueResponse>> {
+    return apiClient.post<NotifyOverdueResponse>(`${this.endpoint}/notify-overdue`, payload);
+  }
+}
+
+export interface PaymentHistoryRow {
+  id: string;
+  student_id: string;
+  student_name: string;
+  student_email: string;
+  amount: number;
+  date: string;
+  type: string;
+  notes: string | null;
+  status: string;
+  payment_method: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentHistoryMonth {
+  monthKey: string;
+  totalAmount: number;
+  totalCount: number;
+  completedCount: number;
+  pendingCount: number;
+  failedCount: number;
+  refundedCount: number;
+  payments: PaymentHistoryRow[];
+}
+
+export interface PaymentHistoryResponse {
+  months: PaymentHistoryMonth[];
+  totals: {
+    totalAmount: number;
+    totalCount: number;
+    completedAmount: number;
+    pendingAmount: number;
+    monthsTracked: number;
+  };
+}
+
+export interface OverdueStudent {
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  studentPhone: string | null;
+  belt: string;
+  discipline: string;
+  userId: string | null;
+  expectedAmount: number;
+  lastPaymentDate: string | null;
+  lastPaymentAmount: number | null;
+  daysOverdue: number;
+  dueDate: string;
+}
+
+export interface OverdueStudentsResponse {
+  students: OverdueStudent[];
+  meta: {
+    dueDay: number;
+    dueDate: string;
+    referenceDate: string;
+    totalOverdue: number;
+  };
+}
+
+export interface NotifyOverduePayload {
+  studentId: string;
+  daysOverdue?: number;
+  expectedAmount?: number;
+  monthLabel?: string;
+}
+
+export interface NotifyOverdueResponse {
+  success: boolean;
+  notificationId: string;
 }
 
 // Create singleton instance

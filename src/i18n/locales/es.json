@@ -312,7 +312,72 @@
       "deleteSuccess": "Pago eliminado exitosamente",
       "deleteError": "Error al eliminar el pago",
       "saving": "Guardando...",
-      "deleting": "Eliminando..."
+      "deleting": "Eliminando...",
+      "addSuccess": "Pago agregado exitosamente",
+      "addSuccessDescription": "El pago ha sido registrado.",
+      "addError": "Error al agregar el pago",
+      "tryAgain": "Por favor, inténtalo de nuevo."
+    },
+    "tabs": {
+      "manage": "Gestionar",
+      "history": "Historial",
+      "overdue": "Atrasados"
+    },
+    "history": {
+      "title": "Historial de pagos",
+      "subtitle": "Vista mensual agregada de todos los pagos registrados.",
+      "noPaymentsInMonth": "No hay pagos registrados para este mes.",
+      "totals": {
+        "netRevenue": "Ingresos netos",
+        "paymentsRecorded": "pagos registrados",
+        "completed": "Completados",
+        "pending": "Pendientes",
+        "monthsTracked": "Meses registrados"
+      },
+      "month": {
+        "netAmount": "Neto",
+        "totalPayments": "Total",
+        "expand": "Ver detalles",
+        "collapse": "Ocultar"
+      },
+      "table": {
+        "student": "Estudiante",
+        "amount": "Monto",
+        "type": "Tipo",
+        "status": "Estado",
+        "method": "Método",
+        "dateTime": "Fecha y hora",
+        "notes": "Notas"
+      },
+      "empty": {
+        "title": "Aún no hay historial de pagos",
+        "description": "Cuando se registren pagos aparecerán aquí agrupados por mes."
+      },
+      "error": {
+        "title": "No se pudo cargar el historial de pagos"
+      }
+    },
+    "overdue": {
+      "title": "Estudiantes con pago atrasado",
+      "subtitle": "Estudiantes que no han pagado el mes en curso pasada la fecha límite.",
+      "dueOn": "Vence el",
+      "daysOverdue": "Días de atraso",
+      "expectedAmount": "Monto esperado",
+      "lastPayment": "Último pago",
+      "discipline": "Disciplina",
+      "sendReminder": "Enviar notificación de pago pendiente",
+      "sending": "Enviando…",
+      "sentSuccess": "Recordatorio enviado a {{name}}",
+      "sentSuccessDescription": "El estudiante debe presionar Confirmar en la app para reconocerlo.",
+      "sentError": "No se pudo enviar el recordatorio",
+      "noUserAccount": "Este estudiante no tiene una cuenta de usuario vinculada para recibir notificaciones.",
+      "empty": {
+        "title": "Todos los pagos están al día",
+        "description": "Ningún estudiante tiene un pago mensual pendiente pasada la fecha límite."
+      },
+      "error": {
+        "title": "No se pudieron cargar los estudiantes atrasados"
+      }
     }
   },
   "students": {
@@ -657,7 +722,8 @@
     "back": "Volver",
     "commandPalette": "Paleta de comandos",
     "noResults": "Sin resultados",
-    "navigate": "navegar"
+    "navigate": "navegar",
+    "refresh": "Actualizar"
   },
   "privacy": {
     "showAmounts": "Mostrar montos",
@@ -847,5 +913,23 @@
     "classesCompleted": "clases completadas",
     "classesCompletedShort": "clases",
     "moreNeeded": "más necesarias"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "empty": "Sin notificaciones",
+    "markRead": "Marcar como leída",
+    "markAllRead": "Marcar todas como leídas",
+    "all": "Todas",
+    "delete": "Eliminar",
+    "payment": {
+      "title": "Recordatorio de pago pendiente",
+      "month": "Mes",
+      "daysOverdue": "Días de atraso",
+      "amount": "Monto",
+      "confirmRequired": "Debes presionar Confirmar para reconocer este recordatorio.",
+      "confirm": "Confirmar",
+      "confirming": "Confirmando…",
+      "confirmFailed": "No se pudo confirmar. Por favor, inténtalo de nuevo."
+    }
   }
 }

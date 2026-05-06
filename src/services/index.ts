@@ -9,6 +9,7 @@ export { classService, type ClassService } from './class.service';
 export { paymentService, type PaymentService } from './payment.service';
 export { attendanceService, type AttendanceService } from './attendance.service';
 export { analyticsService, type AnalyticsService, type AnalyticsData } from './analytics.service';
+export { notificationService, type NotificationService } from './notification.service';
 
 // Re-export types for convenience
 export type {
@@ -25,6 +26,13 @@ export type {
 export type {
   PaymentFilters,
   PaymentStats,
+  PaymentHistoryRow,
+  PaymentHistoryMonth,
+  PaymentHistoryResponse,
+  OverdueStudent,
+  OverdueStudentsResponse,
+  NotifyOverduePayload,
+  NotifyOverdueResponse,
 } from './payment.service';
 
 export type {

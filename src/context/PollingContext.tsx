@@ -10,7 +10,14 @@ interface Notification {
   type: string;
   read: number;
   created_at: string;
+  requires_confirmation?: number | null;
+  confirmed_at?: string | null;
+  action_type?: string | null;
+  metadata?: string | null;
+  confirmation_notify_user_id?: string | null;
 }
+
+export type { Notification };
 
 interface PendingApprovalsData {
   pending_users?: { id: string }[];
