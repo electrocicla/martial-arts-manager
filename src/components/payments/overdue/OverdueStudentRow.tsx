@@ -48,18 +48,18 @@ export default function OverdueStudentRow({
           <div className="min-w-0">
             <h4 className="text-white font-semibold text-lg truncate">{student.studentName}</h4>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-300 mt-1">
-              <span className="inline-flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5" />
-                {student.studentEmail}
+              <span className="inline-flex items-center gap-1 min-w-0 max-w-full">
+                <Mail className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{student.studentEmail}</span>
               </span>
               {student.studentPhone && (
                 <span className="inline-flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5" />
-                  {student.studentPhone}
+                  <Phone className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">{student.studentPhone}</span>
                 </span>
               )}
               <span className="inline-flex items-center gap-1">
-                <CalendarDays className="w-3.5 h-3.5" />
+                <CalendarDays className="w-3.5 h-3.5 shrink-0" />
                 {t('payments.overdue.dueOn', 'Due on')} {formatDate(student.dueDate)}
               </span>
             </div>

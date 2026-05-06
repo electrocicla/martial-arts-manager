@@ -29,10 +29,25 @@ export default function PaymentHistoryMonthCard({
 
   return (
     <section className="bg-gradient-to-br from-gray-900 to-gray-950 rounded-xl border border-gray-800 shadow-lg">
-      <header className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <h3 className="text-lg font-bold text-white capitalize">{monthLabel}</h3>
-          <p className="text-xs text-gray-400">{month.monthKey}</p>
+      <header className="flex flex-col gap-3 p-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex items-start justify-between gap-3 min-w-0">
+          <div className="min-w-0">
+            <h3 className="text-lg font-bold text-white capitalize truncate">{monthLabel}</h3>
+            <p className="text-xs text-gray-400">{month.monthKey}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setExpanded((prev) => !prev)}
+            aria-expanded={expanded}
+            className="xl:hidden inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-700 hover:border-gray-500 hover:bg-gray-800 text-sm text-gray-200 shrink-0"
+          >
+            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            <span className="sr-only">
+              {expanded
+                ? t('payments.history.month.collapse', 'Collapse')
+                : t('payments.history.month.expand', 'Show details')}
+            </span>
+          </button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
@@ -72,7 +87,7 @@ export default function PaymentHistoryMonthCard({
           type="button"
           onClick={() => setExpanded((prev) => !prev)}
           aria-expanded={expanded}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-700 hover:border-gray-500 hover:bg-gray-800 text-sm text-gray-200 self-start sm:self-center"
+          className="hidden xl:inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-700 hover:border-gray-500 hover:bg-gray-800 text-sm text-gray-200 self-center shrink-0"
         >
           {expanded ? (
             <>

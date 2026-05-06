@@ -102,6 +102,35 @@ export async function onRequestPost({
       ? body.monthLabel
       : `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
 
+    // Prevent duplicate reminders: if an unconfirmed payment_pending
+    // notification already exists for this student/month combination, refuse
+    // to create another so admins can't spam students.
+    const existing = await withNotificationsTable(env.DB, () =>
+      env.DB
+        .prepare(
+          `SELECT id FROM notifications
+            WHERE user_id = ?
+              AND action_type = 'payment_pending'
+              AND requires_confirmation = 1
+              AND confirmed_at IS NULL
+              AND metadata LIKE ?
+            LIMIT 1`,
+        )
+        .bind(student.user_id, `%"monthLabel":"${monthLabel}"%`)
+        .first<{ id: string }>(),
+    );
+
+    if (existing) {
+      return jsonResponse(
+        {
+          error: 'A pending payment reminder for this month is already awaiting the student\'s confirmation.',
+          existingNotificationId: existing.id,
+          alreadyPending: true,
+        },
+        409,
+      );
+    }
+
     const message = expectedAmount
       ? `You have a pending monthly payment (${monthLabel}). Amount: $${expectedAmount.toFixed(2)}. Days overdue: ${daysOverdue}.`
       : `You have a pending monthly payment (${monthLabel}). Days overdue: ${daysOverdue}.`;

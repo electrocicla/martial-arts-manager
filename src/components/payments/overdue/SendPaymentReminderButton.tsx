@@ -34,6 +34,7 @@ export default function SendPaymentReminderButton({
       onClick={onSend}
       disabled={isDisabled}
       title={isDisabled ? disabledReason : undefined}
+      className="w-full lg:w-auto"
     >
       {isSending
         ? t('payments.overdue.sending', 'Sending…')
