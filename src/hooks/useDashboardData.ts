@@ -50,7 +50,7 @@ export function useDashboardData(): DashboardData {
 
       // Wait for authentication token to be available
       if (!accessToken) {
-        console.log('[Dashboard] Waiting for access token...');
+        console.warn('[Dashboard] Waiting for access token...');
         return;
       }
 

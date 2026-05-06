@@ -35,7 +35,7 @@ export function PendingApprovals() {
 
   const fetchPendingUsers = useCallback(async () => {
     if (!accessToken) {
-      console.log('[PendingApprovals] Waiting for access token...');
+      console.warn('[PendingApprovals] Waiting for access token...');
       return;
     }
 

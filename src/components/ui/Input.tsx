@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 import type { InputHTMLAttributes } from 'react';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -24,8 +24,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     type = 'text',
     disabled,
     required,
+    id,
     ...props 
   }, ref) => {
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
     // Base styles following Tailwind best practices
     const baseStyles = 'w-full rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
     
@@ -77,7 +80,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor={inputId} className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
             {label}
             {required && <span className="ml-1 text-red-500">*</span>}
           </label>
@@ -91,6 +94,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           
           <input
+            id={inputId}
             ref={ref}
             type={type}
             disabled={disabled}
@@ -98,8 +102,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             className={inputClasses}
             aria-invalid={error ? 'true' : 'false'}
             aria-describedby={
-              error ? `${props.id}-error` : 
-              helperText ? `${props.id}-helper` : undefined
+              error ? `${inputId}-error` : 
+              helperText ? `${inputId}-helper` : undefined
             }
             {...props}
           />
@@ -112,13 +116,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         </div>
         
         {error && (
-          <p id={`${props.id}-error`} className="mt-2 text-sm text-red-600 dark:text-red-400">
+          <p id={`${inputId}-error`} className="mt-2 text-sm text-red-600 dark:text-red-400">
             {error}
           </p>
         )}
         
         {helperText && !error && (
-          <p id={`${props.id}-helper`} className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          <p id={`${inputId}-helper`} className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {helperText}
           </p>
         )}

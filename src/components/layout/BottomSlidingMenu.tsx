@@ -6,6 +6,7 @@ import {
   Home,
   Menu,
   Search,
+  Settings,
   User,
   X,
   LogOut
@@ -282,6 +283,13 @@ export default function BottomSlidingMenu() {
                 >
                   <User className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
                   <span>{t('nav.profile')}</span>
+                </button>
+                <button
+                  onClick={() => handleNavigate('/settings')}
+                  className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <Settings className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
+                  <span>{t('nav.settings')}</span>
                 </button>
                 <button
                   onClick={handleLogout}

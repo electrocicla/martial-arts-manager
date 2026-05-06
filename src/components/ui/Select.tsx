@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import type { SelectHTMLAttributes } from 'react';
 
 export interface SelectOption {
@@ -29,8 +29,11 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     selectSize = 'md',
     disabled,
     required,
+    id,
     ...props
   }, ref) => {
+    const generatedId = useId();
+    const selectId = id ?? generatedId;
     // Base styles with proper focus states and transitions
     const baseStyles = `
       w-full appearance-none rounded-lg font-medium transition-colors duration-200 
@@ -86,7 +89,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor={selectId} className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
             {label}
             {required && <span className="ml-1 text-red-500">*</span>}
           </label>
@@ -94,14 +97,15 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
         
         <div className="relative">
           <select
+            id={selectId}
             ref={ref}
             disabled={disabled}
             required={required}
             className={selectClasses}
             aria-invalid={error ? 'true' : 'false'}
             aria-describedby={
-              error ? `${props.id}-error` : 
-              helperText ? `${props.id}-helper` : undefined
+              error ? `${selectId}-error` : 
+              helperText ? `${selectId}-helper` : undefined
             }
             {...props}
           >
@@ -123,13 +127,13 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
         </div>
         
         {error && (
-          <p id={`${props.id}-error`} className="mt-2 text-sm text-red-600 dark:text-red-400">
+          <p id={`${selectId}-error`} className="mt-2 text-sm text-red-600 dark:text-red-400">
             {error}
           </p>
         )}
         
         {helperText && !error && (
-          <p id={`${props.id}-helper`} className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          <p id={`${selectId}-helper`} className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {helperText}
           </p>
         )}

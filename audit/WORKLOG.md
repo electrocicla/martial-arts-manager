@@ -338,7 +338,7 @@
 
 ---
 
-## Post-Master-Plan — UX / i18n / Feature Session (2026-04-16)
+## Post-Master-Plan ï¿½ UX / i18n / Feature Session (2026-04-16)
 
 Beyond the 54-item tech-debt plan, this session shipped a batch of product-level polish and a mini-feature drop:
 
@@ -351,10 +351,10 @@ Beyond the 54-item tech-debt plan, this session shipped a batch of product-level
 - Service layer src/services/student.service.ts now forwards the full disciplines array on create/update; legacy discipline/elt preserved from the primary row for backward compat.
 
 ### Quick-filter chip bar on Student Manager
-- New src/components/students/DisciplineFilterChips.tsx — horizontal scroll-snap toolbar with 'All' chip + BJJ group chips + MMA chip + dynamic chips for any remaining disciplines with count > 0.
+- New src/components/students/DisciplineFilterChips.tsx ï¿½ horizontal scroll-snap toolbar with 'All' chip + BJJ group chips + MMA chip + dynamic chips for any remaining disciplines with count > 0.
 - StudentManager now filters against the union of student.discipline and student.disciplines[].discipline so multi-discipline students match any selected filter.
 
-### i18n fix — 'Cursos' ? 'Clases' (Spanish)
+### i18n fix ï¿½ 'Cursos' ? 'Clases' (Spanish)
 - Updated 9 keys in src/i18n/locales/es.json: 
 av.classes, dashboard.stats.todayClasses + classesThisWeek + 
 oClasses, dashboard.quickActions.scheduleClass, dashboard.metrics.totalClasses, classesOnDate, nalytics.averagePerClass, nalytics.byClass. Mobile and desktop labels now read 'Clases' everywhere.
@@ -362,7 +362,7 @@ oClasses, dashboard.quickActions.scheduleClass, dashboard.metrics.totalClasses, 
 ### Belt Testing v2 hero
 - src/components/belttesting/AdminBeltTesting.tsx hero refreshed with FadeUp title, gradient accent blur, and three animated Stat cards (replaces the old daisyUI stats block that the user flagged as 'ugly and old').
 
-### PR 2 chrome — theme toggle
+### PR 2 chrome ï¿½ theme toggle
 - Added Sun/Moon theme toggle button to desktop Header (src/components/layout/Header.tsx), wired to useTheme().toggle from the existing theme provider.
 
 ### Quality gates
@@ -371,4 +371,19 @@ oClasses, dashboard.quickActions.scheduleClass, dashboard.metrics.totalClasses, 
 - pnpm test:run: 43 passed, 2 pre-existing failures in student.service.test.ts (unrelated signal arg mismatch from commit d6f15dd)
 - pnpm build: clean (6.5s)
 - Deployed preview: https://feature-dashboard-uiux-revam.martial-arts-manager.pages.dev (commit d57d7b9)
+
+---
+
+## Profile / Settings Split Session (2026-05-06)
+
+### Goal
+- Split `/profile` into a profile-only surface and move app preferences into a standalone `/settings` area for mobile and desktop.
+
+### Implementation notes
+- Added all-role account profile API at `functions/api/account/profile.ts` so admins, instructors, and students can save profile-safe fields.
+- Rebuilt `src/pages/StudentProfile.tsx` around personal/contact/emergency data, read-only training assignments, readiness checklist, and role-aware shortcuts.
+- Rebuilt `src/pages/Settings.tsx` as a shared settings hub with Account, Notifications, Appearance, Mobile, and admin-only MercadoPago sections.
+- Added persisted mobile preferences for pull-to-refresh and Android install prompts.
+- Split reusable settings/profile UI into smaller SRP components under `src/components/profile/` and `src/components/settings/`.
+- Quality-policy cleanup started: console policy, form label association in base controls, lucide toast icons, and removal of the existing `as any` in Motion.
 

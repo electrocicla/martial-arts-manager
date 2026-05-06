@@ -1,64 +1,177 @@
-import useSettings from '../../hooks/useSettings';
-import { useState } from 'react';
 import { Save } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import useSettings from '../../hooks/useSettings';
 import { Button } from '../ui/Button';
+import SettingsToggle from './SettingsToggle';
+
+type DigestFrequency = 'instant' | 'daily' | 'weekly';
+
+interface NotificationPreferences {
+  emailAlerts: boolean;
+  smsAlerts: boolean;
+  paymentReminders: boolean;
+  classReminders: boolean;
+  promotionAlerts: boolean;
+  systemUpdates: boolean;
+  quietHoursStart: string;
+  quietHoursEnd: string;
+  digestFrequency: DigestFrequency;
+}
+
+type ToggleKey = 'emailAlerts' | 'smsAlerts' | 'paymentReminders' | 'classReminders' | 'promotionAlerts' | 'systemUpdates';
+
+const DEFAULT_NOTIFICATIONS: NotificationPreferences = {
+  emailAlerts: true,
+  smsAlerts: false,
+  paymentReminders: true,
+  classReminders: true,
+  promotionAlerts: true,
+  systemUpdates: false,
+  quietHoursStart: '22:00',
+  quietHoursEnd: '08:00',
+  digestFrequency: 'instant',
+};
+
+const TOGGLE_OPTIONS: Array<{ id: ToggleKey; label: string; description: string }> = [
+  {
+    id: 'emailAlerts',
+    label: 'Email alerts',
+    description: 'Receive important account, class, and payment messages by email.',
+  },
+  {
+    id: 'smsAlerts',
+    label: 'SMS alerts',
+    description: 'Allow urgent operational reminders by text message when a phone is available.',
+  },
+  {
+    id: 'paymentReminders',
+    label: 'Payment reminders',
+    description: 'Get notified when payments are due, overdue, or confirmed.',
+  },
+  {
+    id: 'classReminders',
+    label: 'Class reminders',
+    description: 'Receive upcoming class and schedule change notifications.',
+  },
+  {
+    id: 'promotionAlerts',
+    label: 'Promotion alerts',
+    description: 'Get notified about belt exams, rank progress, and milestone changes.',
+  },
+  {
+    id: 'systemUpdates',
+    label: 'System updates',
+    description: 'Receive product and maintenance announcements for the app.',
+  },
+];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function parseDigestFrequency(value: unknown): DigestFrequency | undefined {
+  return value === 'instant' || value === 'daily' || value === 'weekly' ? value : undefined;
+}
+
+function parseNotifications(value: unknown): NotificationPreferences {
+  if (!isRecord(value)) return DEFAULT_NOTIFICATIONS;
+
+  return {
+    ...DEFAULT_NOTIFICATIONS,
+    emailAlerts: typeof value.emailAlerts === 'boolean' ? value.emailAlerts : DEFAULT_NOTIFICATIONS.emailAlerts,
+    smsAlerts: typeof value.smsAlerts === 'boolean' ? value.smsAlerts : DEFAULT_NOTIFICATIONS.smsAlerts,
+    paymentReminders: typeof value.paymentReminders === 'boolean' ? value.paymentReminders : DEFAULT_NOTIFICATIONS.paymentReminders,
+    classReminders: typeof value.classReminders === 'boolean' ? value.classReminders : DEFAULT_NOTIFICATIONS.classReminders,
+    promotionAlerts: typeof value.promotionAlerts === 'boolean' ? value.promotionAlerts : DEFAULT_NOTIFICATIONS.promotionAlerts,
+    systemUpdates: typeof value.systemUpdates === 'boolean' ? value.systemUpdates : DEFAULT_NOTIFICATIONS.systemUpdates,
+    quietHoursStart: typeof value.quietHoursStart === 'string' ? value.quietHoursStart : DEFAULT_NOTIFICATIONS.quietHoursStart,
+    quietHoursEnd: typeof value.quietHoursEnd === 'string' ? value.quietHoursEnd : DEFAULT_NOTIFICATIONS.quietHoursEnd,
+    digestFrequency: parseDigestFrequency(value.digestFrequency) ?? DEFAULT_NOTIFICATIONS.digestFrequency,
+  };
+}
 
 export default function NotificationSettings() {
-  const [notifications, setNotifications] = useState({
-    emailAlerts: true,
-    smsAlerts: false,
-    paymentReminders: true,
-    classReminders: true,
-    promotionAlerts: true,
-    systemUpdates: false,
-  });
-  const { saveSection } = useSettings();
-  const [startTime, setStartTime] = useState('22:00');
-  const [endTime, setEndTime] = useState('08:00');
+  const { settings, saveSection } = useSettings();
+  const [notifications, setNotifications] = useState<NotificationPreferences>(DEFAULT_NOTIFICATIONS);
+
+  useEffect(() => {
+    setNotifications(parseNotifications(settings?.notifications));
+  }, [settings]);
+
+  const updateToggle = (key: ToggleKey, checked: boolean) => {
+    setNotifications((current) => ({ ...current, [key]: checked }));
+  };
 
   const handleSave = async () => {
-    await saveSection('notifications', { notifications, schedule: { startTime, endTime } });
+    await saveSection('notifications', notifications);
   };
 
   return (
-    <section className="bg-gray-800/50 border border-gray-700 rounded-lg shadow-sm p-4 sm:p-6">
-      <header className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-white">Notification Preferences</h2>
+    <section className="rounded-lg border border-gray-700 bg-gray-800/50 p-4 shadow-sm sm:p-6">
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <Button variant="primary" size="sm" leftIcon={<Save className="w-4 h-4" />} onClick={handleSave}>Save</Button>
+          <h2 className="text-lg font-semibold text-white">Notification preferences</h2>
+          <p className="text-sm text-gray-400">Choose which operational messages can interrupt you and when.</p>
         </div>
+        <Button type="button" variant="primary" size="sm" leftIcon={<Save className="h-4 w-4" />} onClick={handleSave}>
+          Save notifications
+        </Button>
       </header>
 
-      <div className="space-y-4">
-        {Object.entries(notifications).map(([key, value]) => (
-          <div key={key} className="flex items-center justify-between">
-            <div className="text-sm text-gray-300">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
-            <label className="inline-flex items-center">
-              <input type="checkbox" className="sr-only peer" checked={value} onChange={(e) => setNotifications({ ...notifications, [key]: e.target.checked })} />
-              <div className="w-11 h-6 bg-gray-600 peer-checked:bg-red-600 rounded-full relative transition-colors"></div>
-            </label>
-          </div>
+      <div className="space-y-3">
+        {TOGGLE_OPTIONS.map((option) => (
+          <SettingsToggle
+            key={option.id}
+            id={`settings-${option.id}`}
+            label={option.label}
+            description={option.description}
+            checked={notifications[option.id]}
+            onChange={(checked) => updateToggle(option.id, checked)}
+          />
         ))}
+      </div>
 
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div>
-          <h3 className="text-sm font-semibold mb-2 text-white">Notification schedule</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="flex flex-col">
-              <span className="text-sm text-gray-300">Quiet hours start</span>
-              <input value={startTime} onChange={(e) => setStartTime(e.target.value)} type="time" className="mt-2 rounded-md border border-gray-600 px-3 py-2 bg-gray-700 text-white" />
-            </label>
-            <label className="flex flex-col">
-              <span className="text-sm text-gray-300">Quiet hours end</span>
-              <input value={endTime} onChange={(e) => setEndTime(e.target.value)} type="time" className="mt-2 rounded-md border border-gray-600 px-3 py-2 bg-gray-700 text-white" />
-            </label>
-          </div>
+          <label htmlFor="settings-digest-frequency" className="mb-2 block text-sm font-medium text-gray-300">
+            Digest frequency
+          </label>
+          <select
+            id="settings-digest-frequency"
+            value={notifications.digestFrequency}
+            onChange={(event) => setNotifications((current) => ({ ...current, digestFrequency: event.target.value as DigestFrequency }))}
+            className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/40"
+          >
+            <option value="instant">Instant</option>
+            <option value="daily">Daily summary</option>
+            <option value="weekly">Weekly summary</option>
+          </select>
         </div>
 
-        <div className="flex justify-end gap-3">
-          <Button variant="secondary" size="sm">Cancel</Button>
-          <Button variant="primary" size="sm" leftIcon={<Save className="w-4 h-4" />} onClick={handleSave}>
-            Save Preferences
-          </Button>
+        <div>
+          <label htmlFor="settings-quiet-start" className="mb-2 block text-sm font-medium text-gray-300">
+            Quiet hours start
+          </label>
+          <input
+            id="settings-quiet-start"
+            value={notifications.quietHoursStart}
+            onChange={(event) => setNotifications((current) => ({ ...current, quietHoursStart: event.target.value }))}
+            type="time"
+            className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/40"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="settings-quiet-end" className="mb-2 block text-sm font-medium text-gray-300">
+            Quiet hours end
+          </label>
+          <input
+            id="settings-quiet-end"
+            value={notifications.quietHoursEnd}
+            onChange={(event) => setNotifications((current) => ({ ...current, quietHoursEnd: event.target.value }))}
+            type="time"
+            className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/40"
+          />
         </div>
       </div>
     </section>

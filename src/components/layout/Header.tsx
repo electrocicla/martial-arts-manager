@@ -114,8 +114,19 @@ export default function Header() {
               }}
               className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
             >
-              {user?.role === 'student' ? <User className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
-              {user?.role === 'student' ? t('nav.profile') : t('nav.settings')}
+              <User className="w-4 h-4" />
+              {t('nav.profile')}
+            </button>
+
+            <button
+              onClick={() => {
+                navigate('/settings');
+                setMobileAccountOpen(false);
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              {t('nav.settings')}
             </button>
 
             <MoneyVisibilityToggle variant="mobile" />
@@ -253,6 +264,13 @@ export default function Header() {
                     <User className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
                     <span>{t('nav.profile')}</span>
                   </button>
+                  <button
+                    onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
+                    className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    <Settings className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" />
+                    <span>{t('nav.settings')}</span>
+                  </button>
                   <MoneyVisibilityToggle
                     variant="mobile"
                     className="flex items-center w-full p-3 text-left text-gray-200 hover:bg-gray-800 rounded-lg transition-colors gap-3"
@@ -358,25 +376,21 @@ export default function Header() {
                     <p className="text-xs text-gray-400 truncate">{user?.email}</p>
                   </div>
                   
-                  {user?.role === 'student' && (
-                    <button
-                      onClick={() => { navigate('/profile'); setDropdownOpen(false); }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
-                    >
-                      <User className="w-4 h-4" />
-                      {t('nav.profile')}
-                    </button>
-                  )}
+                  <button
+                    onClick={() => { navigate('/profile'); setDropdownOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
+                  >
+                    <User className="w-4 h-4" />
+                    {t('nav.profile')}
+                  </button>
 
-                  {user?.role !== 'student' && (
-                    <button
-                      onClick={() => { navigate('/profile'); setDropdownOpen(false); }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
-                    >
-                      <Settings className="w-4 h-4" />
-                      {t('nav.settings')}
-                    </button>
-                  )}
+                  <button
+                    onClick={() => { navigate('/settings'); setDropdownOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    {t('nav.settings')}
+                  </button>
 
                   <div className="border-t border-gray-700 my-2 pt-2">
                     <button

@@ -136,7 +136,7 @@ export const navigationItems: NavigationItem[] = [
     href: '/settings',
     icon: Settings,
     color: 'text-slate-400',
-    roles: ['admin']
+    roles: ['admin', 'instructor', 'student']
   }
 ];
 

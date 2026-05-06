@@ -8,10 +8,11 @@
  * for every data type so all mounted hooks refetch automatically.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import { dispatchDataEvent, type DataEventType } from '../../lib/dataEvents';
+import { APP_PREFERENCE_KEYS, PREFERENCE_CHANGE_EVENT, readBooleanPreference } from '../../lib/preferences';
 
 const ALL_DATA_EVENTS: DataEventType[] = [
   'students',
@@ -36,6 +37,21 @@ interface PullToRefreshProps {
 }
 
 export default function PullToRefresh({ children }: PullToRefreshProps) {
+  const [enabled, setEnabled] = useState(() => readBooleanPreference(APP_PREFERENCE_KEYS.pullToRefresh, true));
+
+  useEffect(() => {
+    const handlePreferenceChange = () => {
+      setEnabled(readBooleanPreference(APP_PREFERENCE_KEYS.pullToRefresh, true));
+    };
+
+    window.addEventListener(PREFERENCE_CHANGE_EVENT, handlePreferenceChange);
+    return () => window.removeEventListener(PREFERENCE_CHANGE_EVENT, handlePreferenceChange);
+  }, []);
+
+  if (!enabled) {
+    return <>{children}</>;
+  }
+
   // Skip entirely on desktop / non-touch environments
   if (!isTouchDevice()) {
     return <>{children}</>;

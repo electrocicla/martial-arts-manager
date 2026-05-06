@@ -34,7 +34,7 @@ export function useStudentDashboardData() {
 
     // Wait for access token to be available
     if (!accessToken) {
-      console.log('[StudentDashboard] Waiting for access token...');
+      console.warn('[StudentDashboard] Waiting for access token...');
       return;
     }
 

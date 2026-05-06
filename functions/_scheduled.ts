@@ -15,14 +15,14 @@ interface AdminRecord {
 
 export async function onScheduled({ env }: { env: Env }) {
   try {
-    console.log('Running scheduled QR code cleanup...');
+    console.warn('Running scheduled QR code cleanup...');
     
     const now = new Date().toISOString();
 
     // Clean up expired sessions
     try {
       await deleteExpiredSessions(env.DB);
-      console.log('Expired sessions cleaned up');
+      console.warn('Expired sessions cleaned up');
     } catch (error) {
       console.error('Session cleanup error:', error);
     }
@@ -31,11 +31,11 @@ export async function onScheduled({ env }: { env: Env }) {
     const { deletedCount, deletedQRs } = await cleanupExpiredQRCodes(env.DB);
 
     if (deletedCount === 0) {
-      console.log('No expired QR codes found');
+      console.warn('No expired QR codes found');
       return;
     }
 
-    console.log(`Found ${deletedCount} expired QR codes to soft-delete`);
+    console.warn(`Found ${deletedCount} expired QR codes to soft-delete`);
 
     // Ensure notifications table exists
     await ensureNotificationsSchema(env.DB);
@@ -58,7 +58,7 @@ export async function onScheduled({ env }: { env: Env }) {
           now
         ).run();
 
-        console.log(`Notified instructor ${qr.instructor_name} about expired QR code ${qr.code}`);
+        console.warn(`Notified instructor ${qr.instructor_name} about expired QR code ${qr.code}`);
       } catch (error) {
         console.error(`Failed to notify about QR code ${qr.code}:`, error);
       }
@@ -92,7 +92,7 @@ export async function onScheduled({ env }: { env: Env }) {
       }
     }
 
-    console.log(`QR cleanup completed: ${deletedCount} codes soft-deleted`);
+    console.warn(`QR cleanup completed: ${deletedCount} codes soft-deleted`);
   } catch (error) {
     console.error('Scheduled QR cleanup error:', error);
   }

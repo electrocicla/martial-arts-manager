@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import { APP_PREFERENCE_KEYS, readBooleanPreference } from '../../lib/preferences';
 
 const APK_PROMPT_DISMISSED_UNTIL_KEY = 'hamarr:apk-prompt-dismissed-until';
 const DEFAULT_ANDROID_APK_URL = '/downloads/hamarr-app-latest.apk';
@@ -59,6 +60,7 @@ export default function AndroidApkInstallPrompt({ context = 'dashboard' }: Andro
   }, []);
 
   useEffect(() => {
+    if (!readBooleanPreference(APP_PREFERENCE_KEYS.androidInstallPrompt, true)) return;
     if (!isAndroidDevice()) return;
     if (!ALLOWED_HOSTS.has(window.location.hostname)) return;
     if (isStandaloneDisplayMode()) return;

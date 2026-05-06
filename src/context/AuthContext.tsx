@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const success = await refreshAuth();
       if (!success) {
         // No valid refresh token found - clear state
-        console.log('[Auth] No valid refresh token, clearing auth state');
+        console.warn('[Auth] No valid refresh token, clearing auth state');
         setUser(null);
         setAccessToken(null);
         apiClient.setAccessToken(null);

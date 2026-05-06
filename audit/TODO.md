@@ -152,6 +152,7 @@
 - `ClassManager.tsx` (~300+ lines): Extract sub-components
 - `PaymentManager.tsx`: Extract `PaymentForm`, `PaymentList`, `PaymentFilters`
 - `StudentProfile.tsx` (~300+ lines): Split into tab components
+- 2026-05-06 follow-up: `/profile` split from `/settings`; profile now focuses on account identity/training readiness, while `/settings` owns account preferences, notifications, appearance, mobile behavior, and admin-only MercadoPago.
 
 ### P3-04 ✅ Centralize polling
 - `usePendingApprovalsCount` + `NotificationBell` both poll every 30s

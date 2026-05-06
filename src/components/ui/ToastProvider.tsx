@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, X, XCircle } from 'lucide-react';
 import type { Toast } from './toastTypes';
 import { ToastContext } from './toastContext';
 import { IconButton } from './IconButton';
@@ -39,10 +39,10 @@ export const ToastProvider: React.FC<React.PropsWithChildren> = ({ children }) =
               aria-live={t.type === 'error' ? 'assertive' : 'polite'}
             >
               <div className="flex-0 mt-0.5">
-                {t.type === 'success' && <span className="text-green-400">✓</span>}
-                {t.type === 'error' && <span className="text-red-400">✕</span>}
-                {t.type === 'info' && <span className="text-blue-400">i</span>}
-                {t.type === 'warning' && <span className="text-yellow-400">!</span>}
+                {t.type === 'success' && <CheckCircle2 className="h-4 w-4 text-green-400" />}
+                {t.type === 'error' && <XCircle className="h-4 w-4 text-red-400" />}
+                {t.type === 'info' && <Info className="h-4 w-4 text-blue-400" />}
+                {t.type === 'warning' && <AlertTriangle className="h-4 w-4 text-yellow-400" />}
               </div>
               <div className="flex-1 min-w-0">
                 {t.title && <div className="font-semibold text-sm text-white truncate">{t.title}</div>}

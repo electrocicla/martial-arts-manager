@@ -90,8 +90,7 @@ export const PressableMotion = forwardRef<HTMLButtonElement, PressableProps>(fun
 ) {
   const reduced = usePrefersReducedMotion();
   if (reduced) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- HTMLMotionProps overlap with intrinsic props is intentional pass-through
-    return <button ref={ref} {...(rest as any)}>{children}</button>;
+    return <motion.button ref={ref} {...rest}>{children}</motion.button>;
   }
   return (
     <motion.button

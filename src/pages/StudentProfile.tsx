@@ -1,27 +1,37 @@
-import { useState, useEffect } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, AlertCircle, Save, Shield, Loader2, Mail, Phone, Bell, Palette, Settings as SettingsIcon } from 'lucide-react';
-import { useProfile } from '../hooks/useProfile';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Card, CardHeader, CardContent } from '../components/ui/Card';
+import {
+  AlertCircle,
+  Calendar,
+  ClipboardCheck,
+  Image as ImageIcon,
+  Loader2,
+  Mail,
+  Phone,
+  Save,
+  Shield,
+  User,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { NotificationSettings } from '../components/settings';
-import { AppearanceSettings } from '../components/settings';
+import { useProfile } from '../hooks/useProfile';
+import { apiClient } from '../lib/api-client';
 import { prepareAvatarFile } from '../lib/avatarUpload';
+import { Button } from '../components/ui/Button';
+import { Card, CardContent, CardHeader } from '../components/ui/Card';
+import { Input } from '../components/ui/Input';
 import ProfileCard from '../components/profile/ProfileCard';
-import { DISCIPLINES, BELT_RANKINGS } from '../lib/constants';
+import ProfileCompletionPanel from '../components/profile/ProfileCompletionPanel';
+import type { ProfileCompletionItem } from '../components/profile/ProfileCompletionPanel';
+import ProfileQuickLinks from '../components/profile/ProfileQuickLinks';
+import TrainingSummaryPanel from '../components/profile/TrainingSummaryPanel';
+import type { TrainingDisciplineEntry } from '../components/profile/TrainingSummaryPanel';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().optional(),
-  disciplines: z.array(z.object({
-    discipline: z.string(),
-    belt: z.string()
-  })).min(1, 'At least one discipline is required'),
   date_of_birth: z.string().optional(),
   emergency_contact_name: z.string().optional(),
   emergency_contact_phone: z.string().optional(),
@@ -30,43 +40,31 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-type DisciplineEntry = {
-  id: string;
-  discipline: string;
-  belt: string;
-};
-
-const createDisciplineId = (): string => {
+const createDisciplineId = (discipline: string, belt: string): string => {
   const randomUUID = globalThis.crypto?.randomUUID;
   if (typeof randomUUID === 'function') {
     return randomUUID.call(globalThis.crypto);
   }
-  return `discipline-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  return `${discipline}-${belt}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 };
 
-const toDisciplineEntry = (entry: { discipline: string; belt: string }): DisciplineEntry => ({
-  id: createDisciplineId(),
+const toDisciplineEntry = (entry: { discipline: string; belt: string }): TrainingDisciplineEntry => ({
+  id: createDisciplineId(entry.discipline, entry.belt),
   discipline: entry.discipline,
   belt: entry.belt,
 });
+
+const hasText = (value: string | undefined): boolean => Boolean(value?.trim());
 
 export default function StudentProfile() {
   const { profile, isLoading, error: loadError, refresh } = useProfile();
   const { t } = useTranslation();
   const { user, refreshAuth, accessToken } = useAuth();
-  void user; // Acknowledge unused variable
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [disciplines, setDisciplines] = useState<DisciplineEntry[]>([toDisciplineEntry({ discipline: '', belt: '' })]);
+  const [disciplines, setDisciplines] = useState<TrainingDisciplineEntry[]>([]);
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState('personal');
-
-  const tabs = [
-    { id: 'personal', label: t('profile.tabs.personal', 'Personal Info'), icon: User },
-    { id: 'notifications', label: t('profile.tabs.notifications', 'Notifications'), icon: Bell },
-    { id: 'appearance', label: t('profile.tabs.appearance', 'Appearance'), icon: Palette },
-  ];
 
   const {
     register,
@@ -78,88 +76,123 @@ export default function StudentProfile() {
   });
 
   useEffect(() => {
-    if (profile) {
-      const initialDisciplines = profile.disciplines
-        ? profile.disciplines
-        : (profile.discipline && profile.belt ? [{ discipline: profile.discipline, belt: profile.belt }] : [{ discipline: '', belt: '' }]);
-      setDisciplines(initialDisciplines.map(toDisciplineEntry));
-      reset({
-        name: profile.name,
-        phone: profile.phone || '',
-        disciplines: initialDisciplines,
-        date_of_birth: profile.date_of_birth || '',
-        emergency_contact_name: profile.emergency_contact_name || '',
-        emergency_contact_phone: profile.emergency_contact_phone || '',
-        notes: profile.notes || '',
-      });
-    }
+    if (!profile) return;
+
+    const hasAssignedTraining = profile.discipline && profile.belt && profile.discipline !== 'Not assigned' && profile.belt !== 'Not assigned';
+    const initialDisciplines = profile.disciplines && profile.disciplines.length > 0
+      ? profile.disciplines
+      : (hasAssignedTraining ? [{ discipline: profile.discipline, belt: profile.belt }] : []);
+
+    setDisciplines(initialDisciplines.map(toDisciplineEntry));
+    reset({
+      name: profile.name,
+      phone: profile.phone || '',
+      date_of_birth: profile.date_of_birth || '',
+      emergency_contact_name: profile.emergency_contact_name || '',
+      emergency_contact_phone: profile.emergency_contact_phone || '',
+      notes: profile.notes || '',
+    });
   }, [profile, reset]);
+
+  const completionItems = useMemo<ProfileCompletionItem[]>(() => {
+    const emergencyComplete = hasText(profile?.emergency_contact_name) && hasText(profile?.emergency_contact_phone);
+    const trainingComplete = disciplines.some((discipline) => hasText(discipline.discipline) && hasText(discipline.belt));
+
+    return [
+      {
+        id: 'photo',
+        label: 'Profile photo',
+        description: 'Helps instructors identify members quickly.',
+        complete: Boolean(profile?.avatar_url),
+        icon: ImageIcon,
+      },
+      {
+        id: 'name',
+        label: 'Full name',
+        description: 'Used across rosters, attendance, and payment records.',
+        complete: hasText(profile?.name),
+        icon: User,
+      },
+      {
+        id: 'email',
+        label: 'Email address',
+        description: 'Required for account access and app notifications.',
+        complete: hasText(profile?.email),
+        icon: Mail,
+      },
+      {
+        id: 'phone',
+        label: 'Phone number',
+        description: 'Useful for class changes and urgent coordination.',
+        complete: hasText(profile?.phone),
+        icon: Phone,
+      },
+      {
+        id: 'emergency',
+        label: 'Emergency contact',
+        description: 'Must be available before higher-risk training sessions.',
+        complete: emergencyComplete,
+        icon: Shield,
+      },
+      {
+        id: 'training',
+        label: 'Training assignment',
+        description: 'Discipline and rank are maintained by staff.',
+        complete: trainingComplete,
+        icon: ClipboardCheck,
+      },
+    ];
+  }, [disciplines, profile]);
+
+  const completionPercentage = useMemo(() => {
+    const completedCount = completionItems.filter((item) => item.complete).length;
+    return completionItems.length > 0 ? Math.round((completedCount / completionItems.length) * 100) : 0;
+  }, [completionItems]);
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsSaving(true);
     setSaveError(null);
     setSaveSuccess(false);
 
-    if (!accessToken) {
-      setSaveError('No authentication token available');
-      setIsSaving(false);
-      return;
-    }
-
     try {
-      const cleanedDisciplines = disciplines.map(({ discipline, belt }) => ({ discipline, belt }));
-      const response = await fetch('/api/student/profile', {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({ ...data, disciplines: cleanedDisciplines }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update profile');
+      const response = await apiClient.put<{ success: boolean }>('/api/account/profile', data);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to update profile');
       }
 
       await refresh();
-      // Try to refresh auth context, but don't fail if it doesn't work
-      // The profile update was already successful
-      refreshAuth().catch(err => console.warn('Failed to refresh auth after profile update:', err));
-
+      refreshAuth().catch((error) => console.warn('Failed to refresh auth after profile update:', error));
       setSaveSuccess(true);
-      // Hide success message after 3 seconds
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
-      setSaveError((err as Error).message);
+    } catch (error) {
+      setSaveError((error as Error).message);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !profile) return;
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    const canUploadAvatar = user?.role === 'student' && Boolean(profile);
+    if (!file || !profile || !canUploadAvatar) return;
 
     setSaveError(null);
 
     const prepared = await prepareAvatarFile(file, {
       invalidType: t('profile.avatarInvalidType', 'Invalid file type. Only JPG, PNG, GIF, WebP, AVIF, and HEIC/HEIF are allowed.'),
       tooLarge: t('profile.avatarTooLarge', 'File too large. Maximum size is 5MB.'),
-      conversionFailed: t('profile.avatarConversionFailed', 'Could not process this image. Please try a JPG or PNG.')
+      conversionFailed: t('profile.avatarConversionFailed', 'Could not process this image. Please try a JPG or PNG.'),
     });
 
     if (!prepared.ok || !prepared.file) {
       setSaveError(prepared.error || t('profile.avatarUploadError', 'Failed to process the image.'));
-      e.target.value = '';
+      event.target.value = '';
       return;
     }
 
-    setAvatarUploading(true);
-
     if (!accessToken) {
       setSaveError('No authentication token available');
-      setAvatarUploading(false);
+      event.target.value = '';
       return;
     }
 
@@ -167,56 +200,37 @@ export default function StudentProfile() {
     formData.append('avatar', prepared.file);
     formData.append('studentId', profile.id);
 
+    setAvatarUploading(true);
     try {
       const response = await fetch('/api/students/avatar', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`,
         },
-        body: formData
+        body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json() as { error?: string };
         throw new Error(errorData.error || 'Failed to upload avatar');
       }
 
-      // Refresh dashboard data (profile)
       await refresh();
-      
-      // Try to refresh auth context to update header avatar
-      // Don't fail the whole operation if this doesn't work
-      refreshAuth().catch(err => console.warn('Failed to refresh auth after avatar upload:', err));
-      
-    } catch (err) {
-      setSaveError((err as Error).message);
+      refreshAuth().catch((error) => console.warn('Failed to refresh auth after avatar upload:', error));
+    } catch (error) {
+      setSaveError((error as Error).message);
     } finally {
       setAvatarUploading(false);
-      // Reset file input
-      e.target.value = '';
+      event.target.value = '';
     }
-  };
-
-  const addDiscipline = () => {
-    setDisciplines((prev) => [...prev, toDisciplineEntry({ discipline: '', belt: '' })]);
-  };
-
-  const removeDiscipline = (id: string) => {
-    if (disciplines.length > 1) {
-      setDisciplines((prev) => prev.filter((entry) => entry.id !== id));
-    }
-  };
-
-  const updateDiscipline = (id: string, field: 'discipline' | 'belt', value: string) => {
-    setDisciplines((prev) => prev.map((entry) => (entry.id === id ? { ...entry, [field]: value } : entry)));
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-900">
         <div className="flex flex-col items-center gap-4">
-          <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="text-white font-medium">{t('common.loading')}</p>
+          <span className="loading loading-spinner loading-lg text-primary" />
+          <p className="font-medium text-white">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -224,300 +238,194 @@ export default function StudentProfile() {
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="card bg-red-900/20 border border-red-500/30 max-w-md">
-          <div className="card-body text-center">
-            <AlertCircle className="w-12 h-12 text-error mx-auto mb-4" />
-            <h2 className="card-title text-error justify-center mb-2">{t('profile.errorLoadingProfile', 'Error Loading Profile')}</h2>
-            <p className="text-error/80 mb-4">{loadError}</p>
-            <Button
-              variant="danger"
-              size="md"
-              onClick={() => window.location.reload()}
-            >
-              {t('profile.retry', 'Retry')}
-            </Button>
-          </div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-900 px-4">
+        <div className="max-w-md rounded-lg border border-red-500/30 bg-red-900/20 p-6 text-center">
+          <AlertCircle className="mx-auto mb-4 h-12 w-12 text-error" />
+          <h2 className="mb-2 text-xl font-semibold text-error">{t('profile.errorLoadingProfile', 'Error Loading Profile')}</h2>
+          <p className="mb-4 text-error/80">{loadError}</p>
+          <Button variant="danger" size="md" onClick={() => window.location.reload()}>
+            {t('profile.retry', 'Retry')}
+          </Button>
         </div>
       </div>
     );
   }
 
+  const canUploadAvatar = user?.role === 'student' && Boolean(profile);
+
   return (
     <div className="min-h-screen bg-gray-900 pb-24 md:pb-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-            <SettingsIcon className="w-8 h-8 text-red-400" />
-            {t('profile.title', 'My Profile & Settings')}
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <header className="mb-6 sm:mb-8">
+          <h1 className="mb-2 flex items-center gap-3 text-3xl font-bold text-white">
+            <User className="h-8 w-8 text-red-400" />
+            {t('profile.title', 'My Profile')}
           </h1>
-          <p className="text-gray-400">{t('profile.subtitle', 'Manage your personal information and preferences')}</p>
-        </div>
+          <p className="text-gray-400">Personal, emergency, and training identity details for your account.</p>
+        </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
-          <div className="lg:col-span-1">
-            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-2">
-              <ul className="space-y-1">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <li key={tab.id}>
-                      <button
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${
-                          activeTab === tab.id
-                            ? 'bg-red-600/20 text-red-400 border border-red-500/30'
-                            : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                        }`}
-                        onClick={() => setActiveTab(tab.id)}
-                      >
-                        <Icon className="w-5 h-5" />
-                        {tab.label}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-12 xl:gap-8">
+          <aside className="space-y-6 xl:col-span-4">
+            <ProfileCard
+              name={profile?.name}
+              email={profile?.email}
+              avatarUrl={profile?.avatar_url}
+              joinDate={profile?.join_date}
+              disciplines={disciplines}
+              avatarUploading={avatarUploading}
+              canUploadAvatar={canUploadAvatar}
+              completionPercentage={completionPercentage}
+              onAvatarChange={handleAvatarChange}
+            />
+            <ProfileCompletionPanel items={completionItems} />
+            <ProfileQuickLinks role={user?.role} />
+          </aside>
 
-          {/* Content Area */}
-          <div className="lg:col-span-3">
-            {/* Personal Information Tab */}
-            {activeTab === 'personal' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Profile Card */}
-                <div className="lg:col-span-1">
-                  <ProfileCard
-                    name={profile?.name}
-                    avatarUrl={profile?.avatar_url}
-                    joinDate={profile?.join_date}
-                    disciplines={disciplines}
-                    avatarUploading={avatarUploading}
-                    onAvatarChange={handleAvatarChange}
-                  />
-                </div>
+          <section className="space-y-6 xl:col-span-8">
+            <Card className="bg-gray-800/50 border-gray-700">
+              <CardHeader>
+                <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
+                  <User className="h-5 w-5" />
+                  Personal information
+                </h2>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                      <label htmlFor="profile-name" className="mb-2 block text-sm font-medium text-gray-300">
+                        Full name
+                      </label>
+                      <Input
+                        id="profile-name"
+                        {...register('name')}
+                        className="bg-gray-700 border-gray-600 text-white focus:border-primary"
+                        placeholder="Enter your full name"
+                      />
+                      {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>}
+                    </div>
 
-                {/* Form Section */}
-                <div className="lg:col-span-2 space-y-6">
-                  {/* Personal Information */}
-                  <Card className="bg-gray-800/50 border-gray-700">
-                    <CardHeader>
-                      <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-                        <User className="w-5 h-5" />
-                        {t('profile.personalInfo', 'Personal Information')}
-                      </h3>
-                    </CardHeader>
-                    <CardContent>
-                      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
-                            <label htmlFor="profile-name" className="block text-sm font-medium text-gray-300 mb-2">
-                              {t('profile.fullName', 'Full Name')}
-                            </label>
-                            <Input
-                              id="profile-name"
-                              {...register('name')}
-                              className="bg-gray-700 border-gray-600 text-white focus:border-primary"
-                              placeholder="Enter your full name"
-                            />
-                            {errors.name && (
-                              <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>
-                            )}
-                          </div>
+                    <div>
+                      <label htmlFor="profile-email" className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
+                        <Mail className="h-4 w-4" />
+                        Email
+                      </label>
+                      <Input
+                        id="profile-email"
+                        value={profile?.email || ''}
+                        disabled
+                        className="cursor-not-allowed bg-gray-700/50 border-gray-600 text-gray-400"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">Email changes require staff support.</p>
+                    </div>
 
-                          <div>
-                            <label htmlFor="profile-email" className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
-                              <Mail className="w-4 h-4" />
-                              {t('profile.email', 'Email')}
-                            </label>
-                            <Input
-                              id="profile-email"
-                              value={profile?.email || ''}
-                              disabled
-                              className="bg-gray-700/50 border-gray-600 text-gray-400 cursor-not-allowed"
-                            />
-                            <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
-                          </div>
+                    <div>
+                      <label htmlFor="profile-phone" className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
+                        <Phone className="h-4 w-4" />
+                        Phone
+                      </label>
+                      <Input
+                        id="profile-phone"
+                        {...register('phone')}
+                        className="bg-gray-700 border-gray-600 text-white focus:border-primary"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
 
-                          <div>
-                            <label htmlFor="profile-phone" className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
-                              <Phone className="w-4 h-4" />
-                              {t('profile.phone', 'Phone')}
-                            </label>
-                            <Input
-                              id="profile-phone"
-                              {...register('phone')}
-                              className="bg-gray-700 border-gray-600 text-white focus:border-primary"
-                              placeholder="(555) 123-4567"
-                            />
-                          </div>
+                    <div>
+                      <label htmlFor="profile-date-of-birth" className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
+                        <Calendar className="h-4 w-4" />
+                        Date of birth
+                      </label>
+                      <Input
+                        id="profile-date-of-birth"
+                        type="date"
+                        {...register('date_of_birth')}
+                        className="bg-gray-700 border-gray-600 text-white focus:border-primary"
+                      />
+                    </div>
+                  </div>
 
-                          <div className="md:col-span-2">
-                            <div className="block text-sm font-medium text-gray-300 mb-2">
-                              {t('profile.disciplines', 'Disciplines')}
-                            </div>
-                            <div className="space-y-3">
-                              {disciplines.map((disc) => (
-                                <div key={disc.id} className="flex gap-3 items-end">
-                                  <div className="flex-1">
-                                    <label htmlFor={`discipline-${disc.id}`} className="block text-xs font-medium text-gray-400 mb-1">
-                                      {t('profile.discipline', 'Discipline')}
-                                    </label>
-                                    <select
-                                      id={`discipline-${disc.id}`}
-                                      value={disc.discipline}
-                                      onChange={(e) => updateDiscipline(disc.id, 'discipline', e.target.value)}
-                                      className="select select-bordered bg-gray-700 border-gray-600 text-white focus:border-primary w-full"
-                                    >
-                                      <option value="">{t('common.select', 'Select')}</option>
-                                      {DISCIPLINES.map((d) => (
-                                        <option key={d} value={d}>{d}</option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  <div className="flex-1">
-                                    <label htmlFor={`belt-${disc.id}`} className="block text-xs font-medium text-gray-400 mb-1">
-                                      {t('profile.belt', 'Belt/Rank')}
-                                    </label>
-                                    <select
-                                      id={`belt-${disc.id}`}
-                                      value={disc.belt}
-                                      onChange={(e) => updateDiscipline(disc.id, 'belt', e.target.value)}
-                                      className="select select-bordered bg-gray-700 border-gray-600 text-white focus:border-primary w-full"
-                                    >
-                                      <option value="">{t('common.select', 'Select')}</option>
-                                      {(BELT_RANKINGS[disc.discipline] ?? ['Beginner', 'Intermediate', 'Advanced', 'Expert']).map((b) => (
-                                        <option key={b} value={b}>{b}</option>
-                                      ))}
-                                    </select>
-                                  </div>
-                                  {disciplines.length > 1 && (
-                                    <Button
-                                      type="button"
-                                      variant="danger"
-                                      size="sm"
-                                      onClick={() => removeDiscipline(disc.id)}
-                                    >
-                                      {t('profile.remove', 'Remove')}
-                                    </Button>
-                                  )}
-                                </div>
-                              ))}
-                              <Button
-                                type="button"
-                                variant="primary"
-                                size="md"
-                                leftIcon={<span aria-hidden="true">+</span>}
-                                onClick={addDiscipline}
-                              >
-                                {t('profile.addDiscipline', 'Add Discipline')}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
+                  <div className="border-t border-gray-700 pt-6">
+                    <h3 className="mb-4 flex items-center gap-2 text-lg font-medium text-white">
+                      <Shield className="h-5 w-5 text-yellow-400" />
+                      Emergency contact
+                    </h3>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <div>
+                        <label htmlFor="emergency-contact-name" className="mb-2 block text-sm font-medium text-gray-300">
+                          Contact name
+                        </label>
+                        <Input
+                          id="emergency-contact-name"
+                          {...register('emergency_contact_name')}
+                          className="bg-gray-700 border-gray-600 text-white focus:border-primary"
+                          placeholder="Emergency contact name"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="emergency-contact-phone" className="mb-2 block text-sm font-medium text-gray-300">
+                          Contact phone
+                        </label>
+                        <Input
+                          id="emergency-contact-phone"
+                          {...register('emergency_contact_phone')}
+                          className="bg-gray-700 border-gray-600 text-white focus:border-primary"
+                          placeholder="(555) 123-4567"
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-                        {/* Emergency Contact */}
-                        <div className="border-t border-gray-700 pt-6">
-                          <h4 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-yellow-400" />
-                            {t('profile.emergencyContact', 'Emergency Contact')}
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                              <label htmlFor="emergency-contact-name" className="block text-sm font-medium text-gray-300 mb-2">
-                                {t('profile.emergencyName', 'Contact Name')}
-                              </label>
-                              <Input
-                                id="emergency-contact-name"
-                                {...register('emergency_contact_name')}
-                                className="bg-gray-700 border-gray-600 text-white focus:border-primary"
-                                placeholder="Emergency contact name"
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor="emergency-contact-phone" className="block text-sm font-medium text-gray-300 mb-2">
-                                {t('profile.emergencyPhone', 'Contact Phone')}
-                              </label>
-                              <Input
-                                id="emergency-contact-phone"
-                                {...register('emergency_contact_phone')}
-                                className="bg-gray-700 border-gray-600 text-white focus:border-primary"
-                                placeholder="(555) 123-4567"
-                              />
-                            </div>
-                          </div>
-                        </div>
+                  <div className="border-t border-gray-700 pt-6">
+                    <label htmlFor="profile-notes" className="mb-2 block text-sm font-medium text-gray-300">
+                      Training notes
+                    </label>
+                    <textarea
+                      id="profile-notes"
+                      {...register('notes')}
+                      className="w-full resize-none rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                      rows={4}
+                      placeholder="Allergies, injuries, goals, or other details staff should know."
+                    />
+                  </div>
 
-                        {/* Notes */}
-                        <div className="border-t border-gray-700 pt-6">
-                          <label htmlFor="profile-notes" className="block text-sm font-medium text-gray-300 mb-2">
-                            {t('profile.notes', 'Additional Notes')}
-                          </label>
-                          <textarea
-                            id="profile-notes"
-                            {...register('notes')}
-                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-                            rows={4}
-                            placeholder="Any additional information..."
-                          />
-                        </div>
+                  {saveError && (
+                    <div className="rounded-lg border border-red-500/30 bg-red-900/20 p-4" aria-live="assertive">
+                      <p className="text-sm text-red-400">{saveError}</p>
+                    </div>
+                  )}
 
-                        {/* Error/Success Messages */}
-                        {saveError && (
-                          <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
-                            <p className="text-red-400 text-sm">{saveError}</p>
-                          </div>
-                        )}
+                  {saveSuccess && (
+                    <div className="rounded-lg border border-green-500/30 bg-green-900/20 p-4" aria-live="polite">
+                      <p className="text-sm text-green-400">Profile updated successfully.</p>
+                    </div>
+                  )}
 
-                        {saveSuccess && (
-                          <div className="p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
-                            <p className="text-green-400 text-sm">{t('profile.updatedSuccessfully', 'Profile updated successfully!')}</p>
-                          </div>
-                        )}
+                  <div className="flex flex-col gap-3 border-t border-gray-700 pt-6 sm:flex-row">
+                    <Button type="submit" disabled={isSaving} fullWidth>
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-5 w-5" />
+                          Save profile
+                        </>
+                      )}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => reset()} fullWidth>
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
 
-                        {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-700">
-                          <Button
-                            type="submit"
-                            disabled={isSaving}
-                            className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary-focus hover:to-secondary-focus text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
-                          >
-                            {isSaving ? (
-                              <>
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                                {t('common.saving', 'Saving...')}
-                              </>
-                            ) : (
-                              <>
-                                <Save className="w-5 h-5" />
-                                {t('profile.saveChanges', 'Save Changes')}
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => reset()}
-                            className="flex-1 border-2 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500 font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
-                          >
-                            {t('profile.cancel', 'Cancel')}
-                          </Button>
-                        </div>
-                      </form>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            )}
-
-            {/* Notifications Tab */}
-            {activeTab === 'notifications' && <NotificationSettings />}
-
-            {/* Appearance Tab */}
-            {activeTab === 'appearance' && <AppearanceSettings />}
-          </div>
+            <TrainingSummaryPanel disciplines={disciplines} />
+          </section>
         </div>
       </div>
     </div>

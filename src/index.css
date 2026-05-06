@@ -115,6 +115,26 @@
   }
 }
 
+:root[data-motion="reduced"] *,
+:root[data-motion="reduced"] *::before,
+:root[data-motion="reduced"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+}
+
+:root[data-contrast="high"] {
+  --color-border: oklch(0.72 0 0 / 0.95);
+  --color-border-strong: oklch(0.86 0 0);
+  --color-ink-secondary: oklch(0.90 0 0);
+  --color-ink-muted: oklch(0.82 0 0);
+}
+
+:root[data-density="compact"] .main-content {
+  --app-section-spacing: 0.75rem;
+}
+
 /* Skeleton shimmer used by v2 primitives */
 @keyframes v2-shimmer {
   0%   { background-position: -200% 0; }
