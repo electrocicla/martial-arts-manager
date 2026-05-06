@@ -477,7 +477,7 @@ function ClassCard({ entry, statusLabel, locale, t }: ClassCardProps) {
           <li className="flex items-start gap-2">
             <CalendarDays className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
             <span className="capitalize">{formatDate(entry.date, locale)}</span>
-            <span className="text-gray-500">\u00b7</span>
+            <span className="text-gray-500">·</span>
             <Clock className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
             <span>{formatTime(entry.time)}</span>
           </li>

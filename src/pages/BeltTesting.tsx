@@ -5,6 +5,7 @@ import { useStudents } from '../hooks/useStudents';
 import { useAttendance } from '../hooks/useAttendance';
 import { calculateEligibleStudents, getNextBelt, getRequiredClasses } from '../lib/beltTestingUtils';
 import { apiClient } from '../lib/api-client';
+import type { Student } from '../types/index';
 
 interface BeltExam {
   id: string;
@@ -41,16 +42,84 @@ interface ExamAssignment {
   current_belt: string;
 }
 
-export default function BeltTesting() {
-  const { user } = useAuth();
-  const { students } = useStudents();
-  const { attendance } = useAttendance();
-  
-  const [exams, setExams] = useState<BeltExam[]>([]);
+// Separate component for student view — never calls useStudents (which is admin-only)
+function StudentBeltTestingView({ studentId }: { studentId: string }) {
+  const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [assignments, setAssignments] = useState<ExamAssignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [attendanceCount, setAttendanceCount] = useState(0);
 
-  // Load belt exams
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [profileRes, assignmentsRes, attendanceRes] = await Promise.all([
+          apiClient.get<{ student: Student }>(`/api/students/${studentId}`),
+          apiClient.get<ExamAssignment[]>('/api/belt-exams/assignments'),
+          apiClient.get<{ stats: { attended: number } }>('/api/student/attendance'),
+        ]);
+        if (profileRes.success && profileRes.data) {
+          setCurrentStudent(profileRes.data.student);
+        }
+        if (assignmentsRes.success && assignmentsRes.data) {
+          setAssignments(assignmentsRes.data);
+        }
+        if (attendanceRes.success && attendanceRes.data?.stats) {
+          setAttendanceCount(attendanceRes.data.stats.attended);
+        }
+      } catch (error) {
+        console.error('Failed to load student belt testing data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [studentId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="loading loading-spinner loading-lg text-primary"></div>
+      </div>
+    );
+  }
+
+  if (!currentStudent) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="alert alert-warning">
+          <span>Student profile not found</span>
+        </div>
+      </div>
+    );
+  }
+
+  const requiredClasses = getRequiredClasses(currentStudent.belt);
+  const nextBelt = getNextBelt(currentStudent.belt, currentStudent.discipline);
+
+  const studentProgress = {
+    currentBelt: currentStudent.belt,
+    classesAttended: attendanceCount,
+    requiredClasses,
+    nextBelt,
+  };
+
+  return (
+    <StudentBeltTesting
+      assignments={assignments}
+      studentProgress={studentProgress}
+    />
+  );
+}
+
+// Separate component for admin/instructor view
+function AdminBeltTestingView() {
+  const { students } = useStudents();
+  const { attendance } = useAttendance();
+
+  const [exams, setExams] = useState<BeltExam[]>([]);
+  const [, setAssignments] = useState<ExamAssignment[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const loadExams = async () => {
       try {
@@ -67,7 +136,6 @@ export default function BeltTesting() {
     loadExams();
   }, []);
 
-  // Load exam assignments
   useEffect(() => {
     const loadAssignments = async () => {
       try {
@@ -86,7 +154,7 @@ export default function BeltTesting() {
     try {
       const response = await apiClient.post<BeltExam>('/api/belt-exams', examData);
       if (response.success && response.data) {
-        setExams([...exams, response.data]);
+        setExams(prev => [...prev, response.data!]);
       }
     } catch (error) {
       console.error('Failed to create exam:', error);
@@ -98,7 +166,7 @@ export default function BeltTesting() {
     try {
       const response = await apiClient.put<BeltExam>('/api/belt-exams', { id, ...updates });
       if (response.success && response.data) {
-        setExams(exams.map(e => e.id === id ? response.data! : e));
+        setExams(prev => prev.map(e => e.id === id ? response.data! : e));
       }
     } catch (error) {
       console.error('Failed to update exam:', error);
@@ -109,7 +177,7 @@ export default function BeltTesting() {
   const handleDeleteExam = async (id: string) => {
     try {
       await apiClient.delete(`/api/belt-exams?id=${id}`);
-      setExams(exams.filter(e => e.id !== id));
+      setExams(prev => prev.filter(e => e.id !== id));
     } catch (error) {
       console.error('Failed to delete exam:', error);
       throw error;
@@ -123,7 +191,7 @@ export default function BeltTesting() {
         student_id: studentId,
       });
       if (response.success && response.data) {
-        setAssignments([...assignments, response.data]);
+        setAssignments(prev => [...prev, response.data!]);
       }
     } catch (error) {
       console.error('Failed to assign student:', error);
@@ -139,43 +207,6 @@ export default function BeltTesting() {
     );
   }
 
-  // Student View
-  if (user?.role === 'student') {
-    // Find current student's data
-    const currentStudent = students.find(s => s.id === user.student_id);
-    
-    if (!currentStudent) {
-      return (
-        <div className="min-h-screen bg-black flex items-center justify-center p-4">
-          <div className="alert alert-warning">
-            <span>Student profile not found</span>
-          </div>
-        </div>
-      );
-    }
-
-    // Calculate student progress
-    const studentAttendance = attendance.filter(a => a.student_id === currentStudent.id && a.attended === 1);
-    const classesAttended = studentAttendance.length;
-    const requiredClasses = getRequiredClasses(currentStudent.belt);
-    const nextBelt = getNextBelt(currentStudent.belt, currentStudent.discipline);
-
-    const studentProgress = {
-      currentBelt: currentStudent.belt,
-      classesAttended,
-      requiredClasses,
-      nextBelt,
-    };
-
-    return (
-      <StudentBeltTesting
-        assignments={assignments}
-        studentProgress={studentProgress}
-      />
-    );
-  }
-
-  // Admin/Instructor View
   const eligibleStudents = calculateEligibleStudents(students, attendance);
 
   return (
@@ -188,4 +219,14 @@ export default function BeltTesting() {
       onAssignStudent={handleAssignStudent}
     />
   );
+}
+
+export default function BeltTesting() {
+  const { user } = useAuth();
+
+  if (user?.role === 'student') {
+    return <StudentBeltTestingView studentId={user.student_id ?? ''} />;
+  }
+
+  return <AdminBeltTestingView />;
 }

@@ -43,10 +43,19 @@ export async function onRequestGet({ request, env, params }: { request: Request;
 
     const studentId = params.id as string;
 
+    // Students can only access their own profile
+    if (auth.user.role === 'student' && studentId !== auth.user.student_id) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     let query = 'SELECT * FROM students WHERE id = ? AND deleted_at IS NULL';
     const bindValues: string[] = [studentId];
 
-    if (auth.user.role !== 'admin') {
+    // Instructors/non-admins are further restricted to their own students
+    if (auth.user.role !== 'admin' && auth.user.role !== 'student') {
       query += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
       bindValues.push(auth.user.id, auth.user.id);
     }
