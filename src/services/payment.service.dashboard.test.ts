@@ -149,21 +149,20 @@ describe('PaymentService — admin dashboard endpoints', () => {
     });
 
     it('surfaces the dedupe 409 response with alreadyPending + existingNotificationId', async () => {
+      // The api-client preserves extra fields in the error envelope when the
+      // backend returns 409 \u2014 model that with a structural cast so the
+      // consumer can read them.
       mockPost.mockResolvedValue({
         success: false,
         error: 'A pending unconfirmed reminder already exists for this student and month',
-        // The api-client preserves extra fields in the error envelope when the
-        // backend returns 409 — assert the consumer can read them.
         existingNotificationId: 'n-existing-1',
         alreadyPending: true,
-      });
+      } as unknown as Awaited<ReturnType<typeof apiClient.post>>);
 
       const result = (await service.notifyOverdueStudent({
         studentId: 's-3',
         monthLabel: '2026-05',
-      })) as typeof Object & {
-        success: false;
-        error?: string;
+      })) as Awaited<ReturnType<typeof service.notifyOverdueStudent>> & {
         existingNotificationId?: string;
         alreadyPending?: boolean;
       };
