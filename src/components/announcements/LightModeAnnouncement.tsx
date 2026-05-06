@@ -19,7 +19,7 @@
 import { useEffect, useState } from 'react';
 import { Sun, Moon, X, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/useTheme';
 
 const STORAGE_KEY = 'hamarr.announcement.lightMode.v1';
 

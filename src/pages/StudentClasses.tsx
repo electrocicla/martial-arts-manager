@@ -14,6 +14,8 @@ import {
   ArrowLeft,
   Award,
   CalendarDays,
+  ChevronDown,
+  ChevronUp,
   CheckCircle2,
   ClipboardList,
   Clock,
@@ -436,6 +438,8 @@ interface ClassCardProps {
 }
 
 function ClassCard({ entry, statusLabel, locale, t }: ClassCardProps) {
+  const [expanded, setExpanded] = useState(false);
+
   const StatusIcon = (() => {
     switch (entry.status) {
       case 'attended':
@@ -459,9 +463,13 @@ function ClassCard({ entry, statusLabel, locale, t }: ClassCardProps) {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="text-base font-bold text-white truncate">{entry.name}</h3>
+            <h3 className={`text-base font-bold text-white ${expanded ? 'leading-tight' : 'truncate'}`}>
+              {entry.name}
+            </h3>
             {entry.discipline && (
-              <p className="text-xs text-indigo-300 capitalize mt-0.5 truncate">{entry.discipline}</p>
+              <p className={`text-xs text-indigo-300 capitalize mt-0.5 ${expanded ? 'leading-relaxed' : 'truncate'}`}>
+                {entry.discipline}
+              </p>
             )}
           </div>
           <span
@@ -484,13 +492,13 @@ function ClassCard({ entry, statusLabel, locale, t }: ClassCardProps) {
           {entry.instructor && (
             <li className="flex items-center gap-2">
               <UserIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-              <span className="truncate">{entry.instructor}</span>
+              <span className={expanded ? 'leading-relaxed' : 'truncate'}>{entry.instructor}</span>
             </li>
           )}
           {entry.location && (
             <li className="flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-              <span className="truncate">{entry.location}</span>
+              <span className={expanded ? 'leading-relaxed' : 'truncate'}>{entry.location}</span>
             </li>
           )}
           {entry.checkInTime && entry.status === 'attended' && (
@@ -514,7 +522,9 @@ function ClassCard({ entry, statusLabel, locale, t }: ClassCardProps) {
           {entry.description && (
             <li className="flex items-start gap-2 text-gray-400">
               <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-              <span className="line-clamp-2">{entry.description}</span>
+              <span className={expanded ? 'whitespace-pre-line leading-relaxed' : 'line-clamp-2'}>
+                {entry.description}
+              </span>
             </li>
           )}
           {(entry.status === 'missed' || entry.status === 'no_record') && (
@@ -534,6 +544,18 @@ function ClassCard({ entry, statusLabel, locale, t }: ClassCardProps) {
             </li>
           )}
         </ul>
+
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className="mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-gray-700/80 bg-gray-800/40 hover:bg-gray-800/70 px-3 py-1.5 text-xs font-semibold text-gray-200 hover:text-white transition-colors"
+          aria-expanded={expanded}
+        >
+          {expanded
+            ? t('studentClasses.actions.showLess', 'Show less')
+            : t('studentClasses.actions.showMore', 'Show details')}
+          {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        </button>
       </CardContent>
     </Card>
   );
