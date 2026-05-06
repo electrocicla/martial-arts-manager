@@ -12,6 +12,8 @@ import { useOverdueStudents } from '../../../hooks/useOverdueStudents';
 import { useToast } from '../../../hooks/useToast';
 import OverdueStudentRow from './OverdueStudentRow';
 import OverdueEmptyState from './OverdueEmptyState';
+import OverdueFilters from './OverdueFilters';
+import QuickAddPaymentModal from './QuickAddPaymentModal';
 import type { OverdueStudent } from '../../../services';
 
 interface OverdueStudentsViewProps {
@@ -38,6 +40,9 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
   } = useOverdueStudents();
   const { success: showSuccess, error: showError } = useToast();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedDisciplines, setSelectedDisciplines] = useState<Set<string>>(() => new Set());
+  const [paymentModalStudent, setPaymentModalStudent] = useState<OverdueStudent | null>(null);
 
   const locale = getLocale(i18n.language);
 
@@ -137,9 +142,23 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
     ? data.meta.dueDate.slice(0, 7)
     : new Date().toISOString().slice(0, 7);
 
-  // Selectable students = those with a linked user account; the only ones the
-  // backend can actually notify.
-  const selectableStudents = data.students.filter((s) => Boolean(s.userId));
+  const availableDisciplines = Array.from(
+    new Set(data.students.map((s) => s.discipline).filter((d): d is string => Boolean(d))),
+  ).sort();
+
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const filteredStudents = data.students.filter((s) => {
+    if (selectedDisciplines.size > 0 && !selectedDisciplines.has(s.discipline)) return false;
+    if (normalizedSearch.length === 0) return true;
+    const haystack = [s.studentName, s.studentEmail, s.studentPhone ?? '']
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(normalizedSearch);
+  });
+
+  // Selectable students = filtered students with a linked user account; the only
+  // ones the backend can actually notify, scoped to the current filter view.
+  const selectableStudents = filteredStudents.filter((s) => Boolean(s.userId));
   const selectableCount = selectableStudents.length;
   const allSelectableSelected =
     selectableCount > 0 && selectableStudents.every((s) => selectedIds.has(s.studentId));
@@ -197,8 +216,29 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
   };
 
   const handleSendAll = async () => {
-    const result = await notifyBulk({ all: true, monthLabel });
+    // Send to all overdue currently visible after filters when filters are active;
+    // otherwise let the backend target every overdue student.
+    const filtersActive = normalizedSearch.length > 0 || selectedDisciplines.size > 0;
+    const result = filtersActive
+      ? await notifyBulk({ studentIds: selectableStudents.map((s) => s.studentId), monthLabel })
+      : await notifyBulk({ all: true, monthLabel });
     presentBulkResult(t('payments.overdue.bulkSendAllTitle', 'Bulk reminder result'), result);
+  };
+
+  const handleToggleDiscipline = (discipline: string) => {
+    setSelectedDisciplines((prev) => {
+      const updated = new Set(prev);
+      if (updated.has(discipline)) updated.delete(discipline);
+      else updated.add(discipline);
+      return updated;
+    });
+    // Drop selections that are no longer visible after the discipline change.
+    setSelectedIds(new Set());
+  };
+
+  const handleClearDisciplines = () => {
+    setSelectedDisciplines(new Set());
+    setSelectedIds(new Set());
   };
 
   const selectedCount = selectedIds.size;
@@ -224,6 +264,17 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
           {t('common.refresh', 'Refresh')}
         </Button>
       </div>
+
+      <OverdueFilters
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        availableDisciplines={availableDisciplines}
+        selectedDisciplines={selectedDisciplines}
+        onToggleDiscipline={handleToggleDiscipline}
+        onClearDisciplines={handleClearDisciplines}
+        filteredCount={filteredStudents.length}
+        totalCount={data.students.length}
+      />
 
       {/* Bulk action toolbar */}
       <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -296,20 +347,39 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
       </div>
 
       <div className="space-y-3">
-        {data.students.map((student) => (
-          <OverdueStudentRow
-            key={student.studentId}
-            student={student}
-            isSending={pendingNotifications.has(student.studentId)}
-            onSend={handleSend}
-            formatCurrency={formatCurrency}
-            formatDate={formatDate}
-            selectable
-            selected={selectedIds.has(student.studentId)}
-            onToggleSelected={handleToggleOne}
-          />
-        ))}
+        {filteredStudents.length === 0 ? (
+          <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-6 text-center text-sm text-gray-400">
+            {t(
+              'payments.overdue.noFilterResults',
+              'No overdue students match the current filters. Try clearing the search or discipline filters.',
+            )}
+          </div>
+        ) : (
+          filteredStudents.map((student) => (
+            <OverdueStudentRow
+              key={student.studentId}
+              student={student}
+              isSending={pendingNotifications.has(student.studentId)}
+              onSend={handleSend}
+              onAddPayment={setPaymentModalStudent}
+              formatCurrency={formatCurrency}
+              formatDate={formatDate}
+              selectable
+              selected={selectedIds.has(student.studentId)}
+              onToggleSelected={handleToggleOne}
+            />
+          ))
+        )}
       </div>
+
+      <QuickAddPaymentModal
+        isOpen={paymentModalStudent !== null}
+        student={paymentModalStudent}
+        onClose={() => setPaymentModalStudent(null)}
+        onSuccess={() => {
+          void refresh();
+        }}
+      />
     </div>
   );
 }
