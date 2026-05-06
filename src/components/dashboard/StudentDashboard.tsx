@@ -82,52 +82,70 @@ export default function StudentDashboard() {
           </CardContent>
         </Card>
 
-        {/* Stats Grid */}
+        {/* Stats Grid (clickable quick-links to sub-sections) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <button
+            type="button"
+            onClick={() => navigate('/profile')}
+            className="text-left rounded-xl border border-gray-700/50 bg-gray-800/40 p-4 transition-all duration-200 hover:border-red-500/40 hover:bg-gray-800/70 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/60"
+          >
+            <div className="flex items-center justify-between pb-2">
               <h3 className="text-sm font-medium text-gray-400">{t('dashboard.student.currentBelt')}</h3>
               <User className="w-4 h-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{profile?.belt || 'White'}</div>
-              <p className="text-xs text-gray-500">{profile?.discipline}</p>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="text-2xl font-bold text-white">{profile?.belt || 'White'}</div>
+            <p className="text-xs text-gray-500">{profile?.discipline}</p>
+            <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-red-400/90">
+              {t('dashboard.student.viewProfile', 'View profile')}
+              <ArrowRight className="w-3 h-3" />
+            </div>
+          </button>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <button
+            type="button"
+            onClick={() => navigate('/my-classes')}
+            className="text-left rounded-xl border border-gray-700/50 bg-gray-800/40 p-4 transition-all duration-200 hover:border-indigo-500/40 hover:bg-gray-800/70 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60"
+          >
+            <div className="flex items-center justify-between pb-2">
               <h3 className="text-sm font-medium text-gray-400">{t('dashboard.student.nextClass')}</h3>
-              <Calendar className="w-4 h-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {nextClass ? nextClass.name : t('dashboard.student.noUpcomingClasses')}
-              </div>
-              {nextClass && (
-                <p className="text-xs text-gray-500">
-                  {new Date(nextClass.date).toLocaleDateString()} at {nextClass.time}
-                </p>
-              )}
-            </CardContent>
-          </Card>
+              <Calendar className="w-4 h-4 text-indigo-400" />
+            </div>
+            <div className="text-2xl font-bold text-white truncate">
+              {nextClass ? nextClass.name : t('dashboard.student.noUpcomingClasses')}
+            </div>
+            {nextClass && (
+              <p className="text-xs text-gray-500">
+                {new Date(nextClass.date).toLocaleDateString()} at {nextClass.time}
+              </p>
+            )}
+            <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-indigo-300">
+              {t('dashboard.student.viewMyClasses', 'View my classes')}
+              <ArrowRight className="w-3 h-3" />
+            </div>
+          </button>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <button
+            type="button"
+            onClick={() => navigate('/my-payments')}
+            className="text-left rounded-xl border border-gray-700/50 bg-gray-800/40 p-4 transition-all duration-200 hover:border-emerald-500/40 hover:bg-gray-800/70 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60"
+          >
+            <div className="flex items-center justify-between pb-2">
               <h3 className="text-sm font-medium text-gray-400">{t('dashboard.student.payments')}</h3>
-              <CreditCard className="w-4 h-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {payments.length > 0 ? `$${payments[0].amount}` : t('dashboard.student.pending')}
-              </div>
-              {payments.length > 0 && (
-                <p className="text-xs text-gray-500">
-                  {parseLocalDate(payments[0].date).toLocaleDateString()}
-                </p>
-              )}
-            </CardContent>
-          </Card>
+              <CreditCard className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="text-2xl font-bold text-white">
+              {payments.length > 0 ? `$${payments[0].amount}` : t('dashboard.student.pending')}
+            </div>
+            {payments.length > 0 && (
+              <p className="text-xs text-gray-500">
+                {parseLocalDate(payments[0].date).toLocaleDateString()}
+              </p>
+            )}
+            <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-emerald-300">
+              {t('dashboard.student.viewMyPayments', 'View my payments')}
+              <ArrowRight className="w-3 h-3" />
+            </div>
+          </button>
         </div>
 
         {/* Recent Classes */}
@@ -138,9 +156,17 @@ export default function StudentDashboard() {
                 <BookOpen className="w-5 h-5 text-red-400" />
                 <h3 className="text-lg font-bold text-white">{t('dashboard.student.myClasses')}</h3>
               </div>
-              {classes.length > 5 && (
-                <span className="text-xs text-gray-500">{classes.length} {t('classes.plural', 'clases')}</span>
-              )}
+              <button
+                type="button"
+                onClick={() => navigate('/my-classes')}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-300 hover:text-indigo-200 px-2 py-1 rounded-md hover:bg-indigo-500/10 transition-colors"
+              >
+                {classes.length > 5 && (
+                  <span className="text-gray-500 mr-1.5">{classes.length} {t('classes.plural', 'clases')}</span>
+                )}
+                {t('dashboard.student.viewMyClasses', 'View my classes')}
+                <ArrowRight className="w-3 h-3" />
+              </button>
             </div>
           </CardHeader>
           <CardContent>
