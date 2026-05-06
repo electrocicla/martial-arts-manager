@@ -1145,6 +1145,7 @@
       "overallProgress": "Overall progress",
       "passed": "Passed",
       "readyTitle": "You are ready to test!",
+      "requirementsDesc": "Each rank doubles the requirements of the previous one. Tournament participation is encouraged but optional.",
       "requirementsTitle": "Belt-up requirements",
       "roadmapDesc": "Preview of upcoming requirements as you advance.",
       "roadmapTitle": "Progression roadmap",

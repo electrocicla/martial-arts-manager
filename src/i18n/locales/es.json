@@ -1148,6 +1148,7 @@
       "overallProgress": "Progreso general",
       "passed": "Aprobado",
       "readyTitle": "¡Estás listo para examinarte!",
+      "requirementsDesc": "Cada grado duplica los requisitos del grado anterior. La participación en torneos se recomienda, pero es opcional.",
       "requirementsTitle": "Requisitos para subir de cinturón",
       "roadmapDesc": "Vista previa de los próximos requisitos a medida que avances.",
       "roadmapTitle": "Hoja de ruta de progresión",

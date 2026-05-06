@@ -56,6 +56,9 @@ interface RadialProps {
   required: number;
   icon: React.ReactNode;
   tone: 'classes' | 'sparring' | 'tournament';
+  /** When provided, overrides the tone stroke (e.g. paint the 'classes' arc
+   *  with the next belt color so the main metric matches the goal belt). */
+  strokeOverride?: string;
 }
 
 const TONE_STYLES: Record<RadialProps['tone'], { stroke: string; bg: string; text: string }> = {
@@ -64,21 +67,57 @@ const TONE_STYLES: Record<RadialProps['tone'], { stroke: string; bg: string; tex
   tournament: { stroke: '#f59e0b', bg: 'bg-amber-500/10', text: 'text-amber-400' },
 };
 
-function RadialGauge({ percent, label: gaugeLabel, current, required, icon, tone }: RadialProps) {
+/**
+ * Belt-aware visual theming. Each belt gets a hex (for SVG strokes / inline
+ * styles) and matching Tailwind utility classes for backgrounds + text. The
+ * 'Blue belt rendered in green' bug came from the hero hardcoding
+ * `text-emerald-400` on the next-goal label regardless of which belt was
+ * actually next — this map is the single source of truth.
+ */
+interface BeltTheme {
+  hex: string;
+  text: string;
+  ring: string;
+  glow: string;
+  pillBg: string;
+  pillText: string;
+  pillBorder: string;
+}
+
+const BELT_THEMES: Record<string, BeltTheme> = {
+  white:  { hex: '#e5e7eb', text: 'text-zinc-700',    ring: 'ring-zinc-300',    glow: 'shadow-zinc-300/30',    pillBg: 'bg-zinc-100',     pillText: 'text-zinc-900',    pillBorder: 'border-zinc-300' },
+  yellow: { hex: '#facc15', text: 'text-yellow-600',  ring: 'ring-yellow-400',  glow: 'shadow-yellow-400/40',  pillBg: 'bg-yellow-100',   pillText: 'text-yellow-900',  pillBorder: 'border-yellow-400' },
+  orange: { hex: '#fb923c', text: 'text-orange-600',  ring: 'ring-orange-400',  glow: 'shadow-orange-400/40',  pillBg: 'bg-orange-100',   pillText: 'text-orange-900',  pillBorder: 'border-orange-400' },
+  green:  { hex: '#22c55e', text: 'text-emerald-600', ring: 'ring-emerald-400', glow: 'shadow-emerald-400/40', pillBg: 'bg-emerald-100',  pillText: 'text-emerald-900', pillBorder: 'border-emerald-400' },
+  blue:   { hex: '#3b82f6', text: 'text-blue-600',    ring: 'ring-blue-400',    glow: 'shadow-blue-400/40',    pillBg: 'bg-blue-100',     pillText: 'text-blue-900',    pillBorder: 'border-blue-400' },
+  purple: { hex: '#a855f7', text: 'text-purple-600',  ring: 'ring-purple-400',  glow: 'shadow-purple-400/40',  pillBg: 'bg-purple-100',   pillText: 'text-purple-900',  pillBorder: 'border-purple-400' },
+  brown:  { hex: '#92400e', text: 'text-amber-800',   ring: 'ring-amber-700',   glow: 'shadow-amber-700/40',   pillBg: 'bg-amber-100',    pillText: 'text-amber-900',   pillBorder: 'border-amber-700' },
+  black:  { hex: '#111827', text: 'text-zinc-900',    ring: 'ring-zinc-800',    glow: 'shadow-zinc-900/40',    pillBg: 'bg-zinc-200',     pillText: 'text-zinc-900',    pillBorder: 'border-zinc-800' },
+  red:    { hex: '#dc2626', text: 'text-red-600',     ring: 'ring-red-500',     glow: 'shadow-red-500/40',     pillBg: 'bg-red-100',      pillText: 'text-red-900',     pillBorder: 'border-red-500' },
+};
+
+function beltTheme(belt: string | null | undefined): BeltTheme {
+  if (!belt) return BELT_THEMES.white;
+  const key = belt.trim().toLowerCase().split(/[\s\-/]/)[0];
+  return BELT_THEMES[key] ?? BELT_THEMES.white;
+}
+
+function RadialGauge({ percent, label: gaugeLabel, current, required, icon, tone, strokeOverride }: RadialProps) {
   const safe = Math.max(0, Math.min(100, percent));
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (safe / 100) * circumference;
   const styles = TONE_STYLES[tone];
+  const stroke = strokeOverride ?? styles.stroke;
 
   return (
-    <div className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-base-300/40 border border-base-300">
-      <div className="relative w-32 h-32">
-        <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120" aria-hidden="true">
+    <div className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-base-300/40 border border-base-300 transition-shadow hover:shadow-md">
+      <div className="relative w-36 h-36">
+        <svg className="w-full h-full -rotate-90 drop-shadow-sm" viewBox="0 0 120 120" aria-hidden="true">
           <circle cx="60" cy="60" r={radius} stroke="currentColor" strokeWidth="10" fill="none" className="text-base-300" />
           <circle
             cx="60" cy="60" r={radius}
-            stroke={styles.stroke}
+            stroke={stroke}
             strokeWidth="10"
             fill="none"
             strokeDasharray={circumference}
@@ -88,14 +127,20 @@ function RadialGauge({ percent, label: gaugeLabel, current, required, icon, tone
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className={`p-1.5 rounded-lg ${styles.bg} ${styles.text}`} aria-hidden="true">{icon}</div>
+          <div
+            className={`p-2 rounded-lg ${styles.bg} ${styles.text}`}
+            aria-hidden="true"
+            style={strokeOverride ? { color: stroke, backgroundColor: `${stroke}1f` } : undefined}
+          >
+            {icon}
+          </div>
           <span className="text-2xl font-black text-base-content mt-1 tabular-nums">{safe}%</span>
         </div>
       </div>
-      <div className="text-center">
-        <p className="text-xs uppercase tracking-wider text-base-content/60 font-semibold">{gaugeLabel}</p>
-        <p className="text-sm text-base-content font-bold tabular-nums">
-          {current.toLocaleString()} / {required.toLocaleString()}
+      <div className="text-center space-y-1">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-base-content/60 font-bold">{gaugeLabel}</p>
+        <p className="text-base text-base-content font-bold tabular-nums">
+          {current.toLocaleString()} <span className="text-base-content/50 font-medium">/</span> {required.toLocaleString()}
         </p>
       </div>
     </div>
@@ -176,6 +221,8 @@ export default function StudentBeltTesting({
     100,
     Math.round((progression.attended.tournaments / Math.max(1, progression.requirements.tournaments)) * 100)
   );
+  const currentTheme = beltTheme(progression.currentBelt);
+  const nextTheme = beltTheme(progression.nextBelt);
 
   return (
     <div className="min-h-screen bg-base-100 pb-24 md:pb-10">
@@ -205,37 +252,49 @@ export default function StudentBeltTesting({
               </div>
 
               {/* Current → Next belt ribbon */}
-              <Surface variant="raised" radius="lg" className="p-5 md:p-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                  <div className="flex items-center gap-5">
+              <Surface variant="raised" radius="lg" className="p-6 md:p-8">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+                  <div className="flex items-center gap-6">
                     <div className="flex flex-col">
-                      <span className="text-xs uppercase tracking-[0.18em] text-base-content/60 font-semibold">
+                      <span className="text-[11px] uppercase tracking-[0.22em] text-base-content/60 font-bold">
                         {label(t, 'beltTesting.student.currentBelt', 'Current Belt')}
                       </span>
-                      <span className="text-3xl md:text-4xl font-black text-base-content mt-1">{progression.currentBelt}</span>
+                      <span
+                        className={`mt-2 inline-flex items-center self-start rounded-xl border-2 px-4 py-1.5 text-3xl md:text-4xl font-black tracking-tight ${currentTheme.pillBg} ${currentTheme.pillText} ${currentTheme.pillBorder} shadow-md ${currentTheme.glow}`}
+                      >
+                        {progression.currentBelt}
+                      </span>
                     </div>
-                    <div className="hidden md:flex items-center text-base-content/40" aria-hidden="true">
-                      <TrendingUp className="w-8 h-8" />
+                    <div className="hidden md:flex items-center text-base-content/30" aria-hidden="true">
+                      <TrendingUp className="w-9 h-9" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-xs uppercase tracking-[0.18em] text-base-content/60 font-semibold">
+                      <span className="text-[11px] uppercase tracking-[0.22em] text-base-content/60 font-bold">
                         {label(t, 'beltTesting.student.nextGoal', 'Next Goal')}
                       </span>
-                      <span className="text-3xl md:text-4xl font-black text-emerald-400 mt-1">
+                      <span
+                        className={`mt-2 inline-flex items-center self-start rounded-xl border-2 px-4 py-1.5 text-3xl md:text-4xl font-black tracking-tight ${nextTheme.pillBg} ${nextTheme.pillText} ${nextTheme.pillBorder} shadow-md ${nextTheme.glow}`}
+                      >
                         {progression.nextBelt ?? label(t, 'beltTesting.student.topRank', 'Top rank')}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-start md:items-end gap-2">
-                    <span className="text-xs uppercase tracking-[0.18em] text-base-content/60 font-semibold">
+                  <div className="flex flex-col items-start md:items-end gap-2 md:pl-6 md:border-l md:border-base-300">
+                    <span className="text-[11px] uppercase tracking-[0.22em] text-base-content/60 font-bold">
                       {label(t, 'beltTesting.student.overallProgress', 'Overall progress')}
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-black text-base-content tabular-nums">{progression.percent.overall}%</span>
+                      <span className={`text-5xl font-black tabular-nums ${nextTheme.text}`}>{progression.percent.overall}%</span>
                       <span className="text-sm text-base-content/60">
                         {label(t, 'beltTesting.student.toNextBelt', 'to next belt')}
                       </span>
+                    </div>
+                    <div className="w-full md:w-56 h-2 rounded-full bg-base-300/70 overflow-hidden mt-1">
+                      <div
+                        className="h-full rounded-full transition-all duration-700 ease-out"
+                        style={{ width: `${Math.max(2, Math.min(100, progression.percent.overall))}%`, backgroundColor: nextTheme.hex }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -298,7 +357,7 @@ export default function StudentBeltTesting({
             'Each rank doubles the requirements of the previous one. Tournament participation is encouraged but optional.'
           )}
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <RadialGauge
               percent={progression.percent.classes}
               label={label(t, 'beltTesting.student.classes', 'Classes')}
@@ -306,6 +365,7 @@ export default function StudentBeltTesting({
               required={progression.requirements.classes}
               icon={<GraduationCap className="w-5 h-5" />}
               tone="classes"
+              strokeOverride={nextTheme.hex}
             />
             <RadialGauge
               percent={progression.percent.sparrings}
