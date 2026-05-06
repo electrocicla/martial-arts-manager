@@ -7,6 +7,7 @@ import BottomSlidingMenu from './components/layout/BottomSlidingMenu';
 import { CommandPalette } from './components/ui/CommandPalette';
 import AndroidApkInstallPrompt from './components/mobile/AndroidApkInstallPrompt';
 import PullToRefresh from './components/mobile/PullToRefresh';
+import { LightModeAnnouncement } from './components/announcements/LightModeAnnouncement';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PrivacyProvider } from './context/PrivacyContext';
 import { PollingProvider } from './context/PollingContext';
@@ -77,6 +78,7 @@ function AppContent() {
       </main>
       <BottomSlidingMenu />
       <CommandPalette />
+      <LightModeAnnouncement />
     </div>
     </PullToRefresh>
   );
