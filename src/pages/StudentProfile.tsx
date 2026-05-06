@@ -30,7 +30,7 @@ import TrainingSummaryPanel from '../components/profile/TrainingSummaryPanel';
 import type { TrainingDisciplineEntry } from '../components/profile/TrainingSummaryPanel';
 
 const profileSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  name: z.string().min(2, 'profileV2.validation.nameMin'),
   phone: z.string().optional(),
   date_of_birth: z.string().optional(),
   emergency_contact_name: z.string().optional(),
@@ -101,48 +101,48 @@ export default function StudentProfile() {
     return [
       {
         id: 'photo',
-        label: 'Profile photo',
-        description: 'Helps instructors identify members quickly.',
+        label: t('profileV2.readiness.items.photo.label', 'Profile photo'),
+        description: t('profileV2.readiness.items.photo.description', 'Helps instructors identify members quickly.'),
         complete: Boolean(profile?.avatar_url),
         icon: ImageIcon,
       },
       {
         id: 'name',
-        label: 'Full name',
-        description: 'Used across rosters, attendance, and payment records.',
+        label: t('profileV2.readiness.items.name.label', 'Full name'),
+        description: t('profileV2.readiness.items.name.description', 'Used across rosters, attendance, and payment records.'),
         complete: hasText(profile?.name),
         icon: User,
       },
       {
         id: 'email',
-        label: 'Email address',
-        description: 'Required for account access and app notifications.',
+        label: t('profileV2.readiness.items.email.label', 'Email address'),
+        description: t('profileV2.readiness.items.email.description', 'Required for account access and app notifications.'),
         complete: hasText(profile?.email),
         icon: Mail,
       },
       {
         id: 'phone',
-        label: 'Phone number',
-        description: 'Useful for class changes and urgent coordination.',
+        label: t('profileV2.readiness.items.phone.label', 'Phone number'),
+        description: t('profileV2.readiness.items.phone.description', 'Useful for class changes and urgent coordination.'),
         complete: hasText(profile?.phone),
         icon: Phone,
       },
       {
         id: 'emergency',
-        label: 'Emergency contact',
-        description: 'Must be available before higher-risk training sessions.',
+        label: t('profileV2.readiness.items.emergency.label', 'Emergency contact'),
+        description: t('profileV2.readiness.items.emergency.description', 'Must be available before higher-risk training sessions.'),
         complete: emergencyComplete,
         icon: Shield,
       },
       {
         id: 'training',
-        label: 'Training assignment',
-        description: 'Discipline and rank are maintained by staff.',
+        label: t('profileV2.readiness.items.training.label', 'Training assignment'),
+        description: t('profileV2.readiness.items.training.description', 'Discipline and rank are maintained by staff.'),
         complete: trainingComplete,
         icon: ClipboardCheck,
       },
     ];
-  }, [disciplines, profile]);
+  }, [disciplines, profile, t]);
 
   const completionPercentage = useMemo(() => {
     const completedCount = completionItems.filter((item) => item.complete).length;
@@ -157,7 +157,7 @@ export default function StudentProfile() {
     try {
       const response = await apiClient.put<{ success: boolean }>('/api/account/profile', data);
       if (!response.success) {
-        throw new Error(response.error || 'Failed to update profile');
+        throw new Error(response.error || t('profileV2.errors.updateFailed', 'Failed to update profile'));
       }
 
       await refresh();
@@ -191,7 +191,7 @@ export default function StudentProfile() {
     }
 
     if (!accessToken) {
-      setSaveError('No authentication token available');
+      setSaveError(t('profileV2.errors.noAuthToken', 'No authentication token available'));
       event.target.value = '';
       return;
     }
@@ -212,7 +212,7 @@ export default function StudentProfile() {
 
       if (!response.ok) {
         const errorData = await response.json() as { error?: string };
-        throw new Error(errorData.error || 'Failed to upload avatar');
+        throw new Error(errorData.error || t('profileV2.errors.avatarUploadFailed', 'Failed to upload avatar'));
       }
 
       await refresh();
@@ -261,7 +261,7 @@ export default function StudentProfile() {
             <User className="h-8 w-8 text-red-400" />
             {t('profile.title', 'My Profile')}
           </h1>
-          <p className="text-gray-400">Personal, emergency, and training identity details for your account.</p>
+          <p className="text-gray-400">{t('profileV2.subtitle', 'Personal, emergency, and training identity details for your account.')}</p>
         </header>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-12 xl:gap-8">
@@ -286,7 +286,7 @@ export default function StudentProfile() {
               <CardHeader>
                 <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
                   <User className="h-5 w-5" />
-                  Personal information
+                  {t('profileV2.form.personalInformation', 'Personal information')}
                 </h2>
               </CardHeader>
               <CardContent>
@@ -294,21 +294,21 @@ export default function StudentProfile() {
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                       <label htmlFor="profile-name" className="mb-2 block text-sm font-medium text-gray-300">
-                        Full name
+                        {t('profile.fullName', 'Full name')}
                       </label>
                       <Input
                         id="profile-name"
                         {...register('name')}
                         className="bg-gray-700 border-gray-600 text-white focus:border-primary"
-                        placeholder="Enter your full name"
+                        placeholder={t('registerPage.fullNamePlaceholder', 'Enter your full name')}
                       />
-                      {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>}
+                      {errors.name && <p className="mt-1 text-sm text-red-400">{t(errors.name.message || 'profileV2.validation.nameMin', 'Name must be at least 2 characters')}</p>}
                     </div>
 
                     <div>
                       <label htmlFor="profile-email" className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                         <Mail className="h-4 w-4" />
-                        Email
+                        {t('profile.email', 'Email')}
                       </label>
                       <Input
                         id="profile-email"
@@ -316,13 +316,13 @@ export default function StudentProfile() {
                         disabled
                         className="cursor-not-allowed bg-gray-700/50 border-gray-600 text-gray-400"
                       />
-                      <p className="mt-1 text-xs text-gray-500">Email changes require staff support.</p>
+                      <p className="mt-1 text-xs text-gray-500">{t('profileV2.form.emailSupportNote', 'Email changes require staff support.')}</p>
                     </div>
 
                     <div>
                       <label htmlFor="profile-phone" className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                         <Phone className="h-4 w-4" />
-                        Phone
+                        {t('profile.phone', 'Phone')}
                       </label>
                       <Input
                         id="profile-phone"
@@ -335,7 +335,7 @@ export default function StudentProfile() {
                     <div>
                       <label htmlFor="profile-date-of-birth" className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-300">
                         <Calendar className="h-4 w-4" />
-                        Date of birth
+                        {t('profile.dob', 'Date of birth')}
                       </label>
                       <Input
                         id="profile-date-of-birth"
@@ -349,23 +349,23 @@ export default function StudentProfile() {
                   <div className="border-t border-gray-700 pt-6">
                     <h3 className="mb-4 flex items-center gap-2 text-lg font-medium text-white">
                       <Shield className="h-5 w-5 text-yellow-400" />
-                      Emergency contact
+                      {t('profile.emergencyContact', 'Emergency contact')}
                     </h3>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                       <div>
                         <label htmlFor="emergency-contact-name" className="mb-2 block text-sm font-medium text-gray-300">
-                          Contact name
+                          {t('profile.emergencyName', 'Contact name')}
                         </label>
                         <Input
                           id="emergency-contact-name"
                           {...register('emergency_contact_name')}
                           className="bg-gray-700 border-gray-600 text-white focus:border-primary"
-                          placeholder="Emergency contact name"
+                          placeholder={t('profileV2.form.emergencyNamePlaceholder', 'Emergency contact name')}
                         />
                       </div>
                       <div>
                         <label htmlFor="emergency-contact-phone" className="mb-2 block text-sm font-medium text-gray-300">
-                          Contact phone
+                          {t('profile.emergencyPhone', 'Contact phone')}
                         </label>
                         <Input
                           id="emergency-contact-phone"
@@ -379,14 +379,14 @@ export default function StudentProfile() {
 
                   <div className="border-t border-gray-700 pt-6">
                     <label htmlFor="profile-notes" className="mb-2 block text-sm font-medium text-gray-300">
-                      Training notes
+                      {t('profileV2.form.trainingNotes', 'Training notes')}
                     </label>
                     <textarea
                       id="profile-notes"
                       {...register('notes')}
                       className="w-full resize-none rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                       rows={4}
-                      placeholder="Allergies, injuries, goals, or other details staff should know."
+                      placeholder={t('profileV2.form.trainingNotesPlaceholder', 'Allergies, injuries, goals, or other details staff should know.')}
                     />
                   </div>
 
@@ -398,7 +398,7 @@ export default function StudentProfile() {
 
                   {saveSuccess && (
                     <div className="rounded-lg border border-green-500/30 bg-green-900/20 p-4" aria-live="polite">
-                      <p className="text-sm text-green-400">Profile updated successfully.</p>
+                      <p className="text-sm text-green-400">{t('profileV2.form.success', 'Profile updated successfully.')}</p>
                     </div>
                   )}
 
@@ -407,17 +407,17 @@ export default function StudentProfile() {
                       {isSaving ? (
                         <>
                           <Loader2 className="h-5 w-5 animate-spin" />
-                          Saving...
+                          {t('common.saving', 'Saving...')}
                         </>
                       ) : (
                         <>
                           <Save className="h-5 w-5" />
-                          Save profile
+                          {t('profileV2.form.saveProfile', 'Save profile')}
                         </>
                       )}
                     </Button>
                     <Button type="button" variant="outline" onClick={() => reset()} fullWidth>
-                      Cancel
+                      {t('profile.cancel', 'Cancel')}
                     </Button>
                   </div>
                 </form>

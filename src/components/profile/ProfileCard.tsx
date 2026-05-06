@@ -41,7 +41,13 @@ export default function ProfileCard({
           <div className="relative mb-6">
             <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white text-4xl font-bold shadow-lg ring-4 ring-gray-700">
               {avatarUrl ? (
-                <img src={avatarUrl} alt={name ? `${name} profile` : 'Profile'} className="w-full h-full object-cover" width={128} height={128} />
+                <img
+                  src={avatarUrl}
+                  alt={name ? t('profileV2.card.avatarAltWithName', '{{name}} profile', { name }) : t('profileV2.card.avatarAlt', 'Profile')}
+                  className="w-full h-full object-cover"
+                  width={128}
+                  height={128}
+                />
               ) : (
                 <span>{name ? getInitials(name) : <User className="w-12 h-12" />}</span>
               )}
@@ -57,12 +63,12 @@ export default function ProfileCard({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={avatarUploading}
                 className="absolute bottom-0 right-0 flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-900/40 transition-colors duration-200 hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
-                aria-label="Change profile photo"
+                aria-label={t('profileV2.card.changePhoto', 'Change profile photo')}
               >
                 <Camera className="w-5 h-5" />
               </button>
             )}
-            <label htmlFor={avatarInputId} className="sr-only">Profile photo upload</label>
+            <label htmlFor={avatarInputId} className="sr-only">{t('profileV2.card.photoUploadLabel', 'Profile photo upload')}</label>
             <input
               id={avatarInputId}
               ref={fileInputRef}
@@ -86,7 +92,7 @@ export default function ProfileCard({
             <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
               <div className="flex items-center gap-3">
                 <User className="w-5 h-5 text-red-400" />
-                <span className="text-sm text-gray-300">Readiness</span>
+                <span className="text-sm text-gray-300">{t('profileV2.card.readiness', 'Readiness')}</span>
               </div>
               <span className="text-sm font-medium text-white">{completionPercentage}%</span>
             </div>
@@ -96,7 +102,7 @@ export default function ProfileCard({
                 <span className="text-sm text-gray-300">{t('profile.memberSince', 'Member since')}</span>
               </div>
               <span className="text-sm font-medium text-white">
-                {joinDate ? new Date(joinDate).getFullYear() : 'N/A'}
+                {joinDate ? new Date(joinDate).getFullYear() : t('profileV2.card.notAvailable', 'N/A')}
               </span>
             </div>
             <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">

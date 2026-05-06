@@ -1,5 +1,6 @@
 import { Save, Smartphone } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import useSettings from '../../hooks/useSettings';
 import { APP_PREFERENCE_KEYS, readBooleanPreference, writeBooleanPreference } from '../../lib/preferences';
 import { Button } from '../ui/Button';
@@ -23,6 +24,7 @@ function parseMobileSettings(value: unknown): MobileSettingsValue {
 }
 
 export default function MobileSettings() {
+  const { t } = useTranslation();
   const { settings, saveSection } = useSettings();
   const [pullToRefresh, setPullToRefresh] = useState(() => readBooleanPreference(APP_PREFERENCE_KEYS.pullToRefresh, true));
   const [androidInstallPrompt, setAndroidInstallPrompt] = useState(() => readBooleanPreference(APP_PREFERENCE_KEYS.androidInstallPrompt, true));
@@ -59,27 +61,27 @@ export default function MobileSettings() {
         <div className="flex items-start gap-3">
           <Smartphone className="mt-0.5 h-5 w-5 text-red-400" />
           <div>
-            <h2 className="text-lg font-semibold text-white">Mobile app behavior</h2>
-            <p className="text-sm text-gray-400">Tune mobile-only actions for the PWA and Android build.</p>
+            <h2 className="text-lg font-semibold text-white">{t('settingsHub.mobile.title', 'Mobile app behavior')}</h2>
+            <p className="text-sm text-gray-400">{t('settingsHub.mobile.subtitle', 'Tune mobile-only actions for the PWA and Android build.')}</p>
           </div>
         </div>
         <Button type="button" variant="primary" size="sm" leftIcon={<Save className="h-4 w-4" />} onClick={handleSave}>
-          Save mobile settings
+          {t('settingsHub.mobile.save', 'Save mobile settings')}
         </Button>
       </header>
 
       <div className="space-y-3">
         <SettingsToggle
           id="settings-pull-to-refresh"
-          label="Enable pull to refresh"
-          description="Refresh students, classes, payments, attendance, and notifications with one mobile gesture."
+          label={t('settingsHub.mobile.pullToRefresh', 'Enable pull to refresh')}
+          description={t('settingsHub.mobile.pullToRefreshDescription', 'Refresh students, classes, payments, attendance, and notifications with one mobile gesture.')}
           checked={pullToRefresh}
           onChange={handlePullToRefreshChange}
         />
         <SettingsToggle
           id="settings-android-install-prompt"
-          label="Show Android install reminders"
-          description="Offer the APK install prompt on supported Android devices when it adds value."
+          label={t('settingsHub.mobile.androidInstallPrompt', 'Show Android install reminders')}
+          description={t('settingsHub.mobile.androidInstallPromptDescription', 'Offer the APK install prompt on supported Android devices when it adds value.')}
           checked={androidInstallPrompt}
           onChange={handleAndroidPromptChange}
         />

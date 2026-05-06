@@ -1,5 +1,6 @@
 import { Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import useSettings from '../../hooks/useSettings';
 import { Button } from '../ui/Button';
 import SettingsToggle from './SettingsToggle';
@@ -32,36 +33,36 @@ const DEFAULT_NOTIFICATIONS: NotificationPreferences = {
   digestFrequency: 'instant',
 };
 
-const TOGGLE_OPTIONS: Array<{ id: ToggleKey; label: string; description: string }> = [
+const TOGGLE_OPTIONS: Array<{ id: ToggleKey; labelKey: string; descriptionKey: string }> = [
   {
     id: 'emailAlerts',
-    label: 'Email alerts',
-    description: 'Receive important account, class, and payment messages by email.',
+    labelKey: 'settingsHub.notifications.toggles.emailAlerts.label',
+    descriptionKey: 'settingsHub.notifications.toggles.emailAlerts.description',
   },
   {
     id: 'smsAlerts',
-    label: 'SMS alerts',
-    description: 'Allow urgent operational reminders by text message when a phone is available.',
+    labelKey: 'settingsHub.notifications.toggles.smsAlerts.label',
+    descriptionKey: 'settingsHub.notifications.toggles.smsAlerts.description',
   },
   {
     id: 'paymentReminders',
-    label: 'Payment reminders',
-    description: 'Get notified when payments are due, overdue, or confirmed.',
+    labelKey: 'settingsHub.notifications.toggles.paymentReminders.label',
+    descriptionKey: 'settingsHub.notifications.toggles.paymentReminders.description',
   },
   {
     id: 'classReminders',
-    label: 'Class reminders',
-    description: 'Receive upcoming class and schedule change notifications.',
+    labelKey: 'settingsHub.notifications.toggles.classReminders.label',
+    descriptionKey: 'settingsHub.notifications.toggles.classReminders.description',
   },
   {
     id: 'promotionAlerts',
-    label: 'Promotion alerts',
-    description: 'Get notified about belt exams, rank progress, and milestone changes.',
+    labelKey: 'settingsHub.notifications.toggles.promotionAlerts.label',
+    descriptionKey: 'settingsHub.notifications.toggles.promotionAlerts.description',
   },
   {
     id: 'systemUpdates',
-    label: 'System updates',
-    description: 'Receive product and maintenance announcements for the app.',
+    labelKey: 'settingsHub.notifications.toggles.systemUpdates.label',
+    descriptionKey: 'settingsHub.notifications.toggles.systemUpdates.description',
   },
 ];
 
@@ -91,6 +92,7 @@ function parseNotifications(value: unknown): NotificationPreferences {
 }
 
 export default function NotificationSettings() {
+  const { t } = useTranslation();
   const { settings, saveSection } = useSettings();
   const [notifications, setNotifications] = useState<NotificationPreferences>(DEFAULT_NOTIFICATIONS);
 
@@ -110,11 +112,11 @@ export default function NotificationSettings() {
     <section className="rounded-lg border border-gray-700 bg-gray-800/50 p-4 shadow-sm sm:p-6">
       <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-white">Notification preferences</h2>
-          <p className="text-sm text-gray-400">Choose which operational messages can interrupt you and when.</p>
+          <h2 className="text-lg font-semibold text-white">{t('settingsHub.notifications.title', 'Notification preferences')}</h2>
+          <p className="text-sm text-gray-400">{t('settingsHub.notifications.subtitle', 'Choose which operational messages can interrupt you and when.')}</p>
         </div>
         <Button type="button" variant="primary" size="sm" leftIcon={<Save className="h-4 w-4" />} onClick={handleSave}>
-          Save notifications
+          {t('settingsHub.notifications.save', 'Save notifications')}
         </Button>
       </header>
 
@@ -123,8 +125,8 @@ export default function NotificationSettings() {
           <SettingsToggle
             key={option.id}
             id={`settings-${option.id}`}
-            label={option.label}
-            description={option.description}
+            label={t(option.labelKey)}
+            description={t(option.descriptionKey)}
             checked={notifications[option.id]}
             onChange={(checked) => updateToggle(option.id, checked)}
           />
@@ -134,7 +136,7 @@ export default function NotificationSettings() {
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div>
           <label htmlFor="settings-digest-frequency" className="mb-2 block text-sm font-medium text-gray-300">
-            Digest frequency
+            {t('settingsHub.notifications.digestFrequency', 'Digest frequency')}
           </label>
           <select
             id="settings-digest-frequency"
@@ -142,15 +144,15 @@ export default function NotificationSettings() {
             onChange={(event) => setNotifications((current) => ({ ...current, digestFrequency: event.target.value as DigestFrequency }))}
             className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/40"
           >
-            <option value="instant">Instant</option>
-            <option value="daily">Daily summary</option>
-            <option value="weekly">Weekly summary</option>
+            <option value="instant">{t('settingsHub.notifications.digestOptions.instant', 'Instant')}</option>
+            <option value="daily">{t('settingsHub.notifications.digestOptions.daily', 'Daily summary')}</option>
+            <option value="weekly">{t('settingsHub.notifications.digestOptions.weekly', 'Weekly summary')}</option>
           </select>
         </div>
 
         <div>
           <label htmlFor="settings-quiet-start" className="mb-2 block text-sm font-medium text-gray-300">
-            Quiet hours start
+            {t('settingsHub.notifications.quietHoursStart', 'Quiet hours start')}
           </label>
           <input
             id="settings-quiet-start"
@@ -163,7 +165,7 @@ export default function NotificationSettings() {
 
         <div>
           <label htmlFor="settings-quiet-end" className="mb-2 block text-sm font-medium text-gray-300">
-            Quiet hours end
+            {t('settingsHub.notifications.quietHoursEnd', 'Quiet hours end')}
           </label>
           <input
             id="settings-quiet-end"

@@ -96,6 +96,201 @@
       "appearance": "Aparência"
     }
   },
+  "profileV2": {
+    "subtitle": "Dados pessoais, de emergência e identidade de treino para sua conta.",
+    "validation": {
+      "nameMin": "O nome deve ter pelo menos 2 caracteres"
+    },
+    "errors": {
+      "updateFailed": "Não foi possível atualizar o perfil",
+      "noAuthToken": "Nenhum token de autenticação disponível",
+      "avatarUploadFailed": "Não foi possível enviar a foto do perfil"
+    },
+    "form": {
+      "personalInformation": "Informações pessoais",
+      "emailSupportNote": "Alterações de e-mail exigem suporte da equipe.",
+      "emergencyNamePlaceholder": "Nome do contato de emergência",
+      "trainingNotes": "Notas de treino",
+      "trainingNotesPlaceholder": "Alergias, lesões, objetivos ou outros detalhes que a equipe deve saber.",
+      "success": "Perfil atualizado com sucesso.",
+      "saveProfile": "Salvar perfil"
+    },
+    "card": {
+      "avatarAltWithName": "Perfil de {{name}}",
+      "avatarAlt": "Perfil",
+      "changePhoto": "Alterar foto do perfil",
+      "photoUploadLabel": "Enviar foto do perfil",
+      "readiness": "Prontidão",
+      "notAvailable": "N/D"
+    },
+    "readiness": {
+      "title": "Prontidão do perfil",
+      "subtitle": "Mantenha o essencial pronto para a operação das aulas.",
+      "complete": "completo",
+      "completeAria": "Completo",
+      "incompleteAria": "Incompleto",
+      "items": {
+        "photo": {
+          "label": "Foto do perfil",
+          "description": "Ajuda instrutores a identificar membros rapidamente."
+        },
+        "name": {
+          "label": "Nome completo",
+          "description": "Usado em listas, presença e registros de pagamento."
+        },
+        "email": {
+          "label": "E-mail",
+          "description": "Necessário para acesso à conta e notificações do app."
+        },
+        "phone": {
+          "label": "Telefone",
+          "description": "Útil para mudanças de aula e coordenação urgente."
+        },
+        "emergency": {
+          "label": "Contato de emergência",
+          "description": "Deve estar disponível antes de treinos de maior risco."
+        },
+        "training": {
+          "label": "Atribuição de treino",
+          "description": "Modalidade e graduação são mantidas pela equipe."
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "Atalhos úteis",
+      "links": {
+        "myClasses": "Minhas aulas",
+        "myAttendance": "Minha presença",
+        "myPayments": "Meus pagamentos",
+        "calendar": "Calendário",
+        "attendance": "Presença",
+        "students": "Alunos"
+      }
+    },
+    "training": {
+      "title": "Atribuições de treino",
+      "subtitle": "Modalidades e graduações são gerenciadas por instrutores.",
+      "unassignedDiscipline": "Modalidade não atribuída",
+      "rankNotAssigned": "Graduação não atribuída",
+      "empty": "Ainda não há atribuições de treino vinculadas a esta conta.",
+      "staffControlNote": "Mudanças de graduação ficam sob controle do instrutor, enquanto contato e emergência continuam editáveis aqui."
+    }
+  },
+  "settingsHub": {
+    "title": "Configurações",
+    "subtitle": "Configure comportamento do app, notificações, privacidade e ferramentas por função.",
+    "aria": {
+      "sections": "Seções de configurações"
+    },
+    "tabs": {
+      "account": {
+        "label": "Conta",
+        "description": "Idioma, função e privacidade padrão"
+      },
+      "notifications": {
+        "label": "Notificações",
+        "description": "Canais, lembretes e horários silenciosos"
+      },
+      "appearance": {
+        "label": "Aparência",
+        "description": "Tema, densidade, contraste e movimento"
+      },
+      "mobile": {
+        "label": "Móvel",
+        "description": "Comportamento PWA e Android"
+      },
+      "mercadopago": {
+        "label": "MercadoPago",
+        "description": "Configuração do gateway de pagamentos online"
+      }
+    },
+    "account": {
+      "title": "Preferências da conta",
+      "subtitle": "Controle idioma do app e comportamento de privacidade.",
+      "save": "Salvar preferências",
+      "language": "Idioma",
+      "languageOptions": {
+        "en": "Inglês",
+        "es": "Espanhol",
+        "pt": "Português"
+      },
+      "signedInRole": "Função da sessão",
+      "roles": {
+        "admin": "administrador",
+        "instructor": "instrutor",
+        "student": "aluno",
+        "member": "membro"
+      },
+      "hideFinancialValues": "Ocultar valores financeiros por padrão",
+      "hideFinancialValuesDescription": "Mascare receitas e totais de pagamento ao mostrar o app perto de outras pessoas.",
+      "financialPrivacyUnavailable": "Controles de privacidade financeira estão disponíveis para administradores e instrutores."
+    },
+    "appearance": {
+      "title": "Aparência",
+      "subtitle": "Ajuste tema, densidade, contraste e preferências de movimento.",
+      "save": "Salvar aparência",
+      "theme": "Tema",
+      "themeOptions": {
+        "dark": "Escuro",
+        "light": "Claro",
+        "system": "Sistema"
+      },
+      "compactDensity": "Densidade compacta",
+      "compactDensityDescription": "Reduz o espaçamento vertical em telas operacionais densas.",
+      "highContrast": "Alto contraste",
+      "highContrastDescription": "Aumenta contraste em textos, bordas e estados interativos.",
+      "reduceMotion": "Reduzir movimento",
+      "reduceMotionDescription": "Minimiza animações e transições na estrutura do app."
+    },
+    "mobile": {
+      "title": "Comportamento móvel",
+      "subtitle": "Ajuste ações móveis para a PWA e a versão Android.",
+      "save": "Salvar configurações móveis",
+      "pullToRefresh": "Ativar puxar para atualizar",
+      "pullToRefreshDescription": "Atualize alunos, aulas, pagamentos, presença e notificações com um gesto móvel.",
+      "androidInstallPrompt": "Mostrar lembretes de instalação Android",
+      "androidInstallPromptDescription": "Ofereça o aviso de instalação do APK em dispositivos Android compatíveis quando agregar valor."
+    },
+    "notifications": {
+      "title": "Preferências de notificações",
+      "subtitle": "Escolha quais mensagens operacionais podem interromper você e quando.",
+      "save": "Salvar notificações",
+      "toggles": {
+        "emailAlerts": {
+          "label": "Alertas por e-mail",
+          "description": "Receba mensagens importantes de conta, aulas e pagamentos por e-mail."
+        },
+        "smsAlerts": {
+          "label": "Alertas SMS",
+          "description": "Permita lembretes operacionais urgentes por mensagem de texto quando houver telefone disponível."
+        },
+        "paymentReminders": {
+          "label": "Lembretes de pagamento",
+          "description": "Receba avisos quando pagamentos vencerem, atrasarem ou forem confirmados."
+        },
+        "classReminders": {
+          "label": "Lembretes de aula",
+          "description": "Receba notificações de próximas aulas e mudanças de horário."
+        },
+        "promotionAlerts": {
+          "label": "Alertas de promoção",
+          "description": "Receba avisos sobre exames de faixa, progresso de graduação e mudanças de marco."
+        },
+        "systemUpdates": {
+          "label": "Atualizações do sistema",
+          "description": "Receba anúncios de produto e manutenção do app."
+        }
+      },
+      "digestFrequency": "Frequência do resumo",
+      "digestOptions": {
+        "instant": "Instantâneo",
+        "daily": "Resumo diário",
+        "weekly": "Resumo semanal"
+      },
+      "quietHoursStart": "Início do horário silencioso",
+      "quietHoursEnd": "Fim do horário silencioso"
+    }
+  },
   "auth": {
     "login": "Entrar",
     "register": "Registrar",

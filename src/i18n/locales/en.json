@@ -96,6 +96,201 @@
       "appearance": "Appearance"
     }
   },
+  "profileV2": {
+    "subtitle": "Personal, emergency, and training identity details for your account.",
+    "validation": {
+      "nameMin": "Name must be at least 2 characters"
+    },
+    "errors": {
+      "updateFailed": "Failed to update profile",
+      "noAuthToken": "No authentication token available",
+      "avatarUploadFailed": "Failed to upload avatar"
+    },
+    "form": {
+      "personalInformation": "Personal information",
+      "emailSupportNote": "Email changes require staff support.",
+      "emergencyNamePlaceholder": "Emergency contact name",
+      "trainingNotes": "Training notes",
+      "trainingNotesPlaceholder": "Allergies, injuries, goals, or other details staff should know.",
+      "success": "Profile updated successfully.",
+      "saveProfile": "Save profile"
+    },
+    "card": {
+      "avatarAltWithName": "{{name}} profile",
+      "avatarAlt": "Profile",
+      "changePhoto": "Change profile photo",
+      "photoUploadLabel": "Profile photo upload",
+      "readiness": "Readiness",
+      "notAvailable": "N/A"
+    },
+    "readiness": {
+      "title": "Profile readiness",
+      "subtitle": "Keep the essentials ready for class operations.",
+      "complete": "complete",
+      "completeAria": "Complete",
+      "incompleteAria": "Incomplete",
+      "items": {
+        "photo": {
+          "label": "Profile photo",
+          "description": "Helps instructors identify members quickly."
+        },
+        "name": {
+          "label": "Full name",
+          "description": "Used across rosters, attendance, and payment records."
+        },
+        "email": {
+          "label": "Email address",
+          "description": "Required for account access and app notifications."
+        },
+        "phone": {
+          "label": "Phone number",
+          "description": "Useful for class changes and urgent coordination."
+        },
+        "emergency": {
+          "label": "Emergency contact",
+          "description": "Must be available before higher-risk training sessions."
+        },
+        "training": {
+          "label": "Training assignment",
+          "description": "Discipline and rank are maintained by staff."
+        }
+      }
+    },
+    "shortcuts": {
+      "title": "Useful shortcuts",
+      "links": {
+        "myClasses": "My classes",
+        "myAttendance": "My attendance",
+        "myPayments": "My payments",
+        "calendar": "Calendar",
+        "attendance": "Attendance",
+        "students": "Students"
+      }
+    },
+    "training": {
+      "title": "Training assignments",
+      "subtitle": "Disciplines and ranks are managed by instructors.",
+      "unassignedDiscipline": "Unassigned discipline",
+      "rankNotAssigned": "Rank not assigned",
+      "empty": "No training assignments have been linked to this account yet.",
+      "staffControlNote": "Rank changes stay under instructor control, while contact and emergency details remain editable here."
+    }
+  },
+  "settingsHub": {
+    "title": "Settings",
+    "subtitle": "Configure app behavior, notifications, privacy, and role-specific tools.",
+    "aria": {
+      "sections": "Settings sections"
+    },
+    "tabs": {
+      "account": {
+        "label": "Account",
+        "description": "Language, role, and privacy defaults"
+      },
+      "notifications": {
+        "label": "Notifications",
+        "description": "Channels, reminders, and quiet hours"
+      },
+      "appearance": {
+        "label": "Appearance",
+        "description": "Theme, density, contrast, and motion"
+      },
+      "mobile": {
+        "label": "Mobile",
+        "description": "PWA and Android behavior"
+      },
+      "mercadopago": {
+        "label": "MercadoPago",
+        "description": "Online payment gateway configuration"
+      }
+    },
+    "account": {
+      "title": "Account preferences",
+      "subtitle": "Control app language and privacy behavior.",
+      "save": "Save preferences",
+      "language": "Language",
+      "languageOptions": {
+        "en": "English",
+        "es": "Spanish",
+        "pt": "Portuguese"
+      },
+      "signedInRole": "Signed in role",
+      "roles": {
+        "admin": "administrator",
+        "instructor": "instructor",
+        "student": "student",
+        "member": "member"
+      },
+      "hideFinancialValues": "Hide financial values by default",
+      "hideFinancialValuesDescription": "Mask revenue and payment totals when showing the app around other people.",
+      "financialPrivacyUnavailable": "Financial privacy controls are available to administrator and instructor accounts."
+    },
+    "appearance": {
+      "title": "Appearance",
+      "subtitle": "Adjust theme, density, contrast, and motion preferences.",
+      "save": "Save appearance",
+      "theme": "Theme",
+      "themeOptions": {
+        "dark": "Dark",
+        "light": "Light",
+        "system": "System"
+      },
+      "compactDensity": "Compact density",
+      "compactDensityDescription": "Tighten vertical spacing for dense operational screens.",
+      "highContrast": "High contrast",
+      "highContrastDescription": "Increase contrast for text, borders, and interactive states.",
+      "reduceMotion": "Reduce motion",
+      "reduceMotionDescription": "Minimize animations and transitions across the app shell."
+    },
+    "mobile": {
+      "title": "Mobile app behavior",
+      "subtitle": "Tune mobile-only actions for the PWA and Android build.",
+      "save": "Save mobile settings",
+      "pullToRefresh": "Enable pull to refresh",
+      "pullToRefreshDescription": "Refresh students, classes, payments, attendance, and notifications with one mobile gesture.",
+      "androidInstallPrompt": "Show Android install reminders",
+      "androidInstallPromptDescription": "Offer the APK install prompt on supported Android devices when it adds value."
+    },
+    "notifications": {
+      "title": "Notification preferences",
+      "subtitle": "Choose which operational messages can interrupt you and when.",
+      "save": "Save notifications",
+      "toggles": {
+        "emailAlerts": {
+          "label": "Email alerts",
+          "description": "Receive important account, class, and payment messages by email."
+        },
+        "smsAlerts": {
+          "label": "SMS alerts",
+          "description": "Allow urgent operational reminders by text message when a phone is available."
+        },
+        "paymentReminders": {
+          "label": "Payment reminders",
+          "description": "Get notified when payments are due, overdue, or confirmed."
+        },
+        "classReminders": {
+          "label": "Class reminders",
+          "description": "Receive upcoming class and schedule change notifications."
+        },
+        "promotionAlerts": {
+          "label": "Promotion alerts",
+          "description": "Get notified about belt exams, rank progress, and milestone changes."
+        },
+        "systemUpdates": {
+          "label": "System updates",
+          "description": "Receive product and maintenance announcements for the app."
+        }
+      },
+      "digestFrequency": "Digest frequency",
+      "digestOptions": {
+        "instant": "Instant",
+        "daily": "Daily summary",
+        "weekly": "Weekly summary"
+      },
+      "quietHoursStart": "Quiet hours start",
+      "quietHoursEnd": "Quiet hours end"
+    }
+  },
   "auth": {
     "login": "Login",
     "register": "Register",

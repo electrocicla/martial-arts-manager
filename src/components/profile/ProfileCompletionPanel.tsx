@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import { CheckCircle2, Circle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader } from '../ui/Card';
 
 export interface ProfileCompletionItem {
@@ -15,6 +16,7 @@ interface ProfileCompletionPanelProps {
 }
 
 export default function ProfileCompletionPanel({ items }: ProfileCompletionPanelProps) {
+  const { t } = useTranslation();
   const completedCount = items.filter((item) => item.complete).length;
   const completionPercentage = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
 
@@ -23,12 +25,12 @@ export default function ProfileCompletionPanel({ items }: ProfileCompletionPanel
       <CardHeader>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-white">Profile readiness</h2>
-            <p className="text-sm text-gray-400">Keep the essentials ready for class operations.</p>
+            <h2 className="text-lg font-semibold text-white">{t('profileV2.readiness.title', 'Profile readiness')}</h2>
+            <p className="text-sm text-gray-400">{t('profileV2.readiness.subtitle', 'Keep the essentials ready for class operations.')}</p>
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-white">{completionPercentage}%</div>
-            <div className="text-xs text-gray-400">complete</div>
+            <div className="text-xs text-gray-400">{t('profileV2.readiness.complete', 'complete')}</div>
           </div>
         </div>
       </CardHeader>
@@ -51,9 +53,9 @@ export default function ProfileCompletionPanel({ items }: ProfileCompletionPanel
                   <div className="text-xs text-gray-400">{item.description}</div>
                 </div>
                 {item.complete ? (
-                  <CheckCircle2 className="h-5 w-5 text-emerald-400" aria-label="Complete" />
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400" aria-label={t('profileV2.readiness.completeAria', 'Complete')} />
                 ) : (
-                  <Circle className="h-5 w-5 text-gray-500" aria-label="Incomplete" />
+                  <Circle className="h-5 w-5 text-gray-500" aria-label={t('profileV2.readiness.incompleteAria', 'Incomplete')} />
                 )}
               </div>
             );

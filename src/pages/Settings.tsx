@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Bell, CreditCard, Palette, Settings as SettingsIcon, Shield, Smartphone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import {
   AccountPreferencesSettings,
@@ -15,8 +16,8 @@ type SettingsTab = 'account' | 'notifications' | 'appearance' | 'mobile' | 'merc
 
 interface SettingsTabDefinition {
   id: SettingsTab;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
   icon: LucideIcon;
   roles: Role[];
 }
@@ -24,36 +25,36 @@ interface SettingsTabDefinition {
 const SETTINGS_TABS: SettingsTabDefinition[] = [
   {
     id: 'account',
-    label: 'Account',
-    description: 'Language, role, and privacy defaults',
+    labelKey: 'settingsHub.tabs.account.label',
+    descriptionKey: 'settingsHub.tabs.account.description',
     icon: Shield,
     roles: ['admin', 'instructor', 'student'],
   },
   {
     id: 'notifications',
-    label: 'Notifications',
-    description: 'Channels, reminders, and quiet hours',
+    labelKey: 'settingsHub.tabs.notifications.label',
+    descriptionKey: 'settingsHub.tabs.notifications.description',
     icon: Bell,
     roles: ['admin', 'instructor', 'student'],
   },
   {
     id: 'appearance',
-    label: 'Appearance',
-    description: 'Theme, density, contrast, and motion',
+    labelKey: 'settingsHub.tabs.appearance.label',
+    descriptionKey: 'settingsHub.tabs.appearance.description',
     icon: Palette,
     roles: ['admin', 'instructor', 'student'],
   },
   {
     id: 'mobile',
-    label: 'Mobile',
-    description: 'PWA and Android behavior',
+    labelKey: 'settingsHub.tabs.mobile.label',
+    descriptionKey: 'settingsHub.tabs.mobile.description',
     icon: Smartphone,
     roles: ['admin', 'instructor', 'student'],
   },
   {
     id: 'mercadopago',
-    label: 'MercadoPago',
-    description: 'Online payment gateway configuration',
+    labelKey: 'settingsHub.tabs.mercadopago.label',
+    descriptionKey: 'settingsHub.tabs.mercadopago.description',
     icon: CreditCard,
     roles: ['admin'],
   },
@@ -77,6 +78,7 @@ function renderSettingsPanel(activeTab: SettingsTab) {
 }
 
 export default function Settings() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<SettingsTab>('account');
 
@@ -99,13 +101,13 @@ export default function Settings() {
         <header className="mb-6 sm:mb-8">
           <h1 className="mb-2 flex items-center gap-3 text-3xl font-bold text-white">
             <SettingsIcon className="h-8 w-8 text-red-400" />
-            Settings
+            {t('settingsHub.title', 'Settings')}
           </h1>
-          <p className="text-gray-400">Configure app behavior, notifications, privacy, and role-specific tools.</p>
+          <p className="text-gray-400">{t('settingsHub.subtitle', 'Configure app behavior, notifications, privacy, and role-specific tools.')}</p>
         </header>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 lg:gap-8">
-          <nav className="lg:col-span-1" aria-label="Settings sections">
+          <nav className="lg:col-span-1" aria-label={t('settingsHub.aria.sections', 'Settings sections')}>
             <div className="hidden rounded-lg border border-gray-700 bg-gray-800/50 p-2 lg:block">
               <ul className="space-y-1">
                 {visibleTabs.map((tab) => {
@@ -124,9 +126,9 @@ export default function Settings() {
                       >
                         <span className="flex items-center gap-3">
                           <Icon className="h-5 w-5" />
-                          <span className="font-medium">{tab.label}</span>
+                          <span className="font-medium">{t(tab.labelKey)}</span>
                         </span>
-                        <span className="mt-1 block pl-8 text-xs text-gray-400">{tab.description}</span>
+                        <span className="mt-1 block pl-8 text-xs text-gray-400">{t(tab.descriptionKey)}</span>
                       </button>
                     </li>
                   );
@@ -150,7 +152,7 @@ export default function Settings() {
                     onClick={() => setActiveTab(tab.id)}
                   >
                     <Icon className="h-5 w-5" />
-                    <span className="text-sm font-semibold">{tab.label}</span>
+                    <span className="text-sm font-semibold">{t(tab.labelKey)}</span>
                   </button>
                 );
               })}
