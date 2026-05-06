@@ -15,6 +15,7 @@ import DashboardSchedule from './dashboard/DashboardSchedule';
 import DashboardActivity from './dashboard/DashboardActivity';
 import DashboardMetrics from './dashboard/DashboardMetrics';
 import StudentDashboard from './dashboard/StudentDashboard';
+import InstructorWeeklySparringWidget from './dashboard/InstructorWeeklySparringWidget';
 import { PendingApprovals } from './admin/PendingApprovals';
 
 export default function Dashboard() {
@@ -97,6 +98,10 @@ export default function Dashboard() {
           </div>
         )}
         
+        {(user?.role === 'admin' || user?.role === 'instructor') && (
+          <InstructorWeeklySparringWidget />
+        )}
+
         <DashboardQuickActions quickActions={quickActions} />
         <DashboardSchedule todayClasses={todayClasses} isLoading={isLoading} />
         <DashboardActivity recentActivity={recentActivity} />
