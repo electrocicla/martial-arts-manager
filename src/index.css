@@ -1134,6 +1134,43 @@ p, span, div {
     color: var(--color-strike-800);
   }
 
+  /* ---- Opacity-suffix text colors (text-red-200/80, text-red-100/90, text-red-300/90 etc.).
+         Tailwind generates a separate class per opacity step, so the bare-color rules above
+         do not catch them. Without these the missed-class banner description, the attendance
+         page 'Tip:' copy, and the 'No attendance record' alert all render as faded peach. ---- */
+  & [class*="text-red-100\/"],
+  & [class*="text-red-200\/"],
+  & [class*="text-red-300\/"],
+  & [class*="text-red-400\/"]   { color: var(--color-strike-700) !important; }
+  & [class*="text-rose-100\/"],
+  & [class*="text-rose-200\/"],
+  & [class*="text-rose-300\/"],
+  & [class*="text-rose-400\/"]  { color: oklch(0.50 0.20 15)  !important; }
+  & [class*="text-amber-200\/"], & [class*="text-amber-300\/"], & [class*="text-amber-400\/"] { color: oklch(0.50 0.17 70)  !important; }
+  & [class*="text-orange-200\/"],& [class*="text-orange-300\/"],& [class*="text-orange-400\/"]{ color: oklch(0.52 0.18 50)  !important; }
+  & [class*="text-emerald-200\/"],& [class*="text-emerald-300\/"],& [class*="text-emerald-400\/"] { color: oklch(0.48 0.14 160) !important; }
+  & [class*="text-green-200\/"], & [class*="text-green-300\/"], & [class*="text-green-400\/"] { color: oklch(0.48 0.14 145) !important; }
+  & [class*="text-blue-200\/"],  & [class*="text-blue-300\/"],  & [class*="text-blue-400\/"]  { color: oklch(0.50 0.18 255) !important; }
+  & [class*="text-sky-200\/"],   & [class*="text-sky-300\/"],   & [class*="text-sky-400\/"]   { color: oklch(0.50 0.14 230) !important; }
+  & [class*="text-indigo-200\/"],& [class*="text-indigo-300\/"],& [class*="text-indigo-400\/"]{ color: oklch(0.46 0.20 275) !important; }
+  & [class*="text-purple-200\/"],& [class*="text-purple-300\/"],& [class*="text-purple-400\/"]{ color: oklch(0.48 0.20 305) !important; }
+  & [class*="text-pink-200\/"],  & [class*="text-pink-300\/"],  & [class*="text-pink-400\/"]  { color: oklch(0.52 0.20 0)   !important; }
+
+  /* White/light grey with opacity (text-white/80, text-gray-100/70 etc.) —
+     map to ink primary so callouts on the paper canvas stay readable. */
+  & [class*="text-white\/"],
+  & [class*="text-gray-50\/"],
+  & [class*="text-gray-100\/"],
+  & [class*="text-slate-100\/"]   { color: var(--color-ink-primary) !important; }
+  & [class*="text-gray-200\/"],
+  & [class*="text-gray-300\/"],
+  & [class*="text-slate-200\/"],
+  & [class*="text-slate-300\/"]   { color: var(--color-ink-secondary) !important; }
+  & [class*="text-gray-400\/"],
+  & [class*="text-gray-500\/"],
+  & [class*="text-slate-400\/"],
+  & [class*="text-zinc-400\/"]    { color: var(--color-ink-muted) !important; }
+
   /* ---- Colored badge/tag/text utilities — dark UI ships them as 200/300/400
          (very light hues meant for dark backgrounds). On light bg they vanish.
          Map the whole accent ladder to readable -700/-800 equivalents. ---- */

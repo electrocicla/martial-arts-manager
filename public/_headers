@@ -22,3 +22,7 @@
 # Hashed Vite assets are immutable – max cache, browser re-fetches only when hash changes.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+  # Belt-and-suspenders: explicit MIME types so a Cloudflare Pages SPA fallback
+  # for a missing asset (after a deploy that rotated chunk hashes) cannot be
+  # mistaken for a working JS module by the browser.
+  X-Content-Type-Options: nosniff
