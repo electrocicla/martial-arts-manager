@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { apiClient } from '../lib/api-client';
 import { onDataEvent } from '../lib/dataEvents';
@@ -39,6 +39,13 @@ interface PollingContextType {
 const PollingContext = createContext<PollingContextType | null>(null);
 
 const POLL_INTERVAL = 30_000;
+const NOTIFICATION_FAILURE_BACKOFF = 120_000;
+
+function isTransientFetchFailure(error: string | undefined): boolean {
+  if (!error) return false;
+  const normalized = error.toLowerCase();
+  return normalized.includes('failed to fetch') || normalized.includes('networkerror') || normalized.includes('connection');
+}
 
 export function PollingProvider({ children }: { children: ReactNode }) {
   const { user, accessToken } = useAuth();
@@ -51,6 +58,7 @@ export function PollingProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const notificationsBackoffUntilRef = useRef(0);
 
   const fetchPendingApprovals = useCallback(async () => {
     if (!user || (user.role !== 'admin' && user.role !== 'instructor')) {
@@ -76,16 +84,20 @@ export function PollingProvider({ children }: { children: ReactNode }) {
 
   const fetchNotifications = useCallback(async () => {
     if (!user || !accessToken) return;
+    if (Date.now() < notificationsBackoffUntilRef.current) return;
     // Ensure singleton is in sync (guards against React effect ordering race)
     apiClient.setAccessToken(accessToken);
 
     try {
       setNotificationsLoading(true);
-      const response = await apiClient.get<{ notifications: Notification[] }>('/api/notifications');
+      const response = await apiClient.get<{ notifications: Notification[] }>('/api/notifications', { silent: true });
       if (response.success && response.data) {
+        notificationsBackoffUntilRef.current = 0;
         const notifs = response.data.notifications || [];
         setNotifications(notifs);
-        setUnreadCount(notifs.filter(n => n.read === 0).length);
+        setUnreadCount(notifs.filter((notification) => notification.read === 0).length);
+      } else if (isTransientFetchFailure(response.error)) {
+        notificationsBackoffUntilRef.current = Date.now() + NOTIFICATION_FAILURE_BACKOFF;
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);

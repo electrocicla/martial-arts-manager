@@ -58,10 +58,12 @@
   --color-surface-3: oklch(0.22 0 0);   /* hover */
   --color-border:        oklch(0.26 0 0 / 0.6);
   --color-border-strong: oklch(0.34 0 0);
-  --color-ink-primary:   oklch(0.98 0 0);
-  --color-ink-secondary: oklch(0.78 0 0);
-  --color-ink-muted:     oklch(0.62 0 0);
-  --color-ink-disabled:  oklch(0.42 0 0);
+  /* Warm-tinted inks (no neutral grey — a touch of red-orange chroma
+     keeps body text aligned with the brand). */
+  --color-ink-primary:   oklch(0.98 0.005 25);
+  --color-ink-secondary: oklch(0.86 0.012 25);
+  --color-ink-muted:     oklch(0.70 0.014 25);
+  --color-ink-disabled:  oklch(0.50 0.010 25);
   --shadow-card: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 8px 24px -12px oklch(0 0 0 / 0.6);
   --shadow-pop:  0 1px 0 oklch(1 0 0 / 0.06) inset, 0 18px 40px -16px oklch(0 0 0 / 0.7);
   --shadow-strike: 0 0 0 1px var(--color-strike-500), 0 12px 32px -8px oklch(0.62 0.24 25 / 0.4);
@@ -1020,6 +1022,54 @@ p, span, div {
   /* ---- Headings inherit the deep ink ---- */
   & h1, & h2, & h3, & h4, & h5, & h6 {
     color: var(--color-ink-primary);
+  }
+
+  /* ---- Tailwind gradient stops — remap dark stops to light surfaces ---- */
+  & .from-black,
+  & .from-gray-900,
+  & .from-slate-900,
+  & .from-zinc-900,
+  & .from-neutral-900 {
+    --tw-gradient-from: var(--color-surface-0) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, transparent) !important;
+  }
+  & .from-gray-800,
+  & .from-slate-800,
+  & .from-zinc-800 {
+    --tw-gradient-from: var(--color-surface-1) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, transparent) !important;
+  }
+  & .via-black,
+  & .via-gray-900,
+  & .via-slate-900 {
+    --tw-gradient-via: var(--color-surface-0) !important;
+  }
+  & .via-gray-800,
+  & .via-slate-800 {
+    --tw-gradient-via: var(--color-surface-1) !important;
+  }
+  & .to-black,
+  & .to-gray-900,
+  & .to-gray-950,
+  & .to-slate-900,
+  & .to-zinc-900,
+  & .to-neutral-900 {
+    --tw-gradient-to: var(--color-surface-0) !important;
+  }
+  & .to-gray-800,
+  & .to-slate-800 {
+    --tw-gradient-to: var(--color-surface-1) !important;
+  }
+
+  /* ---- Selected/illegible light-red text on light bg — darken to brand red ---- */
+  & .text-red-200,
+  & .text-red-300,
+  & .text-red-400 {
+    color: var(--color-strike-700);
+  }
+  & .hover\:text-red-300:hover,
+  & .hover\:text-red-400:hover {
+    color: var(--color-strike-800);
   }
 }
 

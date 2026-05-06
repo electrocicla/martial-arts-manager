@@ -30,7 +30,7 @@ i18n
     supportedLngs: ['en', 'es', 'pt'],
     nonExplicitSupportedLngs: true,
     load: 'languageOnly',
-    debug: import.meta.env.DEV,
+    debug: false,
 
     interpolation: {
       escapeValue: false, // React already escapes values

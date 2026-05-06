@@ -28,20 +28,7 @@
     <meta name="twitter:description" content="Sistema de gestión exclusivo para alumnos Hamarr" />
     
     <title>HAMARR JIU-JITSU</title>
-    <script>
-      // Bootstrap theme before React mounts to avoid FOUC.
-      (function () {
-        try {
-          var stored = window.localStorage.getItem('theme');
-          var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-          var resolved = stored === 'light' ? 'light' : stored === 'dark' ? 'dark' : (stored === 'system' && prefersLight ? 'light' : 'dark');
-          var root = document.documentElement;
-          root.setAttribute('data-theme', resolved);
-          root.classList.remove('light', 'dark');
-          root.classList.add(resolved);
-        } catch (_) { /* noop */ }
-      })();
-    </script>
+    <script src="/theme-bootstrap.js"></script>
   </head>
   <body class="antialiased">
     <div id="root"></div>

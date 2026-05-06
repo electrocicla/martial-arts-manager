@@ -20,6 +20,10 @@ export class ApiError extends Error {
   }
 }
 
+interface ApiRequestOptions extends RequestInit {
+  silent?: boolean;
+}
+
 export class ApiClient {
   private baseURL: string;
   private accessToken: string | null = null;
@@ -40,8 +44,10 @@ export class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: ApiRequestOptions = {}
   ): Promise<ApiResponse<T>> {
+    const { silent = false, ...fetchOptions } = options;
+
     try {
       const url = `${this.baseURL}${endpoint}`;
       
@@ -58,18 +64,18 @@ export class ApiClient {
       }
       
       // Merge with any additional headers from options
-      if (options.headers) {
-        Object.assign(headers, options.headers);
+      if (fetchOptions.headers) {
+        Object.assign(headers, fetchOptions.headers);
       }
       
       const response = await fetch(url, {
-        ...options,
+        ...fetchOptions,
         headers,
       });
 
       if (!response.ok) {
         // If 401, token might be expired - just log, let context handle it
-        if (response.status === 401) {
+        if (response.status === 401 && !silent) {
           console.error('[API Client] 401 Unauthorized for:', endpoint);
         }
         
@@ -93,7 +99,9 @@ export class ApiClient {
       const data = await response.json();
       return { data, success: true };
     } catch (error) {
-      console.error('[API Client] Request failed:', endpoint, error);
+      if (!silent) {
+        console.error('[API Client] Request failed:', endpoint, error);
+      }
       if (error instanceof ApiError) {
         return { error: error.message, success: false };
       }
@@ -105,8 +113,8 @@ export class ApiClient {
     }
   }
 
-  async get<T>(endpoint: string, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, { method: 'GET', signal: options?.signal });
+  async get<T>(endpoint: string, options?: { signal?: AbortSignal; silent?: boolean }): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'GET', signal: options?.signal, silent: options?.silent });
   }
 
   async post<T>(endpoint: string, data?: unknown): Promise<ApiResponse<T>> {
