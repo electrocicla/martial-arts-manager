@@ -97,45 +97,45 @@
     }
   },
   "profileV2": {
-    "subtitle": "Datos personales, de emergencia e identidad de entrenamiento para tu cuenta.",
+    "subtitle": "Información personal, de emergencia y de entrenamiento de tu cuenta.",
     "validation": {
-      "nameMin": "El nombre debe tener al menos 2 caracteres"
+      "nameMin": "El nombre debe tener al menos 2 caracteres."
     },
     "errors": {
-      "updateFailed": "No se pudo actualizar el perfil",
-      "noAuthToken": "No hay token de autenticación disponible",
-      "avatarUploadFailed": "No se pudo subir la foto de perfil"
+      "updateFailed": "No se pudo actualizar tu perfil.",
+      "noAuthToken": "No se encontró un token de autenticación.",
+      "avatarUploadFailed": "No se pudo subir la foto de perfil. Intenta nuevamente."
     },
     "form": {
       "personalInformation": "Información personal",
-      "emailSupportNote": "Los cambios de correo requieren soporte del equipo.",
+      "emailSupportNote": "Los cambios de correo requieren asistencia del equipo de soporte.",
       "emergencyNamePlaceholder": "Nombre del contacto de emergencia",
-      "disciplineSelection": "Selección de disciplina",
-      "disciplineSelectionDescription": "Elige las disciplinas que entrenas o que quieres que el equipo tenga en cuenta. Los cambios de cinturón y rango siguen bajo gestión del instructor.",
-      "noDisciplineSelected": "Selecciona al menos una disciplina para que el equipo entienda tu enfoque de entrenamiento.",
+      "disciplineSelection": "Selección de disciplinas",
+      "disciplineSelectionDescription": "Elige las disciplinas que practicas o que quieres que el equipo tenga en cuenta. Los cambios de cinturón o grado siguen siendo responsabilidad del instructor.",
+      "noDisciplineSelected": "Selecciona al menos una disciplina para que el equipo conozca tu enfoque de entrenamiento.",
       "trainingNotes": "Notas de entrenamiento",
       "trainingNotesPlaceholder": "Alergias, lesiones, objetivos u otros detalles que el equipo deba saber.",
       "success": "Perfil actualizado correctamente.",
       "saveProfile": "Guardar perfil"
     },
     "card": {
-      "avatarAltWithName": "Perfil de {{name}}",
-      "avatarAlt": "Perfil",
+      "avatarAltWithName": "Foto de perfil de {{name}}",
+      "avatarAlt": "Foto de perfil",
       "changePhoto": "Cambiar foto de perfil",
       "photoUploadLabel": "Subir foto de perfil",
-      "readiness": "Preparación",
-      "notAvailable": "N/D"
+      "readiness": "Estado del perfil",
+      "notAvailable": "No disponible"
     },
     "readiness": {
-      "title": "Preparación del perfil",
-      "subtitle": "Mantén lo esencial listo para la operación de clases.",
-      "complete": "completo",
+      "title": "Estado del perfil",
+      "subtitle": "Mantén lo esencial listo para el correcto funcionamiento de las clases.",
+      "complete": "Completo",
       "completeAria": "Completo",
       "incompleteAria": "Incompleto",
       "items": {
         "photo": {
           "label": "Foto de perfil",
-          "description": "Ayuda a los instructores a identificar miembros rápidamente."
+          "description": "Ayuda a los instructores a identificar a los miembros rápidamente."
         },
         "name": {
           "label": "Nombre completo",
@@ -155,12 +155,12 @@
         },
         "training": {
           "label": "Perfil de entrenamiento",
-          "description": "Tu selección de disciplinas ayuda al equipo a planificar clases mientras el rango sigue gestionado por instructores."
+          "description": "Tu selección de disciplinas ayuda al equipo a planificar clases; los grados siguen siendo gestionados por los instructores."
         }
       }
     },
     "shortcuts": {
-      "title": "Accesos útiles",
+      "title": "Accesos rápidos",
       "links": {
         "myClasses": "Mis clases",
         "myAttendance": "Mi asistencia",
@@ -172,23 +172,23 @@
     },
     "training": {
       "title": "Asignaciones de entrenamiento",
-      "subtitle": "Las disciplinas y rangos son gestionados por instructores.",
+      "subtitle": "Las disciplinas y los grados son gestionados por los instructores.",
       "unassignedDiscipline": "Disciplina sin asignar",
-      "rankNotAssigned": "Rango sin asignar",
+      "rankNotAssigned": "Grado sin asignar",
       "empty": "Aún no hay asignaciones de entrenamiento vinculadas a esta cuenta.",
-      "staffControlNote": "Los cambios de rango quedan bajo control del instructor, mientras que los datos de contacto y emergencia se editan aquí."
+      "staffControlNote": "Los cambios de grado son gestionados por los instructores; los datos de contacto y de emergencia se pueden editar aquí."
     }
   },
   "settingsHub": {
     "title": "Configuración",
-    "subtitle": "Configura el comportamiento de la app, notificaciones, privacidad y herramientas según el rol.",
+    "subtitle": "Configura el comportamiento de la app, las notificaciones, la privacidad y las herramientas según tu rol.",
     "aria": {
       "sections": "Secciones de configuración"
     },
     "tabs": {
       "account": {
         "label": "Cuenta",
-        "description": "Idioma, rol y privacidad por defecto"
+        "description": "Idioma, rol y ajustes de privacidad predeterminados"
       },
       "notifications": {
         "label": "Notificaciones",
@@ -209,7 +209,7 @@
     },
     "account": {
       "title": "Preferencias de cuenta",
-      "subtitle": "Controla el idioma de la app y el comportamiento de privacidad.",
+      "subtitle": "Gestiona el idioma de la app y las preferencias de privacidad.",
       "save": "Guardar preferencias",
       "language": "Idioma",
       "languageOptions": {
@@ -217,16 +217,16 @@
         "es": "Español",
         "pt": "Portugués"
       },
-      "signedInRole": "Rol de sesión",
+      "signedInRole": "Rol actual",
       "roles": {
         "admin": "administrador",
         "instructor": "instructor",
         "student": "estudiante",
         "member": "miembro"
       },
-      "hideFinancialValues": "Ocultar valores financieros por defecto",
-      "hideFinancialValuesDescription": "Oculta ingresos y totales de pago cuando muestras la app cerca de otras personas.",
-      "financialPrivacyUnavailable": "Los controles de privacidad financiera están disponibles para administradores e instructores."
+      "hideFinancialValues": "Ocultar montos financieros por defecto",
+      "hideFinancialValuesDescription": "Oculta ingresos y totales de pago en entornos públicos.",
+      "financialPrivacyUnavailable": "Los controles de privacidad financiera solo están disponibles para administradores e instructores."
     },
     "appearance": {
       "title": "Apariencia",
@@ -239,7 +239,7 @@
         "system": "Sistema"
       },
       "compactDensity": "Densidad compacta",
-      "compactDensityDescription": "Reduce el espaciado vertical en pantallas operativas densas.",
+      "compactDensityDescription": "Reduce el espaciado vertical para mostrar más contenido en pantalla.",
       "highContrast": "Alto contraste",
       "highContrastDescription": "Aumenta el contraste en texto, bordes y estados interactivos.",
       "reduceMotion": "Reducir movimiento",
@@ -247,12 +247,12 @@
     },
     "mobile": {
       "title": "Comportamiento móvil",
-      "subtitle": "Ajusta acciones móviles para la PWA y la versión Android.",
+      "subtitle": "Ajusta acciones móviles para la PWA y la app Android.",
       "save": "Guardar configuración móvil",
-      "pullToRefresh": "Activar deslizar para actualizar",
+      "pullToRefresh": "Activar 'deslizar para actualizar'",
       "pullToRefreshDescription": "Actualiza estudiantes, clases, pagos, asistencia y notificaciones con un gesto móvil.",
-      "androidInstallPrompt": "Mostrar recordatorios de instalación Android",
-      "androidInstallPromptDescription": "Ofrece el aviso para instalar el APK en dispositivos Android compatibles cuando aporte valor."
+      "androidInstallPrompt": "Mostrar recordatorios para instalar en Android",
+      "androidInstallPromptDescription": "Muestra un aviso para instalar la app en dispositivos Android compatibles cuando sea relevante."
     },
     "notifications": {
       "title": "Preferencias de notificaciones",
@@ -265,7 +265,7 @@
         },
         "smsAlerts": {
           "label": "Alertas SMS",
-          "description": "Permite recordatorios operativos urgentes por mensaje de texto cuando haya teléfono disponible."
+          "description": "Permite recordatorios urgentes por SMS cuando haya un número de teléfono disponible."
         },
         "paymentReminders": {
           "label": "Recordatorios de pago",
@@ -277,7 +277,7 @@
         },
         "promotionAlerts": {
           "label": "Alertas de promoción",
-          "description": "Recibe avisos sobre exámenes de cinturón, progreso de rango y cambios de hitos."
+          "description": "Recibe avisos sobre exámenes de cinturón, progreso de grado y nuevos hitos."
         },
         "systemUpdates": {
           "label": "Actualizaciones del sistema",
@@ -286,7 +286,7 @@
       },
       "digestFrequency": "Frecuencia del resumen",
       "digestOptions": {
-        "instant": "Instantáneo",
+        "instant": "Al instante",
         "daily": "Resumen diario",
         "weekly": "Resumen semanal"
       },
