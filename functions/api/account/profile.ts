@@ -17,6 +17,11 @@ interface AccountProfilePayload extends AccountProfileExtras {
   name?: string;
 }
 
+interface DisciplineAssignment {
+  discipline: string;
+  belt: string;
+}
+
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
   return new Response(JSON.stringify(body), {
     ...init,
@@ -65,13 +70,17 @@ function parseSettingsExtras(value: string | undefined): AccountProfileExtras {
   }
 }
 
-function parseDisciplines(value: unknown): unknown[] {
-  if (Array.isArray(value)) return value;
+function isDisciplineAssignment(value: unknown): value is DisciplineAssignment {
+  return isRecord(value) && typeof value.discipline === 'string' && typeof value.belt === 'string';
+}
+
+function parseDisciplines(value: unknown): DisciplineAssignment[] {
+  if (Array.isArray(value)) return value.filter(isDisciplineAssignment);
   if (typeof value !== 'string') return [];
 
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed.filter(isDisciplineAssignment) : [];
   } catch {
     return [];
   }

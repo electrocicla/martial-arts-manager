@@ -12,16 +12,10 @@ import { Section } from '../ui/Section';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
 import { EmptyState } from '../ui/EmptyState';
-import { progressionService } from '../../services/progression.service';
+import { progressionService, type ReadyStudentRow as ApiReadyStudentRow } from '../../services/progression.service';
 import { label } from '../../lib/i18nUtils';
 import TournamentLogModal from './TournamentLogModal';
 import type { Student } from '../../types/index';
-import type { ProgressionEvaluation } from '../../lib/beltProgression';
-
-interface ReadyStudentRow {
-  student: Student;
-  progression: ProgressionEvaluation;
-}
 
 interface ReadyStudentsPanelProps {
   students: Student[];
@@ -29,42 +23,24 @@ interface ReadyStudentsPanelProps {
 
 export default function ReadyStudentsPanel({ students }: ReadyStudentsPanelProps) {
   const { t } = useTranslation();
-  const [rows, setRows] = useState<ReadyStudentRow[]>([]);
+  const [rows, setRows] = useState<ApiReadyStudentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [tournamentModalOpen, setTournamentModalOpen] = useState(false);
   const [defaultStudentId, setDefaultStudentId] = useState<string>('');
 
   const evaluate = useCallback(async () => {
-    if (students.length === 0) {
-      setRows([]);
-      setLoading(false);
-      return;
-    }
     setLoading(true);
     try {
-      const results = await Promise.all(
-        students.map(student =>
-          progressionService.getStudentProgression(student.id).then(res => ({ student, res }))
-        )
-      );
-      const next: ReadyStudentRow[] = [];
-      for (const { student, res } of results) {
-        if (res.success && res.data && (res.data.progression.readyForExam || res.data.progression.status === 'almost-there')) {
-          next.push({ student, progression: res.data.progression });
-        }
+      const res = await progressionService.getReadyStudents({ includeAlmost: true });
+      if (res.success && res.data) {
+        setRows(res.data.students);
+      } else {
+        setRows([]);
       }
-      // Ready first, then almost-there, sorted by overall percent desc
-      next.sort((a, b) => {
-        if (a.progression.readyForExam !== b.progression.readyForExam) {
-          return a.progression.readyForExam ? -1 : 1;
-        }
-        return b.progression.percent.overall - a.progression.percent.overall;
-      });
-      setRows(next);
     } finally {
       setLoading(false);
     }
-  }, [students]);
+  }, []);
 
   useEffect(() => {
     void evaluate();
@@ -119,20 +95,21 @@ export default function ReadyStudentsPanel({ students }: ReadyStudentsPanelProps
           />
         ) : (
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {rows.map(({ student, progression }) => {
+            {rows.map(row => {
+              const { progression } = row;
               const isReady = progression.readyForExam;
               return (
-                <li key={student.id}>
+                <li key={row.id}>
                   <Surface
                     variant="raised"
                     radius="md"
                     className={`p-4 border ${isReady ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-amber-500/30'}`}
                   >
                     <div className="flex items-start gap-3">
-                      <Avatar src={student.avatar_url} alt={student.name} fallback={(student.name?.[0] ?? '?').toUpperCase()} size="md" />
+                      <Avatar src={row.avatar_url ?? undefined} alt={row.name} fallback={(row.name?.[0] ?? '?').toUpperCase()} size="md" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-bold text-base-content truncate">{student.name}</p>
+                          <p className="font-bold text-base-content truncate">{row.name}</p>
                           <span className={`inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold ${
                             isReady
                               ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
@@ -185,7 +162,7 @@ export default function ReadyStudentsPanel({ students }: ReadyStudentsPanelProps
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => openTournamentFor(student.id)}
+                            onClick={() => openTournamentFor(row.id)}
                             rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
                           >
                             {label(t, 'tournament.add', 'Add tournament')}

@@ -15,6 +15,10 @@ interface AppearancePreferences {
   reduceMotion: boolean;
 }
 
+interface StoredAppearancePreferences extends AppearancePreferences {
+  theme?: ThemeMode;
+}
+
 const DEFAULT_APPEARANCE: AppearancePreferences = {
   density: 'comfortable',
   highContrast: false,
@@ -35,13 +39,18 @@ function parseDensity(value: unknown): DensityMode | undefined {
   return value === 'comfortable' || value === 'compact' ? value : undefined;
 }
 
-function parseAppearance(value: unknown): AppearancePreferences {
+function parseThemeMode(value: unknown): ThemeMode | undefined {
+  return value === 'dark' || value === 'light' || value === 'system' ? value : undefined;
+}
+
+function parseAppearance(value: unknown): StoredAppearancePreferences {
   if (!isRecord(value)) return DEFAULT_APPEARANCE;
 
   return {
     density: parseDensity(value.density) ?? DEFAULT_APPEARANCE.density,
     highContrast: typeof value.highContrast === 'boolean' ? value.highContrast : DEFAULT_APPEARANCE.highContrast,
     reduceMotion: typeof value.reduceMotion === 'boolean' ? value.reduceMotion : DEFAULT_APPEARANCE.reduceMotion,
+    theme: parseThemeMode(value.theme),
   };
 }
 
@@ -59,9 +68,17 @@ export default function AppearanceSettings() {
 
   useEffect(() => {
     const parsed = parseAppearance(settings?.appearance);
-    setAppearance(parsed);
-    applyAppearance(parsed);
-  }, [settings]);
+    const nextAppearance = {
+      density: parsed.density,
+      highContrast: parsed.highContrast,
+      reduceMotion: parsed.reduceMotion,
+    };
+    setAppearance(nextAppearance);
+    applyAppearance(nextAppearance);
+    if (parsed.theme && parsed.theme !== mode) {
+      setMode(parsed.theme);
+    }
+  }, [mode, setMode, settings]);
 
   const updateAppearance = (next: AppearancePreferences) => {
     setAppearance(next);

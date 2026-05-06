@@ -110,6 +110,15 @@ export const tournamentService = {
   },
 };
 
+export interface ReadyStudentRow {
+  id: string;
+  name: string;
+  belt: string | null;
+  discipline: string | null;
+  avatar_url: string | null;
+  progression: ProgressionEvaluation;
+}
+
 export const progressionService = {
   async getMyProgression(): Promise<ApiResponse<ProgressionPayload>> {
     return apiClient.get<ProgressionPayload>('/api/student/progression');
@@ -117,5 +126,12 @@ export const progressionService = {
 
   async getStudentProgression(studentId: string): Promise<ApiResponse<ProgressionPayload>> {
     return apiClient.get<ProgressionPayload>(`/api/students/${encodeURIComponent(studentId)}/progression`);
+  },
+
+  async getReadyStudents(opts: { includeAlmost?: boolean } = {}): Promise<ApiResponse<{ students: ReadyStudentRow[] }>> {
+    const params = new URLSearchParams();
+    if (opts.includeAlmost === false) params.set('includeAlmost', 'false');
+    const qs = params.toString();
+    return apiClient.get<{ students: ReadyStudentRow[] }>(qs ? `/api/students/progression/ready?${qs}` : '/api/students/progression/ready');
   },
 };

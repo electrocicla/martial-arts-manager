@@ -70,7 +70,7 @@ export default function ProfileCard({
               accept="image/jpeg,image/png,image/gif,image/webp,image/avif,image/heic,image/heif"
               onChange={onAvatarChange}
               disabled={!canUploadAvatar || avatarUploading}
-              className="hidden"
+              className="sr-only"
             />
           </div>
 
