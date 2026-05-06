@@ -94,8 +94,11 @@ describe('PaymentHistoryView', () => {
     render(<PaymentHistoryView />);
 
     expect(screen.getByText('Payment history')).toBeInTheDocument();
-    // First month is auto-expanded → student name renders
-    expect(screen.getByText('Alice')).toBeInTheDocument();
+    // First month is auto-expanded → student name renders.
+    // The details panel renders both a mobile card layout and a desktop table
+    // (Tailwind responsive classes hide one or the other in the browser; in
+    // jsdom both are present), so the student name appears twice.
+    expect(screen.getAllByText('Alice').length).toBeGreaterThanOrEqual(1);
   });
 
   it('triggers refresh from the toolbar button', () => {

@@ -5,6 +5,7 @@ import type {
   PaymentHistoryResponse,
   OverdueStudentsResponse,
   NotifyOverdueResponse,
+  NotifyOverdueBulkResponse,
 } from './payment.service';
 
 vi.mock('../lib/api-client', () => {
@@ -145,6 +146,99 @@ describe('PaymentService — admin dashboard endpoints', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toMatch(/linked user account/);
+    });
+
+    it('surfaces the dedupe 409 response with alreadyPending + existingNotificationId', async () => {
+      mockPost.mockResolvedValue({
+        success: false,
+        error: 'A pending unconfirmed reminder already exists for this student and month',
+        // The api-client preserves extra fields in the error envelope when the
+        // backend returns 409 — assert the consumer can read them.
+        existingNotificationId: 'n-existing-1',
+        alreadyPending: true,
+      });
+
+      const result = (await service.notifyOverdueStudent({
+        studentId: 's-3',
+        monthLabel: '2026-05',
+      })) as typeof Object & {
+        success: false;
+        error?: string;
+        existingNotificationId?: string;
+        alreadyPending?: boolean;
+      };
+
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/already exists/);
+      expect(result.existingNotificationId).toBe('n-existing-1');
+      expect(result.alreadyPending).toBe(true);
+    });
+  });
+
+  describe('notifyOverdueBulk', () => {
+    it('POSTs to /api/payments/notify-overdue/bulk with the studentIds payload', async () => {
+      const payload: NotifyOverdueBulkResponse = {
+        success: true,
+        monthLabel: '2026-05',
+        total: 3,
+        sent: 2,
+        skipped: 1,
+        errors: 0,
+        results: [
+          { studentId: 's-1', status: 'sent', notificationId: 'n-1' },
+          { studentId: 's-2', status: 'sent', notificationId: 'n-2' },
+          { studentId: 's-3', status: 'skipped', reason: 'already_paid' },
+        ],
+      };
+      mockPost.mockResolvedValue({ success: true, data: payload });
+
+      const result = await service.notifyOverdueBulk({
+        studentIds: ['s-1', 's-2', 's-3'],
+        monthLabel: '2026-05',
+      });
+
+      expect(apiClient.post).toHaveBeenCalledWith('/api/payments/notify-overdue/bulk', {
+        studentIds: ['s-1', 's-2', 's-3'],
+        monthLabel: '2026-05',
+      });
+      expect(result.success).toBe(true);
+      expect(result.data?.sent).toBe(2);
+      expect(result.data?.skipped).toBe(1);
+      expect(result.data?.results).toHaveLength(3);
+      expect(result.data?.results[2]).toEqual({
+        studentId: 's-3',
+        status: 'skipped',
+        reason: 'already_paid',
+      });
+    });
+
+    it('forwards the {all:true} payload for the "send to every overdue" mode', async () => {
+      const payload: NotifyOverdueBulkResponse = {
+        success: true,
+        monthLabel: '2026-05',
+        total: 0,
+        sent: 0,
+        skipped: 0,
+        errors: 0,
+        results: [],
+      };
+      mockPost.mockResolvedValue({ success: true, data: payload });
+
+      await service.notifyOverdueBulk({ all: true, monthLabel: '2026-05' });
+
+      expect(apiClient.post).toHaveBeenCalledWith('/api/payments/notify-overdue/bulk', {
+        all: true,
+        monthLabel: '2026-05',
+      });
+    });
+
+    it('propagates API errors from the bulk endpoint', async () => {
+      mockPost.mockResolvedValue({ success: false, error: 'Forbidden' });
+
+      const result = await service.notifyOverdueBulk({ studentIds: ['s-1'] });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Forbidden');
     });
   });
 });

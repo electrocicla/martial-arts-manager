@@ -6,7 +6,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import ConfirmModal from '../ui/ConfirmModal';
-import { DollarSign, Calendar, User, Pencil, Trash2, X, Check } from 'lucide-react';
+import { DollarSign, Calendar, User, Pencil, Trash2, X, Check, CreditCard, Wallet } from 'lucide-react';
 import { parseLocalDate } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import MoneyValue from '../ui/MoneyValue';
@@ -201,6 +201,17 @@ export default function PaymentList({ payments, studentsById, onEdit, onDelete, 
                         <Badge variant={getStatusBadgeVariant(paymentStatus)}>
                           {t(`payments.status.${paymentStatus}`)}
                         </Badge>
+                        {payment.payment_source === 'mercadopago' ? (
+                          <Badge variant="info">
+                            <CreditCard className="h-3 w-3 mr-1" aria-hidden="true" />
+                            {t('mercadopago.badge.mercadopago')}
+                          </Badge>
+                        ) : (
+                          <Badge variant="default">
+                            <Wallet className="h-3 w-3 mr-1" aria-hidden="true" />
+                            {t('mercadopago.badge.manual')}
+                          </Badge>
+                        )}
                       </div>
 
                       {isAdmin && (

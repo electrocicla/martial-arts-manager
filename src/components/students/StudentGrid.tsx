@@ -1,4 +1,5 @@
 import { Eye, Edit, Mail, Phone, Calendar } from 'lucide-react';
+import MercadoPagoPayButton from '../payments/MercadoPagoPayButton';
 import { getBeltColor } from '../../lib/studentUtils';
 import { Button } from '../ui/Button';
 import type { Student } from '../../types/index';
@@ -101,6 +102,7 @@ export default function StudentGrid({ students, onViewStudent, onEditStudent }: 
             >
               Editar
             </Button>
+            <MercadoPagoPayButton studentId={student.id} size="sm" />
           </div>
 
           {/* Hover Overlay Effect */}

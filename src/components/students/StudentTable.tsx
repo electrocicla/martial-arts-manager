@@ -1,4 +1,5 @@
 import { Eye, Edit, Phone, Calendar } from 'lucide-react';
+import MercadoPagoPayButton from '../payments/MercadoPagoPayButton';
 import { useTranslation } from 'react-i18next';
 import { getBeltColor } from '../../lib/studentUtils';
 import { Button } from '../ui/Button';
@@ -132,6 +133,7 @@ export default function StudentTable({ students, onViewStudent, onEditStudent }:
                     >
                       <span className="hidden sm:inline">{t('common.edit')}</span>
                     </Button>
+                    <MercadoPagoPayButton studentId={student.id} size="xs" />
                   </div>
                 </td>
               </tr>

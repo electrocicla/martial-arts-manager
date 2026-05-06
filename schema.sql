@@ -135,6 +135,9 @@ CREATE TABLE payments (
   notes TEXT,
   status TEXT NOT NULL DEFAULT 'completed' CHECK(status IN ('completed', 'pending', 'failed', 'refunded')),
   payment_method TEXT,
+  payment_source TEXT NOT NULL DEFAULT 'manual', -- 'manual' | 'mercadopago'
+  external_id TEXT,            -- gateway payment id (e.g. MercadoPago payment id)
+  external_reference TEXT,     -- our generated reference passed to the gateway
   receipt_url TEXT,
   created_by TEXT,
   updated_by TEXT,
@@ -318,6 +321,9 @@ CREATE INDEX idx_payments_date ON payments(date);
 CREATE INDEX idx_payments_status ON payments(status);
 CREATE INDEX idx_payments_deleted_at ON payments(deleted_at);
 CREATE INDEX idx_payments_student_date ON payments(student_id, date);
+CREATE INDEX idx_payments_source ON payments(payment_source);
+CREATE UNIQUE INDEX idx_payments_external_id ON payments(external_id) WHERE external_id IS NOT NULL;
+CREATE INDEX idx_payments_external_reference ON payments(external_reference);
 
 -- Class enrollments indexes
 CREATE INDEX idx_enrollments_class_id ON class_enrollments(class_id);
@@ -471,6 +477,9 @@ CREATE TABLE payments (
   notes TEXT,
   status TEXT NOT NULL DEFAULT 'completed' CHECK(status IN ('completed', 'pending', 'failed', 'refunded')),
   payment_method TEXT,
+  payment_source TEXT NOT NULL DEFAULT 'manual',
+  external_id TEXT,
+  external_reference TEXT,
   receipt_url TEXT,
   created_by TEXT,
   updated_by TEXT,
@@ -558,6 +567,9 @@ CREATE INDEX idx_payments_date ON payments(date);
 CREATE INDEX idx_payments_status ON payments(status);
 CREATE INDEX idx_payments_deleted_at ON payments(deleted_at);
 CREATE INDEX idx_payments_student_date ON payments(student_id, date);
+CREATE INDEX idx_payments_source ON payments(payment_source);
+CREATE UNIQUE INDEX idx_payments_external_id ON payments(external_id) WHERE external_id IS NOT NULL;
+CREATE INDEX idx_payments_external_reference ON payments(external_reference);
 
 -- Attendance indexes
 CREATE INDEX idx_attendance_class_id ON attendance(class_id);

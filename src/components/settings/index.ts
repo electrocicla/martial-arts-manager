@@ -4,3 +4,4 @@ export { default as NotificationSettings } from './NotificationSettings';
 export { default as AppearanceSettings } from './AppearanceSettings';
 export { default as PaymentSettings } from './PaymentSettings';
 export { default as DataBackupSettings } from './DataBackupSettings';
+export { default as MercadoPagoSettings } from './MercadoPagoSettings';

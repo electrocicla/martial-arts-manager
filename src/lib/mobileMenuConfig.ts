@@ -7,6 +7,7 @@ import {
   Clock,
   DollarSign,
   Home,
+  Settings,
   Users,
   User
 } from 'lucide-react';
@@ -101,6 +102,14 @@ export const navigationItems: NavigationItem[] = [
     href: '/analytics',
     icon: BarChart3,
     color: 'text-orange-500',
+    roles: ['admin']
+  },
+  {
+    id: 'settings',
+    nameKey: 'nav.settings',
+    href: '/settings',
+    icon: Settings,
+    color: 'text-slate-400',
     roles: ['admin']
   }
 ];

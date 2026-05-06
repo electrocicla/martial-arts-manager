@@ -109,6 +109,8 @@ export interface RecurrencePattern {
   endDate?: string;
 }
 
+export type PaymentSource = 'manual' | 'mercadopago';
+
 export interface Payment {
   id: string;
   student_id: string;
@@ -119,12 +121,46 @@ export interface Payment {
   notes?: string;
   status: string;
   payment_method?: string;
+  payment_source?: PaymentSource;
+  external_id?: string | null;
+  external_reference?: string | null;
   receipt_url?: string;
   created_by?: string;
   updated_by?: string;
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+}
+
+export interface MercadoPagoConfigDTO {
+  enabled: boolean;
+  accessToken: string;
+  publicKey: string;
+  webhookSecret: string;
+  accountEmail: string;
+  currency: string;
+  defaultAmount: number;
+  successUrl: string;
+  failureUrl: string;
+  pendingUrl: string;
+  notificationUrl: string;
+  isComplete: boolean;
+  isActive: boolean;
+}
+
+export interface MercadoPagoStatusDTO {
+  active: boolean;
+  currency?: string;
+  defaultAmount?: number;
+  publicKey?: string;
+}
+
+export interface MercadoPagoPreferenceResult {
+  preferenceId: string;
+  initPoint: string;
+  sandboxInitPoint: string;
+  externalReference: string;
+  paymentId: string;
 }
 
 export interface Attendance {

@@ -851,5 +851,61 @@
       "confirming": "Confirming…",
       "confirmFailed": "Could not confirm. Please try again."
     }
+  },
+  "mercadopago": {
+    "title": "MercadoPago",
+    "section": {
+      "title": "MercadoPago Payments",
+      "subtitle": "Configure the MercadoPago account that powers online payments for every student."
+    },
+    "badge": {
+      "manual": "Manual",
+      "mercadopago": "MercadoPago"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "incomplete": "Configuration incomplete",
+      "ready": "All required fields are filled. Toggle Activate to enable payments."
+    },
+    "fields": {
+      "enabled": "Activate MercadoPago payments",
+      "accountEmail": "MercadoPago account email",
+      "accessToken": "Access token (server)",
+      "publicKey": "Public key (client)",
+      "webhookSecret": "Webhook secret",
+      "currency": "Currency",
+      "defaultAmount": "Default amount",
+      "successUrl": "Success redirect URL",
+      "failureUrl": "Failure redirect URL",
+      "pendingUrl": "Pending redirect URL",
+      "notificationUrl": "Webhook URL (notification_url)"
+    },
+    "hints": {
+      "accessToken": "Found in MercadoPago > Your integrations > Credentials. Starts with APP_USR- or TEST-.",
+      "publicKey": "Public key from the same Credentials screen.",
+      "webhookSecret": "Set the same secret in MercadoPago > Notifications > Webhooks (Sign payload).",
+      "notificationUrl": "Leave blank to use the default /api/payments/mercadopago/webhook URL."
+    },
+    "actions": {
+      "save": "Save configuration",
+      "saving": "Saving…",
+      "test": "Test credentials",
+      "testing": "Testing…",
+      "reveal": "Show secrets",
+      "hide": "Hide secrets",
+      "pay": "Pay with MercadoPago",
+      "creating": "Opening checkout…"
+    },
+    "messages": {
+      "saved": "MercadoPago configuration saved",
+      "saveFailed": "Failed to save configuration",
+      "testOk": "Credentials are valid",
+      "testFailed": "Credentials are invalid",
+      "activationBlocked": "Complete every required field before activating MercadoPago.",
+      "notActive": "MercadoPago is not active yet",
+      "checkoutOpened": "MercadoPago checkout opened in a new tab",
+      "checkoutFailed": "Could not start MercadoPago checkout"
+    }
   }
 }

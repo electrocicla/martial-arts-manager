@@ -870,5 +870,61 @@
       "confirming": "Confirmando…",
       "confirmFailed": "Não foi possível confirmar. Por favor, tente novamente."
     }
+  },
+  "mercadopago": {
+    "title": "MercadoPago",
+    "section": {
+      "title": "Pagamentos com MercadoPago",
+      "subtitle": "Configure a conta do MercadoPago que viabiliza pagamentos online para todos os alunos."
+    },
+    "badge": {
+      "manual": "Manual",
+      "mercadopago": "MercadoPago"
+    },
+    "status": {
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "incomplete": "Configuração incompleta",
+      "ready": "Todos os campos obrigatórios estão preenchidos. Ative com o interruptor."
+    },
+    "fields": {
+      "enabled": "Ativar pagamentos MercadoPago",
+      "accountEmail": "E-mail da conta MercadoPago",
+      "accessToken": "Access token (servidor)",
+      "publicKey": "Public key (cliente)",
+      "webhookSecret": "Segredo do webhook",
+      "currency": "Moeda",
+      "defaultAmount": "Valor padrão",
+      "successUrl": "URL de sucesso",
+      "failureUrl": "URL de falha",
+      "pendingUrl": "URL de pendente",
+      "notificationUrl": "URL do webhook (notification_url)"
+    },
+    "hints": {
+      "accessToken": "Encontrado em MercadoPago > Suas integrações > Credenciais. Começa com APP_USR- ou TEST-.",
+      "publicKey": "Public key da mesma tela de credenciais.",
+      "webhookSecret": "Defina o mesmo segredo em MercadoPago > Notificações > Webhooks.",
+      "notificationUrl": "Deixe em branco para usar a URL padrão /api/payments/mercadopago/webhook."
+    },
+    "actions": {
+      "save": "Salvar configuração",
+      "saving": "Salvando…",
+      "test": "Testar credenciais",
+      "testing": "Testando…",
+      "reveal": "Mostrar segredos",
+      "hide": "Ocultar segredos",
+      "pay": "Pagar com MercadoPago",
+      "creating": "Abrindo checkout…"
+    },
+    "messages": {
+      "saved": "Configuração do MercadoPago salva",
+      "saveFailed": "Falha ao salvar a configuração",
+      "testOk": "Credenciais válidas",
+      "testFailed": "Credenciais inválidas",
+      "activationBlocked": "Preencha todos os campos obrigatórios antes de ativar.",
+      "notActive": "MercadoPago ainda não está ativo",
+      "checkoutOpened": "Checkout do MercadoPago aberto em uma nova aba",
+      "checkoutFailed": "Não foi possível iniciar o checkout do MercadoPago"
+    }
   }
 }

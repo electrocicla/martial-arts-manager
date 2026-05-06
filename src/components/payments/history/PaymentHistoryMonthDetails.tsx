@@ -35,7 +35,57 @@ export default function PaymentHistoryMonthDetails({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <>
+      {/* Mobile / small viewports: stacked card layout. */}
+      <div className="md:hidden space-y-2">
+        {payments.map((payment) => {
+          const statusClass = STATUS_STYLES[payment.status] ?? STATUS_STYLES.completed;
+          return (
+            <div
+              key={payment.id}
+              className="rounded-lg border border-gray-800 bg-gray-900/40 p-3 space-y-2"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-white truncate">
+                    {payment.student_name}
+                  </div>
+                  <div className="text-xs text-gray-400 truncate">{payment.student_email}</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-base font-bold text-white whitespace-nowrap">
+                    {formatCurrency(Number(payment.amount) || 0)}
+                  </div>
+                  <div className="text-[10px] text-gray-400 whitespace-nowrap">
+                    {formatDateTime(payment.created_at || payment.date)}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-md font-semibold ring-1 ${statusClass}`}
+                >
+                  {t(`payments.status.${payment.status}`, payment.status)}
+                </span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-800 text-gray-200 capitalize">
+                  {payment.type}
+                </span>
+                {payment.payment_method && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-800 text-gray-300 capitalize">
+                    {payment.payment_method}
+                  </span>
+                )}
+              </div>
+              {payment.notes && (
+                <div className="text-xs text-gray-400 break-words">{payment.notes}</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Tablet / desktop: original table. */}
+      <div className="hidden md:block overflow-x-auto">
       <table className="min-w-full text-sm">
         <thead className="text-left text-xs uppercase text-gray-400 border-b border-gray-700">
           <tr>
@@ -81,6 +131,7 @@ export default function PaymentHistoryMonthDetails({
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
