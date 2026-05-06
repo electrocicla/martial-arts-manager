@@ -915,13 +915,19 @@ p, span, div {
   & .bg-black\/60,
   & .bg-black\/50,
   & .bg-black\/40,
+  & .bg-gray-900\/95,
+  & .bg-gray-900\/90,
   & .bg-gray-900\/80,
+  & .bg-gray-900\/70,
   & .bg-gray-900\/60,
   & .bg-gray-900\/50,
   & .bg-gray-900\/40,
-  & .bg-gray-900\/30 {
-    background-color: oklch(0.985 0.004 30 / 0.85);
+  & .bg-gray-900\/30,
+  & .bg-slate-900\/90,
+  & .bg-slate-900\/80 {
+    background-color: oklch(0.985 0.004 30 / 0.92);
   }
+  & .bg-gray-800\/95,
   & .bg-gray-800\/90,
   & .bg-gray-800\/80,
   & .bg-gray-800\/70,
@@ -929,8 +935,15 @@ p, span, div {
   & .bg-gray-800\/50,
   & .bg-gray-800\/40,
   & .bg-gray-800\/30,
-  & .bg-gray-800\/20 {
-    background-color: oklch(0.945 0.008 30 / 0.85);
+  & .bg-gray-800\/20,
+  & .bg-slate-800\/50,
+  & .bg-slate-800\/60 {
+    background-color: oklch(0.945 0.008 30 / 0.92);
+  }
+  & .bg-gray-700\/60,
+  & .bg-gray-700\/50,
+  & .bg-gray-700\/40 {
+    background-color: oklch(0.910 0.012 30 / 0.85);
   }
   & .hover\:bg-gray-800:hover,
   & .hover\:bg-gray-700:hover,
