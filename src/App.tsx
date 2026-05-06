@@ -28,6 +28,7 @@ const BeltTesting = lazy(() => import('./pages/BeltTesting'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const StudentProfile = lazy(() => import('./pages/StudentProfile'));
 const StudentPayments = lazy(() => import('./pages/StudentPayments'));
+const StudentClasses = lazy(() => import('./pages/StudentClasses'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
@@ -66,6 +67,7 @@ function AppContent() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/profile" element={<StudentProfile />} />
             <Route path="/my-payments" element={<StudentPayments />} />
+            <Route path="/my-classes" element={<StudentClasses />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

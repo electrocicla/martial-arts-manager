@@ -6,6 +6,7 @@ import {
   Calendar,
   Clock,
   DollarSign,
+  GraduationCap,
   Home,
   Settings,
   Users,
@@ -89,6 +90,14 @@ export const navigationItems: NavigationItem[] = [
     roles: ['admin', 'instructor']
   },
   {
+    id: 'my-classes',
+    nameKey: 'nav.myClasses',
+    href: '/my-classes',
+    icon: GraduationCap,
+    color: 'text-indigo-400',
+    roles: ['student']
+  },
+  {
     id: 'payments',
     nameKey: 'nav.payments',
     href: '/payments',
@@ -140,6 +149,14 @@ export const quickActions: QuickAction[] = [
     roles: ['admin', 'instructor'],
     href: '/attendance',
     color: 'text-blue-500'
+  },
+  {
+    id: 'quick-my-classes',
+    labelKey: 'nav.myClasses',
+    icon: GraduationCap,
+    roles: ['student'],
+    href: '/my-classes',
+    color: 'text-indigo-400'
   },
   {
     id: 'quick-calendar',
