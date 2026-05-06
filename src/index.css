@@ -2,6 +2,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 /* ------------------------------------------------------------------ */
+/*  Tailwind v4 dark mode — driven by our [data-theme] attribute      */
+/*  Allows dark:bg-*, dark:text-* utilities to follow the theme       */
+/*  toggle controlled by ThemeContext (data-theme="dark"|"light").    */
+/* ------------------------------------------------------------------ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ------------------------------------------------------------------ */
 /*  Dashboard v2 — Design Tokens                                       */
 /*  See audit/dashboard-uiux-revamp/AUDIT.md §3                        */
 /*  These tokens are additive. Legacy DaisyUI classes are unaffected.  */
@@ -44,6 +51,7 @@
 :root,
 :root[data-theme="dark"],
 .dark {
+  color-scheme: dark;
   --color-surface-0: oklch(0.08 0 0);   /* canvas */
   --color-surface-1: oklch(0.12 0 0);   /* card */
   --color-surface-2: oklch(0.16 0 0);   /* elevated */
@@ -61,6 +69,7 @@
 
 /* Light theme */
 :root[data-theme="light"] {
+  color-scheme: light;
   --color-surface-0: oklch(0.98 0 0);
   --color-surface-1: oklch(1.00 0 0);
   --color-surface-2: oklch(0.96 0 0);
@@ -180,30 +189,31 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Dark theme improvements */
+/* Theme-aware base utilities — values come from the token block above
+   so they automatically swap with [data-theme="light"|"dark"]. */
 .text-base-content {
-  color: #f3f4f6 !important; /* gray-100 */
+  color: var(--color-ink-primary);
 }
 
 .bg-base-100 {
-  background-color: #000000 !important; /* Pure black for martial arts theme */
+  background-color: var(--color-surface-0);
 }
 
 .bg-base-200 {
-  background-color: #1a1a1a !important; /* Dark gray for contrast */
+  background-color: var(--color-surface-1);
 }
 
 .bg-base-300 {
-  background-color: #2a2a2a !important; /* Medium dark gray */
+  background-color: var(--color-surface-2);
 }
 
 .border-base-300 {
-  border-color: #4b5563 !important; /* gray-600 */
+  border-color: var(--color-border);
 }
 
-/* Improve text contrast */
+/* Improve text contrast (theme-aware) */
 h1, h2, h3, h4, h5, h6 {
-  color: #f9fafb; /* gray-50 */
+  color: var(--color-ink-primary);
   /* Better font rendering for mobile */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -251,9 +261,10 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Body inherits color from html; do NOT force a global color on every
+   p/span/div — that broke light theme and overrode component colors.
+   Apply better font rendering only. */
 p, span, div {
-  color: #e5e7eb; /* gray-200 */
-  /* Better font rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -294,17 +305,17 @@ p, span, div {
   border-radius: 0.25rem; /* rounded for extra small buttons */
 }
 
-/* Better card styling with rounded corners */
+/* Better card styling with rounded corners (theme-aware) */
 .card {
-  background-color: #1f2937;
+  background-color: var(--color-surface-1);
   border-radius: 0.75rem; /* rounded-xl by default */
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #374151;
-  color: #f3f4f6;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-ink-primary);
 }
 
 .card-title {
-  color: #f9fafb;
+  color: var(--color-ink-primary);
 }
 
 /* Alert styling with rounded corners */
@@ -318,12 +329,12 @@ p, span, div {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Input styling with rounded corners */
+/* Input styling with rounded corners (theme-aware) */
 .input, .select, .textarea {
   border-radius: 0.5rem; /* rounded-lg */
-  border: 1px solid #4b5563; /* gray-600 */
-  background-color: #374151; /* gray-700 */
-  color: #f3f4f6; /* gray-100 */
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-2);
+  color: var(--color-ink-primary);
   transition: all 0.2s ease-in-out;
 }
 
@@ -872,21 +883,21 @@ p, span, div {
   background-color: transparent !important;
   border: none !important;
   font-family: 'Inter', sans-serif;
-  color: #f3f4f6;
+  color: var(--color-ink-primary);
 }
 
 /* Calendar Navigation */
 .custom-calendar .react-calendar__navigation {
   display: flex;
   margin-bottom: 1rem;
-  background-color: #1f2937;
+  background-color: var(--color-surface-1);
   border-radius: 0.75rem;
   padding: 0.5rem;
-  border: 1px solid #374151;
+  border: 1px solid var(--color-border);
 }
 
 .custom-calendar .react-calendar__navigation button {
-  color: #f3f4f6;
+  color: var(--color-ink-primary);
   min-width: 44px;
   background: transparent;
   font-size: 1.125rem;
@@ -897,19 +908,19 @@ p, span, div {
 
 .custom-calendar .react-calendar__navigation button:enabled:hover,
 .custom-calendar .react-calendar__navigation button:enabled:focus {
-  background-color: #374151;
-  color: #ef4444;
+  background-color: var(--color-surface-2);
+  color: var(--color-strike-500);
 }
 
 .custom-calendar .react-calendar__navigation button:disabled {
   background-color: transparent;
-  color: #6b7280;
+  color: var(--color-ink-disabled);
 }
 
 .custom-calendar .react-calendar__navigation__label {
   font-weight: 700;
   font-size: 1.125rem;
-  color: #f9fafb;
+  color: var(--color-ink-primary);
 }
 
 /* Month View */
@@ -918,12 +929,12 @@ p, span, div {
   text-transform: uppercase;
   font-weight: 600;
   font-size: 0.75rem;
-  color: #9ca3af;
-  background-color: #1f2937;
+  color: var(--color-ink-muted);
+  background-color: var(--color-surface-1);
   border-radius: 0.5rem;
   padding: 0.75rem 0;
   margin-bottom: 0.5rem;
-  border: 1px solid #374151;
+  border: 1px solid var(--color-border);
 }
 
 .custom-calendar .react-calendar__month-view__weekdays__weekday {
@@ -939,11 +950,11 @@ p, span, div {
 .custom-calendar .react-calendar__tile {
   max-width: 100%;
   padding: 0.75rem 0.5rem;
-  background: #111827;
-  color: #e5e7eb;
+  background: var(--color-surface-1);
+  color: var(--color-ink-primary);
   border-radius: 0.5rem;
   margin: 0.125rem;
-  border: 1px solid #374151;
+  border: 1px solid var(--color-border);
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -953,29 +964,29 @@ p, span, div {
 
 .custom-calendar .react-calendar__tile:enabled:hover,
 .custom-calendar .react-calendar__tile:enabled:focus {
-  background-color: #1f2937;
-  color: #f3f4f6;
-  border-color: #ef4444;
+  background-color: var(--color-surface-2);
+  color: var(--color-ink-primary);
+  border-color: var(--color-strike-500);
   transform: scale(1.05);
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
 }
 
 /* Current Month Days */
 .custom-calendar .react-calendar__month-view__days__day {
-  color: #f3f4f6;
+  color: var(--color-ink-primary);
 }
 
 /* Days from Adjacent Months (Neighbors) */
 .custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
-  color: #6b7280;
-  background-color: #0f172a;
-  border-color: #1f2937;
+  color: var(--color-ink-muted);
+  background-color: var(--color-surface-0);
+  border-color: var(--color-border);
 }
 
 .custom-calendar .react-calendar__month-view__days__day--neighboringMonth:enabled:hover {
-  background-color: #1e293b;
-  color: #9ca3af;
-  border-color: #374151;
+  background-color: var(--color-surface-2);
+  color: var(--color-ink-secondary);
+  border-color: var(--color-border-strong);
 }
 
 /* Weekend Days */
@@ -1033,9 +1044,9 @@ p, span, div {
 .custom-calendar .react-calendar__decade-view .react-calendar__tile,
 .custom-calendar .react-calendar__century-view .react-calendar__tile {
   padding: 1.5rem 0.5rem;
-  background-color: #1f2937;
-  color: #e5e7eb;
-  border: 1px solid #374151;
+  background-color: var(--color-surface-1);
+  color: var(--color-ink-primary);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   margin: 0.25rem;
 }
@@ -1043,9 +1054,9 @@ p, span, div {
 .custom-calendar .react-calendar__year-view .react-calendar__tile:enabled:hover,
 .custom-calendar .react-calendar__decade-view .react-calendar__tile:enabled:hover,
 .custom-calendar .react-calendar__century-view .react-calendar__tile:enabled:hover {
-  background-color: #374151;
-  color: #ef4444;
-  border-color: #ef4444;
+  background-color: var(--color-surface-2);
+  color: var(--color-strike-500);
+  border-color: var(--color-strike-500);
 }
 
 /* Responsive Calendar for Mobile */
