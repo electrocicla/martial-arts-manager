@@ -937,6 +937,10 @@
     "noResults": "Sin resultados",
     "navigate": "navegar",
     "refresh": "Actualizar",
+    "switchToLightTheme": "Cambiar a tema claro",
+    "switchToDarkTheme": "Cambiar a tema oscuro",
+    "lightTheme": "Tema claro",
+    "darkTheme": "Tema oscuro",
     "unknownStudent": "Estudiante desconocido"
   },
   "privacy": {
@@ -1278,5 +1282,70 @@
     "save": "Guardar torneo",
     "selectStudent": "Selecciona un estudiante…",
     "student": "Estudiante"
+  },
+  "studentClasses": {
+    "title": "Mis clases",
+    "subtitle": "Tu historial completo de clases con asistencia, información del instructor y alertas por inasistencias.",
+    "error": {
+      "title": "No se pudieron cargar tus clases"
+    },
+    "filters": {
+      "all": "Todas",
+      "upcoming": "Próximas",
+      "past": "Pasadas",
+      "attended": "Asistidas",
+      "missed": "Perdidas"
+    },
+    "status": {
+      "attended": "Asistida",
+      "missed": "Perdida",
+      "noRecord": "Sin registro",
+      "today": "Hoy",
+      "upcoming": "Próxima"
+    },
+    "stats": {
+      "attended": "Asistidas",
+      "missed": "Perdidas",
+      "rate": "Tasa de asistencia",
+      "currentStreak": "Racha actual",
+      "bestStreak": "Mejor racha"
+    },
+    "alert": {
+      "title": "Has perdido {{count}} clase(s)",
+      "description": "Revisa los detalles abajo y contacta a tu instructor si crees que una clase fue marcada incorrectamente.",
+      "viewAction": "Ver perdidas"
+    },
+    "searchPlaceholder": "Busca por clase, disciplina, instructor o ubicación...",
+    "showingCount": "Mostrando {{count}} de {{total}}",
+    "empty": "Aún no estás inscrito en ninguna clase.",
+    "emptyFiltered": "No hay clases que coincidan con tus filtros. Intenta limpiar la búsqueda o cambiar de pestaña.",
+    "checkedInAt": "Registro de entrada a las {{time}}",
+    "missedHint": "Estabas inscrito en esta clase pero no asististe.",
+    "noRecordHint": "No se encontró registro de asistencia para esta clase pasada.",
+    "actions": {
+      "showMore": "Ver detalles",
+      "showLess": "Ver menos"
+    }
+  },
+  "announce": {
+    "lightMode": {
+      "aria": "Anuncio de nueva funcionalidad",
+      "eyebrow": "Nuevo",
+      "title": "El modo claro ya está aquí",
+      "bodyAnchored": "Toca el icono resaltado de arriba para cambiar entre modo claro y oscuro. Recordamos tu elección en este dispositivo.",
+      "tryLight": "Probar modo claro",
+      "tryDark": "Volver a modo oscuro",
+      "dismiss": "Entendido"
+    }
+  },
+  "androidInstallPrompt": {
+    "title": "Instala HAMARR en tu Android",
+    "heading": "Obtén la app de Android (.apk)",
+    "body": "Puedes instalar la app HAMARR directamente en Android para acceder rápido desde tu pantalla de inicio.",
+    "warning": "Si es tu primera instalación manual, Android puede pedirte permitir instalaciones desde esta fuente.",
+    "actions": {
+      "later": "Quizás más tarde",
+      "download": "Descargar APK"
+    }
   }
 }

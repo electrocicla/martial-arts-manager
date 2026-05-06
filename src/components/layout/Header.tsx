@@ -71,11 +71,23 @@ export default function Header() {
           <h1 className="text-xl font-bold text-white">{t('common.appName')}</h1>
         </button>
 
-        {/* Right: Money toggle + User Avatar */}
+        {/* Right: Theme toggle + Money toggle + User Avatar */}
         <div className="flex items-center gap-2">
           <MoneyVisibilityToggle
             className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
           />
+          {/* Theme Toggle (mobile) — sits next to the avatar so the
+              announcement coach-mark can anchor to it on small screens. */}
+          <button
+            type="button"
+            data-theme-toggle="true"
+            onClick={toggle}
+            className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
+            aria-label={resolved === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            title={resolved === 'dark' ? 'Light theme' : 'Dark theme'}
+          >
+            {resolved === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
           <div className="relative">
             <button
               onClick={() => {
@@ -322,10 +334,20 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {/* Theme Toggle */}
           <button
+            type="button"
+            data-theme-toggle="true"
             onClick={toggle}
             className="p-2 text-gray-300 hover:text-white hover:bg-gray-700/60 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
-            aria-label={resolved === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-            title={resolved === 'dark' ? 'Light theme' : 'Dark theme'}
+            aria-label={
+              resolved === 'dark'
+                ? t('common.switchToLightTheme', 'Switch to light theme')
+                : t('common.switchToDarkTheme', 'Switch to dark theme')
+            }
+            title={
+              resolved === 'dark'
+                ? t('common.lightTheme', 'Light theme')
+                : t('common.darkTheme', 'Dark theme')
+            }
           >
             {resolved === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>

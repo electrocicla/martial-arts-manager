@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Download, Smartphone } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -52,6 +53,7 @@ interface AndroidApkInstallPromptProps {
 export default function AndroidApkInstallPrompt({ context = 'dashboard' }: AndroidApkInstallPromptProps) {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const apkUrl = useMemo(() => {
@@ -98,7 +100,7 @@ export default function AndroidApkInstallPrompt({ context = 'dashboard' }: Andro
     <Modal
       isOpen={isOpen}
       onClose={closeForLater}
-      title="Install HAMARR on your Android"
+      title={t('androidInstallPrompt.title', 'Install HAMARR on your Android')}
       size="md"
       showCloseButton
     >
@@ -106,23 +108,31 @@ export default function AndroidApkInstallPrompt({ context = 'dashboard' }: Andro
         <div className="flex items-start gap-3 rounded-xl border border-emerald-700/40 bg-emerald-900/20 p-4">
           <Smartphone className="mt-0.5 h-5 w-5 text-emerald-400" />
           <div className="text-sm text-gray-200">
-            <p className="font-semibold text-white">Get the Android app (.apk)</p>
+            <p className="font-semibold text-white">
+              {t('androidInstallPrompt.heading', 'Get the Android app (.apk)')}
+            </p>
             <p className="mt-1 text-gray-300">
-              You can install the HAMARR app directly on Android for quick access from your home screen.
+              {t(
+                'androidInstallPrompt.body',
+                'You can install the HAMARR app directly on Android for quick access from your home screen.',
+              )}
             </p>
           </div>
         </div>
 
         <div className="rounded-xl border border-yellow-700/40 bg-yellow-900/20 p-4 text-sm text-yellow-100">
-          If this is your first manual install, Android may ask you to allow installations from this source.
+          {t(
+            'androidInstallPrompt.warning',
+            'If this is your first manual install, Android may ask you to allow installations from this source.',
+          )}
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           <Button variant="ghost" onClick={closeForLater}>
-            Maybe later
+            {t('androidInstallPrompt.actions.later', 'Maybe later')}
           </Button>
           <Button variant="primary" leftIcon={<Download className="h-4 w-4" />} onClick={handleDownload}>
-            Download APK
+            {t('androidInstallPrompt.actions.download', 'Download APK')}
           </Button>
         </div>
       </div>
