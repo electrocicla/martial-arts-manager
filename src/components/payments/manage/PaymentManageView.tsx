@@ -130,7 +130,10 @@ export default function PaymentManageView() {
           <h2 className="text-2xl font-bold text-white">{t('payments.title')}</h2>
           <p className="text-gray-300">{t('payments.subtitle')}</p>
         </div>
-        <Badge variant="secondary" className="px-3 py-1">
+        <Badge
+          variant="secondary"
+          className="px-3 py-1 !bg-red-500/15 !text-red-300 !ring-red-500/30 dark:!bg-red-500/15 dark:!text-red-300 dark:!ring-red-500/30"
+        >
           {filteredPayments.length} {t('payments.totalPayments')}
         </Badge>
       </div>

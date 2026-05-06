@@ -11,6 +11,8 @@ import {
   paymentService,
   type OverdueStudentsResponse,
   type NotifyOverduePayload,
+  type NotifyOverdueBulkPayload,
+  type NotifyOverdueBulkResponse,
 } from '../services';
 import { onDataEvent } from '../lib/dataEvents';
 
@@ -20,7 +22,11 @@ interface UseOverdueStudentsReturn {
   error: string | null;
   refresh: () => Promise<void>;
   notifyStudent: (payload: NotifyOverduePayload) => Promise<{ success: boolean; error?: string }>;
+  notifyBulk: (
+    payload: NotifyOverdueBulkPayload,
+  ) => Promise<{ success: boolean; data?: NotifyOverdueBulkResponse; error?: string }>;
   pendingNotifications: Set<string>;
+  isBulkSending: boolean;
 }
 
 export function useOverdueStudents(): UseOverdueStudentsReturn {
@@ -28,6 +34,7 @@ export function useOverdueStudents(): UseOverdueStudentsReturn {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingNotifications, setPendingNotifications] = useState<Set<string>>(() => new Set());
+  const [isBulkSending, setIsBulkSending] = useState<boolean>(false);
 
   const fetchOverdue = useCallback(async () => {
     try {
@@ -85,12 +92,40 @@ export function useOverdueStudents(): UseOverdueStudentsReturn {
     [],
   );
 
+  const notifyBulk = useCallback(
+    async (
+      payload: NotifyOverdueBulkPayload,
+    ): Promise<{ success: boolean; data?: NotifyOverdueBulkResponse; error?: string }> => {
+      setIsBulkSending(true);
+      try {
+        const response = await paymentService.notifyOverdueBulk(payload);
+        if (response.success && response.data) {
+          // Refresh after a successful bulk send so visible state reflects the
+          // fact that those students now have a pending unconfirmed reminder.
+          void fetchOverdue();
+          return { success: true, data: response.data };
+        }
+        return { success: false, error: response.error };
+      } catch (err) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : 'Failed to send bulk notifications',
+        };
+      } finally {
+        setIsBulkSending(false);
+      }
+    },
+    [fetchOverdue],
+  );
+
   return {
     data,
     isLoading,
     error,
     refresh: fetchOverdue,
     notifyStudent,
+    notifyBulk,
     pendingNotifications,
+    isBulkSending,
   };
 }

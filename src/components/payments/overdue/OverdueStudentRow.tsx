@@ -14,6 +14,9 @@ interface OverdueStudentRowProps {
   onSend: (student: OverdueStudent) => void;
   formatCurrency: (amount: number) => string;
   formatDate: (iso: string) => string;
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelected?: (student: OverdueStudent, next: boolean) => void;
 }
 
 function severityClass(daysOverdue: number): string {
@@ -32,16 +35,48 @@ export default function OverdueStudentRow({
   onSend,
   formatCurrency,
   formatDate,
+  selectable = false,
+  selected = false,
+  onToggleSelected,
 }: OverdueStudentRowProps) {
   const { t } = useTranslation();
   const noUserAccount = !student.userId;
+  const canSelect = selectable && !noUserAccount;
 
   return (
     <article
-      className={`rounded-xl p-4 border ${severityClass(student.daysOverdue)} transition-colors`}
+      className={`rounded-xl p-4 border ${severityClass(student.daysOverdue)} transition-colors ${
+        selected ? 'ring-2 ring-red-400' : ''
+      }`}
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-start gap-3 min-w-0">
+          {selectable && (
+            <label
+              className={`flex items-center pt-1 ${
+                canSelect ? 'cursor-pointer' : 'cursor-not-allowed opacity-40'
+              }`}
+              title={
+                canSelect
+                  ? t('payments.overdue.selectStudent', 'Select student for bulk reminder')
+                  : t(
+                      'payments.overdue.noUserAccount',
+                      'This student does not have a linked user account to receive notifications.',
+                    )
+              }
+            >
+              <input
+                type="checkbox"
+                className="checkbox checkbox-sm checkbox-error"
+                checked={selected}
+                disabled={!canSelect}
+                onChange={(e) => onToggleSelected?.(student, e.target.checked)}
+              />
+              <span className="sr-only">
+                {t('payments.overdue.selectStudent', 'Select student for bulk reminder')}
+              </span>
+            </label>
+          )}
           <div className="p-2 rounded-lg bg-red-500/20 border border-red-500/30">
             <AlertTriangle className="w-5 h-5 text-red-300" />
           </div>

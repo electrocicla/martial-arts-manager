@@ -167,6 +167,15 @@ export class PaymentService {
   async notifyOverdueStudent(payload: NotifyOverduePayload): Promise<ApiResponse<NotifyOverdueResponse>> {
     return apiClient.post<NotifyOverdueResponse>(`${this.endpoint}/notify-overdue`, payload);
   }
+
+  async notifyOverdueBulk(
+    payload: NotifyOverdueBulkPayload,
+  ): Promise<ApiResponse<NotifyOverdueBulkResponse>> {
+    return apiClient.post<NotifyOverdueBulkResponse>(
+      `${this.endpoint}/notify-overdue/bulk`,
+      payload,
+    );
+  }
 }
 
 export interface PaymentHistoryRow {
@@ -241,6 +250,29 @@ export interface NotifyOverduePayload {
 export interface NotifyOverdueResponse {
   success: boolean;
   notificationId: string;
+}
+
+export interface NotifyOverdueBulkPayload {
+  studentIds?: string[];
+  all?: boolean;
+  monthLabel?: string;
+}
+
+export interface NotifyOverdueBulkResultEntry {
+  studentId: string;
+  status: 'sent' | 'skipped' | 'error';
+  reason?: string;
+  notificationId?: string;
+}
+
+export interface NotifyOverdueBulkResponse {
+  success: boolean;
+  monthLabel: string;
+  total: number;
+  sent: number;
+  skipped: number;
+  errors: number;
+  results: NotifyOverdueBulkResultEntry[];
 }
 
 // Create singleton instance

@@ -4,8 +4,8 @@
  * notification actions.
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AlertCircle, RefreshCw, Send, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../ui/Button';
 import { useOverdueStudents } from '../../../hooks/useOverdueStudents';
@@ -26,9 +26,18 @@ function getLocale(language: string): string {
 
 export default function OverdueStudentsView({ onCountChange }: OverdueStudentsViewProps) {
   const { t, i18n } = useTranslation();
-  const { data, isLoading, error, refresh, notifyStudent, pendingNotifications } =
-    useOverdueStudents();
+  const {
+    data,
+    isLoading,
+    error,
+    refresh,
+    notifyStudent,
+    notifyBulk,
+    pendingNotifications,
+    isBulkSending,
+  } = useOverdueStudents();
   const { success: showSuccess, error: showError } = useToast();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
 
   const locale = getLocale(i18n.language);
 
@@ -124,9 +133,79 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
     return <OverdueEmptyState />;
   }
 
+  const monthLabel = data.meta?.dueDate
+    ? data.meta.dueDate.slice(0, 7)
+    : new Date().toISOString().slice(0, 7);
+
+  // Selectable students = those with a linked user account; the only ones the
+  // backend can actually notify.
+  const selectableStudents = data.students.filter((s) => Boolean(s.userId));
+  const selectableCount = selectableStudents.length;
+  const allSelectableSelected =
+    selectableCount > 0 && selectableStudents.every((s) => selectedIds.has(s.studentId));
+
+  const handleToggleOne = (student: OverdueStudent, next: boolean) => {
+    setSelectedIds((prev) => {
+      const updated = new Set(prev);
+      if (next) updated.add(student.studentId);
+      else updated.delete(student.studentId);
+      return updated;
+    });
+  };
+
+  const handleToggleAllSelectable = () => {
+    setSelectedIds((prev) => {
+      if (prev.size > 0 && allSelectableSelected) {
+        return new Set();
+      }
+      return new Set(selectableStudents.map((s) => s.studentId));
+    });
+  };
+
+  const presentBulkResult = (
+    label: string,
+    result: Awaited<ReturnType<typeof notifyBulk>>,
+  ) => {
+    if (!result.success || !result.data) {
+      showError(label, {
+        description: result.error ?? t('payments.actions.tryAgain', 'Please try again.'),
+      });
+      return;
+    }
+    const { sent, skipped, errors } = result.data;
+    showSuccess(
+      t('payments.overdue.bulkSentSummary', '{{sent}} sent, {{skipped}} skipped, {{errors}} errors', {
+        sent,
+        skipped,
+        errors,
+      }),
+      {
+        description: t(
+          'payments.overdue.bulkSentDescription',
+          'Students must press confirm in the app for each reminder to be acknowledged.',
+        ),
+      },
+    );
+    setSelectedIds(new Set());
+  };
+
+  const handleSendSelected = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    const result = await notifyBulk({ studentIds: ids, monthLabel });
+    presentBulkResult(t('payments.overdue.bulkSendSelectedTitle', 'Bulk reminder result'), result);
+  };
+
+  const handleSendAll = async () => {
+    const result = await notifyBulk({ all: true, monthLabel });
+    presentBulkResult(t('payments.overdue.bulkSendAllTitle', 'Bulk reminder result'), result);
+  };
+
+  const selectedCount = selectedIds.size;
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">
             {t('payments.overdue.title', 'Overdue students')}
@@ -140,9 +219,80 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
           size="sm"
           leftIcon={<RefreshCw className="w-4 h-4" />}
           onClick={() => void refresh()}
+          className="self-start sm:self-auto"
         >
           {t('common.refresh', 'Refresh')}
         </Button>
+      </div>
+
+      {/* Bulk action toolbar */}
+      <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300">
+          <label className="inline-flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              className="checkbox checkbox-sm checkbox-error"
+              checked={allSelectableSelected}
+              disabled={selectableCount === 0}
+              onChange={handleToggleAllSelectable}
+            />
+            <span>
+              {t('payments.overdue.selectAllOnPage', 'Select all selectable on this page')}
+            </span>
+          </label>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-800/80 border border-gray-700 text-xs text-gray-200">
+            {t('payments.overdue.selectedCount', '{{count}} selected', { count: selectedCount })}
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-800/80 border border-gray-700 text-xs text-gray-400">
+            {t('payments.overdue.totalOverdue', '{{count}} overdue', { count: data.students.length })}
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            leftIcon={<Send className="w-4 h-4" />}
+            onClick={() => void handleSendSelected()}
+            disabled={isBulkSending || selectedCount === 0}
+            title={
+              selectedCount === 0
+                ? t(
+                    'payments.overdue.sendSelectedDisabledTooltip',
+                    'Select one or more overdue students with linked user accounts first.',
+                  )
+                : t(
+                    'payments.overdue.sendSelectedTooltip',
+                    'Send a forced-confirmation pending-payment reminder to each selected student. Students already paid this month or with a pending unconfirmed reminder are skipped automatically.',
+                  )
+            }
+            className="w-full sm:w-auto"
+          >
+            {isBulkSending
+              ? t('payments.overdue.sending', 'Sending\u2026')
+              : t('payments.overdue.sendToSelected', 'Send to selected ({{count}})', {
+                  count: selectedCount,
+                })}
+          </Button>
+          <Button
+            type="button"
+            variant="danger"
+            size="sm"
+            leftIcon={<Users className="w-4 h-4" />}
+            onClick={() => void handleSendAll()}
+            disabled={isBulkSending || selectableCount === 0}
+            title={t(
+              'payments.overdue.sendAllTooltip',
+              'Send a pending-payment reminder to every overdue student visible on the list. Only targets students with a linked account who have not yet paid this month and do not already have a pending unconfirmed reminder.',
+            )}
+            className="w-full sm:w-auto"
+          >
+            {isBulkSending
+              ? t('payments.overdue.sending', 'Sending\u2026')
+              : t('payments.overdue.sendToAll', 'Send to all overdue')}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -154,6 +304,9 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
             onSend={handleSend}
             formatCurrency={formatCurrency}
             formatDate={formatDate}
+            selectable
+            selected={selectedIds.has(student.studentId)}
+            onToggleSelected={handleToggleOne}
           />
         ))}
       </div>

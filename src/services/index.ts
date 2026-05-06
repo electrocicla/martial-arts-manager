@@ -33,6 +33,9 @@ export type {
   OverdueStudentsResponse,
   NotifyOverduePayload,
   NotifyOverdueResponse,
+  NotifyOverdueBulkPayload,
+  NotifyOverdueBulkResponse,
+  NotifyOverdueBulkResultEntry,
 } from './payment.service';
 
 export type {

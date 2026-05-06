@@ -277,42 +277,31 @@ export default function Header() {
       {/* Desktop Header */}
       <header className="hidden md:flex h-16 bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/50 items-center px-6 ml-64">
         <div className="flex-1 flex items-center gap-4">
-          {/* Search */}
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder={t('common.searchPlaceholder')}
-              className="w-96 pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Command Palette Launcher */}
+          {/* Unified search / command palette launcher */}
           <button
+            type="button"
             onClick={() => {
               const evt = new KeyboardEvent('keydown', {
                 key: 'k', ctrlKey: true, metaKey: true, bubbles: true,
               });
               window.dispatchEvent(evt);
             }}
-            className="hidden lg:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-700/60 hover:bg-gray-700 border border-gray-600/60 hover:border-red-500/40 transition-all text-xs text-gray-300"
+            className="group w-full max-w-md inline-flex items-center gap-3 pl-3 pr-2 py-2 rounded-lg bg-gray-700/60 hover:bg-gray-700 border border-gray-600/60 hover:border-red-500/40 transition-all text-sm text-gray-300"
             aria-label={t('common.commandPalette', 'Command palette')}
             title={t('common.commandPalette', 'Command palette')}
           >
-            <Search className="w-3.5 h-3.5" />
-            <span className="text-gray-400">{t('common.searchPlaceholder')}</span>
-            <span className="ml-2 inline-flex items-center gap-0.5">
+            <Search className="h-4 w-4 text-gray-400 group-hover:text-red-400 transition-colors" />
+            <span className="flex-1 text-left text-gray-400 group-hover:text-gray-200 transition-colors">
+              {t('common.searchPlaceholder')}
+            </span>
+            <span className="hidden lg:inline-flex items-center gap-0.5 ml-2">
               <kbd className="px-1 py-0.5 text-[10px] font-mono rounded bg-gray-800 border border-gray-600">⌘</kbd>
               <kbd className="px-1 py-0.5 text-[10px] font-mono rounded bg-gray-800 border border-gray-600">K</kbd>
             </span>
           </button>
+        </div>
 
+        <div className="flex items-center gap-3">
           {/* Theme Toggle */}
           <button
             onClick={toggle}
