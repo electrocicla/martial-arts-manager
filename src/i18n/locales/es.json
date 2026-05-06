@@ -3,7 +3,7 @@
     "dashboard": "Panel de Control",
     "profile": "Mi Perfil",
     "students": "Estudiantes",
-  "classes": "Clases",
+    "classes": "Clases",
     "payments": "Pagos",
     "myPayments": "Mis Pagos",
     "myClasses": "Mis Clases",
@@ -25,7 +25,8 @@
       "payment": "Pagos",
       "email": "Email/SMS",
       "security": "Seguridad",
-      "data": "Datos y Backup"    },
+      "data": "Datos y Backup"
+    },
     "profile": {
       "title": "Configuración del Perfil",
       "fullName": "Nombre Completo",
@@ -42,7 +43,8 @@
       "photoTooLarge": "Archivo demasiado grande. El tamaño máximo es 5MB.",
       "photoConversionFailed": "No se pudo procesar esta imagen. Intenta con un JPG o PNG.",
       "photoUploadError": "No se pudo procesar la imagen.",
-      "photoNotAvailable": "La foto de perfil solo está disponible para cuentas de estudiante"    }
+      "photoNotAvailable": "La foto de perfil solo está disponible para cuentas de estudiante"
+    }
   },
   "belts": {
     "white": "Blanco",
@@ -154,7 +156,10 @@
       "hideDescription": "Ocultar descripción",
       "taughtBy": "Profesor",
       "viewAllClasses": "Ver todas mis clases",
-      "showFewerClasses": "Ver menos clases"
+      "showFewerClasses": "Ver menos clases",
+      "beltProgression": "Progresión de cinturón",
+      "ready": "Listo",
+      "viewBeltTesting": "Ver evaluación de cinturón"
     },
     "greeting": {
       "morning": "Buenos días",
@@ -164,13 +169,13 @@
     "stats": {
       "totalStudents": "Total de Estudiantes",
       "activeStudents": "Estudiantes Activos",
-  "todayClasses": "Clases de Hoy",
+      "todayClasses": "Clases de Hoy",
       "monthlyRevenue": "Ingresos Mensuales",
       "active": "activos",
       "registeredMembers": "miembros registrados",
-  "classesThisWeek": "Clases Esta Semana",
+      "classesThisWeek": "Clases Esta Semana",
       "sessionsThisWeek": "sesiones esta semana",
-  "noClasses": "Sin clases",
+      "noClasses": "Sin clases",
       "scheduled": "programadas",
       "revenueThisMonth": "Ingresos Este Mes",
       "noRevenue": "Sin ingresos",
@@ -184,7 +189,7 @@
     "quickActions": {
       "title": "Acciones Rápidas",
       "addStudent": "Agregar Estudiante",
-  "scheduleClass": "Programar Clase",
+      "scheduleClass": "Programar Clase",
       "recordPayment": "Registrar Pago",
       "markAttendance": "Marcar Asistencia",
       "checkInOut": "Registrar entrada/salida estudiantes",
@@ -203,7 +208,7 @@
       "welcomeMessage": "¡Bienvenido! Comienza agregando tu primer estudiante para poner en marcha la gestión de tu dojo.",
       "totalStudents": "Total de Estudiantes",
       "monthlyRevenue": "Ingresos Mensuales",
-  "totalClasses": "Total de Clases",
+      "totalClasses": "Total de Clases",
       "earning": "Ganando",
       "scheduled": "Programadas"
     },
@@ -222,10 +227,18 @@
       "live": "En Vivo",
       "soon": "Pronto",
       "scheduleNewClass": "Programar Nueva Clase"
+    },
+    "sparring": {
+      "activeStudents": "Estudiantes activos",
+      "noData": "Aún no hay sesiones",
+      "openTracker": "Abrir tracker",
+      "topPerformers": "Mejor desempeño",
+      "totalSessions": "Sesiones totales",
+      "weeklyDesc": "Últimos 7 días de sesiones registradas entre tus estudiantes.",
+      "weeklyTitle": "Sparring esta semana"
     }
   },
   "classesOnDate": "Clases el {{date}}",
-
   "payments": {
     "title": "Gestión de Pagos",
     "subtitle": "Rastrea y gestiona los pagos de estudiantes",
@@ -467,8 +480,8 @@
     "year": "Año",
     "selectedDate": "Fecha seleccionada",
     "martialArtsInfo": "Información de Artes Marciales",
-  "beltRank": "Rango de Cinturón",
-  "expertise": "Pericia",
+    "beltRank": "Rango de Cinturón",
+    "expertise": "Pericia",
     "beltSuffix": "Cinturón",
     "discipline": "Disciplina",
     "emergencyContact": "Contacto de Emergencia",
@@ -525,12 +538,12 @@
     "plural": "clases",
     "actions": {
       "duplicateWeek": "Duplicar Semana",
-  "addClass": "Agregar Clase",
+      "addClass": "Agregar Clase",
       "attendance": "Asistencia",
       "attendanceShort": "Asist.",
       "edit": "Editar",
       "students": "Estudiantes",
-  "scheduleFirstClass": "Programar Primera Clase"
+      "scheduleFirstClass": "Programar Primera Clase"
     },
     "stats": {
       "totalClasses": "Total de Clases",
@@ -613,21 +626,20 @@
     "location": "Ubicación",
     "instructor": "Instructor",
     "maxStudents": "Máximo de Estudiantes",
-  "recurringClass": "Clase Recurrente",
-  "recurringSetupMessage": "Configurar horario recurrente para esta clase",
+    "recurringClass": "Clase Recurrente",
+    "recurringSetupMessage": "Configurar horario recurrente para esta clase",
     "description": "Descripción / Objetivo de la Clase",
-  "descriptionPlaceholder": "Describe el objetivo y contenido de la clase (visible para los alumnos)...",
-  "descriptionHint": "Esta descripción será visible para los alumnos en su sección de clases",
+    "descriptionPlaceholder": "Describe el objetivo y contenido de la clase (visible para los alumnos)...",
+    "descriptionHint": "Esta descripción será visible para los alumnos en su sección de clases",
     "cancel": "Cancelar",
     "scheduleClass": "Programar Clase",
     "updateClass": "Actualizar Clase",
     "scheduling": "Creando clase...",
     "updating": "Actualizando clase...",
     "requiredField": "Por favor complete los campos requeridos",
-    "addFailed": "Error al agregar la clase"
-    ,
-  "noDescription": "Sin descripción",
-  "recurrence": "Recurrencia",
+    "addFailed": "Error al agregar la clase",
+    "noDescription": "Sin descripción",
+    "recurrence": "Recurrencia",
     "applyTo": "Aplicar cambios a",
     "applyToSingle": "Sólo esta sesión",
     "applyToAll": "Todas las sesiones de la clase"
@@ -726,7 +738,8 @@
     "commandPalette": "Paleta de comandos",
     "noResults": "Sin resultados",
     "navigate": "navegar",
-    "refresh": "Actualizar"
+    "refresh": "Actualizar",
+    "unknownStudent": "Estudiante desconocido"
   },
   "privacy": {
     "showAmounts": "Mostrar montos",
@@ -829,10 +842,10 @@
     },
     "revenue": {
       "title": "Análisis de Ingresos",
-  "subtitle": "Desglose de ingresos y perspectivas",
+      "subtitle": "Desglose de ingresos y perspectivas",
       "comingSoon": "Desglose detallado de ingresos pronto...",
-      "description": "Rastrea tus fuentes de ingresos, tendencias de pago y crecimiento financiero a lo largo del tiempo."
-      ,"totalRevenue": "Ingresos Totales",
+      "description": "Rastrea tus fuentes de ingresos, tendencias de pago y crecimiento financiero a lo largo del tiempo.",
+      "totalRevenue": "Ingresos Totales",
       "averagePerClass": "Promedio por clase",
       "growthRate": "Tasa de crecimiento",
       "byClass": "Por clase",
@@ -879,8 +892,7 @@
       "avgAttendance": "Asistencia promedio",
       "totalStudents": "Total de estudiantes"
     }
-  }
-  ,
+  },
   "beltTesting": {
     "title": "Gestión de Exámenes de Cinturón",
     "subtitle": "Rastrea el progreso de los estudiantes y gestiona los exámenes de cinturón",
@@ -915,7 +927,45 @@
     },
     "classesCompleted": "clases completadas",
     "classesCompletedShort": "clases",
-    "moreNeeded": "más necesarias"
+    "moreNeeded": "más necesarias",
+    "admin": {
+      "almost": "Casi",
+      "noReady": "Aún no hay estudiantes cerca de una promoción",
+      "noReadyDesc": "Sigue registrando asistencia y sparring — el sistema mostrará candidatos automáticamente.",
+      "ready": "Listo",
+      "readyTitle": "Estudiantes próximos al siguiente cinturón"
+    },
+    "student": {
+      "classes": "Clases",
+      "classesAttended": "Clases asistidas",
+      "examHistory": "Historial de exámenes",
+      "examination": "examen",
+      "failed": "Reprobado",
+      "keepTraining": "¡Sigue entrenando! Necesitas",
+      "moreClasses": "clases más.",
+      "noProgression": "Progresión no disponible",
+      "noProgressionDesc": "No pudimos cargar tu progresión de cinturón. Recarga la página.",
+      "noUpcoming": "Sin exámenes próximos",
+      "optional": "opcional",
+      "overallProgress": "Progreso general",
+      "passed": "Aprobado",
+      "readyTitle": "¡Estás listo para examinarte!",
+      "requirementsTitle": "Requisitos para subir de cinturón",
+      "roadmapDesc": "Vista previa de los próximos requisitos a medida que avances.",
+      "roadmapTitle": "Hoja de ruta de progresión",
+      "scheduled": "Programado",
+      "score": "Puntaje",
+      "sparring": "Sparring",
+      "sparringSessions": "Sesiones de sparring",
+      "subtitle": "Sigue tu camino al próximo cinturón",
+      "tier": "Nivel actual",
+      "title": "Mi progreso de cinturón",
+      "toNextBelt": "al siguiente cinturón",
+      "topRank": "Rango máximo",
+      "tournaments": "Torneos",
+      "upcomingExams": "Próximos exámenes",
+      "waitingAssignment": "¡Estás listo! Espera a que tu instructor te asigne a un examen."
+    }
   },
   "notifications": {
     "title": "Notificaciones",
@@ -990,5 +1040,44 @@
       "checkoutOpened": "Checkout de MercadoPago abierto en una nueva pestaña",
       "checkoutFailed": "No se pudo iniciar el checkout de MercadoPago"
     }
+  },
+  "sparringTracker": {
+    "activeStudents": "Estudiantes activos",
+    "add": "Agregar",
+    "added": "sesiones de sparring agregadas",
+    "allStudents": "Todos mis estudiantes",
+    "classesToday": "Clases de hoy",
+    "clearSearch": "Limpiar búsqueda",
+    "date": "Fecha",
+    "failed": "No se pudo agregar la sesión",
+    "filterClass": "Filtrar por clase",
+    "noStudents": "No hay estudiantes que coincidan",
+    "noStudentsDesc": "Intenta limpiar la búsqueda o seleccionar otra clase.",
+    "readyForExam": "está listo para el próximo examen de cinturón",
+    "refreshing": "Actualizando totales…",
+    "search": "Buscar estudiantes",
+    "searchPlaceholder": "Escribe un nombre…",
+    "studentsDesc": "Toca un botón rápido para registrar rondas de sparring del estudiante.",
+    "studentsTitle": "Estudiantes",
+    "subtitle": "Registra sesiones de sparring en tiempo real durante la clase.",
+    "title": "Tracker de sparring",
+    "todaySessions": "Sesiones de sparring de hoy",
+    "total": "Total"
+  },
+  "tournament": {
+    "add": "Agregar torneo",
+    "date": "Fecha",
+    "failed": "No se pudo registrar el torneo",
+    "log": "Registrar torneo",
+    "logged": "Participación de torneo registrada",
+    "modalTitle": "Registrar participación en torneo",
+    "name": "Nombre del torneo",
+    "namePlaceholder": "p. ej. Pan Jiu-Jitsu IBJJF 2025",
+    "notes": "Notas",
+    "notesPlaceholder": "Notas opcionales sobre la actuación.",
+    "placement": "Posición",
+    "save": "Guardar torneo",
+    "selectStudent": "Selecciona un estudiante…",
+    "student": "Estudiante"
   }
 }

@@ -156,7 +156,10 @@
       "hideDescription": "Hide description",
       "taughtBy": "Instructor",
       "viewAllClasses": "View all my classes",
-      "showFewerClasses": "Show fewer classes"
+      "showFewerClasses": "Show fewer classes",
+      "beltProgression": "Belt progression",
+      "ready": "Ready",
+      "viewBeltTesting": "View belt testing"
     },
     "greeting": {
       "morning": "Good morning",
@@ -224,6 +227,15 @@
       "live": "Live",
       "soon": "Soon",
       "scheduleNewClass": "Schedule New Class"
+    },
+    "sparring": {
+      "activeStudents": "Active students",
+      "noData": "No sessions yet",
+      "openTracker": "Open tracker",
+      "topPerformers": "Top performers",
+      "totalSessions": "Total sessions",
+      "weeklyDesc": "Last 7 days of recorded sessions across your students.",
+      "weeklyTitle": "Sparring this week"
     }
   },
   "payments": {
@@ -447,8 +459,8 @@
     "year": "Year",
     "selectedDate": "Selected date",
     "martialArtsInfo": "Martial Arts Information",
-  "beltRank": "Belt Rank",
-  "expertise": "Expertise",
+    "beltRank": "Belt Rank",
+    "expertise": "Expertise",
     "beltSuffix": "Belt",
     "discipline": "Discipline",
     "emergencyContact": "Emergency Contact",
@@ -686,7 +698,8 @@
     "commandPalette": "Command palette",
     "noResults": "No results",
     "navigate": "navigate",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "unknownStudent": "Unknown student"
   },
   "privacy": {
     "showAmounts": "Show amounts",
@@ -910,5 +923,84 @@
       "checkoutOpened": "MercadoPago checkout opened in a new tab",
       "checkoutFailed": "Could not start MercadoPago checkout"
     }
+  },
+  "beltTesting": {
+    "admin": {
+      "almost": "Almost",
+      "noReady": "No students close to a promotion yet",
+      "noReadyDesc": "Keep tracking attendance and sparring — the system will surface candidates automatically.",
+      "ready": "Ready",
+      "readyTitle": "Students approaching next belt"
+    },
+    "student": {
+      "classes": "Classes",
+      "classesAttended": "Classes attended",
+      "examHistory": "Exam history",
+      "examination": "examination",
+      "failed": "Failed",
+      "keepTraining": "Keep training! You need",
+      "moreClasses": "more classes.",
+      "noProgression": "Progression unavailable",
+      "noProgressionDesc": "We could not load your belt progression. Please refresh the page.",
+      "noUpcoming": "No upcoming exams",
+      "optional": "optional",
+      "overallProgress": "Overall progress",
+      "passed": "Passed",
+      "readyTitle": "You are ready to test!",
+      "requirementsTitle": "Belt-up requirements",
+      "roadmapDesc": "Preview of upcoming requirements as you advance.",
+      "roadmapTitle": "Progression roadmap",
+      "scheduled": "Scheduled",
+      "score": "Score",
+      "sparring": "Sparring",
+      "sparringSessions": "Sparring sessions",
+      "subtitle": "Track your journey to the next belt",
+      "tier": "Current tier",
+      "title": "My Belt Progress",
+      "toNextBelt": "to next belt",
+      "topRank": "Top rank",
+      "tournaments": "Tournaments",
+      "upcomingExams": "Upcoming exams",
+      "waitingAssignment": "You are ready! Wait for your instructor to assign you to an exam."
+    }
+  },
+  "sparringTracker": {
+    "activeStudents": "Active students",
+    "add": "Add",
+    "added": "sparring sessions added",
+    "allStudents": "All my students",
+    "classesToday": "Classes today",
+    "clearSearch": "Clear search",
+    "date": "Date",
+    "failed": "Failed to add sparring session",
+    "filterClass": "Filter by class",
+    "noStudents": "No students match",
+    "noStudentsDesc": "Try clearing the search or selecting a different class.",
+    "readyForExam": "is ready for the next belt exam",
+    "refreshing": "Refreshing totals…",
+    "search": "Search students",
+    "searchPlaceholder": "Type a name…",
+    "studentsDesc": "Tap a quick-add button to log sparring rounds for that student.",
+    "studentsTitle": "Students",
+    "subtitle": "Track sparring sessions in real time during class.",
+    "title": "Sparring Tracker",
+    "todaySessions": "Today's sparring sessions",
+    "total": "Total"
+  },
+  "tournament": {
+    "add": "Add tournament",
+    "date": "Date",
+    "failed": "Failed to record tournament",
+    "log": "Log tournament",
+    "logged": "Tournament participation recorded",
+    "modalTitle": "Log tournament participation",
+    "name": "Tournament name",
+    "namePlaceholder": "e.g. Pan Jiu-Jitsu IBJJF 2025",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional notes about the performance.",
+    "placement": "Placement",
+    "save": "Save tournament",
+    "selectStudent": "Select a student…",
+    "student": "Student"
   }
 }

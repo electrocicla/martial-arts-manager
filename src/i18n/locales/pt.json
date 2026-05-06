@@ -156,7 +156,10 @@
       "hideDescription": "Ocultar descrição",
       "taughtBy": "Professor",
       "viewAllClasses": "Ver todas as minhas aulas",
-      "showFewerClasses": "Ver menos aulas"
+      "showFewerClasses": "Ver menos aulas",
+      "beltProgression": "Progressão de faixa",
+      "ready": "Pronto",
+      "viewBeltTesting": "Ver avaliação de faixa"
     },
     "greeting": {
       "morning": "Bom dia",
@@ -224,6 +227,15 @@
       "live": "Ao Vivo",
       "soon": "Em Breve",
       "scheduleNewClass": "Agendar Nova Aula"
+    },
+    "sparring": {
+      "activeStudents": "Alunos ativos",
+      "noData": "Ainda sem sessões",
+      "openTracker": "Abrir tracker",
+      "topPerformers": "Melhores desempenhos",
+      "totalSessions": "Sessões totais",
+      "weeklyDesc": "Últimos 7 dias de sessões registradas entre seus alunos.",
+      "weeklyTitle": "Sparring nesta semana"
     }
   },
   "payments": {
@@ -506,7 +518,8 @@
       "description": "Hamarr, conecta alunos e instrutores em uma única plataforma, fortalecendo a disciplina, o compromisso e o crescimento dentro e fora do tatame.",
       "getStarted": "COMEÇAR",
       "followUs": "Siga @hamarr_jiujitsu_mma"
-    },    "stats": {
+    },
+    "stats": {
       "studentsManaged": "Alunos Gerenciados",
       "beltPromotionsTracked": "Promoções de Faixa Rastreadas",
       "classesScheduled": "Aulas Agendadas",
@@ -515,7 +528,8 @@
     "featuresSection": {
       "title": "Recursos Poderosos",
       "description": "Tudo o que você precisa para gerenciar sua escola de artes marciais eficientemente"
-    },    "features": {
+    },
+    "features": {
       "studentManagement": {
         "title": "Gestão de Alunos",
         "description": "Perfis completos de alunos com informações de contato, contatos de emergência, histórico de progressão de faixas e rastreamento de presença"
@@ -668,7 +682,8 @@
     "commandPalette": "Paleta de comandos",
     "noResults": "Sem resultados",
     "navigate": "navegar",
-    "refresh": "Atualizar"
+    "refresh": "Atualizar",
+    "unknownStudent": "Aluno desconhecido"
   },
   "privacy": {
     "showAmounts": "Mostrar valores",
@@ -818,8 +833,7 @@
       "avgAttendance": "Presença média",
       "totalStudents": "Total de alunos"
     }
-  }
-  ,
+  },
   "beltTesting": {
     "title": "Gerenciamento de Exames de Faixa",
     "subtitle": "Acompanhe o progresso dos alunos e gerencie os exames de faixa",
@@ -854,7 +868,45 @@
     },
     "classesCompleted": "aulas concluídas",
     "classesCompletedShort": "aulas",
-    "moreNeeded": "mais necessárias"
+    "moreNeeded": "mais necessárias",
+    "admin": {
+      "almost": "Quase",
+      "noReady": "Ainda não há alunos próximos de uma promoção",
+      "noReadyDesc": "Continue registrando presença e sparring — o sistema mostrará candidatos automaticamente.",
+      "ready": "Pronto",
+      "readyTitle": "Alunos próximos da próxima faixa"
+    },
+    "student": {
+      "classes": "Aulas",
+      "classesAttended": "Aulas assistidas",
+      "examHistory": "Histórico de exames",
+      "examination": "exame",
+      "failed": "Reprovado",
+      "keepTraining": "Continue treinando! Você precisa de",
+      "moreClasses": "aulas a mais.",
+      "noProgression": "Progressão indisponível",
+      "noProgressionDesc": "Não foi possível carregar sua progressão de faixa. Atualize a página.",
+      "noUpcoming": "Sem exames próximos",
+      "optional": "opcional",
+      "overallProgress": "Progresso geral",
+      "passed": "Aprovado",
+      "readyTitle": "Você está pronto para o exame!",
+      "requirementsTitle": "Requisitos para subir de faixa",
+      "roadmapDesc": "Prévia dos próximos requisitos conforme você avança.",
+      "roadmapTitle": "Roteiro de progressão",
+      "scheduled": "Agendado",
+      "score": "Pontuação",
+      "sparring": "Sparring",
+      "sparringSessions": "Sessões de sparring",
+      "subtitle": "Acompanhe sua jornada até a próxima faixa",
+      "tier": "Nível atual",
+      "title": "Meu progresso de faixa",
+      "toNextBelt": "para a próxima faixa",
+      "topRank": "Maior graduação",
+      "tournaments": "Torneios",
+      "upcomingExams": "Próximos exames",
+      "waitingAssignment": "Você está pronto! Aguarde seu instrutor designar você a um exame."
+    }
   },
   "notifications": {
     "title": "Notificações",
@@ -929,5 +981,44 @@
       "checkoutOpened": "Checkout do MercadoPago aberto em uma nova aba",
       "checkoutFailed": "Não foi possível iniciar o checkout do MercadoPago"
     }
+  },
+  "sparringTracker": {
+    "activeStudents": "Alunos ativos",
+    "add": "Adicionar",
+    "added": "sessões de sparring adicionadas",
+    "allStudents": "Todos os meus alunos",
+    "classesToday": "Aulas de hoje",
+    "clearSearch": "Limpar busca",
+    "date": "Data",
+    "failed": "Falha ao adicionar sessão de sparring",
+    "filterClass": "Filtrar por aula",
+    "noStudents": "Nenhum aluno corresponde",
+    "noStudentsDesc": "Tente limpar a busca ou selecionar outra aula.",
+    "readyForExam": "está pronto para o próximo exame de faixa",
+    "refreshing": "Atualizando totais…",
+    "search": "Buscar alunos",
+    "searchPlaceholder": "Digite um nome…",
+    "studentsDesc": "Toque em um botão rápido para registrar rounds de sparring do aluno.",
+    "studentsTitle": "Alunos",
+    "subtitle": "Registre sessões de sparring em tempo real durante a aula.",
+    "title": "Tracker de sparring",
+    "todaySessions": "Sessões de sparring de hoje",
+    "total": "Total"
+  },
+  "tournament": {
+    "add": "Adicionar torneio",
+    "date": "Data",
+    "failed": "Falha ao registrar torneio",
+    "log": "Registrar torneio",
+    "logged": "Participação em torneio registrada",
+    "modalTitle": "Registrar participação em torneio",
+    "name": "Nome do torneio",
+    "namePlaceholder": "ex.: Pan Jiu-Jitsu IBJJF 2025",
+    "notes": "Notas",
+    "notesPlaceholder": "Notas opcionais sobre a performance.",
+    "placement": "Colocação",
+    "save": "Salvar torneio",
+    "selectStudent": "Selecione um aluno…",
+    "student": "Aluno"
   }
 }
