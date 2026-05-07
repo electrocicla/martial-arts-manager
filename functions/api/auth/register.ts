@@ -5,7 +5,7 @@
 import { hashPassword } from '../../utils/hash';
 import { createTokens } from '../../utils/jwt';
 import { createUser, emailExists, createSession, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
-import { createRefreshTokenCookie } from '../../middleware/auth';
+import { createRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
 import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
 
 import { Env } from '../../types/index';
@@ -30,6 +30,7 @@ interface RegisterResponse {
     student_id?: string;
   };
   accessToken?: string;
+  refreshToken?: string;
 }
 
 /**
@@ -296,6 +297,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       },
       accessToken,
     };
+
+    if (isNativeAuthRequest(request)) {
+      responseData.refreshToken = refreshToken;
+    }
 
     // Create response with refresh token cookie
     const response = new Response(

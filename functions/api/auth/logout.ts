@@ -3,7 +3,7 @@
  */
 
 import { deleteSession, logAuditAction, getClientIP } from '../../utils/db';
-import { getRefreshTokenFromCookies, createClearRefreshTokenCookie } from '../../middleware/auth';
+import { getRefreshTokenFromRequest, createClearRefreshTokenCookie } from '../../middleware/auth';
 
 // Cloudflare Workers D1 types
 import { Env } from '../../types/index';
@@ -13,8 +13,8 @@ import { Env } from '../../types/index';
  */
 export async function onRequestPost({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
-    // Get refresh token from cookies
-    const refreshToken = getRefreshTokenFromCookies(request);
+    // Get refresh token from HttpOnly cookie first, then native secure-store header.
+    const refreshToken = getRefreshTokenFromRequest(request);
     
     if (refreshToken) {
       // Get user_id from session before deleting

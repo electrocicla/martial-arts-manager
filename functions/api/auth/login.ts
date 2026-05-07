@@ -5,7 +5,7 @@
 import { verifyPassword } from '../../utils/hash';
 import { createTokens } from '../../utils/jwt';
 import { findUserByEmail, createSession, updateUserLastLogin, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
-import { createRefreshTokenCookie } from '../../middleware/auth';
+import { createRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
 import { normalizeAvatarUrl } from '../../utils/avatar';
 import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
 
@@ -27,6 +27,7 @@ interface LoginResponse {
     avatar_url?: string;
   };
   accessToken: string;
+  refreshToken?: string;
 }
 
 /**
@@ -162,6 +163,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       },
       accessToken,
     };
+
+    if (isNativeAuthRequest(request)) {
+      responseData.refreshToken = refreshToken;
+    }
 
     // Create response with refresh token cookie
     const response = new Response(

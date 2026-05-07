@@ -134,6 +134,37 @@ export function getRefreshTokenFromCookies(request: Request): string | null {
 }
 
 /**
+ * Detect explicit native mobile auth requests.
+ * Browsers cannot set or suppress Fetch Metadata headers, so requiring them to
+ * be absent prevents web code from opting into JSON refresh tokens while
+ * allowing React Native HTTPS clients to use SecureStore.
+ */
+export function isNativeAuthRequest(request: Request): boolean {
+  return (
+    request.headers.get('X-Client-Platform') === 'native' &&
+    !request.headers.get('Origin') &&
+    !request.headers.get('Sec-Fetch-Site')
+  );
+}
+
+/**
+ * Extract refresh token from the native-only header transport.
+ */
+export function getRefreshTokenFromNativeHeader(request: Request): string | null {
+  if (!isNativeAuthRequest(request)) return null;
+
+  const refreshToken = request.headers.get('X-Refresh-Token');
+  return refreshToken && refreshToken.trim().length > 0 ? refreshToken : null;
+}
+
+/**
+ * Extract refresh token from cookie first, then native secure-store transport.
+ */
+export function getRefreshTokenFromRequest(request: Request): string | null {
+  return getRefreshTokenFromCookies(request) ?? getRefreshTokenFromNativeHeader(request);
+}
+
+/**
  * Create secure cookie string for refresh token
  */
 export function createRefreshTokenCookie(refreshToken: string, maxAge: number): string {

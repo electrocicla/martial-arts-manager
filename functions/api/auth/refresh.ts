@@ -4,7 +4,7 @@
 
 import { verifyJWT, createTokens } from '../../utils/jwt';
 import { findSessionByRefreshToken, findUserById, updateUserLastLogin, createSession, deleteSession } from '../../utils/db';
-import { getRefreshTokenFromCookies, createRefreshTokenCookie, createClearRefreshTokenCookie } from '../../middleware/auth';
+import { getRefreshTokenFromRequest, createRefreshTokenCookie, createClearRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
 
 import { normalizeAvatarUrl } from '../../utils/avatar';
 
@@ -21,6 +21,7 @@ interface RefreshResponse {
     student_id?: string;
     avatar_url?: string;
   };
+  refreshToken?: string;
 }
 
 /**
@@ -28,8 +29,8 @@ interface RefreshResponse {
  */
 export async function onRequestPost({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
-    // Get refresh token from cookies
-    const refreshToken = getRefreshTokenFromCookies(request);
+    // Get refresh token from HttpOnly cookie first, then native secure-store header.
+    const refreshToken = getRefreshTokenFromRequest(request);
     
     if (!refreshToken) {
       const response = new Response(
@@ -136,6 +137,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         avatar_url: normalizeAvatarUrl(user.avatar_url),
       },
     };
+
+    if (isNativeAuthRequest(request)) {
+      responseData.refreshToken = newRefreshToken;
+    }
 
     // Create response with new refresh token cookie
     const response = new Response(

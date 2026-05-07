@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'android/**', 'ios/**']),
+  globalIgnores(['dist', 'android/**', 'ios/**', 'martial-arts-manager-native/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
