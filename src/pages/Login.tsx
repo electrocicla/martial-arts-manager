@@ -42,7 +42,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-red-900/20 to-black px-4 py-6 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="dark-page min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-red-900/20 to-black px-4 py-6 sm:px-6 lg:px-8 relative overflow-hidden">
       <AndroidApkInstallPrompt context="login" />
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-transparent to-red-900/30"></div>

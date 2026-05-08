@@ -1206,6 +1206,80 @@ p, span, div {
   & [class*="bg-rose-500\/"]    { background-color: oklch(0.86 0.13 5 / 0.28)   !important; }
 }
 
+/* ============================================================
+   DARK-PAGE ISOLATION
+   Pages that must stay dark regardless of the active theme
+   (Landing page, Login). Add class="dark-page" to their root.
+   ============================================================ */
+
+/* 1. Re-establish dark CSS variables so every var()-based rule
+      in the light theme block above resolves to its dark value. */
+:root[data-theme="light"] .dark-page {
+  color-scheme: dark;
+  --color-surface-0: oklch(0.08 0 0);
+  --color-surface-1: oklch(0.12 0 0);
+  --color-surface-2: oklch(0.16 0 0);
+  --color-surface-3: oklch(0.22 0 0);
+  --color-border:        oklch(0.26 0 0 / 0.6);
+  --color-border-strong: oklch(0.34 0 0);
+  --color-ink-primary:   oklch(0.98 0.005 25);
+  --color-ink-secondary: oklch(0.86 0.012 25);
+  --color-ink-muted:     oklch(0.70 0.014 25);
+  --color-ink-disabled:  oklch(0.50 0.010 25);
+}
+
+/* 2. Restore translucent backgrounds hardcoded (not using CSS vars) in
+      the light theme block above. */
+:root[data-theme="light"] .dark-page .bg-black\/80,
+:root[data-theme="light"] .dark-page .bg-black\/60,
+:root[data-theme="light"] .dark-page .bg-black\/50,
+:root[data-theme="light"] .dark-page .bg-black\/40 { background-color: rgb(0 0 0 / 0.6) !important; }
+
+:root[data-theme="light"] .dark-page .bg-slate-800\/50,
+:root[data-theme="light"] .dark-page .bg-slate-800\/60 { background-color: rgb(30 41 59 / 0.5) !important; }
+
+:root[data-theme="light"] .dark-page .bg-gray-800\/50,
+:root[data-theme="light"] .dark-page .bg-gray-800\/60,
+:root[data-theme="light"] .dark-page .bg-gray-800\/30,
+:root[data-theme="light"] .dark-page .bg-gray-900\/80,
+:root[data-theme="light"] .dark-page .bg-gray-900\/60,
+:root[data-theme="light"] .dark-page .bg-gray-900\/50 { background-color: rgb(17 24 39 / 0.8) !important; }
+
+/* 3. Restore opacity-suffixed gradient stops hardcoded in the light theme block. */
+:root[data-theme="light"] .dark-page [class*="from-black\/"] {
+  --tw-gradient-from: rgb(0 0 0 / 0.5) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, transparent) !important;
+}
+:root[data-theme="light"] .dark-page [class*="from-gray-900\/"],
+:root[data-theme="light"] .dark-page [class*="from-slate-900\/"] {
+  --tw-gradient-from: oklch(0.10 0 0 / 0.85) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, transparent) !important;
+}
+:root[data-theme="light"] .dark-page [class*="via-red-900\/"] { --tw-gradient-via: rgb(127 29 29 / 0.2) !important; }
+:root[data-theme="light"] .dark-page [class*="via-black\/"],
+:root[data-theme="light"] .dark-page [class*="via-gray-900\/"] { --tw-gradient-via: oklch(0.10 0 0 / 0.85) !important; }
+
+:root[data-theme="light"] .dark-page [class*="to-black\/"],
+:root[data-theme="light"] .dark-page [class*="to-gray-900\/"],
+:root[data-theme="light"] .dark-page [class*="to-gray-950\/"],
+:root[data-theme="light"] .dark-page [class*="to-slate-900\/"] { --tw-gradient-to: oklch(0.10 0 0 / 0.85) !important; }
+:root[data-theme="light"] .dark-page [class*="to-red-900\/"],
+:root[data-theme="light"] .dark-page [class*="to-rose-900\/"]  { --tw-gradient-to: rgb(127 29 29 / 0.3) !important; }
+
+/* 4. Restore colored text overrides (hardcoded values in the light theme block). */
+:root[data-theme="light"] .dark-page .text-amber-200,
+:root[data-theme="light"] .dark-page .text-amber-300,
+:root[data-theme="light"] .dark-page .text-amber-400  { color: rgb(251 191 36) !important; }
+:root[data-theme="light"] .dark-page .text-cyan-200,
+:root[data-theme="light"] .dark-page .text-cyan-300,
+:root[data-theme="light"] .dark-page .text-cyan-400   { color: rgb(34 211 238) !important; }
+:root[data-theme="light"] .dark-page .text-red-200,
+:root[data-theme="light"] .dark-page .text-red-300,
+:root[data-theme="light"] .dark-page .text-red-400    { color: rgb(252 165 165) !important; }
+:root[data-theme="light"] .dark-page .text-yellow-200,
+:root[data-theme="light"] .dark-page .text-yellow-300,
+:root[data-theme="light"] .dark-page .text-yellow-400 { color: rgb(253 224 71) !important; }
+
 /* ============================================
    CUSTOM CALENDAR STYLES - DARK THEME
    ============================================ */

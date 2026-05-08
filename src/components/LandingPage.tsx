@@ -73,7 +73,7 @@ const MartialArtsParticles = React.lazy(() => import('./landing/MartialArtsParti
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-red-900/20 to-black text-white overflow-hidden relative">
+    <div className="dark-page min-h-screen bg-gradient-to-br from-black via-red-900/20 to-black text-white overflow-hidden relative">
       {/* Animated Background */}
       <Suspense fallback={null}>
         <MartialArtsParticles />

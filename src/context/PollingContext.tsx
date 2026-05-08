@@ -48,7 +48,7 @@ function isTransientFetchFailure(error: string | undefined): boolean {
 }
 
 export function PollingProvider({ children }: { children: ReactNode }) {
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, isLoading: authLoading } = useAuth();
 
   // Pending approvals state
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
@@ -61,7 +61,7 @@ export function PollingProvider({ children }: { children: ReactNode }) {
   const notificationsBackoffUntilRef = useRef(0);
 
   const fetchPendingApprovals = useCallback(async () => {
-    if (!user || (user.role !== 'admin' && user.role !== 'instructor')) {
+    if (authLoading || !user || (user.role !== 'admin' && user.role !== 'instructor')) {
       setPendingApprovalsCount(0);
       return;
     }
@@ -80,10 +80,10 @@ export function PollingProvider({ children }: { children: ReactNode }) {
     } finally {
       setPendingApprovalsLoading(false);
     }
-  }, [user, accessToken]);
+  }, [user, accessToken, authLoading]);
 
   const fetchNotifications = useCallback(async () => {
-    if (!user || !accessToken) return;
+    if (authLoading || !user || !accessToken) return;
     if (Date.now() < notificationsBackoffUntilRef.current) return;
     // Ensure singleton is in sync (guards against React effect ordering race)
     apiClient.setAccessToken(accessToken);
@@ -104,7 +104,7 @@ export function PollingProvider({ children }: { children: ReactNode }) {
     } finally {
       setNotificationsLoading(false);
     }
-  }, [user, accessToken]);
+  }, [user, accessToken, authLoading]);
 
   // Single polling interval for both
   useEffect(() => {

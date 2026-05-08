@@ -1,8 +1,5 @@
-// v5 — invalidate all previous caches to wipe any poisoned /assets/*.js
-// entries (status 200 + text/html SPA fallback responses that the previous
-// cache-first fetch handler stored for missing hashed chunks, causing every
-// subsequent dynamic import on that URL to resolve to HTML and break /profile).
-const CACHE_NAME = 'hamarr-pwa-v5';
+// v6 — handle rejected API fetches gracefully (ERR_FAILED / unhandled promise rejection fix)
+const CACHE_NAME = 'hamarr-pwa-v6';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -41,8 +38,19 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // Never cache API requests — always go to network so mutations are reflected immediately.
+  // Wrap in .catch() so a network-level failure (ERR_FAILED, offline, transient Cloudflare error)
+  // returns a proper JSON 503 Response instead of letting the promise reject unhandled, which
+  // the browser would turn into an opaque ERR_FAILED on the client and log
+  // "FetchEvent resulted in a network error response: the promise was rejected."
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(request));
+    event.respondWith(
+      fetch(request).catch((err) =>
+        new Response(
+          JSON.stringify({ success: false, error: 'Network error', message: err?.message ?? 'Failed to fetch' }),
+          { status: 503, headers: { 'Content-Type': 'application/json' } }
+        )
+      )
+    );
     return;
   }
 
