@@ -44,7 +44,11 @@ const NOTIFICATION_FAILURE_BACKOFF = 120_000;
 function isTransientFetchFailure(error: string | undefined): boolean {
   if (!error) return false;
   const normalized = error.toLowerCase();
-  return normalized.includes('failed to fetch') || normalized.includes('networkerror') || normalized.includes('connection');
+  return normalized.includes('failed to fetch')
+    || normalized.includes('networkerror')
+    || normalized.includes('connection')
+    || normalized.includes('503')
+    || normalized.includes('service unavailable');
 }
 
 export function PollingProvider({ children }: { children: ReactNode }) {
@@ -53,6 +57,7 @@ export function PollingProvider({ children }: { children: ReactNode }) {
   // Pending approvals state
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
   const [pendingApprovalsLoading, setPendingApprovalsLoading] = useState(false);
+  const pendingApprovalsBackoffUntilRef = useRef(0);
 
   // Notifications state
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -62,21 +67,35 @@ export function PollingProvider({ children }: { children: ReactNode }) {
 
   const fetchPendingApprovals = useCallback(async () => {
     if (authLoading || !user || (user.role !== 'admin' && user.role !== 'instructor')) {
+      pendingApprovalsBackoffUntilRef.current = 0;
       setPendingApprovalsCount(0);
       return;
     }
-    if (!accessToken) return;
+    if (!accessToken) {
+      pendingApprovalsBackoffUntilRef.current = 0;
+      setPendingApprovalsCount(0);
+      return;
+    }
+    if (Date.now() < pendingApprovalsBackoffUntilRef.current) return;
     // Ensure singleton is in sync (guards against React effect ordering race)
     apiClient.setAccessToken(accessToken);
 
     try {
       setPendingApprovalsLoading(true);
-      const result = await apiClient.get<PendingApprovalsData>('/api/auth/pending-approvals');
+      const result = await apiClient.get<PendingApprovalsData>('/api/auth/pending-approvals', { silent: true });
       if (result.success && result.data) {
+        pendingApprovalsBackoffUntilRef.current = 0;
         setPendingApprovalsCount(result.data.pending_users?.length || result.data.users?.length || 0);
+      } else if (isTransientFetchFailure(result.error)) {
+        pendingApprovalsBackoffUntilRef.current = Date.now() + NOTIFICATION_FAILURE_BACKOFF;
+      } else {
+        pendingApprovalsBackoffUntilRef.current = 0;
+        setPendingApprovalsCount(0);
       }
     } catch (error) {
       console.error('Failed to fetch pending approvals count:', error);
+      pendingApprovalsBackoffUntilRef.current = 0;
+      setPendingApprovalsCount(0);
     } finally {
       setPendingApprovalsLoading(false);
     }
