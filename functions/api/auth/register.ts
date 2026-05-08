@@ -7,6 +7,7 @@ import { createTokens } from '../../utils/jwt';
 import { createUser, emailExists, createSession, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
 import { createRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
 import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
+import { verifyTurnstileToken } from '../../utils/turnstile';
 
 import { Env } from '../../types/index';
 
@@ -16,6 +17,7 @@ interface RegisterRequest {
   name: string;
   role?: 'admin' | 'instructor' | 'student';
   instructorId?: string;
+  turnstileToken?: string;
 }
 
 interface RegisterResponse {
@@ -47,9 +49,23 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const body = await request.json() as RegisterRequest;
     // Force role to 'student' for public registration to prevent privilege escalation
     // even if the request contains another role
-    const { email, password, name, instructorId } = body;
+    const { email, password, name, instructorId, turnstileToken } = body;
     const role = 'student';
     const normalizedEmail = email?.toLowerCase();
+
+    // Verify Turnstile challenge (skip for native app requests)
+    if (!isNativeAuthRequest(request)) {
+      const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || undefined;
+      const valid = turnstileToken
+        ? await verifyTurnstileToken(turnstileToken, env.TURNSTILE_SECRET, ip)
+        : false;
+      if (!valid) {
+        return new Response(
+          JSON.stringify({ error: 'CAPTCHA verification failed. Please try again.' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     // Validate input
     if (!email || !password || !name) {

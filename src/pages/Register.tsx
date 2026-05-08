@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { InstructorSelect } from '../components/ui/InstructorSelect';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
+import { Turnstile } from '../components/ui/Turnstile';
 import { useAuth } from '../context/AuthContext';
 import { registerSchema, type RegisterFormData } from '../lib/validation';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const { register: registerUser, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -36,10 +38,11 @@ export default function Register() {
     clearError();
     const { confirmPassword, ...registerData } = data;
     void confirmPassword; // Acknowledge unused variable
-    const success = await registerUser(registerData);
+    const success = await registerUser({ ...registerData, turnstileToken: turnstileToken ?? undefined });
     if (success) {
       navigate('/pending-approval');
     }
+    setTurnstileToken(null);
   };
 
   return (
@@ -148,10 +151,18 @@ export default function Register() {
               />
             </div>
 
+            <Turnstile
+              onVerify={setTurnstileToken}
+              onExpire={() => setTurnstileToken(null)}
+              onError={() => setTurnstileToken(null)}
+              theme="dark"
+              className="flex justify-center"
+            />
+
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading}
+              disabled={isLoading || !turnstileToken}
               isLoading={isLoading}
             >
               {isLoading ? t('registerPage.creatingAccount') : t('registerPage.title')}

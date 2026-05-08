@@ -1,0 +1,132 @@
+/**
+ * Cloudflare Turnstile CAPTCHA widget component
+ * Loads the Turnstile script and renders the challenge widget.
+ * Calls onVerify with the token on success, onError/onExpire on failure.
+ */
+
+import { useEffect, useRef, useCallback, useId } from 'react';
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (
+        container: string | HTMLElement,
+        params: TurnstileParams
+      ) => string;
+      reset: (widgetId: string) => void;
+      remove: (widgetId: string) => void;
+    };
+    onTurnstileLoad?: () => void;
+  }
+}
+
+interface TurnstileParams {
+  sitekey: string;
+  callback: (token: string) => void;
+  'error-callback': () => void;
+  'expired-callback': () => void;
+  theme?: 'light' | 'dark' | 'auto';
+  size?: 'normal' | 'compact';
+  language?: string;
+}
+
+interface TurnstileProps {
+  onVerify: (token: string) => void;
+  onError?: () => void;
+  onExpire?: () => void;
+  theme?: 'light' | 'dark' | 'auto';
+  language?: string;
+  className?: string;
+}
+
+const TURNSTILE_SCRIPT_ID = 'cf-turnstile-script';
+const TURNSTILE_SITE_KEY =
+  import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '0x4AAAAAADLmd_1VIOAIyh2i';
+
+export function Turnstile({
+  onVerify,
+  onError,
+  onExpire,
+  theme = 'dark',
+  language,
+  className,
+}: TurnstileProps) {
+  const containerId = useId().replace(/:/g, '');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
+
+  const renderWidget = useCallback(() => {
+    if (!mountedRef.current || !containerRef.current || !window.turnstile) return;
+
+    // Remove previous widget if any
+    if (widgetIdRef.current) {
+      try {
+        window.turnstile.remove(widgetIdRef.current);
+      } catch {
+        // ignore
+      }
+    }
+
+    widgetIdRef.current = window.turnstile.render(containerRef.current, {
+      sitekey: TURNSTILE_SITE_KEY,
+      callback: (token) => {
+        if (mountedRef.current) onVerify(token);
+      },
+      'error-callback': () => {
+        if (mountedRef.current) onError?.();
+      },
+      'expired-callback': () => {
+        if (mountedRef.current) onExpire?.();
+      },
+      theme,
+      ...(language ? { language } : {}),
+    });
+  }, [onVerify, onError, onExpire, theme, language]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    if (window.turnstile) {
+      renderWidget();
+    } else {
+      // Register load callback (may already exist from another instance)
+      const previousOnLoad = window.onTurnstileLoad;
+      window.onTurnstileLoad = () => {
+        previousOnLoad?.();
+        renderWidget();
+      };
+
+      // Inject script only once
+      if (!document.getElementById(TURNSTILE_SCRIPT_ID)) {
+        const script = document.createElement('script');
+        script.id = TURNSTILE_SCRIPT_ID;
+        script.src =
+          'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      }
+    }
+
+    return () => {
+      mountedRef.current = false;
+      if (widgetIdRef.current && window.turnstile) {
+        try {
+          window.turnstile.remove(widgetIdRef.current);
+        } catch {
+          // ignore
+        }
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      id={containerId}
+      className={className}
+    />
+  );
+}

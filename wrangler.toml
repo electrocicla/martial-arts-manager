@@ -25,3 +25,7 @@ database_name = "DB"
 [[env.production.r2_buckets]]
 bucket_name = "martial-arts-manager-bucket"
 binding = "AVATARS"
+
+# Secrets (set via Cloudflare Dashboard → Settings → Variables & Secrets, or CLI):
+#   wrangler secret put TURNSTILE_SECRET
+#   wrangler secret put JWT_SECRET

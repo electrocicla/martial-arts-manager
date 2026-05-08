@@ -106,6 +106,7 @@ export interface Env {
   DB: D1Database;
   JWT_SECRET: string;
   AVATARS: R2Bucket;
+  TURNSTILE_SECRET: string;
 }
 
 // Student types

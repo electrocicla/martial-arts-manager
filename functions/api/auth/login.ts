@@ -8,12 +8,14 @@ import { findUserByEmail, createSession, updateUserLastLogin, logAuditAction, ge
 import { createRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
 import { normalizeAvatarUrl } from '../../utils/avatar';
 import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
+import { verifyTurnstileToken } from '../../utils/turnstile';
 
 import { Env } from '../../types/index';
 
 interface LoginRequest {
   email: string;
   password: string;
+  turnstileToken?: string;
 }
 
 interface LoginResponse {
@@ -42,7 +44,21 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Parse request body
     const body = await request.json() as LoginRequest;
-    const { email, password } = body;
+    const { email, password, turnstileToken } = body;
+
+    // Verify Turnstile challenge (skip for native app requests)
+    if (!isNativeAuthRequest(request)) {
+      const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || undefined;
+      const valid = turnstileToken
+        ? await verifyTurnstileToken(turnstileToken, env.TURNSTILE_SECRET, ip)
+        : false;
+      if (!valid) {
+        return new Response(
+          JSON.stringify({ error: 'CAPTCHA verification failed. Please try again.' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     // Validate input
     if (!email || !password) {

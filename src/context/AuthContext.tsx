@@ -20,6 +20,7 @@ interface User {
 interface LoginData {
   email: string;
   password: string;
+  turnstileToken?: string;
 }
 
 interface RegisterData {
@@ -28,6 +29,7 @@ interface RegisterData {
   name: string;
   role?: 'admin' | 'instructor' | 'student';
   instructorId?: string;
+  turnstileToken?: string;
 }
 
 interface AuthContextType {
