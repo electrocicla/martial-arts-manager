@@ -8,6 +8,10 @@ interface TurnstileVerifyResponse {
   'error-codes'?: string[];
 }
 
+export function isTurnstileConfigured(secret?: string): secret is string {
+  return typeof secret === 'string' && secret.trim().length > 0;
+}
+
 /**
  * Verify a Turnstile challenge token against the Cloudflare siteverify API.
  *
@@ -21,22 +25,26 @@ export async function verifyTurnstileToken(
   secret: string,
   ip?: string
 ): Promise<boolean> {
-  if (!token || !secret) return false;
+  if (!token || !isTurnstileConfigured(secret)) return false;
 
   const body = new URLSearchParams({ secret, response: token });
   if (ip) body.set('remoteip', ip);
 
-  const res = await fetch(
-    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString(),
-    }
-  );
+  try {
+    const res = await fetch(
+      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+      }
+    );
 
-  if (!res.ok) return false;
+    if (!res.ok) return false;
 
-  const data = await res.json() as TurnstileVerifyResponse;
-  return data.success === true;
+    const data = await res.json() as TurnstileVerifyResponse;
+    return data.success === true;
+  } catch {
+    return false;
+  }
 }

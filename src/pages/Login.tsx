@@ -8,12 +8,13 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
-import { Turnstile } from '../components/ui/Turnstile';
+import { Turnstile, isTurnstileConfigured } from '../components/ui/Turnstile';
 import AndroidApkInstallPrompt from '../components/mobile/AndroidApkInstallPrompt';
 import { useAuth } from '../context/AuthContext';
 import { loginSchema, type LoginFormData } from '../lib/validation';
 
 export default function Login() {
+  const turnstileEnabled = isTurnstileConfigured();
   const [showPassword, setShowPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const { login, isLoading, error, clearError } = useAuth();
@@ -37,7 +38,10 @@ export default function Login() {
 
   const onSubmit = async (data: LoginFormData) => {
     clearError();
-    const success = await login({ ...data, turnstileToken: turnstileToken ?? undefined });
+    const success = await login({
+      ...data,
+      turnstileToken: turnstileEnabled ? (turnstileToken ?? undefined) : undefined,
+    });
     if (success) {
       navigate('/');
     }
@@ -164,18 +168,20 @@ export default function Login() {
                 />
               </div>
 
-              <Turnstile
-                onVerify={setTurnstileToken}
-                onExpire={() => setTurnstileToken(null)}
-                onError={() => setTurnstileToken(null)}
-                theme="dark"
-                className="flex justify-center"
-              />
+              {turnstileEnabled ? (
+                <Turnstile
+                  onVerify={setTurnstileToken}
+                  onExpire={() => setTurnstileToken(null)}
+                  onError={() => setTurnstileToken(null)}
+                  theme="dark"
+                  className="flex justify-center"
+                />
+              ) : null}
 
               <Button
                 type="submit"
                 className="w-full mega-cta-button text-white font-black py-4 text-lg relative overflow-hidden transition-all duration-700 group"
-                disabled={isLoading || !turnstileToken}
+                disabled={isLoading || (turnstileEnabled && !turnstileToken)}
                 isLoading={isLoading}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 opacity-90" />

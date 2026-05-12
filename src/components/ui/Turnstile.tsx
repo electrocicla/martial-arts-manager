@@ -40,8 +40,11 @@ interface TurnstileProps {
 }
 
 const TURNSTILE_SCRIPT_ID = 'cf-turnstile-script';
-const TURNSTILE_SITE_KEY =
-  import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '0x4AAAAAADLmd_1VIOAIyh2i';
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim() ?? '';
+
+export function isTurnstileConfigured(): boolean {
+  return TURNSTILE_SITE_KEY.length > 0;
+}
 
 export function Turnstile({
   onVerify,
@@ -55,9 +58,10 @@ export function Turnstile({
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const mountedRef = useRef(true);
+  const turnstileConfigured = isTurnstileConfigured();
 
   const renderWidget = useCallback(() => {
-    if (!mountedRef.current || !containerRef.current || !window.turnstile) return;
+    if (!turnstileConfigured || !mountedRef.current || !containerRef.current || !window.turnstile) return;
 
     // Remove previous widget if any
     if (widgetIdRef.current) {
@@ -82,9 +86,11 @@ export function Turnstile({
       theme,
       ...(language ? { language } : {}),
     });
-  }, [onVerify, onError, onExpire, theme, language]);
+  }, [turnstileConfigured, onVerify, onError, onExpire, theme, language]);
 
   useEffect(() => {
+    if (!turnstileConfigured) return;
+
     mountedRef.current = true;
 
     if (window.turnstile) {
@@ -120,7 +126,11 @@ export function Turnstile({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [turnstileConfigured, renderWidget]);
+
+  if (!turnstileConfigured) {
+    return null;
+  }
 
   return (
     <div

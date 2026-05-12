@@ -8,7 +8,7 @@ import { findUserByEmail, createSession, updateUserLastLogin, logAuditAction, ge
 import { createRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
 import { normalizeAvatarUrl } from '../../utils/avatar';
 import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
-import { verifyTurnstileToken } from '../../utils/turnstile';
+import { isTurnstileConfigured, verifyTurnstileToken } from '../../utils/turnstile';
 
 import { Env } from '../../types/index';
 
@@ -47,7 +47,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const { email, password, turnstileToken } = body;
 
     // Verify Turnstile challenge (skip for native app requests)
-    if (!isNativeAuthRequest(request)) {
+    if (!isNativeAuthRequest(request) && isTurnstileConfigured(env.TURNSTILE_SECRET)) {
       const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || undefined;
       const valid = turnstileToken
         ? await verifyTurnstileToken(turnstileToken, env.TURNSTILE_SECRET, ip)
