@@ -8,9 +8,10 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
-import { Turnstile, isTurnstileConfigured } from '../components/ui/Turnstile';
+import { Turnstile } from '../components/ui/Turnstile';
 import AndroidApkInstallPrompt from '../components/mobile/AndroidApkInstallPrompt';
 import { useAuth } from '../context/AuthContext';
+import { isTurnstileConfigured } from '../lib/turnstile';
 import { loginSchema, type LoginFormData } from '../lib/validation';
 
 export default function Login() {

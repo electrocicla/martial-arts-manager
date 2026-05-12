@@ -7,8 +7,9 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { InstructorSelect } from '../components/ui/InstructorSelect';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
-import { Turnstile, isTurnstileConfigured } from '../components/ui/Turnstile';
+import { Turnstile } from '../components/ui/Turnstile';
 import { useAuth } from '../context/AuthContext';
+import { isTurnstileConfigured } from '../lib/turnstile';
 import { registerSchema, type RegisterFormData } from '../lib/validation';
 import { useTranslation } from 'react-i18next';
 
