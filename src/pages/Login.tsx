@@ -18,6 +18,7 @@ export default function Login() {
   const turnstileEnabled = isTurnstileConfigured();
   const [showPassword, setShowPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileError, setTurnstileError] = useState<string | null>(null);
   const { login, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -39,6 +40,13 @@ export default function Login() {
 
   const onSubmit = async (data: LoginFormData) => {
     clearError();
+
+    if (turnstileEnabled && !turnstileToken) {
+      setTurnstileError(t('login.captchaRequired', 'Completa la verificacion CAPTCHA para continuar.'));
+      return;
+    }
+
+    setTurnstileError(null);
     const success = await login({
       ...data,
       turnstileToken: turnstileEnabled ? (turnstileToken ?? undefined) : undefined,
@@ -132,6 +140,18 @@ export default function Login() {
                 </motion.div>
               )}
 
+              {turnstileError && (
+                <motion.div
+                  className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl backdrop-blur-sm"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AlertCircle className="w-5 h-5 text-amber-300 flex-shrink-0" />
+                  <p className="text-sm text-amber-200 font-medium">{turnstileError}</p>
+                </motion.div>
+              )}
+
               <div>
                 <Input
                   {...register('email')}
@@ -171,9 +191,18 @@ export default function Login() {
 
               {turnstileEnabled ? (
                 <Turnstile
-                  onVerify={setTurnstileToken}
-                  onExpire={() => setTurnstileToken(null)}
-                  onError={() => setTurnstileToken(null)}
+                  onVerify={(token) => {
+                    setTurnstileToken(token);
+                    setTurnstileError(null);
+                  }}
+                  onExpire={() => {
+                    setTurnstileToken(null);
+                    setTurnstileError(t('login.captchaExpired', 'La verificacion CAPTCHA expiro. Intentalo de nuevo.'));
+                  }}
+                  onError={() => {
+                    setTurnstileToken(null);
+                    setTurnstileError(t('login.captchaRetry', 'No se pudo validar el CAPTCHA. Intentalo de nuevo.'));
+                  }}
                   theme="dark"
                   className="flex justify-center"
                 />
@@ -182,7 +211,7 @@ export default function Login() {
               <Button
                 type="submit"
                 className="w-full mega-cta-button text-white font-black py-4 text-lg relative overflow-hidden transition-all duration-700 group"
-                disabled={isLoading || (turnstileEnabled && !turnstileToken)}
+                disabled={isLoading}
                 isLoading={isLoading}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 opacity-90" />

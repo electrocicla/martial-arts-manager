@@ -18,6 +18,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileError, setTurnstileError] = useState<string | null>(null);
   const { register: registerUser, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -38,6 +39,13 @@ export default function Register() {
 
   const onSubmit = async (data: RegisterFormData) => {
     clearError();
+
+    if (turnstileEnabled && !turnstileToken) {
+      setTurnstileError(t('registerPage.captchaRequired', 'Completa la verificacion CAPTCHA para continuar.'));
+      return;
+    }
+
+    setTurnstileError(null);
     const { confirmPassword, ...registerData } = data;
     void confirmPassword; // Acknowledge unused variable
     const success = await registerUser({
@@ -71,6 +79,13 @@ export default function Register() {
               <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
                 <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+              </div>
+            )}
+
+            {turnstileError && (
+              <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                <p className="text-sm text-amber-700 dark:text-amber-300">{turnstileError}</p>
               </div>
             )}
 
@@ -158,9 +173,18 @@ export default function Register() {
 
             {turnstileEnabled ? (
               <Turnstile
-                onVerify={setTurnstileToken}
-                onExpire={() => setTurnstileToken(null)}
-                onError={() => setTurnstileToken(null)}
+                onVerify={(token) => {
+                  setTurnstileToken(token);
+                  setTurnstileError(null);
+                }}
+                onExpire={() => {
+                  setTurnstileToken(null);
+                  setTurnstileError(t('registerPage.captchaExpired', 'La verificacion CAPTCHA expiro. Intentalo de nuevo.'));
+                }}
+                onError={() => {
+                  setTurnstileToken(null);
+                  setTurnstileError(t('registerPage.captchaRetry', 'No se pudo validar el CAPTCHA. Intentalo de nuevo.'));
+                }}
                 theme="dark"
                 className="flex justify-center"
               />
@@ -169,7 +193,7 @@ export default function Register() {
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading || (turnstileEnabled && !turnstileToken)}
+              disabled={isLoading}
               isLoading={isLoading}
             >
               {isLoading ? t('registerPage.creatingAccount') : t('registerPage.title')}
