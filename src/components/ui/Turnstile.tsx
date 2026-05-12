@@ -56,7 +56,14 @@ export function Turnstile({
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const mountedRef = useRef(true);
+  const onVerifyRef = useRef(onVerify);
+  const onErrorRef = useRef(onError);
+  const onExpireRef = useRef(onExpire);
   const turnstileConfigured = isTurnstileConfigured();
+
+  onVerifyRef.current = onVerify;
+  onErrorRef.current = onError;
+  onExpireRef.current = onExpire;
 
   const renderWidget = useCallback(() => {
     if (!turnstileConfigured || !mountedRef.current || !containerRef.current || !window.turnstile) return;
@@ -73,18 +80,18 @@ export function Turnstile({
     widgetIdRef.current = window.turnstile.render(containerRef.current, {
       sitekey: TURNSTILE_SITE_KEY,
       callback: (token) => {
-        if (mountedRef.current) onVerify(token);
+        if (mountedRef.current) onVerifyRef.current(token);
       },
       'error-callback': () => {
-        if (mountedRef.current) onError?.();
+        if (mountedRef.current) onErrorRef.current?.();
       },
       'expired-callback': () => {
-        if (mountedRef.current) onExpire?.();
+        if (mountedRef.current) onExpireRef.current?.();
       },
       theme,
       ...(language ? { language } : {}),
     });
-  }, [turnstileConfigured, onVerify, onError, onExpire, theme, language]);
+  }, [turnstileConfigured, theme, language]);
 
   useEffect(() => {
     if (!turnstileConfigured) return;
