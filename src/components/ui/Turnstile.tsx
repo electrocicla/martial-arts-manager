@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useRef, useCallback, useId } from 'react';
+import { getCspNonce } from '../../lib/csp';
 import { isTurnstileConfigured } from '../../lib/turnstile';
 
 declare global {
@@ -103,9 +104,13 @@ export function Turnstile({
       // Inject script only once
       if (!document.getElementById(TURNSTILE_SCRIPT_ID)) {
         const script = document.createElement('script');
+        const nonce = getCspNonce();
         script.id = TURNSTILE_SCRIPT_ID;
         script.src =
           'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit';
+        if (nonce) {
+          script.nonce = nonce;
+        }
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);

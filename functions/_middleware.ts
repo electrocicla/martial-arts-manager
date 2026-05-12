@@ -1,5 +1,29 @@
 import { Env } from './types/index';
 
+function createCspNonce(): string {
+  const nonceBytes = crypto.getRandomValues(new Uint8Array(16));
+  let binary = '';
+
+  for (const byte of nonceBytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary);
+}
+
+function injectNonceIntoHtml(html: string, nonce: string): string {
+  const htmlWithScriptNonces = html.replace(/<script\b(?![^>]*\bnonce=)/g, `<script nonce="${nonce}"`);
+
+  if (htmlWithScriptNonces.includes('meta name="csp-nonce"')) {
+    return htmlWithScriptNonces;
+  }
+
+  return htmlWithScriptNonces.replace(
+    '</head>',
+    `    <meta name="csp-nonce" content="${nonce}" />\n  </head>`
+  );
+}
+
 /**
  * Middleware for Cloudflare Pages Functions
  * 
@@ -11,6 +35,12 @@ import { Env } from './types/index';
 
 export async function onRequest(context: { request: Request; env: Env; next: () => Promise<Response> }): Promise<Response> {
   const response = await context.next();
+  const contentType = response.headers.get('Content-Type') || '';
+  const isHtmlResponse = contentType.includes('text/html');
+  const nonce = isHtmlResponse ? createCspNonce() : null;
+  const responseBody = isHtmlResponse && nonce
+    ? injectNonceIntoHtml(await response.text(), nonce)
+    : response.body;
 
   // Add security headers
   const newHeaders = new Headers(response.headers);
@@ -27,13 +57,16 @@ export async function onRequest(context: { request: Request; env: Env; next: () 
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' https://static.cloudflareinsights.com",
+      nonce
+        ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://static.cloudflareinsights.com https://challenges.cloudflare.com`
+        : "script-src 'self' https://static.cloudflareinsights.com https://challenges.cloudflare.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data: https://fonts.gstatic.com",
       "connect-src 'self' https:",
       "media-src 'self' blob:",
       "worker-src 'self' blob:",
+      "frame-src 'self' https://challenges.cloudflare.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -45,7 +78,7 @@ export async function onRequest(context: { request: Request; env: Env; next: () 
   newHeaders.set('Cross-Origin-Resource-Policy', 'same-origin');
 
   // Return new response with added headers
-  return new Response(response.body, {
+  return new Response(responseBody, {
     status: response.status,
     statusText: response.statusText,
     headers: newHeaders,
