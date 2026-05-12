@@ -50,7 +50,7 @@ export async function onRequest(context: { request: Request; env: Env; next: () 
   newHeaders.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   newHeaders.set(
     'Permissions-Policy',
-    'camera=(self), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), accelerometer=(), gyroscope=()'
+    'camera=(self), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), accelerometer=(), gyroscope=(), xr-spatial-tracking=(self "https://challenges.cloudflare.com")'
   );
   // Content Security Policy — strict by default, allows only self-hosted assets, Cloudflare R2 avatars, inline styles (Tailwind/DaisyUI), and data: images.
   newHeaders.set(
