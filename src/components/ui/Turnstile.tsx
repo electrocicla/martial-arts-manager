@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useCallback, useId } from 'react';
 import { getCspNonce } from '../../lib/csp';
-import { isTurnstileConfigured } from '../../lib/turnstile';
+import { isTurnstileConfigured, TURNSTILE_SITE_KEY } from '../../lib/turnstile';
 
 declare global {
   interface Window {
@@ -42,8 +42,6 @@ interface TurnstileProps {
 }
 
 const TURNSTILE_SCRIPT_ID = 'cf-turnstile-script';
-const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim() ?? '';
-
 export function Turnstile({
   onVerify,
   onError,
