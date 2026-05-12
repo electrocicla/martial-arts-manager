@@ -7,6 +7,43 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { apiClient } from '../lib/api-client';
 
+const AUTH_SESSION_HINT_KEY = 'hamarr:auth-session';
+
+function hasAuthSessionHint(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    return window.localStorage.getItem(AUTH_SESSION_HINT_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function setAuthSessionHint(hasSession: boolean): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    if (hasSession) {
+      window.localStorage.setItem(AUTH_SESSION_HINT_KEY, '1');
+      return;
+    }
+
+    window.localStorage.removeItem(AUTH_SESSION_HINT_KEY);
+  } catch {
+    // Ignore storage access failures and fall back to in-memory auth state.
+  }
+}
+
+function isPublicAuthRoute(pathname: string): boolean {
+  return pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/pending-approval';
+}
+
+function shouldAttemptInitialRefresh(): boolean {
+  if (typeof window === 'undefined') return true;
+
+  return hasAuthSessionHint() || !isPublicAuthRoute(window.location.pathname);
+}
+
 // Types
 interface User {
   id: string;
@@ -55,11 +92,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => shouldAttemptInitialRefresh());
   const [error, setError] = useState<string | null>(null);
 
   // Check if user is authenticated on mount
   useEffect(() => {
+    if (!shouldAttemptInitialRefresh()) {
+      return;
+    }
+
     checkAuthStatus();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -89,7 +130,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const success = await refreshAuth();
       if (!success) {
         // No valid refresh token found - clear state
-        console.warn('[Auth] No valid refresh token, clearing auth state');
+        setAuthSessionHint(false);
         setUser(null);
         setAccessToken(null);
         apiClient.setAccessToken(null);
@@ -124,6 +165,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.ok && result.success) {
         setUser(result.user);
         setAccessToken(result.accessToken);
+        setAuthSessionHint(true);
         // Immediately sync token with apiClient to avoid race conditions
         apiClient.setAccessToken(result.accessToken);
         return true;
@@ -165,6 +207,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.ok && result.success) {
         if (result.pending_approval) {
           // Keep user logged out until an admin/instructor approves the account
+          setAuthSessionHint(false);
           setUser(null);
           setAccessToken(null);
           apiClient.setAccessToken(null);
@@ -173,6 +216,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         setUser(result.user);
         setAccessToken(result.accessToken);
+        setAuthSessionHint(true);
         // Immediately sync token with apiClient to avoid race conditions
         apiClient.setAccessToken(result.accessToken);
         return true;
@@ -203,6 +247,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Logout error:', error);
     } finally {
       // Clear local state regardless of API call success
+      setAuthSessionHint(false);
       setUser(null);
       setAccessToken(null);
       setIsLoading(false);
@@ -222,6 +267,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (result.success) {
           setUser(result.user);
           setAccessToken(result.accessToken);
+          setAuthSessionHint(true);
           // Immediately sync token with apiClient to avoid race conditions
           // (PollingContext effects run before AuthContext effects in the same commit)
           apiClient.setAccessToken(result.accessToken);
@@ -232,6 +278,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Only clear auth if we got a 401 (unauthorized) response
       // Other errors (network, 5xx) should not log the user out
       if (response.status === 401) {
+        setAuthSessionHint(false);
         setUser(null);
         setAccessToken(null);
         apiClient.setAccessToken(null);
