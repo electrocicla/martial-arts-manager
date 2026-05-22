@@ -422,3 +422,11 @@ oClasses, dashboard.quickActions.scheduleClass, dashboard.metrics.totalClasses, 
 ### Remaining Gate
 - Commit/push root and native repos as applicable, then production deploy from root.
 
+### Native Parity Follow-Up
+- Audited `martial-arts-manager-native` after the deployed hotfix.
+- Found native payment overview still allowed non-completed payments to influence the displayed cycle; extracted `src/utils/paymentCycle.ts` and changed the hook to use completed payments plus `studentPortalService.getProfile()` fallback.
+- Removed mobile settings copy that still showed `Dia 5`; it now describes the payment cycle as based on the last payment.
+- Found native class/attendance UX promised enrollment from Clases but did not expose it. Added `ClassEnrollmentSheet`, added `classService.unenroll`, and added an `Inscritos` action in `ClassList`.
+- Enrollment sheet loads active students and current enrolled students, respects capacity, selects students by discipline, uses `batchEnroll` in chunks of 100, and supports removing enrolled students.
+- Validation after native follow-up: `pnpm run typecheck`, `pnpm run lint`, and `pnpm run test` in `martial-arts-manager-native` passed with 29 tests.
+

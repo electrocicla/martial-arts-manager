@@ -291,6 +291,13 @@
 - Native lint/tests: passed
 - Pending: commit/push, production deploy
 
+### HF-2026-05-22-07 ✅ Native parity follow-up
+- Payment overview now anchors due dates on completed payments plus one month, with profile join date fallback
+- Settings/mobile copy no longer communicates fixed day-5 due dates
+- Classes now expose an `Inscritos` action to manage enrolled students from native
+- Native enrollment UI uses `batchEnroll` in chunks of 100 and supports unenroll
+- Native tests/typecheck/lint passed after follow-up
+
 ---
 
 ## Summary
