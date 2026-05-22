@@ -21,6 +21,7 @@ import {
   ensureNotificationsSchema,
   withNotificationsTable,
 } from '../../../utils/notifications';
+import { getPaymentCycleStatus } from '../../../utils/payment-cycle';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 const MAX_BULK_RECIPIENTS = 500;
@@ -40,10 +41,11 @@ interface OverdueRow {
   id: string;
   name: string;
   user_id: string | null;
-  due_day: number | null;
+  join_date: string | null;
+  created_at: string | null;
+  last_completed_date: string | null;
   last_completed_amount: number | null;
   avg_amount: number | null;
-  current_month_completed: number;
 }
 
 interface BulkResultEntry {
@@ -66,14 +68,6 @@ function computeExpectedAmount(row: OverdueRow): number {
     return Math.round(row.avg_amount);
   }
   return DEFAULT_EXPECTED_AMOUNT;
-}
-
-function computeDaysOverdue(dueDay: number | null): number {
-  const day = dueDay && dueDay > 0 ? Math.min(28, dueDay) : 5;
-  const today = new Date();
-  const dueDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), day));
-  const diffMs = today.getTime() - dueDate.getTime();
-  return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 }
 
 export async function onRequestPost({
@@ -114,13 +108,13 @@ export async function onRequestPost({
         : ' AND (s.created_by = ? OR s.instructor_id = ?)';
 
       const stmt = env.DB.prepare(
-        `SELECT s.id, s.name, s.due_day,
+        `SELECT s.id, s.name, s.join_date, s.created_at,
                 u.id AS user_id,
+                MAX(CASE WHEN p.status = 'completed' THEN p.date END) AS last_completed_date,
                 (SELECT amount FROM payments
                    WHERE student_id = s.id AND status = 'completed' AND deleted_at IS NULL
                    ORDER BY date DESC LIMIT 1) AS last_completed_amount,
-                AVG(CASE WHEN p.status = 'completed' THEN p.amount ELSE NULL END) AS avg_amount,
-                SUM(CASE WHEN substr(p.date, 1, 7) = ? AND p.status = 'completed' THEN 1 ELSE 0 END) AS current_month_completed
+                AVG(CASE WHEN p.status = 'completed' THEN p.amount ELSE NULL END) AS avg_amount
            FROM students s
            LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
            LEFT JOIN payments p ON p.student_id = s.id AND p.deleted_at IS NULL
@@ -129,17 +123,20 @@ export async function onRequestPost({
           LIMIT ?`,
       );
       const bound = isAdmin
-        ? stmt.bind(monthLabel, MAX_BULK_RECIPIENTS)
-        : stmt.bind(monthLabel, auth.user.id, auth.user.id, MAX_BULK_RECIPIENTS);
+        ? stmt.bind(MAX_BULK_RECIPIENTS)
+        : stmt.bind(auth.user.id, auth.user.id, MAX_BULK_RECIPIENTS);
 
       const { results } = await bound.all<OverdueRow>();
       const today = new Date();
-      // Filter: only rows actually overdue this month with a linked user.
+      // Filter: only rows actually overdue in their own payment cycle with a linked user.
       targets = (results ?? []).filter((row) => {
         if (!row.user_id) return false;
-        if ((row.current_month_completed ?? 0) > 0) return false;
-        const dueDay = row.due_day && row.due_day > 0 ? row.due_day : 5;
-        return today.getUTCDate() > dueDay;
+        return getPaymentCycleStatus({
+          lastCompletedDate: row.last_completed_date,
+          joinDate: row.join_date,
+          createdAt: row.created_at,
+          referenceDate: today,
+        }).isOverdue;
       });
     } else {
       const ids = Array.isArray(body.studentIds) ? body.studentIds.filter((v): v is string => typeof v === 'string' && v.length > 0) : [];
@@ -161,20 +158,20 @@ export async function onRequestPost({
           : ' AND (s.created_by = ? OR s.instructor_id = ?)';
 
         const stmt = env.DB.prepare(
-          `SELECT s.id, s.name, s.due_day,
+          `SELECT s.id, s.name, s.join_date, s.created_at,
                   u.id AS user_id,
+            MAX(CASE WHEN p.status = 'completed' THEN p.date END) AS last_completed_date,
                   (SELECT amount FROM payments
                      WHERE student_id = s.id AND status = 'completed' AND deleted_at IS NULL
                      ORDER BY date DESC LIMIT 1) AS last_completed_amount,
-                  AVG(CASE WHEN p.status = 'completed' THEN p.amount ELSE NULL END) AS avg_amount,
-                  SUM(CASE WHEN substr(p.date, 1, 7) = ? AND p.status = 'completed' THEN 1 ELSE 0 END) AS current_month_completed
+            AVG(CASE WHEN p.status = 'completed' THEN p.amount ELSE NULL END) AS avg_amount
              FROM students s
              LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
              LEFT JOIN payments p ON p.student_id = s.id AND p.deleted_at IS NULL
             WHERE s.deleted_at IS NULL AND s.id IN (${placeholders})${ownershipClause}
             GROUP BY s.id`,
         );
-        const params: unknown[] = [monthLabel, ...chunk];
+        const params: string[] = [...chunk];
         if (!isAdmin) {
           params.push(auth.user.id, auth.user.id);
         }
@@ -199,16 +196,23 @@ export async function onRequestPost({
         continue;
       }
 
-      // Skip students who already paid for this month.
-      if ((row.current_month_completed ?? 0) > 0) {
+      const paymentCycle = getPaymentCycleStatus({
+        lastCompletedDate: row.last_completed_date,
+        joinDate: row.join_date,
+        createdAt: row.created_at,
+        referenceDate: new Date(isoNow),
+      });
+      if (!paymentCycle.isOverdue || !paymentCycle.dueDate) {
         results.push({
           studentId: row.id,
           status: 'skipped',
-          reason: 'already_paid',
+          reason: 'not_overdue',
         });
         skippedCount++;
         continue;
       }
+
+      const paymentCycleMonthLabel = paymentCycle.dueDate.slice(0, 7);
 
       // Dedupe — already-pending unconfirmed reminder for same month?
       const existing = await withNotificationsTable(env.DB, () =>
@@ -221,7 +225,7 @@ export async function onRequestPost({
               AND metadata LIKE ?
             LIMIT 1`,
         )
-          .bind(row.user_id, `%"monthLabel":"${monthLabel}"%`)
+          .bind(row.user_id, `%"monthLabel":"${paymentCycleMonthLabel}"%`)
           .first<{ id: string }>(),
       );
 
@@ -237,12 +241,13 @@ export async function onRequestPost({
       }
 
       const expectedAmount = computeExpectedAmount(row);
-      const daysOverdue = computeDaysOverdue(row.due_day);
-      const message = `You have a pending monthly payment (${monthLabel}). Amount: $${expectedAmount.toFixed(2)}. Days overdue: ${daysOverdue}.`;
+      const daysOverdue = paymentCycle.daysOverdue;
+      const message = `You have a pending monthly payment (${paymentCycleMonthLabel}). Amount: $${expectedAmount.toFixed(2)}. Days overdue: ${daysOverdue}.`;
       const metadata = JSON.stringify({
         kind: 'payment_pending',
         studentId: row.id,
-        monthLabel,
+        monthLabel: paymentCycleMonthLabel,
+        dueDate: paymentCycle.dueDate,
         daysOverdue,
         expectedAmount,
         issuedBy: auth.user.id,

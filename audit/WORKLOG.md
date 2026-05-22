@@ -387,3 +387,38 @@ oClasses, dashboard.quickActions.scheduleClass, dashboard.metrics.totalClasses, 
 - Split reusable settings/profile UI into smaller SRP components under `src/components/profile/` and `src/components/settings/`.
 - Quality-policy cleanup started: console policy, form label association in base controls, lucide toast icons, and removal of the existing `as any` in Motion.
 
+---
+
+## 2026-05-22 — Enrollment SQL + Payment Cycle Hotfix
+
+### Audit
+- Analyzed screenshots: image 1 shows `SQLITE_ERROR: too many SQL variables` while managing students by discipline; image 2 shows overdue payment cards all due on the 5th.
+- Used subagents to audit enrollment and payment flows in parallel.
+- Confirmed enrollment route: `EnrollStudentsModal` calls `classService.batchEnroll`, which posts all selected IDs to `functions/api/classes/[classId]/students/batch.ts`.
+- Confirmed payment route: admin overdue data comes from `functions/api/payments/overdue.ts`; bulk reminders came from `functions/api/payments/notify-overdue/bulk.ts`; native student overview also displayed a configured/fallback due day.
+
+### Enrollment Fix
+- Added `D1_SAFE_CHUNK_SIZE = 50` in the batch enrollment endpoint.
+- Split the existing-enrollment lookup into chunked `IN (...)` queries to stay below D1/SQLite bound-variable limits.
+- Split `env.DB.batch(stmts)` inserts into chunks of 50 statements.
+- Kept the endpoint payload/response contract unchanged.
+
+### Payment Cycle Fix
+- Added `functions/utils/payment-cycle.ts` with a deterministic monthly cycle calculation: latest completed payment date + one month, clamped for month ends.
+- Updated `/api/payments/overdue` to compute each student's own due date and days overdue from that cycle.
+- Updated `/api/payments/notify-overdue/bulk` to use the same cycle and removed the invalid `students.due_day` SQL dependency.
+- Updated web overdue UI types and reminder month labels to use each student's own `dueDate`.
+- Updated native student payment overview to show a concrete due date instead of “day 5 every month”.
+
+### Validation
+- `pnpm exec tsc --noEmit --pretty false`: passed after enrollment fix.
+- `pnpm exec vitest run functions/utils/payment-cycle.test.ts src/components/payments/overdue/OverdueStudentsView.test.tsx src/hooks/useOverdueStudents.test.ts src/services/payment.service.dashboard.test.ts`: 21 tests passed. Existing stderr noise from MSW/React act warnings remained non-fatal.
+- `Push-Location martial-arts-manager-native; pnpm run typecheck; Pop-Location`: passed.
+- `pnpm exec tsc --noEmit --pretty false`: passed after all root changes.
+- `pnpm run test:run`: passed after excluding the nested native repo from the root Vitest runner; native tests run through their own config.
+- `pnpm run lint; pnpm run build`: passed.
+- `Push-Location martial-arts-manager-native; pnpm run lint; pnpm run test; Pop-Location`: passed.
+
+### Remaining Gate
+- Commit/push root and native repos as applicable, then production deploy from root.
+

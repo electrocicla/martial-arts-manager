@@ -1,6 +1,8 @@
 import { Env } from '../../../../types/index';
 import { authenticateUser } from '../../../../middleware/auth';
 
+const D1_SAFE_CHUNK_SIZE = 50;
+
 // POST /api/classes/:classId/students/batch - Batch enroll students
 export async function onRequestPost({ request, env, params }: { request: Request; env: Env; params: { classId: string } }) {
   try {
@@ -53,9 +55,15 @@ export async function onRequestPost({ request, env, params }: { request: Request
     const currentCount = enrolledCount?.count ?? 0;
 
     // Get already-enrolled student IDs to skip them
-    const { results: existingRows } = await env.DB.prepare(
-      `SELECT student_id FROM class_enrollments WHERE (class_id = ? OR (? IS NOT NULL AND class_id = ?)) AND student_id IN (${student_ids.map(() => '?').join(',')})`
-    ).bind(classId, parentClassId, parentClassId, ...student_ids).all<{ student_id: string }>();
+    const existingRows: { student_id: string }[] = [];
+    for (let i = 0; i < student_ids.length; i += D1_SAFE_CHUNK_SIZE) {
+      const chunk = student_ids.slice(i, i + D1_SAFE_CHUNK_SIZE);
+      const placeholders = chunk.map(() => '?').join(',');
+      const { results } = await env.DB.prepare(
+        `SELECT student_id FROM class_enrollments WHERE (class_id = ? OR (? IS NOT NULL AND class_id = ?)) AND student_id IN (${placeholders})`
+      ).bind(classId, parentClassId, parentClassId, ...chunk).all<{ student_id: string }>();
+      existingRows.push(...(results ?? []));
+    }
 
     const alreadyEnrolled = new Set((existingRows ?? []).map(r => r.student_id));
     const toEnroll = student_ids.filter(id => !alreadyEnrolled.has(id));
@@ -84,7 +92,9 @@ export async function onRequestPost({ request, env, params }: { request: Request
       `).bind(`${classId}-${studentId}`, classId, studentId, now, auth.user.id, now, now)
     );
 
-    await env.DB.batch(stmts);
+    for (let i = 0; i < stmts.length; i += D1_SAFE_CHUNK_SIZE) {
+      await env.DB.batch(stmts.slice(i, i + D1_SAFE_CHUNK_SIZE));
+    }
 
     return new Response(JSON.stringify({
       success: true,

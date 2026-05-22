@@ -35,7 +35,7 @@ const responseFixture: OverdueStudentsResponse = {
       dueDate: '2026-01-05',
     },
   ],
-  meta: { dueDay: 5, dueDate: '2026-01-05', referenceDate: '2026-01-12', totalOverdue: 1 },
+  meta: { dueDay: null, dueDate: '2026-01-05', referenceDate: '2026-01-12', totalOverdue: 1, cycle: 'last_payment_plus_one_month' },
 };
 
 describe('useOverdueStudents', () => {

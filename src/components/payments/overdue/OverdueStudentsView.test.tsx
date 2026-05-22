@@ -74,7 +74,7 @@ const sampleResponse: OverdueStudentsResponse = {
       dueDate: '2026-01-05',
     },
   ],
-  meta: { dueDay: 5, dueDate: '2026-01-05', referenceDate: '2026-01-12', totalOverdue: 1 },
+  meta: { dueDay: null, dueDate: '2026-01-05', referenceDate: '2026-01-12', totalOverdue: 1, cycle: 'last_payment_plus_one_month' },
 };
 
 describe('OverdueStudentsView', () => {
@@ -98,7 +98,7 @@ describe('OverdueStudentsView', () => {
 
   it('renders the empty state when no overdue students', () => {
     hookState = {
-      data: { students: [], meta: { dueDay: 5, dueDate: '2026-01-05', referenceDate: '2026-01-12', totalOverdue: 0 } },
+      data: { students: [], meta: { dueDay: null, dueDate: '2026-01-05', referenceDate: '2026-01-12', totalOverdue: 0, cycle: 'last_payment_plus_one_month' } },
       isLoading: false,
       error: null,
       pendingNotifications: new Set<string>(),

@@ -255,6 +255,44 @@
 
 ---
 
+## 2026-05-22 — Hotfix Plan: Enrollment SQL + Payment Cycles
+
+### HF-2026-05-22-01 ✅ Audit enrollment SQL variable limit
+- Reviewed `EnrollStudentsModal` → `classService.batchEnroll` → `POST /api/classes/:classId/students/batch`
+- Root cause: existing-enrollment lookup accepted up to 100 student IDs but added 3 extra bound values, which can exceed D1/SQLite parameter limits
+- Acceptance: batch enroll 98-100 students must not throw `SQLITE_ERROR: too many SQL variables`
+
+### HF-2026-05-22-02 ✅ Chunk batch enrollment backend queries
+- Chunk existing-enrollment `IN (...)` lookups in blocks of 50 IDs
+- Chunk D1 batch inserts in blocks of 50 statements
+- Keep public API contract unchanged for web/mobile clients
+
+### HF-2026-05-22-03 ✅ Audit payment overdue rule
+- Reviewed `/api/payments/overdue`, `/api/payments/notify-overdue/bulk`, web overdue UI, and native payment overview
+- Root cause: overdue logic used a global day-5 monthly cutoff instead of each student's latest completed payment date
+- Acceptance: a student paid on 2026-04-10 should be due 2026-05-10, not 2026-05-05
+
+### HF-2026-05-22-04 ✅ Implement per-student monthly payment cycle
+- Added shared backend payment-cycle helper: latest completed payment + one month, with `join_date`/`created_at` fallback
+- Updated overdue listing and bulk notifications to use the same cycle helper
+- Removed `students.due_day` dependency from bulk notification SQL
+
+### HF-2026-05-22-05 ✅ Align UI/native surfaces
+- Web overdue reminders now use each student's own `dueDate` for notification month labels
+- Native student payment summary now displays the concrete due date instead of “day 5 every month”
+- Native admin dashboard copy now describes the per-student monthly cycle
+
+### HF-2026-05-22-06 🔄 Validate, commit, push, deploy
+- Root TypeScript: passed
+- Native TypeScript: passed
+- Focused payment tests: passed
+- Root lint/build: passed
+- Root full tests: passed
+- Native lint/tests: passed
+- Pending: commit/push, production deploy
+
+---
+
 ## Summary
 
 | Phase | Items | Severity | Effort |

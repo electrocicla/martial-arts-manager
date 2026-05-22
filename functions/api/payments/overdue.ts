@@ -1,17 +1,16 @@
 /**
  * GET /api/payments/overdue
  *
- * Returns the list of students with no completed payment registered for the
- * current calendar month past the configurable due day (default: 5th of the
- * month). Each entry exposes the days overdue, the most recent completed
- * payment and the expected amount, allowing the admin dashboard to surface
- * actionable reminders.
+ * Returns the list of students whose monthly payment cycle is due. The cycle is
+ * based on each student's latest completed payment date plus one month, falling
+ * back to join_date/created_at for students without completed payments.
  *
  * Access: admin or instructor (instructors only see their own students).
  */
 
 import type { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
+import { getPaymentCycleStatus } from '../../utils/payment-cycle';
 
 interface OverdueAggregateRow {
   student_id: string;
@@ -20,10 +19,11 @@ interface OverdueAggregateRow {
   phone: string | null;
   belt: string;
   discipline: string;
+  join_date: string | null;
+  created_at: string | null;
   user_id: string | null;
   last_completed_date: string | null;
   last_completed_amount: number | null;
-  current_month_completed: number;
   avg_amount: number | null;
 }
 
@@ -45,39 +45,23 @@ export interface OverdueStudent {
 interface OverdueResponse {
   students: OverdueStudent[];
   meta: {
-    dueDay: number;
+    dueDay: number | null;
     dueDate: string;
     referenceDate: string;
     totalOverdue: number;
+    cycle: 'last_payment_plus_one_month';
   };
 }
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
-const DEFAULT_DUE_DAY = 5;
 const DEFAULT_EXPECTED_AMOUNT = 35000;
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
 }
 
-function clampDueDay(day: number): number {
-  if (!Number.isFinite(day)) return DEFAULT_DUE_DAY;
-  if (day < 1) return 1;
-  if (day > 28) return 28;
-  return Math.floor(day);
-}
-
-function buildDueDateForMonth(year: number, monthIndexZeroBased: number, day: number): Date {
-  return new Date(Date.UTC(year, monthIndexZeroBased, day));
-}
-
 function isoDate(value: Date): string {
   return value.toISOString().slice(0, 10);
-}
-
-function diffDays(later: Date, earlier: Date): number {
-  const ms = later.getTime() - earlier.getTime();
-  return Math.floor(ms / (1000 * 60 * 60 * 24));
 }
 
 export async function onRequestGet({
@@ -97,28 +81,7 @@ export async function onRequestGet({
       return jsonResponse({ error: 'Access denied' }, 403);
     }
 
-    const url = new URL(request.url);
-    const requestedDueDay = Number(url.searchParams.get('due_day') ?? DEFAULT_DUE_DAY);
-    const dueDay = clampDueDay(requestedDueDay);
-
     const now = new Date();
-    const year = now.getUTCFullYear();
-    const monthIndex = now.getUTCMonth();
-    const dueDate = buildDueDateForMonth(year, monthIndex, dueDay);
-
-    // Only flag overdue once we are past the due day.
-    if (now < dueDate) {
-      const empty: OverdueResponse = {
-        students: [],
-        meta: {
-          dueDay,
-          dueDate: isoDate(dueDate),
-          referenceDate: isoDate(now),
-          totalOverdue: 0,
-        },
-      };
-      return jsonResponse(empty);
-    }
 
     let aggregateQuery = `
       SELECT
@@ -128,6 +91,8 @@ export async function onRequestGet({
         s.phone AS phone,
         s.belt AS belt,
         s.discipline AS discipline,
+        s.join_date AS join_date,
+        s.created_at AS created_at,
         u.id   AS user_id,
         MAX(CASE WHEN p.status = 'completed' THEN p.date END) AS last_completed_date,
         (
@@ -138,10 +103,6 @@ export async function onRequestGet({
            ORDER BY date DESC, created_at DESC
            LIMIT 1
         ) AS last_completed_amount,
-        SUM(CASE
-              WHEN p.status = 'completed'
-                AND substr(p.date, 1, 7) = ?
-                THEN 1 ELSE 0 END) AS current_month_completed,
         AVG(CASE WHEN p.status = 'completed' THEN p.amount END) AS avg_amount
       FROM students s
       LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
@@ -149,8 +110,7 @@ export async function onRequestGet({
       WHERE s.deleted_at IS NULL
         AND s.is_active = 1
     `;
-    const monthPrefix = `${year.toString().padStart(4, '0')}-${String(monthIndex + 1).padStart(2, '0')}`;
-    const aggregateParams: (string | number)[] = [monthPrefix];
+    const aggregateParams: (string | number)[] = [];
 
     if (auth.user.role !== 'admin') {
       aggregateQuery += ' AND (s.created_by = ? OR s.instructor_id = ?)';
@@ -169,10 +129,11 @@ export async function onRequestGet({
       const empty: OverdueResponse = {
         students: [],
         meta: {
-          dueDay,
-          dueDate: isoDate(dueDate),
+          dueDay: null,
+          dueDate: isoDate(now),
           referenceDate: isoDate(now),
           totalOverdue: 0,
+          cycle: 'last_payment_plus_one_month',
         },
       };
       return jsonResponse(empty);
@@ -181,8 +142,13 @@ export async function onRequestGet({
     const overdue: OverdueStudent[] = [];
 
     for (const row of rows) {
-      const completedThisMonth = row.current_month_completed ?? 0;
-      if (completedThisMonth > 0) continue;
+      const paymentCycle = getPaymentCycleStatus({
+        lastCompletedDate: row.last_completed_date,
+        joinDate: row.join_date,
+        createdAt: row.created_at,
+        referenceDate: now,
+      });
+      if (!paymentCycle.isOverdue || !paymentCycle.dueDate) continue;
 
       const lastDate = row.last_completed_date ?? null;
       const lastAmount = row.last_completed_amount ?? null;
@@ -192,8 +158,6 @@ export async function onRequestGet({
           : row.avg_amount && row.avg_amount > 0
             ? Math.round(row.avg_amount)
             : DEFAULT_EXPECTED_AMOUNT;
-
-      const daysOverdue = Math.max(0, diffDays(now, dueDate));
 
       overdue.push({
         studentId: row.student_id,
@@ -206,20 +170,25 @@ export async function onRequestGet({
         expectedAmount,
         lastPaymentDate: lastDate,
         lastPaymentAmount: lastAmount,
-        daysOverdue,
-        dueDate: isoDate(dueDate),
+        daysOverdue: paymentCycle.daysOverdue,
+        dueDate: paymentCycle.dueDate,
       });
     }
 
     overdue.sort((a, b) => b.daysOverdue - a.daysOverdue || a.studentName.localeCompare(b.studentName));
+    const earliestDueDate = overdue.reduce<string | null>((earliest, student) => {
+      if (!earliest || student.dueDate < earliest) return student.dueDate;
+      return earliest;
+    }, null);
 
     const response: OverdueResponse = {
       students: overdue,
       meta: {
-        dueDay,
-        dueDate: isoDate(dueDate),
+        dueDay: null,
+        dueDate: earliestDueDate ?? isoDate(now),
         referenceDate: isoDate(now),
         totalOverdue: overdue.length,
+        cycle: 'last_payment_plus_one_month',
       },
     };
 

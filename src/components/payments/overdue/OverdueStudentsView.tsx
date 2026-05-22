@@ -76,8 +76,8 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
 
   const handleSend = useCallback(
     async (student: OverdueStudent) => {
-      const monthLabel = data?.meta?.dueDate
-        ? data.meta.dueDate.slice(0, 7)
+      const monthLabel = student.dueDate
+        ? student.dueDate.slice(0, 7)
         : new Date().toISOString().slice(0, 7);
       const result = await notifyStudent({
         studentId: student.studentId,
@@ -101,7 +101,7 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
         });
       }
     },
-    [data?.meta?.dueDate, notifyStudent, showError, showSuccess, t],
+    [notifyStudent, showError, showSuccess, t],
   );
 
   if (isLoading) {
@@ -251,7 +251,7 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
             {t('payments.overdue.title', 'Overdue students')}
           </h2>
           <p className="text-gray-300">
-            {t('payments.overdue.subtitle', 'Students who have not paid the current month past the due date.')}
+            {t('payments.overdue.subtitle', 'Students whose monthly payment cycle is past due.')}
           </p>
         </div>
         <Button

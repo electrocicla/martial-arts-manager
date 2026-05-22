@@ -233,10 +233,11 @@ export interface OverdueStudent {
 export interface OverdueStudentsResponse {
   students: OverdueStudent[];
   meta: {
-    dueDay: number;
+    dueDay: number | null;
     dueDate: string;
     referenceDate: string;
     totalOverdue: number;
+    cycle?: 'last_payment_plus_one_month';
   };
 }
 
