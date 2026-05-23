@@ -3,7 +3,7 @@
  * SRP: visual representation of one overdue student plus the reminder action.
  */
 
-import { AlertTriangle, CalendarDays, CheckCircle, Mail, Phone } from 'lucide-react';
+import { AlertTriangle, CalendarDays, CheckCircle, Mail, Phone, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { OverdueStudent } from '../../../services';
 import { Button } from '../../ui/Button';
@@ -14,6 +14,7 @@ interface OverdueStudentRowProps {
   isSending: boolean;
   onSend: (student: OverdueStudent) => void;
   onAddPayment?: (student: OverdueStudent) => void;
+  onDeleteStudent?: (student: OverdueStudent) => void;
   formatCurrency: (amount: number) => string;
   formatDate: (iso: string) => string;
   selectable?: boolean;
@@ -36,6 +37,7 @@ export default function OverdueStudentRow({
   isSending,
   onSend,
   onAddPayment,
+  onDeleteStudent,
   formatCurrency,
   formatDate,
   selectable = false,
@@ -163,6 +165,22 @@ export default function OverdueStudentRow({
               className="w-full lg:w-auto"
             >
               {t('payments.overdue.addPayment', 'Add payment')}
+            </Button>
+          )}
+          {onDeleteStudent && (
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              leftIcon={<Trash2 className="w-4 h-4" />}
+              onClick={() => onDeleteStudent(student)}
+              title={t(
+                'payments.overdue.deleteStudentTooltip',
+                'Delete this student account from the system while preserving historical payment records.',
+              )}
+              className="w-full lg:w-auto"
+            >
+              {t('payments.overdue.deleteStudent', 'Delete student')}
             </Button>
           )}
           {noUserAccount && (

@@ -14,7 +14,8 @@ import OverdueStudentRow from './OverdueStudentRow';
 import OverdueEmptyState from './OverdueEmptyState';
 import OverdueFilters from './OverdueFilters';
 import QuickAddPaymentModal from './QuickAddPaymentModal';
-import type { OverdueStudent } from '../../../services';
+import { studentService, type OverdueStudent } from '../../../services';
+import ConfirmModal from '../../ui/ConfirmModal';
 
 interface OverdueStudentsViewProps {
   onCountChange?: (count: number) => void;
@@ -43,6 +44,8 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDisciplines, setSelectedDisciplines] = useState<Set<string>>(() => new Set());
   const [paymentModalStudent, setPaymentModalStudent] = useState<OverdueStudent | null>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<OverdueStudent | null>(null);
+  const [isDeletingStudent, setIsDeletingStudent] = useState(false);
 
   const locale = getLocale(i18n.language);
 
@@ -103,6 +106,38 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
     },
     [notifyStudent, showError, showSuccess, t],
   );
+
+  const handleDeleteStudent = useCallback(async () => {
+    if (!deleteCandidate || isDeletingStudent) return;
+
+    setIsDeletingStudent(true);
+    try {
+      const result = await studentService.delete(deleteCandidate.studentId);
+      if (!result.success) {
+        throw new Error(result.error ?? t('payments.overdue.deleteStudentErrorDescription', 'The student could not be deleted.'));
+      }
+
+      setSelectedIds((prev) => {
+        const updated = new Set(prev);
+        updated.delete(deleteCandidate.studentId);
+        return updated;
+      });
+      setDeleteCandidate(null);
+      await refresh();
+      showSuccess(t('payments.overdue.deleteStudentSuccess', 'Student deleted'), {
+        description: t(
+          'payments.overdue.deleteStudentSuccessDescription',
+          'The student and login account were removed from active use. Historical payment records were preserved.',
+        ),
+      });
+    } catch (deleteError) {
+      showError(t('payments.overdue.deleteStudentError', 'Could not delete student'), {
+        description: deleteError instanceof Error ? deleteError.message : t('payments.actions.tryAgain', 'Please try again.'),
+      });
+    } finally {
+      setIsDeletingStudent(false);
+    }
+  }, [deleteCandidate, isDeletingStudent, refresh, showError, showSuccess, t]);
 
   if (isLoading) {
     return (
@@ -362,6 +397,7 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
               isSending={pendingNotifications.has(student.studentId)}
               onSend={handleSend}
               onAddPayment={setPaymentModalStudent}
+              onDeleteStudent={setDeleteCandidate}
               formatCurrency={formatCurrency}
               formatDate={formatDate}
               selectable
@@ -379,6 +415,23 @@ export default function OverdueStudentsView({ onCountChange }: OverdueStudentsVi
         onSuccess={() => {
           void refresh();
         }}
+      />
+      <ConfirmModal
+        isOpen={Boolean(deleteCandidate)}
+        title={t('payments.overdue.deleteStudentConfirmTitle', 'Delete overdue student?')}
+        message={t(
+          'payments.overdue.deleteStudentConfirmMessage',
+          'This will remove {{name}} and deactivate their login account. Historical payment records will remain in the database so previous revenue and reports are not damaged. Type ELIMINAR to confirm.',
+          { name: deleteCandidate?.studentName ?? '' },
+        )}
+        confirmLabel={t('payments.overdue.deleteStudentConfirmButton', 'Delete student')}
+        cancelLabel={t('common.cancel', 'Cancel')}
+        isProcessing={isDeletingStudent}
+        onCancel={() => {
+          if (!isDeletingStudent) setDeleteCandidate(null);
+        }}
+        onConfirm={handleDeleteStudent}
+        requireTyping={['ELIMINAR']}
       />
     </div>
   );

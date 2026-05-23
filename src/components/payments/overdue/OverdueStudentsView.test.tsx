@@ -29,14 +29,25 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-const showSuccess = vi.fn();
-const showError = vi.fn();
+const showSuccess = vi.hoisted(() => vi.fn());
+const showError = vi.hoisted(() => vi.fn());
 vi.mock('../../../hooks/useToast', () => ({
   useToast: () => ({ success: showSuccess, error: showError, info: vi.fn(), warning: vi.fn() }),
 }));
 
-const mockNotify = vi.fn();
-const mockRefresh = vi.fn();
+const mockCreatePayment = vi.hoisted(() => vi.fn());
+vi.mock('../../../hooks/usePayments', () => ({
+  usePayments: () => ({ createPayment: mockCreatePayment }),
+}));
+
+const mockDeleteStudent = vi.hoisted(() => vi.fn());
+vi.mock('../../../services', () => ({
+  studentService: { delete: mockDeleteStudent },
+}));
+
+const mockNotify = vi.hoisted(() => vi.fn());
+const mockNotifyBulk = vi.hoisted(() => vi.fn());
+const mockRefresh = vi.hoisted(() => vi.fn());
 type HookState = {
   data: OverdueStudentsResponse | null;
   isLoading: boolean;
@@ -54,6 +65,7 @@ vi.mock('../../../hooks/useOverdueStudents', () => ({
     ...hookState,
     refresh: mockRefresh,
     notifyStudent: mockNotify,
+    notifyBulk: mockNotifyBulk,
   }),
 }));
 
@@ -81,7 +93,10 @@ describe('OverdueStudentsView', () => {
   beforeEach(() => {
     showSuccess.mockReset();
     showError.mockReset();
+    mockCreatePayment.mockReset();
+    mockDeleteStudent.mockReset();
     mockNotify.mockReset();
+    mockNotifyBulk.mockReset();
     mockRefresh.mockReset();
     hookState = {
       data: null,
@@ -148,6 +163,32 @@ describe('OverdueStudentsView', () => {
 
     await waitFor(() => {
       expect(showError).toHaveBeenCalled();
+    });
+  });
+
+  it('deletes an overdue student only after explicit confirmation', async () => {
+    hookState = { data: sampleResponse, isLoading: false, error: null, pendingNotifications: new Set<string>() };
+    mockDeleteStudent.mockResolvedValue({ success: true });
+
+    render(<OverdueStudentsView />);
+
+    fireEvent.click(screen.getByRole('button', { name: /delete student/i }));
+
+    expect(screen.getByText('Delete overdue student?')).toBeInTheDocument();
+    expect(screen.getByText(/Historical payment records will remain in the database/i)).toBeInTheDocument();
+
+    const confirmInput = screen.getByPlaceholderText(/ELIMINAR/i);
+    fireEvent.change(confirmInput, { target: { value: 'ELIMINAR' } });
+
+    const deleteButtons = screen.getAllByRole('button', { name: /delete student/i });
+    fireEvent.click(deleteButtons[deleteButtons.length - 1]);
+
+    await waitFor(() => {
+      expect(mockDeleteStudent).toHaveBeenCalledWith('s-1');
+      expect(mockRefresh).toHaveBeenCalled();
+      expect(showSuccess).toHaveBeenCalledWith('Student deleted', {
+        description: 'The student and login account were removed from active use. Historical payment records were preserved.',
+      });
     });
   });
 });

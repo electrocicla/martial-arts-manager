@@ -294,8 +294,8 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
 
     // Delete associated user account if it exists
     const userAccount = await db.prepare(
-      'SELECT id FROM users WHERE email = ?'
-    ).bind(student.email).first<{ id: string }>();
+      'SELECT id FROM users WHERE student_id = ? OR email = ?'
+    ).bind(studentId, student.email).first<{ id: string }>();
 
     if (userAccount) {
       // Soft-delete user account (preserve audit history)
