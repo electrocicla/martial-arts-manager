@@ -52,7 +52,8 @@ export default function Header() {
     <>
       {/* Mobile Header - Static Design */}
       {/* Mobile Header - Optimized Layout */}
-      <header className="flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-gray-700 md:hidden">
+      <header className="border-b border-gray-700 bg-gray-900 md:hidden">
+        <div className="flex min-h-14 items-center justify-between gap-2 px-3 py-2">
         {/* Left: Menu Button */}
         <button
           onClick={() => {
@@ -65,21 +66,15 @@ export default function Header() {
         </button>
 
         {/* Center: Logo and Title - Clickeable */}
-        <button 
+        <button
           onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          className="min-w-0 flex-1 text-left transition-opacity hover:opacity-80"
         >
-          <h1 className="text-xl font-bold text-white">{t('common.appName')}</h1>
+          <h1 className="truncate text-lg font-bold text-white">{t('common.appName')}</h1>
         </button>
 
-        {/* Right: Theme toggle + Money toggle + User Avatar */}
-        <div className="flex items-center gap-2">
-          {user?.role !== 'student' && (
-            <BranchSelector compact className="max-w-36" />
-          )}
-          <MoneyVisibilityToggle
-            className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-          />
+        {/* Right: Theme toggle + User Avatar */}
+        <div className="flex shrink-0 items-center gap-1">
           {/* Theme Toggle (mobile) — sits next to the avatar so the
               announcement coach-mark can anchor to it on small screens. */}
           <button
@@ -109,6 +104,12 @@ export default function Header() {
             </button>
           </div>
         </div>
+        </div>
+        {user?.role !== 'student' && (
+          <div className="px-3 pb-2">
+            <BranchSelector compact className="min-h-10 w-full" />
+          </div>
+        )}
       </header>
 
       {mobileAccountOpen && (
@@ -311,7 +312,7 @@ export default function Header() {
       {/* Desktop Header */}
       <header className="hidden md:flex h-16 bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/50 items-center px-6 ml-64">
         <div className="flex-1 flex items-center gap-4">
-          {user?.role !== 'student' && <BranchSelector />}
+          {user?.role !== 'student' && <BranchSelector className="max-w-64" />}
           {/* Unified search / command palette launcher */}
           <button
             type="button"

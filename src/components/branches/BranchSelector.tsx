@@ -14,7 +14,7 @@ export function BranchSelector({ compact = false, className }: BranchSelectorPro
   return (
     <label
       className={cn(
-        'relative flex items-center gap-2 rounded-xl border border-gray-700 bg-gray-900/70 text-gray-200',
+        'relative flex min-w-0 items-center gap-2 rounded-xl border border-gray-700 bg-gray-900/70 text-gray-200',
         compact ? 'px-2 py-1.5' : 'px-3 py-2',
         className,
       )}
@@ -26,8 +26,8 @@ export function BranchSelector({ compact = false, className }: BranchSelectorPro
         disabled={isLoading}
         onChange={(event) => selectBranch(event.target.value)}
         className={cn(
-          'min-w-0 flex-1 appearance-none bg-transparent pr-5 font-semibold text-white outline-none',
-          compact ? 'max-w-32 text-xs' : 'max-w-48 text-sm',
+          'min-w-0 flex-1 appearance-none truncate bg-transparent pr-5 font-semibold text-white outline-none',
+          compact ? 'text-xs' : 'text-sm',
         )}
       >
         {branches.map((branch) => (
