@@ -8,6 +8,7 @@ import { createUser, emailExists, createSession, logAuditAction, getClientIP, ge
 import { createRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
 import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
 import { isTurnstileConfigured, verifyTurnstileToken } from '../../utils/turnstile';
+import { MAIN_BRANCH_ID } from '../../utils/branches';
 
 import { Env } from '../../types/index';
 
@@ -245,6 +246,30 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         });
         throw studentProvisionError;
       }
+    }
+
+    if (role === 'student' && studentId) {
+      const assignmentNow = new Date().toISOString();
+      await env.DB.prepare(`
+        INSERT INTO student_branch_assignments (
+          id, student_id, branch_id, started_at, assigned_by, created_at
+        )
+        SELECT ?, ?, ?, COALESCE(join_date, created_at), ?, ?
+        FROM students
+        WHERE id = ?
+          AND NOT EXISTS (
+            SELECT 1 FROM student_branch_assignments
+            WHERE student_id = ? AND ended_at IS NULL
+          )
+      `).bind(
+        crypto.randomUUID(),
+        studentId,
+        MAIN_BRANCH_ID,
+        instructorId ?? null,
+        assignmentNow,
+        studentId,
+        studentId,
+      ).run();
     }
 
     // Students must wait for admin/instructor approval before they can authenticate

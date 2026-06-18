@@ -1,6 +1,15 @@
-import { Env } from '../types/index';
+import type { D1PreparedStatement, Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../utils/branches';
 
+type QueryValue = string | number;
+
+function bind(db: Env['DB'], sql: string, values: QueryValue[]): D1PreparedStatement {
+  return db.prepare(sql).bind(...values);
+}
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
   try {
     const auth = await authenticateUser(request, env);
@@ -10,7 +19,6 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         headers: { 'Content-Type': 'application/json' },
       });
     }
-
     if (auth.user.role === 'student') {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
@@ -18,191 +26,64 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       });
     }
 
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
     const isAdmin = auth.user.role === 'admin';
     const userId = auth.user.id;
-
-    // Date boundaries
     const now = new Date();
     const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     const nextMonthStart = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}-01`;
-
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() - now.getDay());
-    const weekStartStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const weekStartStr = weekStart.toISOString().slice(0, 10);
+    const today = now.toISOString().slice(0, 10);
 
-    // Scope filter fragments
     const studentScope = isAdmin
-      ? ''
-      : 'AND (created_by = ?1 OR instructor_id = ?1 OR instructor_id IS NULL)';
+      ? 's.branch_id = ?'
+      : 's.branch_id = ? AND (s.created_by = ? OR s.instructor_id = ? OR s.instructor_id IS NULL)';
+    const studentParams: QueryValue[] = isAdmin ? [branchId] : [branchId, userId, userId];
     const classScope = isAdmin
-      ? ''
-      : 'AND (created_by = ?1 OR instructor_id = ?1)';
+      ? 'c.branch_id = ?'
+      : 'c.branch_id = ? AND (c.created_by = ? OR c.instructor_id = ?)';
+    const classParams: QueryValue[] = isAdmin ? [branchId] : [branchId, userId, userId];
     const paymentScope = isAdmin
-      ? ''
-      : 'AND (created_by = ?1)';
+      ? 'p.branch_id = ?'
+      : 'p.branch_id = ? AND p.created_by = ?';
+    const paymentParams: QueryValue[] = isAdmin ? [branchId] : [branchId, userId];
 
-    // Build all queries
-    const queries: D1PreparedStatement[] = [];
-
-    // 0: total students
-    queries.push(
-      bindScope(env.DB.prepare(
-        `SELECT COUNT(*) as count FROM students WHERE deleted_at IS NULL ${studentScope}`
-      ), isAdmin, userId)
-    );
-
-    // 1: active students
-    queries.push(
-      bindScope(env.DB.prepare(
-        `SELECT COUNT(*) as count FROM students WHERE deleted_at IS NULL AND is_active = 1 ${studentScope}`
-      ), isAdmin, userId)
-    );
-
-    // 2: new students this month
-    queries.push(
-      bindScope(env.DB.prepare(
-        isAdmin
-          ? `SELECT COUNT(*) as count FROM students WHERE deleted_at IS NULL AND join_date >= ?1 AND join_date < ?2`
-          : `SELECT COUNT(*) as count FROM students WHERE deleted_at IS NULL AND join_date >= ?2 AND join_date < ?3 AND (created_by = ?1 OR instructor_id = ?1 OR instructor_id IS NULL)`
-      ), isAdmin, userId, monthStart, nextMonthStart)
-    );
-
-    // 3: students by belt
-    queries.push(
-      bindScope(env.DB.prepare(
-        `SELECT belt, COUNT(*) as count FROM students WHERE deleted_at IS NULL ${studentScope} GROUP BY belt`
-      ), isAdmin, userId)
-    );
-
-    // 4: students by discipline
-    queries.push(
-      bindScope(env.DB.prepare(
-        `SELECT discipline, COUNT(*) as count FROM students WHERE deleted_at IS NULL ${studentScope} GROUP BY discipline`
-      ), isAdmin, userId)
-    );
-
-    // 5: total revenue (completed - refunded)
-    queries.push(
-      bindScope(env.DB.prepare(
-        `SELECT COALESCE(SUM(CASE WHEN status = 'completed' THEN amount WHEN status = 'refunded' THEN -amount ELSE 0 END), 0) as total FROM payments WHERE deleted_at IS NULL ${paymentScope}`
-      ), isAdmin, userId)
-    );
-
-    // 6: this month revenue
-    queries.push(
-      bindScope(env.DB.prepare(
-        isAdmin
-          ? `SELECT COALESCE(SUM(CASE WHEN status = 'completed' THEN amount WHEN status = 'refunded' THEN -amount ELSE 0 END), 0) as total FROM payments WHERE deleted_at IS NULL AND date >= ?1 AND date < ?2`
-          : `SELECT COALESCE(SUM(CASE WHEN status = 'completed' THEN amount WHEN status = 'refunded' THEN -amount ELSE 0 END), 0) as total FROM payments WHERE deleted_at IS NULL AND date >= ?2 AND date < ?3 AND (created_by = ?1)`
-      ), isAdmin, userId, monthStart, nextMonthStart)
-    );
-
-    // 7: payments count this month
-    queries.push(
-      bindScope(env.DB.prepare(
-        isAdmin
-          ? `SELECT COUNT(*) as count FROM payments WHERE deleted_at IS NULL AND date >= ?1 AND date < ?2`
-          : `SELECT COUNT(*) as count FROM payments WHERE deleted_at IS NULL AND date >= ?2 AND date < ?3 AND (created_by = ?1)`
-      ), isAdmin, userId, monthStart, nextMonthStart)
-    );
-
-    // 8: payments by type
-    queries.push(
-      bindScope(env.DB.prepare(
-        `SELECT type, COUNT(*) as count FROM payments WHERE deleted_at IS NULL ${paymentScope} GROUP BY type`
-      ), isAdmin, userId)
-    );
-
-    // 9: total classes
-    queries.push(
-      bindScope(env.DB.prepare(
-        `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL ${classScope}`
-      ), isAdmin, userId)
-    );
-
-    // 10: active classes
-    queries.push(
-      bindScope(env.DB.prepare(
-        `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND is_active = 1 ${classScope}`
-      ), isAdmin, userId)
-    );
-
-    // 11: classes this week
-    queries.push(
-      bindScope(env.DB.prepare(
-        isAdmin
-          ? `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND date >= ?1 AND date <= ?2`
-          : `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND date >= ?2 AND date <= ?3 AND (created_by = ?1 OR instructor_id = ?1)`
-      ), isAdmin, userId, weekStartStr, todayStr)
-    );
-
-    // 12: today classes (full records for dashboard)
-    queries.push(
-      bindScope(env.DB.prepare(
-        isAdmin
-          ? `SELECT * FROM classes WHERE deleted_at IS NULL AND date = ?1 ORDER BY time ASC LIMIT 5`
-          : `SELECT * FROM classes WHERE deleted_at IS NULL AND date = ?2 AND (created_by = ?1 OR instructor_id = ?1) ORDER BY time ASC LIMIT 5`
-      ), isAdmin, userId, todayStr)
-    );
-
-    // 13: upcoming classes count
-    queries.push(
-      bindScope(env.DB.prepare(
-        isAdmin
-          ? `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND date > ?1`
-          : `SELECT COUNT(*) as count FROM classes WHERE deleted_at IS NULL AND date > ?2 AND (created_by = ?1 OR instructor_id = ?1)`
-      ), isAdmin, userId, todayStr)
-    );
-
-    // 14: attendance this month
-    queries.push(
-      env.DB.prepare(
-        isAdmin
-          ? `SELECT COUNT(*) as count FROM attendance a JOIN classes c ON a.class_id = c.id WHERE a.attended = 1 AND c.date >= ? AND c.date < ?`
-          : `SELECT COUNT(*) as count FROM attendance a JOIN classes c ON a.class_id = c.id WHERE a.attended = 1 AND c.date >= ? AND c.date < ? AND (c.created_by = ? OR c.instructor_id = ?)`
-      ).bind(...(isAdmin ? [monthStart, nextMonthStart] : [monthStart, nextMonthStart, userId, userId]))
-    );
-
-    // 15: average attendance per class this month
-    queries.push(
-      env.DB.prepare(
-        isAdmin
-          ? `SELECT COALESCE(AVG(cnt), 0) as avg_attendance FROM (SELECT COUNT(*) as cnt FROM attendance a JOIN classes c ON a.class_id = c.id WHERE a.attended = 1 AND c.date >= ? AND c.date < ? GROUP BY a.class_id)`
-          : `SELECT COALESCE(AVG(cnt), 0) as avg_attendance FROM (SELECT COUNT(*) as cnt FROM attendance a JOIN classes c ON a.class_id = c.id WHERE a.attended = 1 AND c.date >= ? AND c.date < ? AND (c.created_by = ? OR c.instructor_id = ?) GROUP BY a.class_id)`
-      ).bind(...(isAdmin ? [monthStart, nextMonthStart] : [monthStart, nextMonthStart, userId, userId]))
-    );
-
-    // 16: recent students (last 5)
-    queries.push(
-      bindScope(env.DB.prepare(
-        `SELECT * FROM students WHERE deleted_at IS NULL ${studentScope} ORDER BY created_at DESC LIMIT 5`
-      ), isAdmin, userId)
-    );
-
-    // 17: recent payments (last 5)
-    queries.push(
-      bindScope(env.DB.prepare(
-        `SELECT p.*, s.name as student_name FROM payments p LEFT JOIN students s ON p.student_id = s.id WHERE p.deleted_at IS NULL ${paymentScope} ORDER BY p.created_at DESC LIMIT 5`
-      ), isAdmin, userId)
-    );
+    const queries: D1PreparedStatement[] = [
+      bind(env.DB, `SELECT COUNT(*) AS count FROM students s WHERE s.deleted_at IS NULL AND ${studentScope}`, studentParams),
+      bind(env.DB, `SELECT COUNT(*) AS count FROM students s WHERE s.deleted_at IS NULL AND s.is_active = 1 AND ${studentScope}`, studentParams),
+      bind(env.DB, `SELECT COUNT(*) AS count FROM students s WHERE s.deleted_at IS NULL AND ${studentScope} AND s.join_date >= ? AND s.join_date < ?`, [...studentParams, monthStart, nextMonthStart]),
+      bind(env.DB, `SELECT s.belt, COUNT(*) AS count FROM students s WHERE s.deleted_at IS NULL AND ${studentScope} GROUP BY s.belt`, studentParams),
+      bind(env.DB, `SELECT s.discipline, COUNT(*) AS count FROM students s WHERE s.deleted_at IS NULL AND ${studentScope} GROUP BY s.discipline`, studentParams),
+      bind(env.DB, `SELECT COALESCE(SUM(CASE WHEN p.status = 'completed' THEN p.amount WHEN p.status = 'refunded' THEN -p.amount ELSE 0 END), 0) AS total FROM payments p WHERE p.deleted_at IS NULL AND ${paymentScope}`, paymentParams),
+      bind(env.DB, `SELECT COALESCE(SUM(CASE WHEN p.status = 'completed' THEN p.amount WHEN p.status = 'refunded' THEN -p.amount ELSE 0 END), 0) AS total FROM payments p WHERE p.deleted_at IS NULL AND ${paymentScope} AND p.date >= ? AND p.date < ?`, [...paymentParams, monthStart, nextMonthStart]),
+      bind(env.DB, `SELECT COUNT(*) AS count FROM payments p WHERE p.deleted_at IS NULL AND ${paymentScope} AND p.date >= ? AND p.date < ?`, [...paymentParams, monthStart, nextMonthStart]),
+      bind(env.DB, `SELECT p.type, COUNT(*) AS count FROM payments p WHERE p.deleted_at IS NULL AND ${paymentScope} GROUP BY p.type`, paymentParams),
+      bind(env.DB, `SELECT COUNT(*) AS count FROM classes c WHERE c.deleted_at IS NULL AND ${classScope}`, classParams),
+      bind(env.DB, `SELECT COUNT(*) AS count FROM classes c WHERE c.deleted_at IS NULL AND c.is_active = 1 AND ${classScope}`, classParams),
+      bind(env.DB, `SELECT COUNT(*) AS count FROM classes c WHERE c.deleted_at IS NULL AND ${classScope} AND c.date >= ? AND c.date <= ?`, [...classParams, weekStartStr, today]),
+      bind(env.DB, `SELECT c.* FROM classes c WHERE c.deleted_at IS NULL AND ${classScope} AND c.date = ? ORDER BY c.time ASC LIMIT 5`, [...classParams, today]),
+      bind(env.DB, `SELECT COUNT(*) AS count FROM classes c WHERE c.deleted_at IS NULL AND ${classScope} AND c.date > ?`, [...classParams, today]),
+      bind(env.DB, `SELECT COUNT(*) AS count FROM attendance a INNER JOIN classes c ON a.class_id = c.id WHERE a.attended = 1 AND ${classScope} AND c.date >= ? AND c.date < ?`, [...classParams, monthStart, nextMonthStart]),
+      bind(env.DB, `SELECT COALESCE(AVG(cnt), 0) AS avg_attendance FROM (SELECT COUNT(*) AS cnt FROM attendance a INNER JOIN classes c ON a.class_id = c.id WHERE a.attended = 1 AND ${classScope} AND c.date >= ? AND c.date < ? GROUP BY a.class_id)`, [...classParams, monthStart, nextMonthStart]),
+      bind(env.DB, `SELECT s.* FROM students s WHERE s.deleted_at IS NULL AND ${studentScope} ORDER BY s.created_at DESC LIMIT 5`, studentParams),
+      bind(env.DB, `SELECT p.*, s.name AS student_name FROM payments p LEFT JOIN students s ON p.student_id = s.id WHERE p.deleted_at IS NULL AND ${paymentScope} ORDER BY p.created_at DESC LIMIT 5`, paymentParams),
+    ];
 
     const results = await env.DB.batch(queries);
-
-    const scalar = (idx: number, field = 'count') =>
-      (results[idx].results?.[0] as Record<string, number>)?.[field] ?? 0;
-
-    const grouped = (idx: number, keyField: string) => {
-      const map: Record<string, number> = {};
-      for (const row of (results[idx].results ?? []) as Record<string, unknown>[]) {
-        const key = String(row[keyField] ?? 'unknown');
-        map[key] = Number(row['count'] ?? 0);
+    const scalar = (index: number, field = 'count'): number =>
+      Number((results[index].results?.[0] as Record<string, unknown> | undefined)?.[field] ?? 0);
+    const grouped = (index: number, keyField: string): Record<string, number> => {
+      const output: Record<string, number> = {};
+      for (const row of (results[index].results ?? []) as Record<string, unknown>[]) {
+        output[String(row[keyField] ?? 'unknown')] = Number(row.count ?? 0);
       }
-      return map;
+      return output;
     };
 
-    const response = {
+    return new Response(JSON.stringify({
       students: {
         total: scalar(0),
         active: scalar(1),
@@ -229,37 +110,17 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       },
       recentStudents: results[16].results ?? [],
       recentPayments: results[17].results ?? [],
-    };
-
-    return new Response(JSON.stringify(response), {
+    }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('[Analytics] Error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to fetch analytics' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Failed to fetch analytics' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
-}
-
-// Helper: D1 doesn't have a typed interface exported at module level, redeclare locally
-interface D1PreparedStatement {
-  bind(...values: unknown[]): D1PreparedStatement;
-  first<T = unknown>(): Promise<T | null>;
-  run(): Promise<unknown>;
-  all<T = unknown>(): Promise<{ results?: T[]; success: boolean }>;
-}
-
-function bindScope(
-  stmt: D1PreparedStatement,
-  isAdmin: boolean,
-  userId: string,
-  ...extra: string[]
-): D1PreparedStatement {
-  if (isAdmin) {
-    return extra.length ? stmt.bind(...extra) : stmt;
-  }
-  return extra.length ? stmt.bind(userId, ...extra) : stmt.bind(userId);
 }

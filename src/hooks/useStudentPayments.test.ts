@@ -42,6 +42,7 @@ function makePayment(partial: Partial<Payment>): Payment {
   return {
     id: 'p-' + Math.random().toString(36).slice(2, 8),
     student_id: 's-1',
+    branch_id: 'main',
     amount: 35000,
     date: '2025-01-05',
     type: 'monthly',

@@ -1,6 +1,10 @@
 import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
 import { logAuditAction, getClientIP } from '../utils/db';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../utils/branches';
 
 interface PaymentRecord {
   id: string;
@@ -18,6 +22,7 @@ interface PaymentRecord {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  branch_id: string;
 }
 
 const AUTO_PENDING_PLACEHOLDER_NOTE = 'Auto-generated pending monthly payment%';
@@ -32,6 +37,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         headers: { 'Content-Type': 'application/json' }
       });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const { searchParams } = new URL(request.url);
     const studentId = searchParams.get('student_id');
@@ -45,6 +51,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       SELECT p.*, s.name as student_name FROM payments p
       INNER JOIN students s ON p.student_id = s.id
       WHERE p.deleted_at IS NULL AND s.deleted_at IS NULL
+        AND p.branch_id = ?
         AND NOT (
           p.status = 'pending'
           AND p.notes LIKE ?
@@ -52,6 +59,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
             SELECT 1
             FROM payments p2
             WHERE p2.student_id = p.student_id
+              AND p2.branch_id = p.branch_id
               AND p2.deleted_at IS NULL
               AND p2.id != p.id
               AND p2.status IN ('completed', 'refunded')
@@ -59,7 +67,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
           )
         )
     `;
-    const params: string[] = [AUTO_PENDING_PLACEHOLDER_NOTE];
+    const params: string[] = [branchId, AUTO_PENDING_PLACEHOLDER_NOTE];
 
     if (auth.user.role !== 'admin') {
       query += " AND (s.created_by = ? OR s.instructor_id = ? OR (s.instructor_id IS NULL AND s.created_by IS NOT NULL))";
@@ -99,6 +107,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
@@ -113,6 +123,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         headers: { 'Content-Type': 'application/json' }
       });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const raw = await request.json() as Record<string, unknown>;
 
@@ -149,8 +160,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const now = new Date().toISOString();
 
     // Verify that the student exists and user has access
-    let studentCheckQuery = "SELECT id, instructor_id FROM students WHERE id = ? AND deleted_at IS NULL";
-    const studentCheckParams: string[] = [studentId];
+    let studentCheckQuery = "SELECT id, instructor_id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL";
+    const studentCheckParams: string[] = [studentId, branchId];
 
     if (auth.user.role !== 'admin') {
       // If not admin, check if user is the instructor assigned to the student, or if no instructor is assigned
@@ -173,11 +184,11 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     // Insert payment with created_by
     await env.DB.prepare(`
       INSERT INTO payments (
-        id, student_id, amount, date, type, notes, status, payment_method,
+        id, student_id, branch_id, amount, date, type, notes, status, payment_method,
         created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      paymentId, studentId, amount, date, type, notes || null, status, paymentMethod || null, 
+      paymentId, studentId, branchId, amount, date, type, notes || null, status, paymentMethod || null,
       auth.user.id, now, now
     ).run();
 
@@ -191,12 +202,13 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         UPDATE payments
         SET deleted_at = ?
         WHERE student_id = ?
+          AND branch_id = ?
           AND id != ?
           AND status = 'pending'
           AND deleted_at IS NULL
             AND notes LIKE ?
           AND strftime('%Y-%m', date) = ?
-          `).bind(now, studentId, paymentId, AUTO_PENDING_PLACEHOLDER_NOTE, paymentMonth).run().catch(() => null);
+          `).bind(now, studentId, branchId, paymentId, AUTO_PENDING_PLACEHOLDER_NOTE, paymentMonth).run().catch(() => null);
     }
 
     // Non-blocking audit log
@@ -214,9 +226,12 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       SELECT p.*, s.name as student_name FROM payments p
       INNER JOIN students s ON p.student_id = s.id
       WHERE p.id = ?
-    `).bind(paymentId).first<PaymentRecord>();
+        AND p.branch_id = ?
+    `).bind(paymentId, branchId).first<PaymentRecord>();
     return new Response(JSON.stringify(payment), { status: 201, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
@@ -227,6 +242,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (!auth.authenticated) {
       return new Response(JSON.stringify({ error: auth.error }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Only admins can edit payments
     if (auth.user.role !== 'admin') {
@@ -241,8 +257,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     // Verify payment exists
     const payment = await env.DB.prepare(
-      'SELECT p.id, p.student_id FROM payments p WHERE p.id = ? AND p.deleted_at IS NULL'
-    ).bind(id).first<{ id: string; student_id: string }>();
+      'SELECT p.id, p.student_id FROM payments p WHERE p.id = ? AND p.branch_id = ? AND p.deleted_at IS NULL'
+    ).bind(id, branchId).first<{ id: string; student_id: string }>();
 
     if (!payment) {
       return new Response(JSON.stringify({ error: 'Payment not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
@@ -272,7 +288,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     sets.push('updated_by = ?'); values.push(auth.user.id);
     values.push(id);
 
-    await env.DB.prepare(`UPDATE payments SET ${sets.join(', ')} WHERE id = ?`).bind(...values).run();
+    values.push(branchId);
+    await env.DB.prepare(`UPDATE payments SET ${sets.join(', ')} WHERE id = ? AND branch_id = ?`).bind(...values).run();
 
     // Non-blocking audit log
     logAuditAction(env.DB, {
@@ -285,11 +302,13 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     }).catch(() => {});
 
     const updated = await env.DB.prepare(
-      'SELECT p.*, s.name as student_name FROM payments p INNER JOIN students s ON p.student_id = s.id WHERE p.id = ?'
-    ).bind(id).first<PaymentRecord>();
+      'SELECT p.*, s.name as student_name FROM payments p INNER JOIN students s ON p.student_id = s.id WHERE p.id = ? AND p.branch_id = ?'
+    ).bind(id, branchId).first<PaymentRecord>();
 
     return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
@@ -300,6 +319,7 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
     if (!auth.authenticated) {
       return new Response(JSON.stringify({ error: auth.error }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Only admins can delete payments
     if (auth.user.role !== 'admin') {
@@ -314,8 +334,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     // Verify payment exists
     const payment = await env.DB.prepare(
-      'SELECT p.id FROM payments p WHERE p.id = ? AND p.deleted_at IS NULL'
-    ).bind(id).first();
+      'SELECT p.id FROM payments p WHERE p.id = ? AND p.branch_id = ? AND p.deleted_at IS NULL'
+    ).bind(id, branchId).first();
 
     if (!payment) {
       return new Response(JSON.stringify({ error: 'Payment not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
@@ -323,8 +343,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     const now = new Date().toISOString();
     await env.DB.prepare(
-      'UPDATE payments SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ?'
-    ).bind(now, now, auth.user.id, id).run();
+      'UPDATE payments SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ? AND branch_id = ?'
+    ).bind(now, now, auth.user.id, id, branchId).run();
 
     // Non-blocking audit log
     logAuditAction(env.DB, {
@@ -338,6 +358,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

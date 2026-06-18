@@ -8,6 +8,10 @@
 
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../utils/branches';
 
 interface QRCodeRecord {
   id: string;
@@ -55,6 +59,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         headers: jsonHeaders
       });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Get QR codes for this instructor (admins see all)
     // Filter out inactive and expired QR codes
@@ -64,8 +69,9 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       LEFT JOIN users u ON qr.instructor_id = u.id
       WHERE qr.is_active = 1
         AND qr.deleted_at IS NULL
+        AND qr.branch_id = ?
     `;
-    const params: string[] = [];
+    const params: string[] = [branchId];
 
     if (auth.user.role !== 'admin') {
       query += ' AND qr.instructor_id = ?';
@@ -85,6 +91,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     });
 
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('QR list error:', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
@@ -110,6 +118,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         headers: jsonHeaders
       });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const body = await request.json() as CreateQRRequest;
     const { location, class_id, valid_from, valid_until, check_in_radius_meters } = body;
@@ -130,8 +139,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       INSERT INTO attendance_qr_codes (
         id, instructor_id, class_id, location, code, is_active,
         valid_from, valid_until, check_in_radius_meters,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+        created_at, updated_at, branch_id
+      ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)
     `).bind(
       qrId,
       auth.user.id,
@@ -142,7 +151,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       valid_until || null,
       check_in_radius_meters || null,
       now,
-      now
+      now,
+      branchId
     ).run();
 
     // Fetch the created record
@@ -159,6 +169,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     });
 
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('QR create error:', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
@@ -184,6 +196,7 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
         headers: jsonHeaders
       });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const url = new URL(request.url);
     const qrId = url.searchParams.get('id');
@@ -197,8 +210,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     // Verify ownership (unless admin)
     const qrRecord = await env.DB.prepare(`
-      SELECT id, instructor_id FROM attendance_qr_codes WHERE id = ?
-    `).bind(qrId).first<{ id: string; instructor_id: string }>();
+      SELECT id, instructor_id FROM attendance_qr_codes WHERE id = ? AND branch_id = ?
+    `).bind(qrId, branchId).first<{ id: string; instructor_id: string }>();
 
     if (!qrRecord) {
       return new Response(JSON.stringify({ error: 'QR code not found' }), {
@@ -230,6 +243,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
     });
 
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('QR delete error:', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,

@@ -5,6 +5,10 @@ import {
   type MercadoPagoConfigStored,
   isMercadoPagoActive,
 } from '../../../utils/mercadopago';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../utils/branches';
 
 const SETTINGS_SECTION = 'mercadopago';
 
@@ -22,17 +26,19 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) return errorResponse(auth.error, 401);
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const row = await env.DB.prepare(
       `SELECT s.value
        FROM settings s
        INNER JOIN users u ON u.id = s.owner_id
        WHERE s.section = ?
+         AND s.branch_id = ?
          AND u.role = 'admin'
          AND u.is_active = 1
        ORDER BY s.updated_at DESC
        LIMIT 1`,
-    ).bind(SETTINGS_SECTION).first<SettingsRow>();
+    ).bind(SETTINGS_SECTION, branchId).first<SettingsRow>();
 
     if (!row) {
       return jsonResponse({ active: false });
@@ -53,6 +59,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       publicKey: active ? parsed.publicKey ?? '' : '',
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('[MercadoPago Status]', error);
     return errorResponse((error as Error).message, 500);
   }

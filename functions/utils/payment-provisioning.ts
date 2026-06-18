@@ -15,6 +15,7 @@ interface StudentProvisionRow {
   instructor_id?: string | null;
   is_active: number;
   deleted_at?: string | null;
+  branch_id: string;
 }
 
 interface PaymentRecord {
@@ -33,14 +34,15 @@ interface OwnerAmountRow {
 export async function resolveOwnerDefaultMonthlyAmount(
   db: D1Database,
   ownerId?: string | null,
+  branchId?: string | null,
 ): Promise<number> {
   if (!ownerId) {
     return DEFAULT_MONTHLY_PAYMENT_AMOUNT;
   }
 
   const setting = await db.prepare(
-    "SELECT value FROM settings WHERE owner_id = ? AND section = 'payment' LIMIT 1",
-  ).bind(ownerId).first<SettingRow>().catch(() => null);
+    "SELECT value FROM settings WHERE owner_id = ? AND section = 'payment' AND branch_id = ? LIMIT 1",
+  ).bind(ownerId, branchId ?? null).first<SettingRow>().catch(() => null);
 
   if (setting?.value) {
     let parsedValue: unknown = setting.value;
@@ -64,10 +66,11 @@ export async function resolveOwnerDefaultMonthlyAmount(
     WHERE p.deleted_at IS NULL
       AND s.deleted_at IS NULL
       AND p.type = 'monthly'
+      AND p.branch_id = ?
       AND (s.created_by = ? OR s.instructor_id = ?)
     GROUP BY p.amount
     ORDER BY usage_count DESC, p.amount DESC
-  `).bind(ownerId, ownerId).all<OwnerAmountRow>();
+  `).bind(branchId ?? null, ownerId, ownerId).all<OwnerAmountRow>();
 
   return pickMostCommonAmount(results, DEFAULT_MONTHLY_PAYMENT_AMOUNT);
 }
@@ -77,19 +80,20 @@ export async function ensureStudentHasInitialPayment(
   input: {
     studentId: string;
     actorUserId: string;
+    branchId: string;
     reason?: AutoPaymentReason;
   },
 ): Promise<{ created: boolean; paymentId?: string; amount?: number; date?: string }> {
-  const { studentId, actorUserId, reason = 'student-created' } = input;
+  const { studentId, actorUserId, branchId, reason = 'student-created' } = input;
 
   const student = await db.prepare(`
-    SELECT id, join_date, created_at, created_by, instructor_id, is_active, deleted_at
+    SELECT id, join_date, created_at, created_by, instructor_id, is_active, deleted_at, branch_id
     FROM students
     WHERE id = ?
     LIMIT 1
   `).bind(studentId).first<StudentProvisionRow>();
 
-  if (!student || student.deleted_at || !student.is_active) {
+  if (!student || student.deleted_at || !student.is_active || student.branch_id !== branchId) {
     return { created: false };
   }
 
@@ -97,16 +101,17 @@ export async function ensureStudentHasInitialPayment(
     SELECT id
     FROM payments
     WHERE student_id = ?
+      AND branch_id = ?
       AND deleted_at IS NULL
     LIMIT 1
-  `).bind(studentId).first<PaymentRecord>();
+  `).bind(studentId, branchId).first<PaymentRecord>();
 
   if (existingPayment?.id) {
     return { created: false };
   }
 
   const ownerId = student.created_by || student.instructor_id || actorUserId;
-  const amount = await resolveOwnerDefaultMonthlyAmount(db, ownerId);
+  const amount = await resolveOwnerDefaultMonthlyAmount(db, ownerId, branchId);
   const paymentId = crypto.randomUUID();
   const now = new Date().toISOString();
   const paymentDate = normalizePaymentDate(student.join_date || student.created_at, new Date());
@@ -115,6 +120,7 @@ export async function ensureStudentHasInitialPayment(
     INSERT INTO payments (
       id,
       student_id,
+      branch_id,
       amount,
       date,
       type,
@@ -123,10 +129,11 @@ export async function ensureStudentHasInitialPayment(
       created_by,
       created_at,
       updated_at
-    ) VALUES (?, ?, ?, ?, 'monthly', ?, 'pending', ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, 'monthly', ?, 'pending', ?, ?, ?)
   `).bind(
     paymentId,
     studentId,
+    branchId,
     amount,
     paymentDate,
     buildAutoPaymentNote(reason),

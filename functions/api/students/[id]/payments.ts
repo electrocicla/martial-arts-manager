@@ -1,5 +1,9 @@
 import { Env } from '../../../types';
 import { authenticateUser } from '../../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../utils/branches';
 
 interface PaymentStats {
   total: number;
@@ -27,6 +31,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     }
 
     const studentId = params.id as string;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // optional filter by status
 
@@ -38,8 +43,8 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     }
 
     // Verify student exists and user has access (admin sees all, instructors see their students)
-    let studentQuery = 'SELECT id FROM students WHERE id = ? AND deleted_at IS NULL';
-    const studentParams: string[] = [studentId];
+    let studentQuery = 'SELECT id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
+    const studentParams: string[] = [studentId, branchId];
 
     if (auth.user.role !== 'admin') {
       // Instructors can see students they created or are assigned to
@@ -73,7 +78,8 @@ export async function onRequestGet({ request, env, params }: { request: Request;
         p.created_at,
         p.updated_at
       FROM payments p
-      WHERE p.student_id = ? 
+      WHERE p.student_id = ?
+        AND p.branch_id = ?
         AND p.deleted_at IS NULL
         AND NOT (
           p.status = 'pending'
@@ -82,6 +88,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
             SELECT 1
             FROM payments p2
             WHERE p2.student_id = p.student_id
+              AND p2.branch_id = p.branch_id
               AND p2.deleted_at IS NULL
               AND p2.id != p.id
               AND p2.status IN ('completed', 'refunded')
@@ -90,7 +97,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
         )
     `;
 
-    const queryParams: (string | null)[] = [studentId, AUTO_PENDING_PLACEHOLDER_NOTE];
+    const queryParams: (string | null)[] = [studentId, branchId, AUTO_PENDING_PLACEHOLDER_NOTE];
 
     if (status) {
       query += ' AND status = ?';
@@ -152,6 +159,8 @@ export async function onRequestGet({ request, env, params }: { request: Request;
       }
     );
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('Error fetching student payments:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to fetch student payments' }),

@@ -27,6 +27,7 @@ interface ApiRequestOptions extends RequestInit {
 export class ApiClient {
   private baseURL: string;
   private accessToken: string | null = null;
+  private branchId: string | null = null;
 
   constructor(baseURL = '') {
     this.baseURL = baseURL;
@@ -40,6 +41,14 @@ export class ApiClient {
   // Method to get the current access token
   getAccessToken(): string | null {
     return this.accessToken;
+  }
+
+  setBranchId(branchId: string | null): void {
+    this.branchId = branchId;
+  }
+
+  getBranchId(): string | null {
+    return this.branchId;
   }
 
   private async request<T>(
@@ -61,6 +70,10 @@ export class ApiClient {
         headers['Authorization'] = `Bearer ${this.accessToken}`;
       } else {
         console.warn('[API Client] Access token missing for request:', endpoint);
+      }
+
+      if (this.branchId) {
+        headers['X-Branch-ID'] = this.branchId;
       }
       
       // Merge with any additional headers from options

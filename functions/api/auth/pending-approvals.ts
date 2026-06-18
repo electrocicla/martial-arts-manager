@@ -11,6 +11,7 @@ import { authenticateUser } from '../../middleware/auth';
 
 import { ensureStudentHasInitialPayment } from '../../utils/payment-provisioning';
 import { logAuditAction, getClientIP } from '../../utils/db';
+import { MAIN_BRANCH_ID } from '../../utils/branches';
 
 interface PendingUser {
   id: string;
@@ -219,9 +220,31 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     }
 
     if (user.role === 'student' && linkedStudentId) {
+      await env.DB.prepare(`
+        INSERT INTO student_branch_assignments (
+          id, student_id, branch_id, started_at, assigned_by, created_at
+        )
+        SELECT ?, ?, ?, COALESCE(join_date, created_at), ?, ?
+        FROM students
+        WHERE id = ?
+          AND NOT EXISTS (
+            SELECT 1 FROM student_branch_assignments
+            WHERE student_id = ? AND ended_at IS NULL
+          )
+      `).bind(
+        crypto.randomUUID(),
+        linkedStudentId,
+        MAIN_BRANCH_ID,
+        auth.user.id,
+        now,
+        linkedStudentId,
+        linkedStudentId,
+      ).run();
+
       await ensureStudentHasInitialPayment(env.DB, {
         studentId: linkedStudentId,
         actorUserId: auth.user.id,
+        branchId: MAIN_BRANCH_ID,
         reason: 'approval',
       });
     }

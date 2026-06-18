@@ -2,6 +2,10 @@ import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 import { normalizeAvatarUrl } from '../../utils/avatar';
 import { logAuditAction, getClientIP } from '../../utils/db';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../utils/branches';
 
 interface StudentUpdateRequest {
   name?: string;
@@ -42,6 +46,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     }
 
     const studentId = params.id as string;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Students can only access their own profile
     if (auth.user.role === 'student' && studentId !== auth.user.student_id) {
@@ -51,12 +56,19 @@ export async function onRequestGet({ request, env, params }: { request: Request;
       });
     }
 
-    let query = 'SELECT * FROM students WHERE id = ? AND deleted_at IS NULL';
-    const bindValues: string[] = [studentId];
+    let query = `
+      SELECT s.*, b.name AS branch_name, sba.started_at AS branch_started_at
+      FROM students s
+      LEFT JOIN branches b ON b.id = s.branch_id
+      LEFT JOIN student_branch_assignments sba
+        ON sba.student_id = s.id AND sba.ended_at IS NULL
+      WHERE s.id = ? AND s.branch_id = ? AND s.deleted_at IS NULL
+    `;
+    const bindValues: string[] = [studentId, branchId];
 
     // Instructors/non-admins are further restricted to their own students
     if (auth.user.role !== 'admin' && auth.user.role !== 'student') {
-      query += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
+      query += ' AND (s.created_by = ? OR s.instructor_id = ? OR s.instructor_id IS NULL)';
       bindValues.push(auth.user.id, auth.user.id);
     }
 
@@ -90,6 +102,8 @@ export async function onRequestGet({ request, env, params }: { request: Request;
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('Error fetching student:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to fetch student' }),
@@ -113,6 +127,7 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     }
 
     const studentId = params.id;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const raw = (await request.json()) as Record<string, unknown>;
 
@@ -134,8 +149,8 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     };
 
     // Verify student exists and is accessible
-    let checkQuery = 'SELECT id FROM students WHERE id = ? AND deleted_at IS NULL';
-    const checkValues: string[] = [studentId];
+    let checkQuery = 'SELECT id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
+    const checkValues: string[] = [studentId, branchId];
     if (auth.user.role !== 'admin') {
       checkQuery += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
       checkValues.push(auth.user.id, auth.user.id);
@@ -207,8 +222,8 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     await env.DB.prepare(query).bind(...values).run();
 
     // Fetch and return updated student
-    let readQuery = 'SELECT * FROM students WHERE id = ? AND deleted_at IS NULL';
-    const readValues: string[] = [studentId];
+    let readQuery = 'SELECT * FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
+    const readValues: string[] = [studentId, branchId];
     if (auth.user.role !== 'admin') {
       readQuery += ' AND (created_by = ? OR instructor_id = ?)';
       readValues.push(auth.user.id, auth.user.id);
@@ -240,6 +255,8 @@ export async function onRequestPut({ request, env, params }: { request: Request;
       }
     );
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('Error updating student:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to update student' }),
@@ -263,10 +280,11 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
     }
 
     const studentId = params.id as string;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Verify student exists and user has access
-    let checkQuery = 'SELECT id, email FROM students WHERE id = ? AND deleted_at IS NULL';
-    const checkParams: string[] = [studentId];
+    let checkQuery = 'SELECT id, email FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
+    const checkParams: string[] = [studentId, branchId];
 
     if (auth.user.role !== 'admin') {
       checkQuery += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
@@ -322,6 +340,8 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
       }
     );
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('Error deleting student:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to delete student' }),

@@ -121,6 +121,7 @@ export interface Student {
   is_active: number;
   created_at: string;
   updated_at: string;
+  branch_id: string;
 }
 
 // Class types
@@ -144,6 +145,7 @@ export interface Class {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  branch_id: string;
 }
 
 // Payment types
@@ -162,6 +164,7 @@ export interface Payment {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  branch_id: string;
 }
 
 // Attendance types

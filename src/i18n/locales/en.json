@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "profile": "My Profile",
+    "branches": "Branch Management",
     "students": "Students",
     "classes": "Classes",
     "payments": "Payments",

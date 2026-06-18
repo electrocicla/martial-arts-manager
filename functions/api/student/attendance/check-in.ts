@@ -9,6 +9,10 @@
 import { Env } from '../../../types/index';
 import { authenticateUser } from '../../../middleware/auth';
 import { errorResponse } from '../../../utils/response';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../utils/branches';
 
 interface CheckInRequest {
   qr_code: string;
@@ -58,6 +62,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     if (!studentId) {
       return errorResponse('No student profile is linked to this account', 404);
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Parse request body
     const body = await request.json() as CheckInRequest;
@@ -72,9 +77,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       SELECT id, instructor_id, class_id, location, code, is_active, valid_from, valid_until
       FROM attendance_qr_codes
       WHERE code = ?
+        AND branch_id = ?
         AND is_active = 1
         AND deleted_at IS NULL
-    `).bind(qr_code).first<QRCode>();
+    `).bind(qr_code, branchId).first<QRCode>();
 
     if (!qrRecord) {
       return errorResponse('Invalid or expired QR code', 404);
@@ -99,8 +105,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       classRecord = await env.DB.prepare(`
         SELECT id, name, date, time, discipline, location, parent_course_id
         FROM classes
-        WHERE id = ? AND deleted_at IS NULL
-      `).bind(qrRecord.class_id).first<ClassInfo>();
+        WHERE id = ? AND branch_id = ? AND deleted_at IS NULL
+      `).bind(qrRecord.class_id, branchId).first<ClassInfo>();
     } else {
       // Find a class happening today at this location/instructor
       // Allow check-in within 30 minutes before and 60 minutes after class start
@@ -110,6 +116,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         WHERE (instructor_id = ? OR created_by = ?)
           AND date = ?
           AND location = ?
+          AND branch_id = ?
           AND deleted_at IS NULL
         ORDER BY time ASC
         LIMIT 1
@@ -117,7 +124,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         qrRecord.instructor_id, 
         qrRecord.instructor_id, 
         today, 
-        qrRecord.location
+        qrRecord.location,
+        branchId
       ).first<ClassInfo>();
     }
 
@@ -191,6 +199,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     });
 
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('QR check-in error:', error);
     return errorResponse((error as Error).message || 'Failed to process the check-in', 500);
   }

@@ -16,6 +16,10 @@ import {
   ensureNotificationsSchema,
   withNotificationsTable,
 } from '../../utils/notifications';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../utils/branches';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
@@ -54,6 +58,7 @@ export async function onRequestPost({
     if (auth.user.role !== 'admin' && auth.user.role !== 'instructor') {
       return jsonResponse({ error: 'Access denied' }, 403);
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     await ensureNotificationsSchema(env.DB);
 
@@ -68,9 +73,9 @@ export async function onRequestPost({
         `SELECT s.id, s.name, s.created_by, s.instructor_id, u.id AS user_id
            FROM students s
            LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
-          WHERE s.id = ? AND s.deleted_at IS NULL`,
+          WHERE s.id = ? AND s.branch_id = ? AND s.deleted_at IS NULL`,
       )
-      .bind(studentId)
+      .bind(studentId, branchId)
       .first<StudentRecord>();
 
     if (!student) {
@@ -143,6 +148,7 @@ export async function onRequestPost({
       expectedAmount,
       issuedBy: auth.user.id,
       issuedAt: isoNow,
+      branchId,
     });
 
     const notificationId = crypto.randomUUID();
@@ -171,6 +177,8 @@ export async function onRequestPost({
 
     return jsonResponse({ success: true, notificationId });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('Notify overdue error:', error);
     return jsonResponse({ error: (error as Error).message }, 500);
   }

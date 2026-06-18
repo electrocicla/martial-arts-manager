@@ -1,5 +1,9 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../utils/branches';
 
 interface MetadataResponse {
   disciplines: string[];
@@ -18,20 +22,28 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       });
     }
 
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
+
     // Get unique disciplines from classes
     const disciplinesResult = await env.DB.prepare(
-      "SELECT DISTINCT discipline FROM classes WHERE deleted_at IS NULL AND (created_by = ? OR instructor_id = ?) ORDER BY discipline"
-    ).bind(auth.user.id, auth.user.id).all<{ discipline: string }>();
+      auth.user.role === 'admin'
+        ? "SELECT DISTINCT discipline FROM classes WHERE deleted_at IS NULL AND branch_id = ? ORDER BY discipline"
+        : "SELECT DISTINCT discipline FROM classes WHERE deleted_at IS NULL AND branch_id = ? AND (created_by = ? OR instructor_id = ?) ORDER BY discipline"
+    ).bind(...(auth.user.role === 'admin' ? [branchId] : [branchId, auth.user.id, auth.user.id])).all<{ discipline: string }>();
 
     // Get unique locations from classes scoped to this user
     const locationsResult = await env.DB.prepare(
-      "SELECT DISTINCT location FROM classes WHERE deleted_at IS NULL AND created_by = ? ORDER BY location"
-    ).bind(auth.user.id).all<{ location: string }>();
+      auth.user.role === 'admin'
+        ? "SELECT DISTINCT location FROM classes WHERE deleted_at IS NULL AND branch_id = ? ORDER BY location"
+        : "SELECT DISTINCT location FROM classes WHERE deleted_at IS NULL AND branch_id = ? AND created_by = ? ORDER BY location"
+    ).bind(...(auth.user.role === 'admin' ? [branchId] : [branchId, auth.user.id])).all<{ location: string }>();
 
     // Get unique instructors from classes scoped to this user (join with users to get names)
     const instructorsResult = await env.DB.prepare(
-      "SELECT DISTINCT u.name as instructor FROM classes c JOIN users u ON c.instructor_id = u.id WHERE c.deleted_at IS NULL AND (c.created_by = ? OR c.instructor_id = ?) ORDER BY u.name"
-    ).bind(auth.user.id, auth.user.id).all<{ instructor: string }>();
+      auth.user.role === 'admin'
+        ? "SELECT DISTINCT u.name as instructor FROM classes c JOIN users u ON c.instructor_id = u.id WHERE c.deleted_at IS NULL AND c.branch_id = ? ORDER BY u.name"
+        : "SELECT DISTINCT u.name as instructor FROM classes c JOIN users u ON c.instructor_id = u.id WHERE c.deleted_at IS NULL AND c.branch_id = ? AND (c.created_by = ? OR c.instructor_id = ?) ORDER BY u.name"
+    ).bind(...(auth.user.role === 'admin' ? [branchId] : [branchId, auth.user.id, auth.user.id])).all<{ instructor: string }>();
 
     const dbDisciplines = disciplinesResult.results?.map(r => r.discipline) || [];
     const dbLocations = locationsResult.results?.map(r => r.location) || [];
@@ -63,6 +75,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' },

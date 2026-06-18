@@ -1,5 +1,9 @@
 import { Env } from '../../../types/index';
 import { authenticateUser } from '../../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../utils/branches';
 
 // GET /api/students/:studentId/classes - Get all classes a student is enrolled in
 export async function onRequestGet({ request, env, params }: { request: Request; env: Env; params: { id: string } }) {
@@ -14,13 +18,14 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     }
 
     const studentId = params.id;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Verify student belongs to user (admins can access all)
     const studentCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id FROM students WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id FROM students WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [studentId] : [studentId, auth.user.id, auth.user.id])).first();
+        ? "SELECT id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM students WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [studentId, branchId] : [studentId, branchId, auth.user.id, auth.user.id])).first();
 
     if (!studentCheck) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
@@ -47,6 +52,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
         )
       LEFT JOIN attendance a ON a.class_id = c.id AND a.student_id = ce.student_id
       WHERE c.deleted_at IS NULL
+        AND c.branch_id = ?
         AND NOT (
           c.parent_course_id IS NULL
           AND c.is_recurring = 1
@@ -59,12 +65,14 @@ export async function onRequestGet({ request, env, params }: { request: Request;
         )
       GROUP BY c.id, ce.enrolled_at, ce.enrollment_status
       ORDER BY c.date DESC, c.time ASC
-    `).bind(studentId).all();
+    `).bind(studentId, branchId).all();
 
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('[Get Student Classes Error]', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), { 
       status: 500,

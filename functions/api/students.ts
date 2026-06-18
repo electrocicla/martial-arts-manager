@@ -3,6 +3,10 @@ import { authenticateUser } from '../middleware/auth';
 import { ensureStudentHasInitialPayment } from '../utils/payment-provisioning';
 import { normalizeAvatarUrl } from '../utils/avatar';
 import { logAuditAction, getClientIP } from '../utils/db';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../utils/branches';
 
 interface StudentRecord {
   id: string;
@@ -24,6 +28,9 @@ interface StudentRecord {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  branch_id: string;
+  branch_name?: string;
+  branch_started_at?: string;
 }
 
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
@@ -45,17 +52,26 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       });
     }
 
-    // Get students based on role
-    let query = "SELECT * FROM students WHERE deleted_at IS NULL";
-    const params: string[] = [];
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
+
+    // Get students based on role and active branch.
+    let query = `
+      SELECT s.*, b.name AS branch_name, sba.started_at AS branch_started_at
+      FROM students s
+      LEFT JOIN branches b ON b.id = s.branch_id
+      LEFT JOIN student_branch_assignments sba
+        ON sba.student_id = s.id AND sba.ended_at IS NULL
+      WHERE s.deleted_at IS NULL AND s.branch_id = ?
+    `;
+    const params: string[] = [branchId];
 
     // If not admin, filter by creator, instructor, or students without assigned instructor
     if (auth.user.role !== 'admin') {
-      query += " AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)";
+      query += " AND (s.created_by = ? OR s.instructor_id = ? OR s.instructor_id IS NULL)";
       params.push(auth.user.id, auth.user.id);
     }
 
-    query += " ORDER BY created_at DESC";
+    query += " ORDER BY s.created_at DESC";
 
     const { results } = await env.DB.prepare(query).bind(...params).all<StudentRecord>();
 
@@ -80,6 +96,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
@@ -110,6 +128,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       notes?: string;
     };
 
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
     const now = new Date().toISOString();
     const { id, name, email, phone, belt, discipline, disciplines, joinDate, dateOfBirth, emergencyContactName, emergencyContactPhone, notes } = body;
 
@@ -168,17 +187,24 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       INSERT INTO students (
         id, name, email, phone, belt, discipline, disciplines, join_date, date_of_birth,
         emergency_contact_name, emergency_contact_phone, notes, is_active,
-        instructor_id, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
+        instructor_id, created_by, created_at, updated_at, branch_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
     `).bind(
       id, name, email, phone || null, belt, discipline, disciplinesJson, joinDate,
       dateOfBirth || null, emergencyContactName || null, emergencyContactPhone || null,
-      notes || null, auth.user.id, auth.user.id, now, now
+      notes || null, auth.user.id, auth.user.id, now, now, branchId
     ).run();
+
+    await env.DB.prepare(`
+      INSERT INTO student_branch_assignments (
+        id, student_id, branch_id, started_at, assigned_by, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?)
+    `).bind(crypto.randomUUID(), id, branchId, joinDate, auth.user.id, now).run();
 
     await ensureStudentHasInitialPayment(env.DB, {
       studentId: id,
       actorUserId: auth.user.id,
+      branchId,
       reason: 'student-created',
     });
 
@@ -209,6 +235,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     const message = error instanceof Error ? error.message : 'Unknown error';
     const lowered = message.toLowerCase();
 
@@ -255,6 +283,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     };
 
     const { id, joinDate } = body;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     if (!id) {
       return new Response(JSON.stringify({ error: 'Student id is required' }), {
@@ -264,8 +293,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     }
 
     // Verify the student belongs to the current user or is bonded to them
-    let checkQuery = "SELECT id, join_date FROM students WHERE id = ? AND deleted_at IS NULL";
-    const checkParams: string[] = [id];
+    let checkQuery = "SELECT id, join_date FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL";
+    const checkParams: string[] = [id, branchId];
 
     if (auth.user.role !== 'admin') {
       checkQuery += " AND (created_by = ? OR instructor_id = ?)";
@@ -338,6 +367,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       }
     );
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

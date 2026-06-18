@@ -1,5 +1,9 @@
 import { Env } from '../../../types/index';
 import { authenticateUser } from '../../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../utils/branches';
 
 interface EnrollmentRecord {
   id: string;
@@ -25,6 +29,7 @@ export async function onRequestPost({ request, env, params }: { request: Request
     }
 
     const { classId } = params;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
     const body = await request.json() as { studentId: string };
     const { studentId } = body;
 
@@ -38,9 +43,9 @@ export async function onRequestPost({ request, env, params }: { request: Request
     // Verify class exists and belongs to user (admins can manage any class)
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first<{ id: string; max_students: number; parent_course_id?: string | null }>();
+        ? "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL"
+        : "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId, branchId] : [classId, branchId, auth.user.id, auth.user.id])).first<{ id: string; max_students: number; parent_course_id?: string | null }>();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { 
@@ -52,9 +57,9 @@ export async function onRequestPost({ request, env, params }: { request: Request
     // Verify student exists and belongs to user (admins can enroll any student)
     const studentCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id FROM students WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id FROM students WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [studentId] : [studentId, auth.user.id, auth.user.id])).first();
+        ? "SELECT id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM students WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [studentId, branchId] : [studentId, branchId, auth.user.id, auth.user.id])).first();
 
     if (!studentCheck) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
@@ -109,6 +114,8 @@ export async function onRequestPost({ request, env, params }: { request: Request
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('[Enroll Student Error]', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), { 
       status: 500,
@@ -130,13 +137,14 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     }
 
     const { classId } = params;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Verify class belongs to user (admins can view any class)
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first();
+        ? "SELECT id FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM classes WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId, branchId] : [classId, branchId, auth.user.id, auth.user.id])).first();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { 
@@ -166,6 +174,8 @@ export async function onRequestGet({ request, env, params }: { request: Request;
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('[Get Class Students Error]', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), { 
       status: 500,

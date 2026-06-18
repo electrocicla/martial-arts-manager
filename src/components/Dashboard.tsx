@@ -17,6 +17,7 @@ import DashboardMetrics from './dashboard/DashboardMetrics';
 import StudentDashboard from './dashboard/StudentDashboard';
 import InstructorWeeklySparringWidget from './dashboard/InstructorWeeklySparringWidget';
 import { PendingApprovals } from './admin/PendingApprovals';
+import { BranchOverviewCards } from './branches/BranchOverviewCards';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -61,6 +62,8 @@ export default function Dashboard() {
 
       <div className="px-4 sm:px-6 pt-3 pb-6 sm:pt-4 max-w-7xl mx-auto space-y-8 mobile-dashboard-content dashboard-content">
         <DashboardStats stats={stats} />
+
+        {user?.role === 'admin' && <BranchOverviewCards />}
         
         {/* Pending Approvals section for admin/instructor */}
         {(user?.role === 'admin' || user?.role === 'instructor') && (

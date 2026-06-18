@@ -11,6 +11,10 @@
 import type { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 import { getPaymentCycleStatus } from '../../utils/payment-cycle';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../utils/branches';
 
 interface OverdueAggregateRow {
   student_id: string;
@@ -80,6 +84,7 @@ export async function onRequestGet({
     if (auth.user.role !== 'admin' && auth.user.role !== 'instructor') {
       return jsonResponse({ error: 'Access denied' }, 403);
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const now = new Date();
 
@@ -91,13 +96,14 @@ export async function onRequestGet({
         s.phone AS phone,
         s.belt AS belt,
         s.discipline AS discipline,
-        s.join_date AS join_date,
+        COALESCE(sba.started_at, s.join_date) AS join_date,
         s.created_at AS created_at,
         u.id   AS user_id,
         MAX(CASE WHEN p.status = 'completed' THEN p.date END) AS last_completed_date,
         (
           SELECT amount FROM payments
            WHERE student_id = s.id
+             AND branch_id = ?
              AND status = 'completed'
              AND deleted_at IS NULL
            ORDER BY date DESC, created_at DESC
@@ -106,11 +112,13 @@ export async function onRequestGet({
         AVG(CASE WHEN p.status = 'completed' THEN p.amount END) AS avg_amount
       FROM students s
       LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
-      LEFT JOIN payments p ON p.student_id = s.id AND p.deleted_at IS NULL
+      LEFT JOIN payments p ON p.student_id = s.id AND p.branch_id = ? AND p.deleted_at IS NULL
+      LEFT JOIN student_branch_assignments sba ON sba.student_id = s.id AND sba.ended_at IS NULL
       WHERE s.deleted_at IS NULL
         AND s.is_active = 1
+        AND s.branch_id = ?
     `;
-    const aggregateParams: (string | number)[] = [];
+    const aggregateParams: (string | number)[] = [branchId, branchId, branchId];
 
     if (auth.user.role !== 'admin') {
       aggregateQuery += ' AND (s.created_by = ? OR s.instructor_id = ?)';
@@ -194,6 +202,8 @@ export async function onRequestGet({
 
     return jsonResponse(response);
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('Payment overdue error:', error);
     return jsonResponse({ error: (error as Error).message }, 500);
   }

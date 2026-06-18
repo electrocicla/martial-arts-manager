@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Panel de Control",
     "profile": "Mi Perfil",
+    "branches": "Gestión de Sedes",
     "students": "Estudiantes",
     "classes": "Clases",
     "payments": "Pagos",

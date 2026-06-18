@@ -1,5 +1,9 @@
 import { Env } from '../../../types/index';
 import { authenticateUser } from '../../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../utils/branches';
 
 interface CommentRecord {
   id: string;
@@ -20,6 +24,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     if (!classId) {
       return new Response(JSON.stringify({ error: 'Missing classId' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Students cannot access class comments
     if (auth.user.role === 'student') {
@@ -29,9 +34,9 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     // Verify class access (admin sees all, instructor only own classes)
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first();
+        ? "SELECT id FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM classes WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId, branchId] : [classId, branchId, auth.user.id, auth.user.id])).first();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
@@ -43,6 +48,8 @@ export async function onRequestGet({ request, env, params }: { request: Request;
 
     return new Response(JSON.stringify(results), { headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
@@ -56,6 +63,7 @@ export async function onRequestPost({ request, env, params }: { request: Request
 
     const classId = params?.classId;
     if (!classId) return new Response(JSON.stringify({ error: 'Missing classId' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Students cannot create class comments
     if (auth.user.role === 'student') {
@@ -65,9 +73,9 @@ export async function onRequestPost({ request, env, params }: { request: Request
     // Verify class access
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first();
+        ? "SELECT id FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM classes WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId, branchId] : [classId, branchId, auth.user.id, auth.user.id])).first();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
@@ -94,6 +102,8 @@ export async function onRequestPost({ request, env, params }: { request: Request
     const created = results?.[0];
     return new Response(JSON.stringify(created), { status: 201, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
@@ -108,6 +118,7 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
     if (auth.user.role === 'student') {
       return new Response(JSON.stringify({ error: 'Insufficient permissions' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const url = new URL(request.url);
     const commentId = url.searchParams.get('commentId');
@@ -117,8 +128,11 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     // Verify ownership: only the author or an admin can delete
     const comment = await env.DB.prepare(
-      'SELECT author_id FROM class_comments WHERE id = ? AND deleted_at IS NULL'
-    ).bind(commentId).first<{ author_id: string }>();
+      `SELECT cc.author_id
+       FROM class_comments cc
+       INNER JOIN classes c ON c.id = cc.class_id
+       WHERE cc.id = ? AND cc.deleted_at IS NULL AND c.branch_id = ?`
+    ).bind(commentId, branchId).first<{ author_id: string }>();
 
     if (!comment) {
       return new Response(JSON.stringify({ error: 'Comment not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
@@ -135,6 +149,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

@@ -75,6 +75,9 @@ export interface Student {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  branch_id: string;
+  branch_name?: string;
+  branch_started_at?: string;
 }
 
 export interface ClassEntity {
@@ -99,6 +102,7 @@ export interface ClassEntity {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  branch_id: string;
 }
 
 // Alias for backward compatibility
@@ -131,6 +135,28 @@ export interface Payment {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  branch_id: string;
+}
+
+export interface BranchSummary {
+  id: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  notes: string | null;
+  is_main: number;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+  student_count: number;
+  active_student_count: number;
+  total_revenue: number;
+  monthly_revenue: number;
+  pending_revenue: number;
+  active_class_count: number;
+  upcoming_class_count: number;
+  attendance_count: number;
 }
 
 export interface MercadoPagoConfigDTO {

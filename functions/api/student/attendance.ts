@@ -8,6 +8,10 @@
 
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../utils/branches';
 
 interface AttendanceRecord {
   id: string;
@@ -60,6 +64,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         headers: { 'Content-Type': 'application/json' }
       });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Fetch attendance records with class details
     const { results: records } = await env.DB.prepare(`
@@ -79,9 +84,10 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       FROM attendance a
       INNER JOIN classes c ON a.class_id = c.id
       WHERE a.student_id = ?
+        AND c.branch_id = ?
       ORDER BY c.date DESC, c.time DESC
       LIMIT 100
-    `).bind(studentId).all<AttendanceRecord>();
+    `).bind(studentId, branchId).all<AttendanceRecord>();
 
     // Calculate stats
     const totalClasses = records.length;
@@ -139,6 +145,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     });
 
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('Student attendance error:', error);
     return new Response(JSON.stringify({ 
       error: (error as Error).message || 'Failed to fetch attendance' 

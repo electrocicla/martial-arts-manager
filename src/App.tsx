@@ -14,6 +14,8 @@ import { PollingProvider } from './context/PollingContext';
 import { ToastProvider } from './components/ui/ToastProvider';
 import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { BranchProvider } from './context/BranchContext';
+import { useBranch } from './hooks/useBranch';
 
 // Lazy load components
 const LandingPage = lazy(() => import('./components/LandingPage'));
@@ -35,6 +37,7 @@ const SettingsPage = lazy(() => import('./pages/Settings'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const PendingApprovalPage = lazy(() => import('./pages/PendingApprovalPage'));
+const Branches = lazy(() => import('./pages/Branches'));
 
 // Loading component with DaisyUI
 const LoadingSpinner = () => (
@@ -48,13 +51,15 @@ const LoadingSpinner = () => (
 
 // Main app content for authenticated users
 function AppContent() {
+  const { activeBranchId } = useBranch();
+
   return (
     <PullToRefresh>
     <div className="min-h-screen bg-gray-900">
       <AndroidApkInstallPrompt context="dashboard" />
       <Sidebar />
       <Header />
-      <main className="md:ml-64 min-h-screen main-content">
+      <main key={activeBranchId} className="md:ml-64 min-h-screen main-content">
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
@@ -72,6 +77,7 @@ function AppContent() {
             <Route path="/my-payments" element={<StudentPayments />} />
             <Route path="/my-classes" element={<StudentClasses />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/branches" element={<Branches />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Suspense>
@@ -136,15 +142,17 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <PrivacyProvider>
-            <PollingProvider>
-              <ToastProvider>
-                <Router>
-                  <AppWrapper />
-                </Router>
-              </ToastProvider>
-            </PollingProvider>
-          </PrivacyProvider>
+          <BranchProvider>
+            <PrivacyProvider>
+              <PollingProvider>
+                <ToastProvider>
+                  <Router>
+                    <AppWrapper />
+                  </Router>
+                </ToastProvider>
+              </PollingProvider>
+            </PrivacyProvider>
+          </BranchProvider>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>

@@ -8,6 +8,10 @@ import {
   createPreference,
   isMercadoPagoActive,
 } from '../../../utils/mercadopago';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../utils/branches';
 
 const SETTINGS_SECTION = 'mercadopago';
 const PAYMENT_TYPES = new Set(['monthly', 'drop-in', 'private', 'equipment', 'other']);
@@ -24,17 +28,18 @@ interface PreferenceBody {
   pendingUrl?: string;
 }
 
-async function loadActiveConfig(env: Env): Promise<{ ownerId: string; config: MercadoPagoConfigStored } | null> {
+async function loadActiveConfig(env: Env, branchId: string): Promise<{ ownerId: string; config: MercadoPagoConfigStored } | null> {
   const row = await env.DB.prepare(
     `SELECT s.owner_id as ownerId, s.value as value
      FROM settings s
      INNER JOIN users u ON u.id = s.owner_id
      WHERE s.section = ?
+       AND s.branch_id = ?
        AND u.role = 'admin'
        AND u.is_active = 1
      ORDER BY s.updated_at DESC
      LIMIT 1`,
-  ).bind(SETTINGS_SECTION).first<{ ownerId: string; value: string }>();
+  ).bind(SETTINGS_SECTION, branchId).first<{ ownerId: string; value: string }>();
   if (!row) return null;
   try {
     const parsed = JSON.parse(row.value) as MercadoPagoConfigStored;
@@ -58,18 +63,19 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) return errorResponse(auth.error, 401);
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const body = (await request.json()) as PreferenceBody;
     const studentId = (body.studentId ?? '').trim();
     if (!studentId) return errorResponse('studentId is required', 400);
 
-    const active = await loadActiveConfig(env);
+    const active = await loadActiveConfig(env, branchId);
     if (!active) return errorResponse('MercadoPago is not active', 409);
     const { config } = active;
 
     // Resolve student & permissions.
-    let studentQuery = 'SELECT id, name, email FROM students WHERE id = ? AND deleted_at IS NULL';
-    const studentParams: string[] = [studentId];
+    let studentQuery = 'SELECT id, name, email FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
+    const studentParams: string[] = [studentId, branchId];
     if (auth.user.role === 'student') {
       if (auth.user.student_id !== studentId) return errorResponse('Forbidden', 403);
     } else if (auth.user.role === 'instructor') {
@@ -122,6 +128,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         payment_id: paymentId,
         type,
         created_by: auth.user.id,
+        branch_id: branchId,
       },
     };
 
@@ -138,12 +145,13 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     await env.DB.prepare(
       `INSERT INTO payments (
-        id, student_id, amount, date, type, notes, status, payment_method,
+        id, student_id, branch_id, amount, date, type, notes, status, payment_method,
         payment_source, external_id, external_reference, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, 'pending', 'mercadopago', 'mercadopago', NULL, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 'mercadopago', 'mercadopago', NULL, ?, ?, ?, ?)`,
     ).bind(
       paymentId,
       student.id,
+      branchId,
       Number(amount.toFixed(2)),
       today,
       type,
@@ -162,6 +170,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       paymentId,
     }, 201);
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('[MercadoPago Preference]', error);
     return errorResponse((error as Error).message, 500);
   }

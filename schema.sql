@@ -64,13 +64,47 @@ CREATE TABLE settings (
   owner_id TEXT NOT NULL,
   section TEXT NOT NULL,
   value TEXT NOT NULL, -- JSON
+  branch_id TEXT,
   created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (branch_id) REFERENCES branches(id)
 );
 
 -- ===========================================
 -- CORE BUSINESS ENTITIES
 -- ===========================================
+
+CREATE TABLE branches (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  address TEXT,
+  phone TEXT,
+  email TEXT,
+  notes TEXT,
+  is_main INTEGER NOT NULL DEFAULT 0 CHECK(is_main IN (0, 1)),
+  is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0, 1)),
+  created_by TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+INSERT INTO branches (
+  id, name, is_main, is_active, created_at, updated_at
+) VALUES (
+  'main', 'Sede Principal', 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+CREATE TABLE branch_staff (
+  branch_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  created_by TEXT,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (branch_id, user_id),
+  FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id)
+);
 
 -- Students table
 CREATE TABLE students (
@@ -94,9 +128,27 @@ CREATE TABLE students (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   deleted_at TEXT,
+  branch_id TEXT NOT NULL DEFAULT 'main',
   FOREIGN KEY (instructor_id) REFERENCES users(id),
   FOREIGN KEY (created_by) REFERENCES users(id),
-  FOREIGN KEY (updated_by) REFERENCES users(id)
+  FOREIGN KEY (updated_by) REFERENCES users(id),
+  FOREIGN KEY (branch_id) REFERENCES branches(id)
+);
+
+CREATE TABLE student_branch_assignments (
+  id TEXT PRIMARY KEY,
+  student_id TEXT NOT NULL,
+  branch_id TEXT NOT NULL,
+  source_branch_id TEXT,
+  started_at TEXT NOT NULL,
+  ended_at TEXT,
+  reason TEXT,
+  assigned_by TEXT,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+  FOREIGN KEY (branch_id) REFERENCES branches(id),
+  FOREIGN KEY (source_branch_id) REFERENCES branches(id),
+  FOREIGN KEY (assigned_by) REFERENCES users(id)
 );
 
 -- Classes table
@@ -120,15 +172,18 @@ CREATE TABLE classes (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   deleted_at TEXT,
+  branch_id TEXT NOT NULL DEFAULT 'main',
   FOREIGN KEY (instructor_id) REFERENCES users(id),
   FOREIGN KEY (created_by) REFERENCES users(id),
-  FOREIGN KEY (updated_by) REFERENCES users(id)
+  FOREIGN KEY (updated_by) REFERENCES users(id),
+  FOREIGN KEY (branch_id) REFERENCES branches(id)
 );
 
 -- Payments table
 CREATE TABLE payments (
   id TEXT PRIMARY KEY,
   student_id TEXT NOT NULL,
+  branch_id TEXT NOT NULL DEFAULT 'main',
   amount REAL NOT NULL,
   date TEXT NOT NULL,
   type TEXT NOT NULL,
@@ -146,7 +201,8 @@ CREATE TABLE payments (
   deleted_at TEXT,
   FOREIGN KEY (student_id) REFERENCES students(id),
   FOREIGN KEY (created_by) REFERENCES users(id),
-  FOREIGN KEY (updated_by) REFERENCES users(id)
+  FOREIGN KEY (updated_by) REFERENCES users(id),
+  FOREIGN KEY (branch_id) REFERENCES branches(id)
 );
 
 -- Class enrollments table (many-to-many relationship)
@@ -213,8 +269,10 @@ CREATE TABLE attendance_qr_codes (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   deleted_at TEXT,
+  branch_id TEXT NOT NULL DEFAULT 'main',
   FOREIGN KEY (instructor_id) REFERENCES users(id),
-  FOREIGN KEY (class_id) REFERENCES classes(id)
+  FOREIGN KEY (class_id) REFERENCES classes(id),
+  FOREIGN KEY (branch_id) REFERENCES branches(id)
 );
 
 -- ===========================================
@@ -302,6 +360,7 @@ CREATE INDEX idx_students_email ON students(email);
 CREATE INDEX idx_students_discipline ON students(discipline);
 CREATE INDEX idx_students_is_active ON students(is_active);
 CREATE INDEX idx_students_deleted_at ON students(deleted_at);
+CREATE INDEX idx_students_branch ON students(branch_id, deleted_at, is_active);
 
 -- Classes indexes
 CREATE INDEX idx_classes_date ON classes(date);
@@ -311,6 +370,7 @@ CREATE INDEX idx_classes_instructor_id ON classes(instructor_id);
 CREATE INDEX idx_classes_is_active ON classes(is_active);
 CREATE INDEX idx_classes_deleted_at ON classes(deleted_at);
 CREATE INDEX idx_classes_parent_course_created_by ON classes(parent_course_id, created_by);
+CREATE INDEX idx_classes_branch_date ON classes(branch_id, date, deleted_at);
 CREATE UNIQUE INDEX idx_classes_parent_date_time_unique
   ON classes(parent_course_id, date, time, created_by)
   WHERE parent_course_id IS NOT NULL;
@@ -324,6 +384,7 @@ CREATE INDEX idx_payments_student_date ON payments(student_id, date);
 CREATE INDEX idx_payments_source ON payments(payment_source);
 CREATE UNIQUE INDEX idx_payments_external_id ON payments(external_id) WHERE external_id IS NOT NULL;
 CREATE INDEX idx_payments_external_reference ON payments(external_reference);
+CREATE INDEX idx_payments_branch_date ON payments(branch_id, date, deleted_at);
 
 -- Class enrollments indexes
 CREATE INDEX idx_enrollments_class_id ON class_enrollments(class_id);
@@ -344,6 +405,20 @@ CREATE INDEX idx_qr_codes_instructor ON attendance_qr_codes(instructor_id);
 CREATE INDEX idx_qr_codes_code ON attendance_qr_codes(code);
 CREATE INDEX idx_qr_codes_active ON attendance_qr_codes(is_active);
 CREATE INDEX idx_qr_codes_deleted_at ON attendance_qr_codes(deleted_at);
+CREATE INDEX idx_qr_codes_branch ON attendance_qr_codes(branch_id, deleted_at, is_active);
+
+CREATE UNIQUE INDEX idx_branches_single_main ON branches(is_main) WHERE is_main = 1;
+CREATE INDEX idx_branches_active ON branches(is_active, name);
+CREATE INDEX idx_branch_staff_user ON branch_staff(user_id, branch_id);
+CREATE INDEX idx_student_branch_assignments_student ON student_branch_assignments(student_id, started_at);
+CREATE INDEX idx_student_branch_assignments_branch_active ON student_branch_assignments(branch_id, ended_at);
+CREATE UNIQUE INDEX idx_student_branch_assignments_active
+  ON student_branch_assignments(student_id)
+  WHERE ended_at IS NULL;
+CREATE INDEX idx_settings_branch ON settings(owner_id, section, branch_id);
+CREATE UNIQUE INDEX idx_settings_owner_section_branch
+  ON settings(owner_id, section, branch_id)
+  WHERE branch_id IS NOT NULL;
 
 -- Belt exams indexes
 CREATE INDEX idx_belt_exams_date ON belt_exams(exam_date);

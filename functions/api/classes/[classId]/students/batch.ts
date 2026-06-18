@@ -1,5 +1,9 @@
 import { Env } from '../../../../types/index';
 import { authenticateUser } from '../../../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../../utils/branches';
 
 const D1_SAFE_CHUNK_SIZE = 50;
 
@@ -15,6 +19,7 @@ export async function onRequestPost({ request, env, params }: { request: Request
     }
 
     const { classId } = params;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
     const body = await request.json() as { student_ids: string[] };
     const { student_ids } = body;
 
@@ -35,9 +40,9 @@ export async function onRequestPost({ request, env, params }: { request: Request
     // Verify class exists and user has access
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first<{ id: string; max_students: number; parent_course_id?: string | null }>();
+        ? "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL"
+        : "SELECT id, max_students, parent_course_id FROM classes WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId, branchId] : [classId, branchId, auth.user.id, auth.user.id])).first<{ id: string; max_students: number; parent_course_id?: string | null }>();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), {
@@ -66,7 +71,20 @@ export async function onRequestPost({ request, env, params }: { request: Request
     }
 
     const alreadyEnrolled = new Set((existingRows ?? []).map(r => r.student_id));
-    const toEnroll = student_ids.filter(id => !alreadyEnrolled.has(id));
+    const eligibleStudents: string[] = [];
+    for (let i = 0; i < student_ids.length; i += D1_SAFE_CHUNK_SIZE) {
+      const chunk = student_ids.slice(i, i + D1_SAFE_CHUNK_SIZE);
+      const studentPlaceholders = chunk.map(() => '?').join(',');
+      const { results } = await env.DB.prepare(
+        `SELECT id FROM students
+         WHERE id IN (${studentPlaceholders})
+           AND branch_id = ?
+           AND deleted_at IS NULL`
+      ).bind(...chunk, branchId).all<{ id: string }>();
+      eligibleStudents.push(...(results ?? []).map((student) => student.id));
+    }
+    const eligibleSet = new Set(eligibleStudents);
+    const toEnroll = student_ids.filter(id => eligibleSet.has(id) && !alreadyEnrolled.has(id));
 
     // Check capacity
     const availableSlots = classCheck.max_students - currentCount;
@@ -105,6 +123,8 @@ export async function onRequestPost({ request, env, params }: { request: Request
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('[Batch Enroll Error]', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,

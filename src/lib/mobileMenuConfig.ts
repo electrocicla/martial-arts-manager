@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Award,
   BarChart3,
+  Building2,
   BookOpen,
   Calendar,
   Clock,
@@ -81,6 +82,14 @@ export const navigationItems: NavigationItem[] = [
     icon: Swords,
     color: 'text-amber-500',
     roles: ['admin', 'instructor']
+  },
+  {
+    id: 'branches',
+    nameKey: 'nav.branches',
+    href: '/branches',
+    icon: Building2,
+    color: 'text-red-400',
+    roles: ['admin']
   },
   {
     id: 'students',

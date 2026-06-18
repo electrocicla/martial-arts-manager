@@ -1,5 +1,9 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../utils/branches';
 
 interface StudentClassRecord {
   id: string;
@@ -32,6 +36,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     if (!auth.authenticated || !auth.user.student_id) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Get enrolled classes
     const { results } = await env.DB.prepare(`
@@ -54,6 +59,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
           OR active_enrollments.class_id = c.parent_course_id
         )
       WHERE c.deleted_at IS NULL
+        AND c.branch_id = ?
         AND NOT (
           c.parent_course_id IS NULL
           AND c.is_recurring = 1
@@ -66,7 +72,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         )
       GROUP BY c.id, ce.enrollment_status
       ORDER BY c.date ASC, c.time ASC
-    `).bind(auth.user.student_id).all<Omit<StudentClassRecord, 'enrolled_student_ids'>>();
+    `).bind(auth.user.student_id, branchId).all<Omit<StudentClassRecord, 'enrolled_student_ids'>>();
 
     const classes: StudentClassRecord[] = (results ?? []).map((record) => ({
       ...record,
@@ -78,6 +84,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

@@ -11,7 +11,7 @@ import {
 
 const SETTINGS_SECTION = 'mercadopago';
 
-interface ConfigRow { value: string }
+interface ConfigRow { value: string; branch_id: string }
 interface PaymentRow {
   id: string;
   student_id: string;
@@ -21,25 +21,32 @@ interface PaymentRow {
   external_id: string | null;
 }
 
-async function loadActiveConfig(env: Env): Promise<MercadoPagoConfigStored | null> {
-  const row = await env.DB.prepare(
-    `SELECT s.value as value
+async function loadActiveConfigs(
+  env: Env,
+): Promise<Array<{ branchId: string; config: MercadoPagoConfigStored }>> {
+  const { results } = await env.DB.prepare(
+    `SELECT s.value as value, s.branch_id as branch_id
      FROM settings s
      INNER JOIN users u ON u.id = s.owner_id
      WHERE s.section = ?
+       AND s.branch_id IS NOT NULL
        AND u.role = 'admin'
        AND u.is_active = 1
-     ORDER BY s.updated_at DESC
-     LIMIT 1`,
-  ).bind(SETTINGS_SECTION).first<ConfigRow>();
-  if (!row) return null;
-  try {
-    const parsed = JSON.parse(row.value) as MercadoPagoConfigStored;
-    if (!isMercadoPagoActive(parsed)) return null;
-    return parsed;
-  } catch {
-    return null;
+     ORDER BY s.updated_at DESC`,
+  ).bind(SETTINGS_SECTION).all<ConfigRow>();
+
+  const configs: Array<{ branchId: string; config: MercadoPagoConfigStored }> = [];
+  for (const row of results ?? []) {
+    try {
+      const parsed = JSON.parse(row.value) as MercadoPagoConfigStored;
+      if (isMercadoPagoActive(parsed)) {
+        configs.push({ branchId: row.branch_id, config: parsed });
+      }
+    } catch {
+      // Ignore malformed configuration rows.
+    }
   }
+  return configs;
 }
 
 function statusFromMercadoPago(mpStatus: string): 'completed' | 'pending' | 'failed' | 'refunded' {
@@ -61,7 +68,11 @@ function statusFromMercadoPago(mpStatus: string): 'completed' | 'pending' | 'fai
   }
 }
 
-async function reconcilePayment(env: Env, mpPayment: MercadoPagoPaymentResponse): Promise<void> {
+async function reconcilePayment(
+  env: Env,
+  mpPayment: MercadoPagoPaymentResponse,
+  branchId: string,
+): Promise<void> {
   const externalReference = mpPayment.external_reference ?? null;
   const externalId = String(mpPayment.id);
   const newStatus = statusFromMercadoPago(mpPayment.status);
@@ -74,9 +85,9 @@ async function reconcilePayment(env: Env, mpPayment: MercadoPagoPaymentResponse)
     const existing = await env.DB.prepare(
       `SELECT id, student_id, amount, status, external_reference, external_id
        FROM payments
-       WHERE external_reference = ? AND deleted_at IS NULL
+       WHERE external_reference = ? AND branch_id = ? AND deleted_at IS NULL
        ORDER BY created_at DESC LIMIT 1`,
-    ).bind(externalReference).first<PaymentRow>();
+    ).bind(externalReference, branchId).first<PaymentRow>();
 
     if (existing) {
       await env.DB.prepare(
@@ -103,8 +114,8 @@ async function reconcilePayment(env: Env, mpPayment: MercadoPagoPaymentResponse)
 
   // 2) Idempotency by external_id (re-delivery before reference exists).
   const dup = await env.DB.prepare(
-    'SELECT id FROM payments WHERE external_id = ? AND deleted_at IS NULL LIMIT 1',
-  ).bind(externalId).first<{ id: string }>();
+    'SELECT id FROM payments WHERE external_id = ? AND branch_id = ? AND deleted_at IS NULL LIMIT 1',
+  ).bind(externalId, branchId).first<{ id: string }>();
   if (dup) {
     await env.DB.prepare(
       `UPDATE payments SET status = ?, notes = ?, date = ?, updated_at = ? WHERE id = ?`,
@@ -131,12 +142,13 @@ async function reconcilePayment(env: Env, mpPayment: MercadoPagoPaymentResponse)
   const newId = crypto.randomUUID();
   await env.DB.prepare(
     `INSERT INTO payments (
-      id, student_id, amount, date, type, notes, status, payment_method,
+      id, student_id, branch_id, amount, date, type, notes, status, payment_method,
       payment_source, external_id, external_reference, created_by, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'mercadopago', ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'mercadopago', ?, ?, ?, ?, ?)`,
   ).bind(
     newId,
     student.id,
+    branchId,
     Number(mpPayment.transaction_amount.toFixed(2)),
     paymentDate,
     type,
@@ -160,9 +172,6 @@ async function reconcilePayment(env: Env, mpPayment: MercadoPagoPaymentResponse)
  */
 export async function onRequestPost({ request, env }: { request: Request; env: Env }) {
   try {
-    const config = await loadActiveConfig(env);
-    if (!config) return errorResponse('MercadoPago not active', 409);
-
     const url = new URL(request.url);
     const queryDataId = url.searchParams.get('data.id') ?? url.searchParams.get('id');
     const queryType = url.searchParams.get('type') ?? url.searchParams.get('topic');
@@ -184,28 +193,44 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     const signatureHeader = request.headers.get('x-signature');
     const requestId = request.headers.get('x-request-id');
-    const validSignature = await verifyWebhookSignature(
-      config.webhookSecret,
-      signatureHeader,
-      requestId,
-      dataId,
-    );
-    if (!validSignature) {
+    const activeConfigs = await loadActiveConfigs(env);
+    if (activeConfigs.length === 0) return errorResponse('MercadoPago not active', 409);
+
+    let matchedSignature = false;
+    let matchedBranchId: string | null = null;
+    let mpPayment: MercadoPagoPaymentResponse | null = null;
+
+    for (const entry of activeConfigs) {
+      const validSignature = await verifyWebhookSignature(
+        entry.config.webhookSecret,
+        signatureHeader,
+        requestId,
+        dataId,
+      );
+      if (!validSignature) continue;
+      matchedSignature = true;
+
+      try {
+        mpPayment = await getPayment(entry.config.accessToken, dataId);
+        matchedBranchId = entry.branchId;
+        break;
+      } catch (error) {
+        if (error instanceof MercadoPagoApiError && error.status === 404) {
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    if (!matchedSignature) {
       console.error('[MercadoPago Webhook] Invalid signature for', dataId);
       return errorResponse('Invalid signature', 401);
     }
-
-    let mpPayment: MercadoPagoPaymentResponse;
-    try {
-      mpPayment = await getPayment(config.accessToken, dataId);
-    } catch (error) {
-      if (error instanceof MercadoPagoApiError && error.status === 404) {
-        return jsonResponse({ ok: true, ignored: 'payment not found yet' });
-      }
-      throw error;
+    if (!mpPayment || !matchedBranchId) {
+      return jsonResponse({ ok: true, ignored: 'payment not found yet' });
     }
 
-    await reconcilePayment(env, mpPayment);
+    await reconcilePayment(env, mpPayment, matchedBranchId);
     return jsonResponse({ ok: true });
   } catch (error) {
     console.error('[MercadoPago Webhook]', error);

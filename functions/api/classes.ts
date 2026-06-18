@@ -1,6 +1,10 @@
 import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
 import { logAuditAction, getClientIP } from '../utils/db';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../utils/branches';
 
 interface ClassRecord {
   id: string;
@@ -22,6 +26,7 @@ interface ClassRecord {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  branch_id: string;
 }
 
 interface ClassQueryRecord extends ClassRecord {
@@ -73,9 +78,11 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       });
     }
 
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
     const url = new URL(request.url);
-    const where = ['c.deleted_at IS NULL'];
-    const values: Array<string | number> = [];
+    const where = ['c.deleted_at IS NULL', 'c.branch_id = ?'];
+    const joinValues: Array<string | number> = [];
+    const whereValues: Array<string | number> = [branchId];
     const joins: string[] = [];
     const selectFields = [
       'c.*',
@@ -99,7 +106,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
             OR student_enrollment.class_id = c.parent_course_id
           )
       `);
-      values.push(auth.user.student_id);
+      joinValues.push(auth.user.student_id);
       where.push(`
         NOT (
           c.parent_course_id IS NULL
@@ -115,31 +122,31 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       selectFields.push('student_enrollment.enrolled_at', 'student_enrollment.enrollment_status');
     } else if (auth.user.role !== 'admin') {
       where.push('(c.created_by = ? OR c.instructor_id = ?)');
-      values.push(auth.user.id, auth.user.id);
+      whereValues.push(auth.user.id, auth.user.id);
     }
 
     const discipline = url.searchParams.get('discipline');
     if (discipline) {
       where.push('c.discipline = ?');
-      values.push(discipline);
+      whereValues.push(discipline);
     }
 
     const instructor = url.searchParams.get('instructor');
     if (instructor) {
       where.push('(c.instructor = ? OR c.instructor_id = ?)');
-      values.push(instructor, instructor);
+      whereValues.push(instructor, instructor);
     }
 
     const date = url.searchParams.get('date');
     if (date) {
       where.push('c.date = ?');
-      values.push(date);
+      whereValues.push(date);
     }
 
     const isActive = url.searchParams.get('is_active');
     if (isActive !== null) {
       where.push('c.is_active = ?');
-      values.push(isActive === 'true' || isActive === '1' ? 1 : 0);
+      whereValues.push(isActive === 'true' || isActive === '1' ? 1 : 0);
     }
 
     const { results } = await env.DB.prepare(`
@@ -156,7 +163,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       WHERE ${where.join(' AND ')}
       GROUP BY c.id
       ORDER BY c.date ASC, c.time ASC
-    `).bind(...values).all<ClassQueryRecord>();
+    `).bind(...joinValues, ...whereValues).all<ClassQueryRecord>();
 
     const classes = (results ?? []).map(normalizeClassRecord);
     
@@ -164,6 +171,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -185,6 +194,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const body = await request.json() as CreateClassRequest;
   const { id, name, discipline, date, time, location, instructor, maxStudents, description, isRecurring, recurrencePattern, parentCourseId } = body;
   const instructorId = auth.user.id;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const now = new Date().toISOString();
 
@@ -200,7 +210,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       return arr.map(b => b.toString(16).padStart(2, '0')).join('');
     }
     if (!parentId && isRecurring) {
-      const seed = `${auth.user.id}|${name}|${discipline}|${time}|${date}|${recurrencePattern}`;
+      const seed = `${branchId}|${auth.user.id}|${name}|${discipline}|${time}|${date}|${recurrencePattern}`;
       // prefix to avoid purely numeric ids
       parentId = 'pc_' + await computeDeterministicId(seed);
     }
@@ -216,19 +226,20 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       if (pattern.frequency === 'weekly' && Array.isArray(pattern.days) && pattern.days.length > 0) {
         // Ensure there is a parent course row representing this recurring course
         if (parentId) {
-          const { results: parentExisting } = await env.DB.prepare('SELECT * FROM classes WHERE id = ? AND created_by = ?').bind(parentId, auth.user.id).all<ClassRecord>();
+          const { results: parentExisting } = await env.DB.prepare('SELECT * FROM classes WHERE id = ? AND created_by = ? AND branch_id = ?').bind(parentId, auth.user.id, branchId).all<ClassRecord>();
           if (!parentExisting || parentExisting.length === 0) {
             // Insert parent course row (represents the course grouping). parent_course_id is NULL for the parent itself.
             await env.DB.prepare(`
               INSERT INTO classes (
                 id, name, discipline, date, time, location, instructor, max_students,
-                description, is_recurring, recurrence_pattern, is_active, parent_course_id, instructor_id, created_by, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NULL, ?, ?, ?, ?)
-            `).bind(parentId, name, discipline, date, time, location, instructor, maxStudents, description || null, 1, recurrencePattern, instructorId, auth.user.id, now, now).run();
+                description, is_recurring, recurrence_pattern, is_active, parent_course_id,
+                instructor_id, created_by, created_at, updated_at, branch_id
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NULL, ?, ?, ?, ?, ?)
+            `).bind(parentId, name, discipline, date, time, location, instructor, maxStudents, description || null, 1, recurrencePattern, instructorId, auth.user.id, now, now, branchId).run();
           }
 
           // If children already exist for this parent, return first child to indicate idempotent success
-          const existing = await env.DB.prepare('SELECT * FROM classes WHERE parent_course_id = ? AND created_by = ? AND deleted_at IS NULL LIMIT 1').bind(parentId, auth.user.id).all<ClassRecord>();
+          const existing = await env.DB.prepare('SELECT * FROM classes WHERE parent_course_id = ? AND created_by = ? AND branch_id = ? AND deleted_at IS NULL LIMIT 1').bind(parentId, auth.user.id, branchId).all<ClassRecord>();
           if (existing && existing.results && existing.results.length > 0) {
             return new Response(JSON.stringify(existing.results[0]), { status: 200, headers: { 'Content-Type': 'application/json' } });
           }
@@ -254,19 +265,20 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         const insertStmt = env.DB.prepare(`
           INSERT INTO classes (
             id, name, discipline, date, time, location, instructor, max_students,
-            description, is_recurring, recurrence_pattern, is_active, parent_course_id, instructor_id, created_by, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+            description, is_recurring, recurrence_pattern, is_active, parent_course_id,
+            instructor_id, created_by, created_at, updated_at, branch_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)
         `);
 
         for (const occ of toInsert) {
           await insertStmt.bind(
             occ.id, name, discipline, occ.dateStr, time, location, instructor, maxStudents,
-            description || null, 0, null, 1, parentId, instructorId, auth.user.id, now, now
+            description || null, 0, null, parentId, instructorId, auth.user.id, now, now, branchId
           ).run();
         }
 
         // Return the parent course as representative
-        const { results } = await env.DB.prepare('SELECT * FROM classes WHERE id = ?').bind(parentId).all<ClassRecord>();
+        const { results } = await env.DB.prepare('SELECT * FROM classes WHERE id = ? AND branch_id = ?').bind(parentId, branchId).all<ClassRecord>();
         return new Response(JSON.stringify(results?.[0] || {}), { status: 201, headers: { 'Content-Type': 'application/json' } });
       }
     }
@@ -275,15 +287,16 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     await env.DB.prepare(`
       INSERT INTO classes (
         id, name, discipline, date, time, location, instructor, max_students,
-        description, is_recurring, recurrence_pattern, is_active, parent_course_id, instructor_id, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
+        description, is_recurring, recurrence_pattern, is_active, parent_course_id,
+        instructor_id, created_by, created_at, updated_at, branch_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)
     `).bind(
       id, name, discipline, date, time, location, instructor, maxStudents,
-      description || null, isRecurring ? 1 : 0, recurrencePattern || null, parentId, instructorId, auth.user.id, now, now
+      description || null, isRecurring ? 1 : 0, recurrencePattern || null, parentId, instructorId, auth.user.id, now, now, branchId
     ).run();
 
     // Fetch and return the created class
-    const { results } = await env.DB.prepare("SELECT * FROM classes WHERE id = ?").bind(id).all<ClassRecord>();
+    const { results } = await env.DB.prepare("SELECT * FROM classes WHERE id = ? AND branch_id = ?").bind(id, branchId).all<ClassRecord>();
     const createdClass = results?.[0];
 
     if (!createdClass) {
@@ -305,6 +318,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' },

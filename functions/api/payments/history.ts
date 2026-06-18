@@ -13,6 +13,10 @@
 
 import type { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../utils/branches';
 
 interface PaymentHistoryRow {
   id: string;
@@ -75,6 +79,7 @@ export async function onRequestGet({
     if (auth.user.role !== 'admin' && auth.user.role !== 'instructor') {
       return jsonResponse({ error: 'Access denied' }, 403);
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     let query = `
       SELECT
@@ -93,6 +98,7 @@ export async function onRequestGet({
       FROM payments p
       INNER JOIN students s ON p.student_id = s.id
       WHERE p.deleted_at IS NULL
+        AND p.branch_id = ?
         AND s.deleted_at IS NULL
         AND NOT (
           p.status = 'pending'
@@ -100,6 +106,7 @@ export async function onRequestGet({
           AND EXISTS (
             SELECT 1 FROM payments p2
             WHERE p2.student_id = p.student_id
+              AND p2.branch_id = p.branch_id
               AND p2.deleted_at IS NULL
               AND p2.id != p.id
               AND p2.status IN ('completed', 'refunded')
@@ -107,7 +114,7 @@ export async function onRequestGet({
           )
         )
     `;
-    const params: string[] = [AUTO_PENDING_PLACEHOLDER_NOTE];
+    const params: string[] = [branchId, AUTO_PENDING_PLACEHOLDER_NOTE];
 
     if (auth.user.role !== 'admin') {
       query += ' AND (s.created_by = ? OR s.instructor_id = ?)';
@@ -184,6 +191,8 @@ export async function onRequestGet({
     const response: HistoryResponse = { months, totals };
     return jsonResponse(response);
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('Payment history error:', error);
     return jsonResponse({ error: (error as Error).message }, 500);
   }

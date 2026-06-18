@@ -1,5 +1,9 @@
 import { Env } from '../../../../types/index';
 import { authenticateUser } from '../../../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../../utils/branches';
 
 // DELETE /api/classes/:classId/students/:studentId - Unenroll a student from a class
 export async function onRequestDelete({ request, env, params }: { request: Request; env: Env; params: { classId: string; studentId: string } }) {
@@ -14,13 +18,14 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
     }
 
     const { classId, studentId } = params;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     // Verify class belongs to user (admins can access all)
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id FROM classes WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT id FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [classId] : [classId, auth.user.id, auth.user.id])).first();
+        ? "SELECT id FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM classes WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [classId, branchId] : [classId, branchId, auth.user.id, auth.user.id])).first();
 
     if (!classCheck) {
       return new Response(JSON.stringify({ error: 'Class not found or access denied' }), { 
@@ -48,6 +53,8 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('[Unenroll Student Error]', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), { 
       status: 500,

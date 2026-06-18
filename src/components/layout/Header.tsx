@@ -11,6 +11,7 @@ import MoneyVisibilityToggle from './MoneyVisibilityToggle';
 import { useTranslation } from 'react-i18next';
 import { navigationItems, quickActions } from '../../lib/mobileMenuConfig';
 import { useTheme } from '../../context/useTheme';
+import { BranchSelector } from '../branches/BranchSelector';
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -73,6 +74,9 @@ export default function Header() {
 
         {/* Right: Theme toggle + Money toggle + User Avatar */}
         <div className="flex items-center gap-2">
+          {user?.role !== 'student' && (
+            <BranchSelector compact className="max-w-36" />
+          )}
           <MoneyVisibilityToggle
             className="p-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
           />
@@ -307,6 +311,7 @@ export default function Header() {
       {/* Desktop Header */}
       <header className="hidden md:flex h-16 bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/50 items-center px-6 ml-64">
         <div className="flex-1 flex items-center gap-4">
+          {user?.role !== 'student' && <BranchSelector />}
           {/* Unified search / command palette launcher */}
           <button
             type="button"

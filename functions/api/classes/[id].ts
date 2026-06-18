@@ -1,6 +1,10 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 import { logAuditAction, getClientIP } from '../../utils/db';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../utils/branches';
 
 interface ClassRecord {
   id: string;
@@ -22,6 +26,26 @@ interface ClassRecord {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  branch_id: string;
+}
+
+async function canAccessClass(
+  env: Env,
+  classId: string,
+  branchId: string,
+  user: { id: string; role: string },
+): Promise<boolean> {
+  const query = user.role === 'admin'
+    ? 'SELECT id FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL'
+    : `SELECT id FROM classes
+       WHERE id = ? AND branch_id = ? AND deleted_at IS NULL
+         AND (created_by = ? OR instructor_id = ?)`;
+  const row = await env.DB.prepare(query)
+    .bind(...(user.role === 'admin'
+      ? [classId, branchId]
+      : [classId, branchId, user.id, user.id]))
+    .first<{ id: string }>();
+  return Boolean(row);
 }
 
 export async function onRequestGet({ request, env, params }: { request: Request; env: Env; params: { id: string } }) {
@@ -30,14 +54,17 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     if (!auth.authenticated) return new Response(JSON.stringify({ error: auth.error }), { status: 401, headers: { 'Content-Type': 'application/json' } });
 
     const id = params.id;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
     const { results } = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? 'SELECT * FROM classes WHERE id = ? AND deleted_at IS NULL'
-        : 'SELECT * FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL'
-    ).bind(...(auth.user.role === 'admin' ? [id] : [id, auth.user.id, auth.user.id])).all<ClassRecord>();
+        ? 'SELECT * FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL'
+        : 'SELECT * FROM classes WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL'
+    ).bind(...(auth.user.role === 'admin' ? [id, branchId] : [id, branchId, auth.user.id, auth.user.id])).all<ClassRecord>();
     if (!results || results.length === 0) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     return new Response(JSON.stringify(results[0]), { headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
@@ -48,6 +75,13 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     if (!auth.authenticated) return new Response(JSON.stringify({ error: auth.error }), { status: 401, headers: { 'Content-Type': 'application/json' } });
 
     const id = params.id;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
+    if (!await canAccessClass(env, id, branchId, auth.user)) {
+      return new Response(JSON.stringify({ error: 'Class not found or access denied' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
     const body = await request.json();
     const url = new URL(request.url);
     const applyTo = (body.applyTo as string) || url.searchParams.get('applyTo') || 'single';
@@ -118,6 +152,8 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     const { results } = await env.DB.prepare('SELECT * FROM classes WHERE id = ?').bind(id).all<ClassRecord>();
     return new Response(JSON.stringify(results?.[0] || {}), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
@@ -128,6 +164,13 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
     if (!auth.authenticated) return new Response(JSON.stringify({ error: auth.error }), { status: 401, headers: { 'Content-Type': 'application/json' } });
 
     const id = params.id;
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
+    if (!await canAccessClass(env, id, branchId, auth.user)) {
+      return new Response(JSON.stringify({ error: 'Class not found or access denied' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
     const url = new URL(request.url);
     const applyTo = url.searchParams.get('applyTo') || 'single';
     const now = new Date().toISOString();
@@ -170,6 +213,8 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

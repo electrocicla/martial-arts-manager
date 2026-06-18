@@ -22,6 +22,10 @@ import {
   withNotificationsTable,
 } from '../../../utils/notifications';
 import { getPaymentCycleStatus } from '../../../utils/payment-cycle';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../utils/branches';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 const MAX_BULK_RECIPIENTS = 500;
@@ -86,6 +90,7 @@ export async function onRequestPost({
     if (auth.user.role !== 'admin' && auth.user.role !== 'instructor') {
       return jsonResponse({ error: 'Access denied' }, 403);
     }
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     await ensureNotificationsSchema(env.DB);
 
@@ -108,23 +113,24 @@ export async function onRequestPost({
         : ' AND (s.created_by = ? OR s.instructor_id = ?)';
 
       const stmt = env.DB.prepare(
-        `SELECT s.id, s.name, s.join_date, s.created_at,
+        `SELECT s.id, s.name, COALESCE(sba.started_at, s.join_date) AS join_date, s.created_at,
                 u.id AS user_id,
                 MAX(CASE WHEN p.status = 'completed' THEN p.date END) AS last_completed_date,
                 (SELECT amount FROM payments
-                   WHERE student_id = s.id AND status = 'completed' AND deleted_at IS NULL
+                   WHERE student_id = s.id AND branch_id = ? AND status = 'completed' AND deleted_at IS NULL
                    ORDER BY date DESC LIMIT 1) AS last_completed_amount,
                 AVG(CASE WHEN p.status = 'completed' THEN p.amount ELSE NULL END) AS avg_amount
            FROM students s
            LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
-           LEFT JOIN payments p ON p.student_id = s.id AND p.deleted_at IS NULL
-          WHERE s.deleted_at IS NULL AND s.is_active = 1${ownershipClause}
+           LEFT JOIN payments p ON p.student_id = s.id AND p.branch_id = ? AND p.deleted_at IS NULL
+           LEFT JOIN student_branch_assignments sba ON sba.student_id = s.id AND sba.ended_at IS NULL
+          WHERE s.deleted_at IS NULL AND s.is_active = 1 AND s.branch_id = ?${ownershipClause}
           GROUP BY s.id
           LIMIT ?`,
       );
       const bound = isAdmin
-        ? stmt.bind(MAX_BULK_RECIPIENTS)
-        : stmt.bind(auth.user.id, auth.user.id, MAX_BULK_RECIPIENTS);
+        ? stmt.bind(branchId, branchId, branchId, MAX_BULK_RECIPIENTS)
+        : stmt.bind(branchId, branchId, branchId, auth.user.id, auth.user.id, MAX_BULK_RECIPIENTS);
 
       const { results } = await bound.all<OverdueRow>();
       const today = new Date();
@@ -158,20 +164,21 @@ export async function onRequestPost({
           : ' AND (s.created_by = ? OR s.instructor_id = ?)';
 
         const stmt = env.DB.prepare(
-          `SELECT s.id, s.name, s.join_date, s.created_at,
+          `SELECT s.id, s.name, COALESCE(sba.started_at, s.join_date) AS join_date, s.created_at,
                   u.id AS user_id,
             MAX(CASE WHEN p.status = 'completed' THEN p.date END) AS last_completed_date,
                   (SELECT amount FROM payments
-                     WHERE student_id = s.id AND status = 'completed' AND deleted_at IS NULL
+                     WHERE student_id = s.id AND branch_id = ? AND status = 'completed' AND deleted_at IS NULL
                      ORDER BY date DESC LIMIT 1) AS last_completed_amount,
             AVG(CASE WHEN p.status = 'completed' THEN p.amount ELSE NULL END) AS avg_amount
              FROM students s
              LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
-             LEFT JOIN payments p ON p.student_id = s.id AND p.deleted_at IS NULL
-            WHERE s.deleted_at IS NULL AND s.id IN (${placeholders})${ownershipClause}
+             LEFT JOIN payments p ON p.student_id = s.id AND p.branch_id = ? AND p.deleted_at IS NULL
+             LEFT JOIN student_branch_assignments sba ON sba.student_id = s.id AND sba.ended_at IS NULL
+            WHERE s.deleted_at IS NULL AND s.branch_id = ? AND s.id IN (${placeholders})${ownershipClause}
             GROUP BY s.id`,
         );
-        const params: string[] = [...chunk];
+        const params: string[] = [branchId, branchId, branchId, ...chunk];
         if (!isAdmin) {
           params.push(auth.user.id, auth.user.id);
         }
@@ -253,6 +260,7 @@ export async function onRequestPost({
         issuedBy: auth.user.id,
         issuedAt: isoNow,
         bulk: true,
+        branchId,
       });
       const notificationId = crypto.randomUUID();
 
@@ -302,6 +310,8 @@ export async function onRequestPost({
       results,
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('Bulk notify-overdue error:', error);
     return jsonResponse({ error: (error as Error).message }, 500);
   }
