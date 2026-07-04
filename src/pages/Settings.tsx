@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import {
   AccountPreferencesSettings,
+  PasswordSettings,
   AppearanceSettings,
   MercadoPagoSettings,
   MobileSettings,
@@ -63,7 +64,12 @@ const SETTINGS_TABS: SettingsTabDefinition[] = [
 function renderSettingsPanel(activeTab: SettingsTab) {
   switch (activeTab) {
     case 'account':
-      return <AccountPreferencesSettings />;
+      return (
+        <div className="space-y-6">
+          <AccountPreferencesSettings />
+          <PasswordSettings />
+        </div>
+      );
     case 'notifications':
       return <NotificationSettings />;
     case 'appearance':
@@ -73,7 +79,12 @@ function renderSettingsPanel(activeTab: SettingsTab) {
     case 'mercadopago':
       return <MercadoPagoSettings />;
     default:
-      return <AccountPreferencesSettings />;
+      return (
+        <div className="space-y-6">
+          <AccountPreferencesSettings />
+          <PasswordSettings />
+        </div>
+      );
   }
 }
 

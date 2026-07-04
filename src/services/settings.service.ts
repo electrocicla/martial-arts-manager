@@ -7,6 +7,10 @@ export const settingsService = {
 
   async saveSection(section: string, value: unknown) {
     return apiClient.put('/api/settings', { section, value });
+  },
+
+  async changePassword(data: { currentPassword: string; newPassword: string }) {
+    return apiClient.post<{ success: boolean; message: string }>('/api/account/change-password', data);
   }
 };
 
