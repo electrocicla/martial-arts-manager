@@ -13,7 +13,7 @@ interface PaymentHistoryMonthCardProps {
   month: PaymentHistoryMonth;
   monthLabel: string;
   formatCurrency: (amount: number) => string;
-  formatDateTime: (iso: string) => string;
+  formatPaymentDate: (value: string) => string;
   defaultExpanded?: boolean;
 }
 
@@ -21,7 +21,7 @@ export default function PaymentHistoryMonthCard({
   month,
   monthLabel,
   formatCurrency,
-  formatDateTime,
+  formatPaymentDate,
   defaultExpanded = false,
 }: PaymentHistoryMonthCardProps) {
   const { t } = useTranslation();
@@ -108,7 +108,7 @@ export default function PaymentHistoryMonthCard({
           <PaymentHistoryMonthDetails
             payments={month.payments}
             formatCurrency={formatCurrency}
-            formatDateTime={formatDateTime}
+            formatPaymentDate={formatPaymentDate}
           />
         </div>
       )}

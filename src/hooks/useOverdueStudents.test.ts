@@ -83,12 +83,15 @@ describe('useOverdueStudents', () => {
       expect(result.current.pendingNotifications.has('s-1')).toBe(true);
     });
 
-    act(() => {
+    let outcome: { success: boolean; error?: string } | undefined;
+    await act(async () => {
       resolveNotify?.({ success: true, data: { success: true, notificationId: 'n-1' } });
+      if (notifyPromise) {
+        outcome = await notifyPromise;
+      }
     });
 
-    const outcome = await notifyPromise!;
-    expect(outcome.success).toBe(true);
+    expect(outcome?.success).toBe(true);
 
     await waitFor(() => {
       expect(result.current.pendingNotifications.has('s-1')).toBe(false);

@@ -1,6 +1,7 @@
 import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
 import { logAuditAction, getClientIP } from '../utils/db';
+import { isValidPaymentDate } from '../utils/payment-history';
 import {
   branchErrorResponse,
   resolveRequestBranchId,
@@ -150,8 +151,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       return new Response(JSON.stringify({ error: 'amount must be a valid non-negative number' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    if (!date || typeof date !== 'string') {
-      return new Response(JSON.stringify({ error: 'date is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    if (!date || typeof date !== 'string' || !isValidPaymentDate(date)) {
+      return new Response(JSON.stringify({ error: 'date must use the YYYY-MM-DD format and be a valid calendar date' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
     if (!type || typeof type !== 'string') {
       return new Response(JSON.stringify({ error: 'type is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
@@ -208,7 +209,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
           AND deleted_at IS NULL
             AND notes LIKE ?
           AND strftime('%Y-%m', date) = ?
-          `).bind(now, studentId, branchId, paymentId, AUTO_PENDING_PLACEHOLDER_NOTE, paymentMonth).run().catch(() => null);
+          `).bind(now, studentId, branchId, paymentId, AUTO_PENDING_PLACEHOLDER_NOTE, paymentMonth).run().catch((cleanupError: unknown) => {
+            console.error('Failed to remove auto-generated payment placeholder:', cleanupError);
+          });
     }
 
     // Non-blocking audit log
@@ -219,7 +222,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       entity_type: 'payment',
       entity_id: paymentId,
       ip_address: getClientIP(request),
-    }).catch(() => {});
+    }).catch((auditError: unknown) => {
+      console.error('Failed to write payment audit log:', auditError);
+    });
 
     // Return the full payment record so the client can immediately use it
     const payment = await env.DB.prepare(`
@@ -253,6 +258,14 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     const id = body['id'] as string | undefined;
     if (!id) {
       return new Response(JSON.stringify({ error: 'Payment id is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    const updatedDate = body['date'];
+    if (
+      updatedDate !== undefined
+      && (typeof updatedDate !== 'string' || !isValidPaymentDate(updatedDate))
+    ) {
+      return new Response(JSON.stringify({ error: 'date must use the YYYY-MM-DD format and be a valid calendar date' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     // Verify payment exists
@@ -299,7 +312,9 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       entity_type: 'payment',
       entity_id: id,
       ip_address: getClientIP(request),
-    }).catch(() => {});
+    }).catch((auditError: unknown) => {
+      console.error('Failed to write payment audit log:', auditError);
+    });
 
     const updated = await env.DB.prepare(
       'SELECT p.*, s.name as student_name FROM payments p INNER JOIN students s ON p.student_id = s.id WHERE p.id = ? AND p.branch_id = ?'
@@ -354,7 +369,9 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
       entity_type: 'payment',
       entity_id: id,
       ip_address: getClientIP(request),
-    }).catch(() => {});
+    }).catch((auditError: unknown) => {
+      console.error('Failed to write payment audit log:', auditError);
+    });
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {

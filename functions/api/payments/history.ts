@@ -1,10 +1,9 @@
 /**
  * GET /api/payments/history
  *
- * Returns payments grouped by month for the admin/instructor payments
- * dashboard. Each bucket contains a quick summary plus the full list of
- * payments in that month so the UI can render both the collapsed and the
- * expanded view without additional round-trips.
+ * Returns payments grouped by their accounting month. The accounting period
+ * is derived from `payments.date`, not from the database creation timestamp,
+ * so retroactive payments remain in the month selected by the administrator.
  *
  * Access:
  *   - admin: all payments
@@ -17,50 +16,24 @@ import {
   branchErrorResponse,
   resolveRequestBranchId,
 } from '../../utils/branches';
-
-interface PaymentHistoryRow {
-  id: string;
-  student_id: string;
-  student_name: string;
-  student_email: string;
-  amount: number;
-  date: string;
-  type: string;
-  notes: string | null;
-  status: string;
-  payment_method: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-interface MonthBucket {
-  monthKey: string;
-  totalAmount: number;
-  totalCount: number;
-  completedCount: number;
-  pendingCount: number;
-  failedCount: number;
-  refundedCount: number;
-  payments: PaymentHistoryRow[];
-}
-
-interface HistoryResponse {
-  months: MonthBucket[];
-  totals: {
-    totalAmount: number;
-    totalCount: number;
-    completedAmount: number;
-    pendingAmount: number;
-    monthsTracked: number;
-  };
-}
+import {
+  aggregatePaymentHistory,
+  type PaymentHistoryRow,
+} from '../../utils/payment-history';
 
 const AUTO_PENDING_PLACEHOLDER_NOTE = 'Auto-generated pending monthly payment%';
 
-const JSON_HEADERS = { 'Content-Type': 'application/json' };
+const JSON_HEADERS = {
+  'Content-Type': 'application/json',
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+};
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown payment history error';
 }
 
 export async function onRequestGet({
@@ -79,6 +52,7 @@ export async function onRequestGet({
     if (auth.user.role !== 'admin' && auth.user.role !== 'instructor') {
       return jsonResponse({ error: 'Access denied' }, 403);
     }
+
     const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     let query = `
@@ -128,72 +102,12 @@ export async function onRequestGet({
       .bind(...params)
       .all<PaymentHistoryRow>();
 
-    const rows = results ?? [];
-    const buckets = new Map<string, MonthBucket>();
-    const totals = {
-      totalAmount: 0,
-      totalCount: rows.length,
-      completedAmount: 0,
-      pendingAmount: 0,
-      monthsTracked: 0,
-    };
-
-    for (const row of rows) {
-      const monthKey = (row.date ?? '').slice(0, 7) || 'unknown';
-      let bucket = buckets.get(monthKey);
-      if (!bucket) {
-        bucket = {
-          monthKey,
-          totalAmount: 0,
-          totalCount: 0,
-          completedCount: 0,
-          pendingCount: 0,
-          failedCount: 0,
-          refundedCount: 0,
-          payments: [],
-        };
-        buckets.set(monthKey, bucket);
-      }
-
-      const amount = Number(row.amount) || 0;
-      bucket.payments.push(row);
-      bucket.totalCount += 1;
-
-      switch (row.status) {
-        case 'completed':
-          bucket.completedCount += 1;
-          bucket.totalAmount += amount;
-          totals.totalAmount += amount;
-          totals.completedAmount += amount;
-          break;
-        case 'refunded':
-          bucket.refundedCount += 1;
-          bucket.totalAmount -= amount;
-          totals.totalAmount -= amount;
-          break;
-        case 'pending':
-          bucket.pendingCount += 1;
-          totals.pendingAmount += amount;
-          break;
-        case 'failed':
-          bucket.failedCount += 1;
-          break;
-        default:
-          break;
-      }
-    }
-
-    const months = Array.from(buckets.values()).sort((a, b) =>
-      a.monthKey < b.monthKey ? 1 : a.monthKey > b.monthKey ? -1 : 0,
-    );
-    totals.monthsTracked = months.length;
-
-    const response: HistoryResponse = { months, totals };
-    return jsonResponse(response);
+    return jsonResponse(aggregatePaymentHistory(results ?? []));
   } catch (error) {
     const branchResponse = branchErrorResponse(error);
     if (branchResponse) return branchResponse;
+
     console.error('Payment history error:', error);
-    return jsonResponse({ error: (error as Error).message }, 500);
+    return jsonResponse({ error: getErrorMessage(error) }, 500);
   }
 }

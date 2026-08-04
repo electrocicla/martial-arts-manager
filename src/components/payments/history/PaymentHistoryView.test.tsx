@@ -24,7 +24,7 @@ vi.mock('../../../hooks/usePaymentHistory', () => ({
 const sample: PaymentHistoryResponse = {
   months: [
     {
-      monthKey: '2026-01',
+      monthKey: '2026-07',
       totalAmount: 35000,
       totalCount: 1,
       completedCount: 1,
@@ -38,13 +38,13 @@ const sample: PaymentHistoryResponse = {
           student_name: 'Alice',
           student_email: 'alice@example.com',
           amount: 35000,
-          date: '2026-01-05',
+          date: '2026-07-05',
           type: 'monthly',
           notes: null,
           status: 'completed',
           payment_method: 'cash',
-          created_at: '2026-01-05T12:00:00Z',
-          updated_at: '2026-01-05T12:00:00Z',
+          created_at: '2026-08-05T12:00:00Z',
+          updated_at: '2026-08-05T12:00:00Z',
         },
       ],
     },
@@ -94,6 +94,10 @@ describe('PaymentHistoryView', () => {
     render(<PaymentHistoryView />);
 
     expect(screen.getByText('Payment history')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'July 2026' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'June 2026' })).not.toBeInTheDocument();
+    expect(screen.getAllByText('Jul 5, 2026').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/Aug 5, 2026/)).not.toBeInTheDocument();
     // First month is auto-expanded → student name renders.
     // The details panel renders both a mobile card layout and a desktop table
     // (Tailwind responsive classes hide one or the other in the browser; in

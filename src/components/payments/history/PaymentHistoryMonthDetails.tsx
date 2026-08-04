@@ -9,7 +9,7 @@ import type { PaymentHistoryRow } from '../../../services';
 interface PaymentHistoryMonthDetailsProps {
   payments: PaymentHistoryRow[];
   formatCurrency: (amount: number) => string;
-  formatDateTime: (iso: string) => string;
+  formatPaymentDate: (value: string) => string;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -22,7 +22,7 @@ const STATUS_STYLES: Record<string, string> = {
 export default function PaymentHistoryMonthDetails({
   payments,
   formatCurrency,
-  formatDateTime,
+  formatPaymentDate,
 }: PaymentHistoryMonthDetailsProps) {
   const { t } = useTranslation();
 
@@ -57,7 +57,7 @@ export default function PaymentHistoryMonthDetails({
                     {formatCurrency(Number(payment.amount) || 0)}
                   </div>
                   <div className="text-[10px] text-gray-400 whitespace-nowrap">
-                    {formatDateTime(payment.created_at || payment.date)}
+                    {formatPaymentDate(payment.date)}
                   </div>
                 </div>
               </div>
@@ -94,7 +94,7 @@ export default function PaymentHistoryMonthDetails({
             <th className="py-2 pr-4">{t('payments.history.table.type', 'Type')}</th>
             <th className="py-2 pr-4">{t('payments.history.table.status', 'Status')}</th>
             <th className="py-2 pr-4">{t('payments.history.table.method', 'Method')}</th>
-            <th className="py-2 pr-4">{t('payments.history.table.dateTime', 'Date &amp; time')}</th>
+            <th className="py-2 pr-4">{t('payments.history.table.paymentDate', 'Payment date')}</th>
             <th className="py-2">{t('payments.history.table.notes', 'Notes')}</th>
           </tr>
         </thead>
@@ -122,7 +122,7 @@ export default function PaymentHistoryMonthDetails({
               </td>
               <td className="py-2 pr-4">{payment.payment_method ?? '—'}</td>
               <td className="py-2 pr-4 whitespace-nowrap text-gray-300">
-                {formatDateTime(payment.created_at || payment.date)}
+                {formatPaymentDate(payment.date)}
               </td>
               <td className="py-2 text-gray-400 max-w-[20rem] truncate" title={payment.notes ?? ''}>
                 {payment.notes ?? '—'}

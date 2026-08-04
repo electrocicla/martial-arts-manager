@@ -8,6 +8,10 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../ui/Button';
 import { usePaymentHistory } from '../../../hooks/usePaymentHistory';
+import {
+  formatPaymentDate,
+  formatPaymentMonthLabel,
+} from '../../../lib/paymentHistoryDate';
 import PaymentHistorySummary from './PaymentHistorySummary';
 import PaymentHistoryMonthCard from './PaymentHistoryMonthCard';
 import PaymentHistoryEmptyState from './PaymentHistoryEmptyState';
@@ -35,30 +39,12 @@ export default function PaymentHistoryView() {
   );
 
   const formatMonthLabel = useMemo(
-    () => (monthKey: string) => {
-      const match = monthKey.match(/^(\d{4})-(\d{2})$/);
-      if (!match) return monthKey;
-      const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, 1));
-      return date.toLocaleDateString(locale, { year: 'numeric', month: 'long' });
-    },
+    () => (monthKey: string) => formatPaymentMonthLabel(monthKey, locale),
     [locale],
   );
 
-  const formatDateTime = useMemo(
-    () => (iso: string) => {
-      if (!iso) return '—';
-      try {
-        return new Date(iso).toLocaleString(locale, {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-      } catch {
-        return iso;
-      }
-    },
+  const formatAccountingDate = useMemo(
+    () => (value: string) => formatPaymentDate(value, locale),
     [locale],
   );
 
@@ -121,7 +107,7 @@ export default function PaymentHistoryView() {
             month={month}
             monthLabel={formatMonthLabel(month.monthKey)}
             formatCurrency={formatCurrency}
-            formatDateTime={formatDateTime}
+            formatPaymentDate={formatAccountingDate}
             defaultExpanded={index === 0}
           />
         ))}

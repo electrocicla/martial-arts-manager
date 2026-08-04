@@ -560,7 +560,7 @@
         "type": "Type",
         "status": "Status",
         "method": "Method",
-        "dateTime": "Date & time",
+        "paymentDate": "Payment date",
         "notes": "Notes"
       },
       "empty": {

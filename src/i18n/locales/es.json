@@ -561,7 +561,7 @@
         "type": "Tipo",
         "status": "Estado",
         "method": "Método",
-        "dateTime": "Fecha y hora",
+        "paymentDate": "Fecha de pago",
         "notes": "Notas"
       },
       "empty": {

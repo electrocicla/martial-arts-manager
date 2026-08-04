@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { DISCIPLINES } from './constants';
+import { isValidPaymentDate } from './paymentHistoryDate';
 
 const disciplineEnum = z.enum(DISCIPLINES as [string, ...string[]]);
 
@@ -75,7 +76,9 @@ export const paymentSchema = z.object({
   amount: z.number().min(0.01, 'Amount must be greater than 0'),
   type: z.enum(['monthly', 'drop-in', 'private', 'equipment', 'other']),
   notes: z.string().optional(),
-  date: z.string().min(1, 'Payment date is required'),
+  date: z.string()
+    .min(1, 'Payment date is required')
+    .refine(isValidPaymentDate, 'Payment date must be a valid calendar date'),
   status: z.enum(['completed', 'pending', 'failed', 'refunded']).default('completed'),
 });
 
