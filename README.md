@@ -1,731 +1,158 @@
-# 🥋 Martial Arts Manager
+# Martial Arts Manager
 
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.0-06B6D4?logo=tailwindcss)
-![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-green)
+[![CI](https://github.com/electrocicla/martial-arts-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/electrocicla/martial-arts-manager/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/electrocicla/martial-arts-manager/actions/workflows/codeql.yml/badge.svg)](https://github.com/electrocicla/martial-arts-manager/actions/workflows/codeql.yml)
+[![Release](https://img.shields.io/github/v/release/electrocicla/martial-arts-manager)](https://github.com/electrocicla/martial-arts-manager/releases)
+[![License](https://img.shields.io/github/license/electrocicla/martial-arts-manager)](LICENSE)
 
-A comprehensive Martial Arts management web application built with React 19 + TypeScript, powered by Cloudflare Pages + Functions and D1 database. Features complete student management, class scheduling, payment tracking, attendance systems, and business analytics.
+Open-source management platform for martial-arts schools and academies. The project combines a React/TypeScript application with Cloudflare Pages Functions and D1 to manage students, classes, attendance, payments, belt progression, branch operations, and analytics.
 
-🌐 **Live Demo**: Deployed on Cloudflare Pages with full functionality
+**Production:** https://hamarr.cl
 
-## Current Status (January 2026)
+**Latest stable release:** `v1.0.1`
 
-✅ **Fully Functional Production Application**
-- Complete CRUD operations for students, classes, payments, and attendance
-- JWT-based authentication with role-based access control
-- QR code attendance system with student portal
-- Account approval system for manual registrations
-- Comprehensive analytics dashboard with real-time metrics
-- Multi-language support (English, Spanish, Portuguese)
-- Mobile-optimized responsive design
-- Comprehensive test suite with Vitest
-- Professional UI component library with dark mode support
+## Why this project exists
 
-🎯 **Recent Major Features**
-- **Account Approval System**: Manual registration approval workflow for admins
-- **QR Attendance System**: Student portal with QR code check-in functionality
-- **Enhanced Testing**: Complete Vitest test suite with 100% coverage preparation
-- **Calendar Improvements**: Enhanced UI and scheduling features
-- **Payment System**: Robust payment tracking and financial analytics
+Martial-arts schools often need operational software that reflects dojo-specific workflows instead of generic CRM assumptions. Martial Arts Manager provides a reusable OSS implementation for student lifecycle management, class scheduling, QR attendance, payments, belt progression, role-based access, and multi-branch administration.
 
-🚀 **Performance & Quality**
-- 90+ Lighthouse scores on mobile and desktop
-- 40%+ mobile performance improvements
-- 100% TypeScript type safety
-- ESLint compliant codebase
-- Production-ready deployment on Cloudflare Pages
+The repository is actively maintained and the same codebase is used for the live Hamarr deployment.
+
+## Core capabilities
+
+- Student management and progression tracking.
+- Class scheduling, capacity, instructors, and branch-aware operations.
+- QR-based attendance and student attendance history.
+- Payment tracking, overdue workflows, history, and operational reporting.
+- Belt testing and progression workflows.
+- Admin, instructor, and student roles with server-side authorization.
+- Multi-branch management and branch-scoped data access.
+- Analytics dashboards backed by application data.
+- English, Spanish, and Portuguese internationalization.
+- Responsive web/PWA surfaces with Capacitor/TWA mobile distribution workflows.
+
+## Architecture
+
+```text
+src/                         React 19 application
+  components/                UI and domain components
+  hooks/                     reusable application hooks
+  context/                   auth, branch and app state
+  services/                  typed API clients
+  pages/                     routed application surfaces
+  i18n/                      translations
+
+functions/                   Cloudflare Pages Functions
+  api/                       HTTP endpoints
+  middleware/                authentication helpers
+  utils/                     database, JWT, rate limiting, payments, etc.
+
+android/                    Capacitor Android project
+docs/                        mobile/platform documentation
+migrations/                  D1 database migrations
+```
 
 
-## ✨ Features
+For trust boundaries, data flow, and deployment design, see [Architecture details](docs/ARCHITECTURE.md).
 
-### 🔐 **Complete Authentication System**
-- JWT-based authentication with access/refresh tokens
-- Role-based access control (Admin, Instructor, Student)
-- Secure PBKDF2 password hashing with Web Crypto API
-- Protected routes with automatic token refresh
-- Session management with database persistence
+## Technology
 
-### 🎨 **Professional UI Component Library**
-- **9 Custom UI Components**: Button, Input, Card, Modal, Select, Badge, Avatar, Skeleton, Toast
-- **Mobile-First Design**: Responsive across all devices with touch optimization
-- **Dark Mode Support**: Complete theme system with accessibility compliance
-- **Glass Morphism**: Modern design with backdrop blur and gradient effects
-- **WCAG Accessibility**: Full compliance with screen readers and keyboard navigation
+- React 19 + TypeScript 5.9
+- Vite / Rolldown
+- Tailwind CSS 4 + DaisyUI
+- React Hook Form + Zod
+- Cloudflare Pages Functions / Workers
+- Cloudflare D1
+- Vitest + Testing Library + MSW
+- Capacitor and Bubblewrap for mobile distribution workflows
 
-### 📊 **Advanced Management Features**
-- **Student Management**: Complete CRUD with search, filtering, belt progression tracking
-- **Class Management**: Scheduling, capacity management, instructor assignment, recurrence patterns
-- **Payment Tracking**: Multiple payment types, status tracking, revenue analytics with real calculations
-- **Attendance System**: Real-time check-in, attendance history, QR code integration with student portal
-- **Account Approval System**: Admin approval workflow for manual student registrations
-- **Analytics Dashboard**: Live business metrics, trend analysis, performance insights
-- **Belt Testing**: Comprehensive testing system with progress tracking and certification
+## Security model
 
-### 🚀 **Modern Tech Stack**
-- **Frontend**: React 19 with TypeScript 5.9, Vite with Rolldown bundler
-- **Styling**: Tailwind CSS 4 with custom design system and component library
-- **Backend**: Cloudflare Workers with Cloudflare D1 SQLite database
-- **Authentication**: JWT with Web Crypto API and secure session management
-- **Forms**: React Hook Form + Zod validation with comprehensive error handling
-- **State Management**: Custom hooks with real-time data synchronization
-- **Charts**: Recharts integration for advanced analytics visualization
+Security controls are enforced at the server boundary rather than relying on UI visibility.
 
-### 🌍 **Multi-Language Support**
-- **Complete Internationalization**: English, Spanish, and Portuguese support
-- **React i18next Integration**: Industry-standard i18n framework with language detection
-- **Automatic Language Detection**: Browser language detection with localStorage persistence
-- **Seamless Language Switching**: Real-time language switching without page reload
-- **Complete Translation Coverage**: All UI elements, landing page, and user-facing text translated
-- **Martial Arts Terminology**: Proper translations for belt ranks, dojo terms, and martial arts concepts
-- **GPU Acceleration**: Hardware acceleration hints, CSS containment for mobile devices
-- **Real-time Monitoring**: FPS tracking and performance metrics in development mode
-- **Lazy Loading**: Intersection Observer for viewport-based rendering optimization
+- Public registration is constrained to the student role.
+- Admin/instructor/student authorization is checked by API handlers.
+- Student listing is blocked for student accounts to protect PII.
+- Access tokens are held in application memory; refresh tokens use secure HTTP-only cookies for the web flow.
+- Authentication endpoints use rate limiting and Cloudflare Turnstile where configured.
+- Responses include CSP, HSTS, anti-framing, MIME-sniffing, referrer, permissions, and cross-origin security headers.
+- Production secrets are supplied through Cloudflare secret storage and are not committed.
+- Local D1 state, exports, query results, diagnostic output, and production data are excluded from Git.
 
-### 🚀 **Latest Improvements (October 2025)**
-- **Complete Form Translations**: All modal forms (Student, Class, Dashboard) fully translated to Spanish
-- **Enhanced UI Components**: Improved button styling with gradient backgrounds and hover animations
-- **Dashboard Optimization**: Streamlined Quick Actions with modern design and better UX
-- **Mobile Navigation**: Enhanced mobile menu with proper translation support and cleaner layout
-- **Form Validation**: Comprehensive error messages in all supported languages
-- **Professional Polish**: Removed UI inconsistencies and improved overall user experience
-- **Production Ready**: All components tested and optimized for production deployment
-  NOTE: The app is currently deployed to a Pages preview. Several production-grade features are implemented, but a small number of polish tasks remain (see "Current status" below).
+See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
-## ✨ Features
+## Local development
 
-### 🔐 **Complete Authentication System**
-- JWT-based authentication with refresh tokens
-- Role-based access control (Admin, Instructor, Student)
-- Secure password hashing with PBKDF2
-- Protected routes and session management
+### Requirements
 
-### 🎨 **Professional UI Component Library**
-- **9 Custom UI Components**: Button, Input, Card, Modal, Select, Badge, Avatar, Skeleton, Toast
-- **Mobile-First Design**: Responsive across all devices with touch optimization
-- **Dark Mode Support**: Complete theme system with accessibility compliance
-- **Glass Morphism**: Modern design with backdrop blur and gradient effects
-- **WCAG Accessibility**: Full compliance with screen readers and keyboard navigation
-
-### 📊 **Advanced Management Features**
-- **Student Management**: Complete CRUD with search, filtering, belt progression tracking
-- **Class Management**: Scheduling with dynamic metadata, capacity management, instructor assignment, recurrence patterns
-- **Payment Tracking**: Multiple payment types, status tracking, revenue analytics with real calculations
-- **Attendance System**: Real-time check-in with actual enrollment counts, attendance history, QR code integration ready
-- **Analytics Dashboard**: Live business metrics from database, trend analysis, performance insights
-- **Belt Testing**: Comprehensive testing system with real instructor/location data from classes
-- **Dynamic Forms**: All form dropdowns populated from actual database values (no hardcoded data)
-
-### 🔍 **Advanced Search & Filtering**
-- **Real-time Search**: Debounced search across all entities with instant results
-- **Multi-filter System**: Complex filtering by multiple criteria simultaneously
-- **Smart Sorting**: Multiple sort options with visual indicators
-- **Pagination**: Efficient data loading with virtual scrolling support
-- **Export Ready**: CSV export functionality prepared for all data views
-
-### 📈 **Business Intelligence**
-- **Live Analytics**: Real-time calculations from actual database records
-- **Revenue Tracking**: Payment analytics with trend analysis and forecasting
-- **Student Metrics**: Enrollment trends, retention analysis, belt progression stats
-- **Class Performance**: Attendance rates, capacity utilization, instructor metrics
-- **Financial Dashboard**: Payment status tracking, outstanding balances, revenue reports
-
-### 🚀 **Modern Tech Stack**
-- **Frontend**: React 19 with TypeScript 5.9, Vite with Rolldown bundler
-- **Styling**: Tailwind CSS 4 with custom design system and component library
-- **Backend**: Cloudflare Workers with Cloudflare D1 SQLite database
-- **Authentication**: JWT with Web Crypto API and secure session management
-- **Internationalization**: React i18next with browser language detection (English, Spanish, Portuguese)
-- **Forms**: React Hook Form + Zod validation with comprehensive error handling
-- **State Management**: Custom hooks with real-time data synchronization
-- **Charts**: Recharts integration for advanced analytics visualization
-- **Icons**: Lucide React with comprehensive icon library
-- **Notifications**: Sonner toast system with multiple notification types
-
-### 🏗️ **Architecture & Quality**
-- **100% Type Safety**: Zero 'any' types, comprehensive TypeScript interfaces
-- **SOLID Principles**: Clean architecture with proper separation of concerns
-- **Service Layer**: Dedicated service classes for API communication
-- **Custom Hooks**: 20+ specialized hooks for data management and UI logic
-- **Error Handling**: Comprehensive error boundaries and user feedback
-- **Testing Ready**: Full test infrastructure prepared for unit and integration tests
-
-### ⚡ **Performance Optimizations**
-- **70%+ Mobile Performance Improvement**: Combined optimizations across multiple phases
-- **Smart Device Detection**: Dynamic particle counts (3-12 mobile vs 12-25 desktop)
-- **GPU Acceleration**: Hardware acceleration hints, CSS containment for mobile devices
-- **Frame Skipping**: Intelligent frame rate management (20fps mobile, 40fps desktop particles)
-- **Conditional Rendering**: Performance-based visual effects and animation selection
-- **Intersection Observer**: Aggressive lazy loading with 300px mobile margins
-- **CSS-based Animations**: GPU-accelerated animations replacing JavaScript for mobile
-- **Memory Efficiency**: 60% reduction in garbage collection pressure through object pooling
-- **Real-time Monitoring**: FPS tracking and performance metrics in development mode
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [pnpm](https://pnpm.io/) package manager
-- [Cloudflare account](https://dash.cloudflare.com/sign-up)
-- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/)
-
-### 1. Clone the Repository
+- Node.js 22
+- pnpm 10
 
 ```bash
-git clone https://github.com/yourusername/martial-arts-manager.git
+git clone https://github.com/electrocicla/martial-arts-manager.git
 cd martial-arts-manager
-```
-
-### 2. Install Dependencies
-
-```bash
-pnpm install
-```
-
-### 3. Set Up Cloudflare Services
-
-Follow the [Cloudflare Setup Guide](#-cloudflare-setup-guide) below for complete configuration.
-
-### 4. Run Development Server
-
-```bash
-# Start the development server with Cloudflare Workers
-pnpm dev
-
-# Or run locally without Cloudflare integration
+pnpm install --frozen-lockfile
 pnpm dev:local
 ```
 
-### 5. Build for Production
+To run against the Cloudflare Pages Functions development runtime:
 
 ```bash
-pnpm build
-```
-
-### 6. Deploy to Cloudflare Pages
-
-```bash
-pnpm deploy
-```
-
-## ☁️ Cloudflare Setup Guide
-
-This application uses several Cloudflare services. Follow this step-by-step guide to set up your environment.
-
-### Step 1: Install Wrangler CLI
-
-```bash
-# Install Wrangler globally
-npm install -g wrangler
-
-# Login to Cloudflare
-wrangler login
-```
-
-### Step 2: Set Up Cloudflare D1 Database
-
-```bash
-# Create a new D1 database
-wrangler d1 create martial-arts-db
-
-# This will output something like:
-# database_id = "4ad2408a-54e1-45e3-a352-42be3e284299"
-```
-
-Update your `wrangler.toml` with the database ID:
-
-```toml
-name = "martial-arts-manager"
-pages_build_output_dir = "dist"
-compatibility_date = "2023-12-01"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "martial-arts-db"
-database_id = "YOUR_DATABASE_ID_HERE"
-
-[env.production]
-d1_databases = [
-  { binding = "DB", database_name = "martial-arts-db", database_id = "YOUR_DATABASE_ID_HERE" }
-]
-```
-
-### Step 3: Initialize Database Schema
-
-```bash
-# Execute the database schema
-wrangler d1 execute martial-arts-db --local --file=./schema.sql
-
-# For production
-wrangler d1 execute martial-arts-db --file=./schema.sql
-```
-
-### Step 4: Set Up JWT Secret
-
-```bash
-# Generate a secure JWT secret (32+ characters)
-# You can use: openssl rand -base64 32
-
-# Set the JWT secret for local development
-wrangler pages secret put JWT_SECRET --local
-
-# Set the JWT secret for production
-wrangler pages secret put JWT_SECRET
-```
-
-When prompted, enter a secure random string (at least 32 characters).
-
-### Step 5: Create Cloudflare Pages Project
-
-```bash
-# Create a new Pages project
-wrangler pages project create martial-arts-manager
-
-# Connect to your Git repository (optional)
-# You can also deploy directly from your local machine
-```
-
-### Step 6: Configure Pages Functions
-
-Your `functions/` directory contains the API endpoints. Cloudflare Pages will automatically deploy these as serverless functions.
-
-### Step 7: Deploy to Production
-
-```bash
-# Build and deploy
-pnpm build
-wrangler pages deploy dist
-
-# Or use the deploy script
-pnpm deploy
-```
-
-### 7: Deploy to Production
-
-```bash
-# Build and deploy to Cloudflare Pages
-pnpm deploy
-
-# Or deploy with quick script (includes post-deploy hooks)
-pnpm deploy:quick
-```
-
-### 8: Verify Production Deployment
-
-1. Check your Cloudflare Dashboard → Pages
-2. Navigate to your live domain
-3. Test all authentication and CRUD operations
-4. Verify QR attendance system functionality
-5. Confirm account approval workflow
-
-## 🛠️ Development Scripts
-
-```bash
-# Development with Cloudflare Workers
 pnpm dev
+```
 
-# Local development (no Cloudflare functions)
-pnpm dev:local
+Local environment values belong in ignored environment files such as `.dev.vars` or `.env.local`. Never commit production credentials or production data.
 
-# Build for production
-pnpm build
+## Quality gates
 
-# Preview production build locally
-pnpm preview
+Run the complete local gate with:
 
-# Deploy to Cloudflare Pages
-pnpm deploy
+```bash
+pnpm check
+```
 
-# Quick deploy (build + deploy + post-deploy)
-pnpm deploy:quick
+Equivalent individual commands:
 
-# Lint code
-pnpm lint
-
-# Type checking
+```bash
 pnpm typecheck
-
-# Run tests
-pnpm test
-
-# Database operations (local)
-pnpm db:local
-
-# Database operations (production)
-pnpm db:prod
-```
-
-### 2026-01-23: Production Readiness & New Features 🚀
-
-#### Account Approval System
-- **Manual Registration Approval**: Implemented admin approval workflow for student registrations
-- **Approval Status Tracking**: Database-backed approval system with pending/active states
-- **Admin Dashboard Integration**: Approval queue visible in admin interface
-- **Email Notification System**: Ready for approval status notifications
-
-#### QR Code Attendance System
-- **Student Portal**: Dedicated student interface for attendance check-in
-- **QR Code Generation**: Dynamic QR codes for class attendance
-- **Real-time Check-in**: Instant attendance recording via QR scan
-- **Mobile Optimized**: Touch-friendly interface for mobile devices
-
-#### Testing Infrastructure
-- **Comprehensive Vitest Suite**: Complete test coverage with modern testing framework
-- **Component Testing**: UI component tests with React Testing Library
-- **Service Layer Testing**: API service mocking and integration tests
-- **Type-Safe Testing**: Full TypeScript support in test files
-
-#### Code Quality Improvements
-- **Hook Optimization**: Enhanced `usePendingApprovalsCount` with `useCallback` for performance
-- **Test Updates**: Updated test mocks to match current database schema
-- **Type Safety**: Improved TypeScript interfaces and error handling
-
-#### Repository Organization
-- **Internal Documentation**: Moved sensitive docs to gitignored `docs/` folder
-- **Clean Public Repository**: Removed build artifacts and internal files from public repo
-- **Improved .gitignore**: Enhanced ignore patterns for better repository hygiene
-
-### 2025-10-11: Code Quality & ESLint Compliance ✅
-
-#### ESLint Fixes - Zero Warnings/Errors
-- **Removed Unused Imports**: Cleaned up unused imports across authentication functions (`ApiResponse`, `logAuditAction`, `getClientIP`, `generateUserId`, `Env`, `D1BindValue`)
-- **TypeScript Type Safety**: Replaced all `any` types with proper TypeScript interfaces:
-  - Dashboard components now use `React.ComponentType<{ className?: string }>` for icon props
-  - Custom hooks updated with proper `Payment[]` and `Class[]` types
-  - Performance monitor uses `ExtendedPerformance` interface for browser memory API
-- **React Hooks Compliance**: Fixed missing dependencies in `useEffect` and `useCallback` hooks in particle system
-- **Code Cleanup**: Removed unused interface definitions and improved type safety throughout the codebase
-- **Maintained Compatibility**: All fixes preserve existing functionality while improving code quality
-
-#### Deployment Update
-- **New Live URL**: Updated deployment URL to `https://518daffa.martial-arts-manager.pages.dev`
-- **Production Ready**: Application successfully deployed with all ESLint issues resolved
-
-### 2025-10-10: UI/UX Enhancements & Complete Data Integration 🎯
-
-#### Modal System Redesign
-- **Fixed Class Form Modal**: Completely redesigned the "Schedule New Class" modal with proper positioning and styling
-- **Professional Dark Theme**: Updated modal with dark background (bg-gray-900), proper borders, and backdrop blur
-- **Enhanced Form Inputs**: All inputs now feature consistent dark theme styling with red accent focus states
-- **Close Button**: Added professional "X" button in top-right corner with smooth hover effects
-- **Better Separation**: Added border separator between form and action buttons for improved visual hierarchy
-
-#### Complete Database Integration - Zero Mock Data
-- **Dynamic Class Metadata**: Created `/api/classes/metadata` endpoint for real-time disciplines, locations, and instructors
-- **Real Student Counts**: Implemented JOIN query with attendance table to show actual enrolled students per class
-- **Active Student Tracking**: Fixed dashboard to show real active student count using `is_active` field
-- **Belt Testing Integration**: Updated to use real instructors and locations from existing classes
-- **Dashboard Schedule**: Fixed to show actual class locations instead of hardcoded "Main Studio"
-- **Student Form**: Updated to use dynamic disciplines from database instead of hardcoded list
-
-#### New Custom Hooks
-- **useClassMetadata**: Fetches and manages dynamic class metadata (disciplines, locations, instructors)
-- **Enhanced Data Flow**: All forms now populate from real database values with intelligent fallbacks
-
-#### API Improvements
-- **POST /api/classes**: Now returns the complete created class object for immediate UI updates
-- **GET /api/classes**: Enhanced with student enrollment count via LEFT JOIN with attendance
-- **Metadata Endpoint**: Provides unique values from existing classes for form dropdowns
-
-#### Code Quality
-- **100% Real Data**: Eliminated ALL mock/hardcoded data across the entire application
-- **Type Safety**: Updated Class interface to include `enrolled_count` field
-- **Service Layer**: Added `getMetadata()` method to ClassService
-- **No Confusion**: Users now see only real data from their database, preventing any confusion
-
-### 2025-10-10: Major Performance Optimization - 40%+ Mobile Improvement 🚀
-- **Particle System Overhaul**: Implemented particle pool recycling system to eliminate memory allocation pressure
-- **GPU Acceleration**: Added hardware acceleration hints (transform: translateZ(0), willChange) and CSS containment
-- **Mobile Optimizations**: Dynamic particle count reduction (8-15 particles mobile vs 25 desktop), conditional visual effects
-- **Performance Infrastructure**: Created useOptimizedAnimation, useIntersectionObserver, and performanceMonitor utilities
-- **Memory Efficiency**: Reduced garbage collection overhead by ~60% on mobile devices through object reuse
-- **Real-time Monitoring**: FPS tracking and performance metrics with debug overlay in development mode
-- **Smart Rendering**: Intersection Observer for viewport-based particle rendering and lazy loading
-- **Build Fixes**: Resolved TypeScript compilation errors and ensured clean production builds
-- **Deployment**: Successfully deployed optimized application to Cloudflare Pages
-
-### 2025-10-09: Refactoring & TypeScript Improvements
-- Added `typecheck` script alias (`pnpm run typecheck`) to enforce strict type checking.
-- Extended `AppContext` with `addStudent`, `addClass`, and `addPayment` helper methods for single-item additions.
-- Unified field naming across database models and components: `maxStudents`, `joinDate`, `is_active`, `recurrence_pattern`.
-- Refactored `ClassManager.tsx` and `StudentManager.tsx`:
-  - Replaced legacy `max_students` and `join_date` with camelCase fields.
-  - Removed unused imports and state variables (`selectedClass`).
-  - Fixed all ESLint and TypeScript errors, achieving zero warnings/errors in CI.
-  - Imported and adjusted Lucide icons to match actual usage.
-- Ensured all components compile cleanly via `tsc --noEmit` and lint cleanly via `eslint --max-warnings 0`.
-  
-All tests and checks are now passing. Ready for deployment!
- 
-### 2025-10-16: i18n Analytics Sweep & Infinity% Fix ✅
-
-- Translated remaining analytics UI strings to use the i18n system (Spanish keys added to `src/i18n/locales/es.json`).
-- Fixed an issue where percent-change values displayed as `Infinity%` when the previous month value was zero by returning `null` for undefined change and showing a localized "No data" label instead.
-- Added defensive null-checks and type-safety guards in `src/components/analytics/AnalyticsOverview.tsx` to satisfy TypeScript and avoid runtime NaN/Infinity cases.
-- Updated chart tooltips and labels in analytics components to use `label(t, ...)` so the UI displays Spanish translations.
-- Deployed the updated build to Cloudflare Pages (preview): https://001a9898.martial-arts-manager.pages.dev
-
-If you want these changes on a feature branch instead of `main`, tell me and I will move the commits to a branch and open a PR.
-# Preview production build locally
-pnpm preview
-
-# Deploy to Cloudflare Pages
-pnpm deploy
-
-# Lint code
 pnpm lint
-
-# Type checking
-pnpm type-check
-
-# Database operations (local)
-pnpm db:local
-
-# Database operations (production)
-pnpm db:prod
-```
-
-## 🔧 Environment Configuration
-
-### Required Environment Variables
-
-#### Cloudflare Pages Secrets
-
-Set these using `wrangler pages secret put`:
-
-```bash
-JWT_SECRET=your-super-secure-jwt-secret-here
-```
-
-#### Database Configuration
-
-Configured in `wrangler.toml`:
-
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "martial-arts-db"
-database_id = "your-database-id"
-```
-
-### Local Development
-
-For local development, Wrangler automatically handles the environment setup. No additional `.env` files are needed.
-
-## 📱 Mobile PWA Setup
-
-The application is PWA-ready. To enable full PWA features:
-
-1. Update `vite.config.ts` with PWA plugin
-2. Add service worker registration
-3. Configure manifest.json
-4. Set up offline caching strategies
-
-## 🔒 Security
-
-- All secrets are managed through Cloudflare Pages secrets
-- JWT tokens are properly validated and secured
-- Database access uses Cloudflare D1 bindings
-- No sensitive information is stored in the repository
-- PBKDF2 password hashing with Web Crypto API
-- CORS and security headers properly configured
-
-## 📊 Database Schema
-
-The application uses Cloudflare D1 (SQLite) with the following main tables:
-
-- **users**: Authentication and user profiles
-- **sessions**: JWT refresh token management
-- **students**: Student information and belt tracking
-- **classes**: Class scheduling and management
-- **payments**: Payment tracking and history
-- **attendance**: Class attendance records
-- **audit_logs**: System activity logging
-
-See `schema.sql` for the complete database structure.
-
-## 🎨 UI Components
-
-### Available Components
-
-- **Button**: Variants, sizes, loading states, icons
-- **Input**: Validation, icons, variants, error states
-- **Card**: Composable system with sub-components
-- **Select**: Custom styling with accessibility
-- **Modal**: Animations, focus trap, responsive sizes
-- **Badge**: Semantic variants with proper contrast
-- **Avatar**: Groups, status indicators, fallbacks
-- **Skeleton**: Loading patterns for better UX
-
-### Component Usage
-
-```tsx
-import { Button, Card, Input } from '@/components/ui';
-
-export function ExampleForm() {
-  return (
-    <Card>
-      <Card.Header>
-        <Card.Title>Student Registration</Card.Title>
-      </Card.Header>
-      <Card.Body>
-        <Input
-          label="Full Name"
-          placeholder="Enter student name"
-          required
-        />
-        <Button type="submit" loading={isLoading}>
-          Register Student
-        </Button>
-      </Card.Body>
-    </Card>
-  );
-}
-```
-
-## 🏗️ Architecture
-
-### Project Structure
-
-```
-martial-arts-manager/
-├── src/                    # Frontend React application
-│   ├── components/         # Reusable UI components
-│   │   ├── ui/            # Core UI library (Button, Input, etc.)
-│   │   ├── admin/         # Admin-specific components
-│   │   ├── attendance/    # Attendance system components
-│   │   └── ...
-│   ├── hooks/             # Custom React hooks
-│   ├── context/           # React context providers
-│   ├── pages/             # Page components
-│   ├── services/          # API service layer
-│   ├── types/             # TypeScript definitions
-│   ├── i18n/              # Internationalization
-│   └── lib/               # Utilities and configurations
-├── functions/             # Cloudflare Pages Functions
-│   ├── api/              # API endpoints
-│   ├── middleware/       # Request middleware
-│   └── utils/            # Server utilities
-├── docs/                 # Internal documentation (gitignored)
-├── scripts/              # Build and deployment scripts
-├── migrations/           # Database migration files
-├── public/               # Static assets
-└── tests/                # Test files and configurations
-```
-
-## 🧪 Testing
-
-The application includes a comprehensive test suite built with Vitest and React Testing Library.
-
-```bash
-# Run unit tests
-pnpm test
-
-# Run tests in watch mode
-pnpm test:watch
-
-# Run tests with coverage
-pnpm test:coverage
-
-# Run tests in CI mode
 pnpm test:run
+pnpm build
 ```
 
-### Test Coverage
-- **Component Testing**: UI components with accessibility and interaction testing
-- **Hook Testing**: Custom React hooks with state management testing
-- **Service Testing**: API service layer with mocked HTTP requests
-- **Integration Testing**: End-to-end user workflows
-- **Type Safety**: TypeScript interfaces validated in tests
+GitHub CI runs the same validation categories on pushes and pull requests targeting `main`. CodeQL and Dependabot provide additional repository-level security and dependency checks.
 
-## 📈 Performance
+## Production deployment
 
-- **Lighthouse Score**: 90+ on mobile (optimized)
-- **Mobile Performance**: 40%+ improvement through particle recycling and GPU acceleration
-- **Memory Efficiency**: 60% reduction in garbage collection pressure
-- **Frame Rates**: 30fps mobile, 60fps desktop with optimized animation loops
-- **Bundle Size**: Optimized with Vite and Rolldown
-- **Edge Computing**: Cloudflare Workers for global performance
-- **Smart Rendering**: Intersection Observer and conditional rendering based on device capabilities
+Production deployment is intentionally performed from the maintainer's local trusted environment rather than automatically from GitHub Actions.
 
-## 🤝 Contributing
+```bash
+pnpm deploy
+```
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+The deploy lifecycle validates type safety, lint, and tests before building and publishing through Wrangler. Cloudflare credentials and runtime secrets remain outside the repository.
 
-## 📝 Changelog
+## Database
 
-### 2025-10-10: Major Performance Optimization - 40%+ Mobile Improvement 🚀
-- **Particle System Overhaul**: Implemented particle pool recycling system to eliminate memory allocation pressure
-- **GPU Acceleration**: Added hardware acceleration hints (transform: translateZ(0), willChange) and CSS containment
-- **Mobile Optimizations**: Dynamic particle count reduction (8-15 particles mobile vs 25 desktop), conditional visual effects
-- **Performance Infrastructure**: Created useOptimizedAnimation, useIntersectionObserver, and performanceMonitor utilities
-- **Memory Efficiency**: Reduced garbage collection overhead by ~60% on mobile devices through object reuse
-- **Real-time Monitoring**: FPS tracking and performance metrics with debug overlay in development mode
-- **Build Fixes**: Resolved TypeScript compilation errors and ensured clean production builds
-- **Deployment**: Successfully deployed optimized application to Cloudflare Pages
+The application uses Cloudflare D1. The schema is defined in `schema.sql`, with incremental changes under `migrations/`.
 
-### 2025-10-09: Complete Database Integration & TypeScript Overhaul 🎯
-- **100% Type Safety**: Eliminated ALL 'any' types and 'as any' casts across entire codebase
-- **Real Database Integration**: Replaced ALL mock data with live Cloudflare D1 database connections
-- **Service Layer Architecture**: Implemented comprehensive service classes for all API communications
-- **Custom Hooks Ecosystem**: Created 20+ specialized hooks for data management (useStudents, useClasses, usePayments, etc.)
-- **SOLID Principles Refactoring**: Complete architectural overhaul following SOLID design principles
-- **Advanced Analytics**: Live business metrics and calculations from actual database records
-- **Professional Error Handling**: Comprehensive error boundaries and user feedback systems
-- **Production-Ready Code**: Zero TypeScript errors, enterprise-grade code quality
+For local development:
 
-### 2025-10-09: Professional UI Component Library & Design System 🎨
-- **Complete UI Library**: 9 professional components (Button, Input, Card, Modal, Select, Badge, Avatar, Skeleton, Toast)
-- **Glass Morphism Design**: Modern gradient backgrounds with backdrop blur effects
-- **Mobile-First Responsive**: Touch-optimized design across all screen sizes
-- **Dark Mode System**: Complete theme implementation with accessibility compliance
-- **WCAG Accessibility**: Full compliance with screen readers and keyboard navigation
-- **Component Architecture**: Proper TypeScript interfaces and composable design patterns
+```bash
+pnpm db:local
+```
 
-### 2025-10-09: Advanced Features Implementation 📊
-- **Analytics Dashboard**: Live business intelligence with charts and trend analysis
-- **Belt Testing System**: Comprehensive testing and certification management
-- **Advanced Search & Filtering**: Real-time search with multi-criteria filtering across all modules
-- **Professional Data Management**: CRUD operations for students, classes, payments, and attendance
-- **Real-time Synchronization**: Live data updates with optimistic UI patterns
-- **Export Capabilities**: CSV export functionality prepared for all data views
+Production database commands should only be run intentionally from an authenticated maintainer environment. Database output and exports must never be committed.
 
-### 2025-10-09: Authentication & Security Implementation 🔐
-- **Complete JWT System**: Access and refresh token implementation with Web Crypto API
-- **Role-Based Access Control**: Admin, Instructor, and Student role management
-- **Secure Password Hashing**: PBKDF2 implementation for password security
-- **Session Management**: Database-backed session persistence and cleanup
-- **Protected Routes**: Automatic token refresh and route protection
-- **Professional Login/Register**: Modern UI with comprehensive validation
+## Contributing
 
-## 📝 License
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. The repository includes issue templates, a pull-request checklist, a security policy, and a public [roadmap](ROADMAP.md).
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Do not use real student/customer data in issues, tests, screenshots, examples, or pull requests.
 
-## 🙏 Acknowledgments
+## Releases
 
-- [React](https://reactjs.org/) - UI library
-- [TypeScript](https://www.typescriptlang.org/) - Type safety
-- [Tailwind CSS](https://tailwindcss.com/) - Styling framework
-- [Cloudflare](https://www.cloudflare.com/) - Infrastructure and hosting
-- [Vite](https://vitejs.dev/) - Build tool
-- [Lucide](https://lucide.dev/) - Icon library
+Stable releases follow semantic versioning. The first formal stable release is [`v1.0.0`](https://github.com/electrocicla/martial-arts-manager/releases/tag/v1.0.0).
 
-## 📞 Support
+## License
 
-If you have any questions or need help setting up the project:
-
-1. Check the [Issues](https://github.com/yourusername/martial-arts-manager/issues) page
-2. Create a new issue with detailed information
-3. Join our community discussions
-
----
-
-**Built with ❤️ for the martial arts community**
+MIT. See [LICENSE](LICENSE).

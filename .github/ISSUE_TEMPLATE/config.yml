@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/electrocicla/martial-arts-manager/security
+    about: Use the repository Security area for private vulnerability reporting. Do not disclose vulnerabilities or production data in public issues.

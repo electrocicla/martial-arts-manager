@@ -1,8 +1,13 @@
 {
   "name": "martial-arts-manager",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.1",
   "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22 <23",
+    "pnpm": ">=10 <11"
+  },
   "scripts": {
     "dev": "wrangler pages dev --local --port 5173",
     "dev:local": "vite",
@@ -25,14 +30,15 @@
     "scan": "node scripts/scan.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
-    "predeploy": "pnpm typecheck && pnpm lint",
-    "deploy": "pnpm predeploy && pnpm build && wrangler pages deploy dist --project-name=martial-arts-manager --branch=main && node scripts/post-deploy.mjs",
-    "deploy:quick": "pnpm build && wrangler pages deploy dist --project-name=martial-arts-manager && node scripts/post-deploy.mjs",
-    "type-check": "tsc --noEmit",
+    "check": "pnpm typecheck && pnpm lint && pnpm test:run && pnpm build",
+    "predeploy": "pnpm typecheck && pnpm lint && pnpm test:run",
+    "deploy": "pnpm build && wrangler pages deploy dist --project-name=martial-arts-manager --branch=main && node scripts/post-deploy.mjs",
+    "deploy:quick": "pnpm deploy",
     "db:local": "wrangler d1 execute martial-arts-db --local --file=./schema.sql",
     "db:prod": "wrangler d1 execute martial-arts-db --file=./schema.sql"
   },

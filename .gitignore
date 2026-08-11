@@ -1,5 +1,20 @@
-# Logs
-logs
+# Dependencies
+node_modules/
+
+# Build, cache, and test output
+.cache/
+.temp/
+temp/
+tmp/
+.turbo/
+dist/
+dist-ssr/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Logs and diagnostics
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,62 +22,89 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
 *.local
 
-# Editor directories and files
+# Cloudflare / Wrangler local state
+.wrangler/
+.cloudflare/
+wrangler.d1-probe.toml
+
+# Local databases, dumps, query output, and production-data exports
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.dump
+*.sql.dump
+*_result.txt
+orphan_students.txt
+reports/
+exports/
+backups/
+
+# Local AI/agent state and internal audit workspaces
+.claude/
+GEMINI.md
+CLAUDE.md
+AGENTS.local.md
+audit/
+security-audit.md
+worklog.md
+
+# Canonical package manager is pnpm
+package-lock.json
+yarn.lock
+bun.lock
+bun.lockb
+
+# Editor and OS metadata
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Environment variables
-.env
-.env.local
-.env.production
-.env.staging
-.dev.vars
-.dev.vars.*
-
-# Wrangler
-.wrangler/
-
-# Database files
-*.db
-*.sqlite
-*.sqlite-shm
-*.sqlite-wal
-
-# Sensitive exports and helpers
-reports/
-scripts/
-wrangler.d1-probe.toml
-
-# Cloudflare
-.cloudflare/
-
-# Android release signing artifacts
+# Android signing and machine-specific state
 keystore/
-
-# Android native local/build artifacts
-android/.gradle/
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+*.pfx
+*.orig
+google-services.json
+GoogleService-Info.plist
+android/keystore.properties
 android/local.properties
+android/.gradle/
 android/**/build/
 
-# Internal documentation
-docs/
+# Native/mobile local caches (companion repository is maintained separately)
+martial-arts-manager-native/node_modules/
+martial-arts-manager-native/.expo/
+martial-arts-manager-native/.expo-shared/
+martial-arts-manager-native/.turbo/
+martial-arts-manager-native/dist/
 
-# Development and AI assistant files
-CLAUDE.md
-worklog.md
-martial-arts-manager-native/
-
-# Throwaway debugging screenshots
+# Temporary screenshots and one-off verification output
 Screenshot_*.png
+verify.txt
+
+# Separate nested companion repository
+martial-arts-manager-native/

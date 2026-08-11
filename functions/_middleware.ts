@@ -1,5 +1,18 @@
 import { Env } from './types/index';
 
+const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal server error';
+
+interface MiddlewareContext {
+  request: Request;
+  env: Env;
+  next: () => Promise<Response>;
+}
+
+interface InternalErrorBody {
+  error: typeof INTERNAL_SERVER_ERROR_MESSAGE;
+  requestId: string;
+}
+
 function createCspNonce(): string {
   const nonceBytes = crypto.getRandomValues(new Uint8Array(16));
   let binary = '';
@@ -24,36 +37,47 @@ function injectNonceIntoHtml(html: string, nonce: string): string {
   );
 }
 
-/**
- * Middleware for Cloudflare Pages Functions
- * 
- * The tarpit system has been removed due to incompatibility with Cloudflare Workers.
- * setTimeout doesn't work as expected in the Workers runtime, causing worker exceptions.
- * 
- * This middleware now simply passes through all requests to the next handler.
- */
+function createInternalErrorBody(requestId: string): InternalErrorBody {
+  return {
+    error: INTERNAL_SERVER_ERROR_MESSAGE,
+    requestId,
+  };
+}
 
-export async function onRequest(context: { request: Request; env: Env; next: () => Promise<Response> }): Promise<Response> {
-  const response = await context.next();
-  const contentType = response.headers.get('Content-Type') || '';
-  const isHtmlResponse = contentType.includes('text/html');
-  const nonce = isHtmlResponse ? createCspNonce() : null;
-  const responseBody = isHtmlResponse && nonce
-    ? injectNonceIntoHtml(await response.text(), nonce)
-    : response.body;
+function sanitizeServerError(response: Response, requestId: string): Response {
+  const headers = new Headers(response.headers);
+  headers.set('Content-Type', 'application/json; charset=utf-8');
+  headers.set('Cache-Control', 'no-store');
+  headers.delete('Content-Length');
 
-  // Add security headers
-  const newHeaders = new Headers(response.headers);
-  newHeaders.set('X-Content-Type-Options', 'nosniff');
-  newHeaders.set('X-Frame-Options', 'DENY');
-  newHeaders.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  newHeaders.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-  newHeaders.set(
+  return new Response(JSON.stringify(createInternalErrorBody(requestId)), {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+function createUnhandledErrorResponse(requestId: string): Response {
+  return new Response(JSON.stringify(createInternalErrorBody(requestId)), {
+    status: 500,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
+function applySecurityHeaders(headers: Headers, nonce: string | null, requestId: string): void {
+  headers.set('X-Request-ID', requestId);
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('X-Frame-Options', 'DENY');
+  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  headers.set(
     'Permissions-Policy',
     'camera=(self), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), accelerometer=(), gyroscope=(), xr-spatial-tracking=(self "https://challenges.cloudflare.com")'
   );
-  // Content Security Policy — strict by default, allows only self-hosted assets, Cloudflare R2 avatars, inline styles (Tailwind/DaisyUI), and data: images.
-  newHeaders.set(
+  headers.set(
     'Content-Security-Policy',
     [
       "default-src 'self'",
@@ -74,13 +98,60 @@ export async function onRequest(context: { request: Request; env: Env; next: () 
       'upgrade-insecure-requests',
     ].join('; ')
   );
-  newHeaders.set('Cross-Origin-Opener-Policy', 'same-origin');
-  newHeaders.set('Cross-Origin-Resource-Policy', 'same-origin');
+  headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+}
 
-  // Return new response with added headers
+function logServerFailure(request: Request, response: Response, requestId: string): void {
+  const url = new URL(request.url);
+  console.error(
+    `[HTTP ${requestId}] ${request.method} ${url.pathname} returned ${response.status}`
+  );
+}
+
+/**
+ * Global Cloudflare Pages Functions security boundary.
+ *
+ * Responsibilities:
+ * - prevent raw 5xx handler errors from leaking implementation/database details;
+ * - convert uncaught handler failures into a stable JSON error envelope;
+ * - attach a correlation identifier for operational debugging;
+ * - enforce browser security headers and per-response CSP nonces.
+ */
+export async function onRequest(context: MiddlewareContext): Promise<Response> {
+  const requestId = crypto.randomUUID();
+  let response: Response;
+
+  try {
+    response = await context.next();
+  } catch (error: unknown) {
+    const url = new URL(context.request.url);
+    console.error(
+      `[HTTP ${requestId}] Unhandled error for ${context.request.method} ${url.pathname}`,
+      error
+    );
+    response = createUnhandledErrorResponse(requestId);
+  }
+
+  if (response.status >= 500) {
+    logServerFailure(context.request, response, requestId);
+    response = sanitizeServerError(response, requestId);
+  }
+
+  const contentType = response.headers.get('Content-Type') ?? '';
+  const isHtmlResponse = contentType.includes('text/html');
+  const nonce = isHtmlResponse ? createCspNonce() : null;
+  const responseBody = isHtmlResponse && nonce
+    ? injectNonceIntoHtml(await response.text(), nonce)
+    : response.body;
+
+  const headers = new Headers(response.headers);
+  headers.delete('Content-Length');
+  applySecurityHeaders(headers, nonce, requestId);
+
   return new Response(responseBody, {
     status: response.status,
     statusText: response.statusText,
-    headers: newHeaders,
+    headers,
   });
 }
