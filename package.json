@@ -82,7 +82,7 @@
     "globals": "^16.4.0",
     "jsdom": "^27.4.0",
     "msw": "^2.12.7",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.26",
     "tailwindcss": "4.1.14",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "~5.9.3",
