@@ -30,13 +30,6 @@ export async function onRequestPost({ request, env, params }: { request: Request
       });
     }
 
-    if (student_ids.length > 100) {
-      return new Response(JSON.stringify({ error: 'Cannot enroll more than 100 students at once' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
     // Verify class exists and user has access
     const classCheck = await env.DB.prepare(
       auth.user.role === 'admin'
