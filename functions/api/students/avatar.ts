@@ -1,5 +1,9 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../utils/branches';
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
@@ -58,6 +62,31 @@ const getFileExtension = (fileName: string): string | undefined => {
   return match ? match[1] : undefined;
 };
 
+interface AvatarAccessUser {
+  id: string;
+  role: string;
+  student_id?: string | null;
+}
+
+export function buildAvatarStudentAccessQuery(
+  studentId: string,
+  branchId: string,
+  user: AvatarAccessUser,
+): { query: string; params: string[] } {
+  let query = 'SELECT id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
+  const params = [studentId, branchId];
+
+  if (user.role === 'student') {
+    query += ' AND id = ?';
+    params.push(user.student_id || '');
+  } else if (user.role === 'instructor') {
+    query += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
+    params.push(user.id, user.id);
+  }
+
+  return { query, params };
+}
+
 export async function onRequestPost({ request, env }: { request: Request; env: Env }) {
   try {
     // Authenticate user
@@ -102,10 +131,11 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       });
     }
 
-    // Verify the student belongs to the current user OR is the current user's student profile
-    const { results } = await env.DB.prepare(
-      "SELECT id FROM students WHERE id = ? AND (created_by = ? OR id = ?) AND deleted_at IS NULL"
-    ).bind(studentId, auth.user.id, auth.user.student_id || '').all();
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
+
+    // Match the staff access rules used by the student detail endpoints.
+    const access = buildAvatarStudentAccessQuery(studentId, branchId, auth.user);
+    const { results } = await env.DB.prepare(access.query).bind(...access.params).all();
 
     if (!results || results.length === 0) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
@@ -158,6 +188,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
     console.error('Avatar upload error:', error);
     return new Response(JSON.stringify({ 
       error: (error as Error).message || 'Failed to upload avatar' 
