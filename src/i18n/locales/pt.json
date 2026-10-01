@@ -814,6 +814,7 @@
       "noClassesScheduled": "Nenhuma aula agendada"
     },
     "enrollModal": {
+      "title": "Gerenciar alunos",
       "fetchError": "Erro ao carregar alunos inscritos",
       "fetchLoadError": "Não foi possível carregar alunos inscritos",
       "maxCapacity": "A aula atingiu a capacidade máxima",

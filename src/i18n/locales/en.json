@@ -819,6 +819,7 @@
       "noClassesScheduled": "No classes scheduled"
     },
     "enrollModal": {
+      "title": "Manage students",
       "fetchError": "Error loading enrolled students",
       "fetchLoadError": "Could not load enrolled students",
       "maxCapacity": "Class has reached maximum capacity",

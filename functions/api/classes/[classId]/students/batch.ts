@@ -7,6 +7,38 @@ import {
 
 const D1_SAFE_CHUNK_SIZE = 50;
 
+/**
+ * Select every requested student that can be enrolled, bounded only by the
+ * class's remaining capacity. There is intentionally no arbitrary batch-size
+ * limit: large classes are processed in D1-safe chunks by the route below.
+ */
+export function selectStudentIdsForEnrollment(
+  studentIds: string[],
+  eligibleStudentIds: ReadonlySet<string>,
+  alreadyEnrolledStudentIds: ReadonlySet<string>,
+  availableSlots: number,
+): string[] {
+  const remainingCapacity = Math.max(0, Math.floor(availableSlots));
+  if (remainingCapacity === 0) return [];
+
+  const selected: string[] = [];
+  const seen = new Set<string>();
+
+  for (const studentId of studentIds) {
+    if (selected.length >= remainingCapacity) break;
+    if (seen.has(studentId)) continue;
+    seen.add(studentId);
+
+    if (!eligibleStudentIds.has(studentId) || alreadyEnrolledStudentIds.has(studentId)) {
+      continue;
+    }
+
+    selected.push(studentId);
+  }
+
+  return selected;
+}
+
 // POST /api/classes/:classId/students/batch - Batch enroll students
 export async function onRequestPost({ request, env, params }: { request: Request; env: Env; params: { classId: string } }) {
   try {
@@ -76,12 +108,15 @@ export async function onRequestPost({ request, env, params }: { request: Request
       ).bind(...chunk, branchId).all<{ id: string }>();
       eligibleStudents.push(...(results ?? []).map((student) => student.id));
     }
-    const eligibleSet = new Set(eligibleStudents);
-    const toEnroll = student_ids.filter(id => eligibleSet.has(id) && !alreadyEnrolled.has(id));
 
-    // Check capacity
-    const availableSlots = classCheck.max_students - currentCount;
-    const enrollable = toEnroll.slice(0, availableSlots);
+    const eligibleSet = new Set(eligibleStudents);
+    const availableSlots = Math.max(0, classCheck.max_students - currentCount);
+    const enrollable = selectStudentIdsForEnrollment(
+      student_ids,
+      eligibleSet,
+      alreadyEnrolled,
+      availableSlots,
+    );
 
     if (enrollable.length === 0) {
       return new Response(JSON.stringify({
@@ -94,7 +129,8 @@ export async function onRequestPost({ request, env, params }: { request: Request
       });
     }
 
-    // Build batch insert statements
+    // Build batch insert statements. Cloudflare D1 remains the only chunking
+    // constraint; callers may submit every student in one logical action.
     const now = new Date().toISOString();
     const stmts = enrollable.map(studentId =>
       env.DB.prepare(`

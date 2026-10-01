@@ -799,6 +799,7 @@
     "deleteSuccess": "Clase eliminada correctamente",
     "deleteError": "Error al eliminar la clase",
     "enrollModal": {
+      "title": "Gestionar estudiantes",
       "fetchError": "Error al cargar estudiantes inscritos",
       "fetchLoadError": "No se pudo cargar los estudiantes inscritos",
       "maxCapacity": "La clase ha alcanzado su capacidad máxima",
