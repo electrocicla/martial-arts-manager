@@ -1,6 +1,5 @@
 import type { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
-import { MAIN_BRANCH_ID } from '../utils/branches';
 
 interface BranchSummaryRow {
   id: string;
@@ -42,6 +41,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 async function replaceBranchStaff(
   env: Env,
   branchId: string,
+  organizationId: string,
   instructorIds: string[],
   actorId: string,
 ): Promise<void> {
@@ -51,14 +51,24 @@ async function replaceBranchStaff(
     env.DB.prepare(
       `DELETE FROM branch_staff
        WHERE branch_id = ?
-         AND user_id IN (SELECT id FROM users WHERE role = 'instructor')`,
-    ).bind(branchId),
+         AND user_id IN (
+           SELECT user_id
+           FROM organization_memberships
+           WHERE organization_id = ? AND role = 'instructor'
+         )`,
+    ).bind(branchId, organizationId),
     ...uniqueIds.map((userId) => env.DB.prepare(
       `INSERT OR IGNORE INTO branch_staff (branch_id, user_id, created_by, created_at)
-       SELECT ?, id, ?, ?
-       FROM users
-       WHERE id = ? AND role = 'instructor' AND is_active = 1`,
-    ).bind(branchId, actorId, now, userId)),
+       SELECT ?, om.user_id, ?, ?
+       FROM organization_memberships om
+       INNER JOIN users u ON u.id = om.user_id
+       WHERE om.organization_id = ?
+         AND om.user_id = ?
+         AND om.role = 'instructor'
+         AND om.status = 'active'
+         AND om.is_active = 1
+         AND u.is_active = 1`,
+    ).bind(branchId, actorId, now, organizationId, userId)),
   ];
 
   await env.DB.batch(statements);
@@ -76,7 +86,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     const today = now.toISOString().slice(0, 10);
 
     let accessClause = '';
-    const params: string[] = [monthStart, nextMonthStart, today];
+    const params: string[] = [monthStart, nextMonthStart, today, auth.user.organization_id];
 
     if (auth.user.role === 'instructor') {
       accessClause = 'AND EXISTS (SELECT 1 FROM branch_staff bs WHERE bs.branch_id = b.id AND bs.user_id = ?)';
@@ -105,7 +115,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
           INNER JOIN classes c ON c.id = a.class_id
           WHERE c.branch_id = b.id AND a.attended = 1) AS attendance_count
       FROM branches b
-      WHERE b.is_active = 1 ${accessClause}
+      WHERE b.organization_id = ? AND b.is_active = 1 ${accessClause}
       ORDER BY b.is_main DESC, b.name ASC
     `).bind(...params).all<BranchSummaryRow>();
 
@@ -133,8 +143,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       env.DB.prepare(`
         INSERT INTO branches (
           id, name, address, phone, email, notes, is_main, is_active,
-          created_by, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 0, 1, ?, ?, ?)
+          created_by, created_at, updated_at, organization_id
+        ) VALUES (?, ?, ?, ?, ?, ?, 0, 1, ?, ?, ?, ?)
       `).bind(
         id,
         name,
@@ -145,6 +155,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         auth.user.id,
         now,
         now,
+        auth.user.organization_id,
       ),
       env.DB.prepare(
         `INSERT INTO branch_staff (branch_id, user_id, created_by, created_at)
@@ -152,7 +163,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       ).bind(id, auth.user.id, auth.user.id, now),
     ]);
 
-    await replaceBranchStaff(env, id, body.instructorIds ?? [], auth.user.id);
+    await replaceBranchStaff(env, id, auth.user.organization_id, body.instructorIds ?? [], auth.user.id);
 
     return jsonResponse({ success: true, branchId: id }, 201);
   } catch (error) {
@@ -171,8 +182,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (!body.id) return jsonResponse({ error: 'Branch id is required' }, 400);
 
     const branch = await env.DB.prepare(
-      'SELECT id, is_main FROM branches WHERE id = ?',
-    ).bind(body.id).first<{ id: string; is_main: number }>();
+      'SELECT id, is_main FROM branches WHERE id = ? AND organization_id = ?',
+    ).bind(body.id, auth.user.organization_id).first<{ id: string; is_main: number }>();
     if (!branch) return jsonResponse({ error: 'Branch not found' }, 404);
 
     const sets: string[] = [];
@@ -188,7 +199,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (body.email !== undefined) { sets.push('email = ?'); values.push(body.email.trim() || null); }
     if (body.notes !== undefined) { sets.push('notes = ?'); values.push(body.notes.trim() || null); }
     if (body.isActive !== undefined) {
-      if (branch.id === MAIN_BRANCH_ID && !body.isActive) {
+      if (branch.is_main === 1 && !body.isActive) {
         return jsonResponse({ error: 'The main branch cannot be deactivated' }, 400);
       }
       sets.push('is_active = ?');
@@ -197,12 +208,12 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     if (sets.length > 0) {
       sets.push('updated_at = ?');
-      values.push(new Date().toISOString(), body.id);
-      await env.DB.prepare(`UPDATE branches SET ${sets.join(', ')} WHERE id = ?`).bind(...values).run();
+      values.push(new Date().toISOString(), body.id, auth.user.organization_id);
+      await env.DB.prepare(`UPDATE branches SET ${sets.join(', ')} WHERE id = ? AND organization_id = ?`).bind(...values).run();
     }
 
     if (body.instructorIds) {
-      await replaceBranchStaff(env, body.id, body.instructorIds, auth.user.id);
+      await replaceBranchStaff(env, body.id, auth.user.organization_id, body.instructorIds, auth.user.id);
     }
 
     return jsonResponse({ success: true });
