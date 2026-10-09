@@ -5,59 +5,61 @@
 import { verifyJWT } from '../utils/jwt';
 import { findUserById } from '../utils/db';
 import { normalizeAvatarUrl } from '../utils/avatar';
+import {
+  resolveAuthenticatedOrganization,
+  OrganizationAccessError,
+  type OrganizationRole,
+} from '../utils/organizations';
 
 import { Env } from '../types/index';
 
 /**
  * Middleware to authenticate JWT tokens
  */
+export interface AuthenticatedOrganizationUser {
+  id: string;
+  email: string;
+  name: string;
+  role: OrganizationRole;
+  student_id?: string;
+  avatar_url?: string;
+  organization_id: string;
+  platform_admin: boolean;
+}
+
+export type AuthenticationResult =
+  | { authenticated: true; user: AuthenticatedOrganizationUser }
+  | { authenticated: false; error: string; status?: number; code?: string };
+
 export async function authenticateUser(
   request: Request,
-  env: Env
-): Promise<{ authenticated: true; user: { id: string; email: string; name: string; role: string; student_id?: string; avatar_url?: string } } | { authenticated: false; error: string }> {
+  env: Env,
+): Promise<AuthenticationResult> {
   try {
-    // Get token from Authorization header
-    const authHeader = request.headers.get('Authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.error('[Backend Auth] Missing or invalid authorization header');
+    const authorization = request.headers.get('Authorization');
+    if (!authorization?.startsWith('Bearer ')) {
       return { authenticated: false, error: 'Missing or invalid authorization header' };
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
-    // Verify JWT token
-    const payload = await verifyJWT(token, env.JWT_SECRET);
-    
-    if (!payload) {
-      console.error('[Backend Auth] Invalid or expired token');
-      return { authenticated: false, error: 'Invalid or expired token' };
+    const payload = await verifyJWT(authorization.slice(7), env.JWT_SECRET);
+    if (!payload || payload.token_use !== 'access') {
+      return { authenticated: false, error: 'Invalid or expired access token' };
     }
 
-    // Check if user still exists and is active
     const user = await findUserById(env.DB, payload.sub);
-    
-    if (!user || !user.is_active) {
-      console.error('[Backend Auth] User not found or inactive');
+    if (!user || user.is_active !== 1) {
       return { authenticated: false, error: 'User not found or inactive' };
     }
 
-    // Auto-link student profile if user is a student without student_id
-    let studentId = user.student_id ?? undefined;
-    if (user.role === 'student' && !studentId) {
-      const studentMatch = await env.DB.prepare(
-        'SELECT id FROM students WHERE email = ? AND deleted_at IS NULL'
-      )
-        .bind(user.email)
-        .first<{ id: string }>();
-
-      if (studentMatch?.id) {
-        studentId = studentMatch.id;
-        const now = new Date().toISOString();
-        await env.DB.prepare('UPDATE users SET student_id = ?, updated_at = ? WHERE id = ?')
-          .bind(studentId, now, user.id)
-          .run();
-      }
+    // Never derive tenant permissions or student linkage from global users or JWT roles.
+    const organization = await resolveAuthenticatedOrganization(request, env, user.id);
+    if (payload.organization_id !== organization.organizationId) {
+      return {
+        authenticated: false,
+        error: 'Token belongs to another organization',
+        status: 403,
+        code: 'ORGANIZATION_TOKEN_MISMATCH',
+      };
     }
 
     return {
@@ -66,12 +68,22 @@ export async function authenticateUser(
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
-        student_id: studentId,
+        role: organization.role,
+        student_id: organization.studentId ?? undefined,
         avatar_url: normalizeAvatarUrl(user.avatar_url),
+        organization_id: organization.organizationId,
+        platform_admin: organization.platformAdmin,
       },
     };
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof OrganizationAccessError) {
+      return {
+        authenticated: false,
+        error: error.message,
+        status: error.status,
+        code: error.code,
+      };
+    }
     console.error('[Backend Auth] Authentication error:', error);
     return { authenticated: false, error: 'Authentication failed' };
   }

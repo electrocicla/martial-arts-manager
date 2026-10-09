@@ -21,7 +21,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
 
     await ensureSparringSchema(env.DB);
 
-    const result = await fetchStudentProgression(env.DB, auth.user.student_id);
+    const result = await fetchStudentProgression(env.DB, auth.user.student_id, auth.user.organization_id);
     if (!result) return errorResponse('Student profile not found', 404);
 
     return jsonResponse({

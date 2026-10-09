@@ -48,9 +48,7 @@ function normalizeStringList(value: unknown): string[] | undefined {
   value.forEach((item) => {
     if (typeof item !== 'string') return;
     const trimmed = item.trim();
-    if (trimmed.length > 0 && trimmed.length <= 80) {
-      values.add(trimmed);
-    }
+    if (trimmed.length > 0 && trimmed.length <= 80) values.add(trimmed);
   });
 
   return Array.from(values).slice(0, 20);
@@ -74,7 +72,7 @@ function parseSettingsExtras(value: string | undefined): AccountProfileExtras {
   if (!value) return {};
 
   try {
-    const parsed = JSON.parse(value);
+    const parsed: unknown = JSON.parse(value);
     if (!isRecord(parsed)) return {};
 
     return {
@@ -99,7 +97,7 @@ function parseDisciplines(value: unknown): DisciplineAssignment[] {
   if (typeof value !== 'string') return [];
 
   try {
-    const parsed = JSON.parse(value);
+    const parsed: unknown = JSON.parse(value);
     return Array.isArray(parsed) ? parsed.filter(isDisciplineAssignment) : [];
   } catch {
     return [];
@@ -110,7 +108,13 @@ function hasStringValue(value: string | undefined): value is string {
   return typeof value === 'string';
 }
 
-function createStudentUpdate(env: Env, studentId: string, payload: AccountProfilePayload, now: string): D1PreparedStatement | null {
+function createStudentUpdate(
+  env: Env,
+  studentId: string,
+  organizationId: string,
+  payload: AccountProfilePayload,
+  now: string,
+): D1PreparedStatement | null {
   let query = 'UPDATE students SET updated_at = ?';
   const params: (string | null)[] = [now];
 
@@ -141,13 +145,19 @@ function createStudentUpdate(env: Env, studentId: string, payload: AccountProfil
 
   if (params.length === 1) return null;
 
-  query += ' WHERE id = ?';
-  params.push(studentId);
+  query += ' WHERE id = ? AND organization_id = ?';
+  params.push(studentId, organizationId);
 
   return env.DB.prepare(query).bind(...params);
 }
 
-function createAccountSettingsUpsert(env: Env, ownerId: string, payload: AccountProfilePayload, now: string): D1PreparedStatement {
+function createAccountSettingsUpsert(
+  env: Env,
+  ownerId: string,
+  organizationId: string,
+  payload: AccountProfilePayload,
+  now: string,
+): D1PreparedStatement {
   const value = JSON.stringify({
     phone: payload.phone?.trim() ?? '',
     date_of_birth: payload.date_of_birth?.trim() ?? '',
@@ -156,34 +166,52 @@ function createAccountSettingsUpsert(env: Env, ownerId: string, payload: Account
     notes: payload.notes?.trim() ?? '',
     preferred_disciplines: payload.preferred_disciplines ?? [],
   });
+  const id = `${organizationId}-${ownerId}-${ACCOUNT_PROFILE_SECTION}`;
 
   return env.DB.prepare(
-    `INSERT INTO settings (id, owner_id, section, value, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET value = ?, updated_at = ?`
-  ).bind(`${ownerId}-${ACCOUNT_PROFILE_SECTION}`, ownerId, ACCOUNT_PROFILE_SECTION, value, now, now, value, now);
+    `INSERT INTO settings (id, owner_id, organization_id, section, value, branch_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, NULL, ?, ?)
+     ON CONFLICT(organization_id, owner_id, section) WHERE branch_id IS NULL
+     DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+  ).bind(id, ownerId, organizationId, ACCOUNT_PROFILE_SECTION, value, now, now);
 }
 
-export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
+async function loadAccountSettings(
+  env: Env,
+  ownerId: string,
+  organizationId: string,
+): Promise<AccountProfileExtras> {
+  const row = await env.DB.prepare(
+    `SELECT value
+       FROM settings
+      WHERE owner_id = ?
+        AND organization_id = ?
+        AND section = ?
+        AND branch_id IS NULL
+      LIMIT 1`,
+  ).bind(ownerId, organizationId, ACCOUNT_PROFILE_SECTION).first<{ value: string }>();
+
+  return parseSettingsExtras(row?.value);
+}
+
+export async function onRequestGet({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
-      return jsonResponse({ error: auth.error }, { status: 401 });
+      return jsonResponse(
+        { error: auth.error, code: auth.code },
+        { status: auth.status ?? 401 },
+      );
     }
 
+    const extras = await loadAccountSettings(env, auth.user.id, auth.user.organization_id);
+
     if (auth.user.student_id) {
-      const student = await env.DB.prepare('SELECT * FROM students WHERE id = ?')
-        .bind(auth.user.student_id)
-        .first<Record<string, unknown>>();
+      const student = await env.DB.prepare(
+        'SELECT * FROM students WHERE id = ? AND organization_id = ? AND deleted_at IS NULL',
+      ).bind(auth.user.student_id, auth.user.organization_id).first<Record<string, unknown>>();
 
-      if (!student) {
-        return jsonResponse({ error: 'Student profile not found' }, { status: 404 });
-      }
-
-      const settingsRow = await env.DB.prepare('SELECT value FROM settings WHERE owner_id = ? AND section = ? LIMIT 1')
-        .bind(auth.user.id, ACCOUNT_PROFILE_SECTION)
-        .first<{ value: string }>();
-      const extras = parseSettingsExtras(settingsRow?.value);
+      if (!student) return jsonResponse({ error: 'Student profile not found' }, { status: 404 });
 
       return jsonResponse({
         ...student,
@@ -194,12 +222,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       });
     }
 
-    const settingsRow = await env.DB.prepare('SELECT value FROM settings WHERE owner_id = ? AND section = ? LIMIT 1')
-      .bind(auth.user.id, ACCOUNT_PROFILE_SECTION)
-      .first<{ value: string }>();
-    const extras = parseSettingsExtras(settingsRow?.value);
     const now = new Date().toISOString();
-
     return jsonResponse({
       id: auth.user.id,
       name: auth.user.name,
@@ -215,22 +238,24 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       updated_at: now,
       ...extras,
     });
-  } catch (error) {
-    return jsonResponse({ error: (error as Error).message }, { status: 500 });
+  } catch (error: unknown) {
+    console.error('[Account Profile GET]', error);
+    return jsonResponse({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function onRequestPut({ request, env }: { request: Request; env: Env }) {
+export async function onRequestPut({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
-      return jsonResponse({ error: auth.error }, { status: 401 });
+      return jsonResponse(
+        { error: auth.error, code: auth.code },
+        { status: auth.status ?? 401 },
+      );
     }
 
     const payload = parsePayload(await request.json());
-    if (!payload) {
-      return jsonResponse({ error: 'Invalid profile payload' }, { status: 400 });
-    }
+    if (!payload) return jsonResponse({ error: 'Invalid profile payload' }, { status: 400 });
 
     if (hasStringValue(payload.name) && payload.name.trim().length < 2) {
       return jsonResponse({ error: 'Name must be at least 2 characters' }, { status: 400 });
@@ -242,23 +267,35 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (hasStringValue(payload.name)) {
       statements.push(
         env.DB.prepare('UPDATE users SET name = ?, updated_at = ? WHERE id = ?')
-          .bind(payload.name.trim(), now, auth.user.id)
+          .bind(payload.name.trim(), now, auth.user.id),
       );
     }
 
     if (auth.user.student_id) {
-      const studentUpdate = createStudentUpdate(env, auth.user.student_id, payload, now);
+      const studentUpdate = createStudentUpdate(
+        env,
+        auth.user.student_id,
+        auth.user.organization_id,
+        payload,
+        now,
+      );
       if (studentUpdate) statements.push(studentUpdate);
     }
 
-    statements.push(createAccountSettingsUpsert(env, auth.user.id, payload, now));
+    statements.push(
+      createAccountSettingsUpsert(
+        env,
+        auth.user.id,
+        auth.user.organization_id,
+        payload,
+        now,
+      ),
+    );
 
-    if (statements.length > 0) {
-      await env.DB.batch(statements);
-    }
-
+    await env.DB.batch(statements);
     return jsonResponse({ success: true });
-  } catch (error) {
-    return jsonResponse({ error: (error as Error).message }, { status: 500 });
+  } catch (error: unknown) {
+    console.error('[Account Profile PUT]', error);
+    return jsonResponse({ error: 'Internal server error' }, { status: 500 });
   }
 }

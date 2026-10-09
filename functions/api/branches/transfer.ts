@@ -36,8 +36,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     }
 
     const target = await env.DB.prepare(
-      'SELECT id FROM branches WHERE id = ? AND is_active = 1',
-    ).bind(targetBranchId).first<{ id: string }>();
+      'SELECT id FROM branches WHERE id = ? AND organization_id = ? AND is_active = 1',
+    ).bind(targetBranchId, auth.user.organization_id).first<{ id: string }>();
     if (!target) return jsonResponse({ error: 'Target branch not found or inactive' }, 404);
 
     const selected = new Set((body.studentIds ?? []).filter(Boolean));
@@ -56,8 +56,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         WHERE c.id IN (${classPlaceholders})
           AND c.branch_id = ?
           AND s.branch_id = ?
+          AND s.organization_id = ?
           AND s.deleted_at IS NULL
-      `).bind(...classIds, sourceBranchId, sourceBranchId).all<{ student_id: string }>();
+      `).bind(...classIds, sourceBranchId, sourceBranchId, auth.user.organization_id).all<{ student_id: string }>();
       for (const row of results ?? []) selected.add(row.student_id);
     }
 
@@ -67,9 +68,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         SELECT id
         FROM students
         WHERE branch_id = ?
+          AND organization_id = ?
           AND deleted_at IS NULL
           AND discipline IN (${disciplinePlaceholders})
-      `).bind(sourceBranchId, ...disciplines).all<{ id: string }>();
+      `).bind(sourceBranchId, auth.user.organization_id, ...disciplines).all<{ id: string }>();
       for (const row of results ?? []) selected.add(row.id);
     }
 
@@ -86,8 +88,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         FROM students
         WHERE id IN (${placeholders(chunk.length)})
           AND branch_id = ?
+          AND organization_id = ?
           AND deleted_at IS NULL
-      `).bind(...chunk, sourceBranchId).all<{ id: string }>();
+      `).bind(...chunk, sourceBranchId, auth.user.organization_id).all<{ id: string }>();
       validIds.push(...(results ?? []).map((row) => row.id));
     }
 
@@ -135,8 +138,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         env.DB.prepare(`
           UPDATE students
           SET branch_id = ?, updated_by = ?, updated_at = ?
-          WHERE id IN (${ids}) AND branch_id = ?
-        `).bind(targetBranchId, auth.user.id, now, ...chunk, sourceBranchId),
+          WHERE id IN (${ids}) AND branch_id = ? AND organization_id = ?
+        `).bind(targetBranchId, auth.user.id, now, ...chunk, sourceBranchId, auth.user.organization_id),
         ...assignmentStatements,
       ]);
     }

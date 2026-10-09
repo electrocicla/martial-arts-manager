@@ -11,9 +11,11 @@ interface UserResponse {
     id: string;
     email: string;
     name: string;
-    role: string;
+    role: 'admin' | 'instructor' | 'student';
     student_id?: string;
     avatar_url?: string;
+    organization_id: string;
+    platform_admin: boolean;
   };
 }
 
@@ -28,7 +30,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     if (!authResult.authenticated) {
       return new Response(
         JSON.stringify({ error: authResult.error }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
+        { status: authResult.status ?? 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
 

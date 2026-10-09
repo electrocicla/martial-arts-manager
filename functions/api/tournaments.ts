@@ -55,8 +55,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     const url = new URL(request.url);
     const studentId = url.searchParams.get('student_id');
 
-    const where: string[] = ['tp.deleted_at IS NULL'];
-    const binds: string[] = [];
+    const where: string[] = ['tp.organization_id = ?', 'tp.deleted_at IS NULL'];
+    const binds: string[] = [auth.user.organization_id];
 
     if (auth.user.role === 'student') {
       if (!auth.user.student_id) return jsonResponse({ tournaments: [] });
@@ -72,7 +72,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     const sql = `
       SELECT tp.*, s.name AS student_name
         FROM tournament_participations tp
-        LEFT JOIN students s ON s.id = tp.student_id
+        LEFT JOIN students s ON s.id = tp.student_id AND s.organization_id = tp.organization_id
        WHERE ${where.join(' AND ')}
        ORDER BY tp.tournament_date DESC
        LIMIT 200
@@ -97,14 +97,19 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       return errorResponse('student_id, tournament_name and tournament_date are required', 400);
     }
 
+    const student = await env.DB.prepare(
+      'SELECT id FROM students WHERE id = ? AND organization_id = ? AND deleted_at IS NULL',
+    ).bind(body.student_id, auth.user.organization_id).first<{ id: string }>();
+    if (!student) return errorResponse('Student not found', 404);
+
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
     await env.DB.prepare(`
       INSERT INTO tournament_participations (
         id, student_id, tournament_name, tournament_date, belt_at_time,
-        placement, notes, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        placement, notes, created_by, created_at, updated_at, organization_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id,
       body.student_id,
@@ -116,9 +121,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       auth.user.id,
       now,
       now,
+      auth.user.organization_id,
     ).run();
 
-    const result = await fetchStudentProgression(env.DB, body.student_id);
+    const result = await fetchStudentProgression(env.DB, body.student_id, auth.user.organization_id);
     if (result?.evaluation.readyForExam && result.evaluation.nextBelt) {
       await notifyInstructorOfReadiness({
         db: env.DB,
@@ -127,6 +133,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         currentBelt: result.student.belt,
         nextBelt: result.evaluation.nextBelt,
         instructorId: result.student.instructor_id,
+        organizationId: auth.user.organization_id,
       });
     }
 
@@ -159,10 +166,10 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (updates.length === 0) return errorResponse('No fields to update', 400);
     updates.push('updated_at = ?');
     binds.push(new Date().toISOString());
-    binds.push(body.id);
+    binds.push(body.id, auth.user.organization_id);
 
     await env.DB.prepare(
-      `UPDATE tournament_participations SET ${updates.join(', ')} WHERE id = ? AND deleted_at IS NULL`
+      `UPDATE tournament_participations SET ${updates.join(', ')} WHERE id = ? AND organization_id = ? AND deleted_at IS NULL`
     ).bind(...binds).run();
 
     return jsonResponse({ success: true });
@@ -185,8 +192,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     const now = new Date().toISOString();
     await env.DB.prepare(
-      `UPDATE tournament_participations SET deleted_at = ?, updated_at = ? WHERE id = ?`
-    ).bind(now, now, id).run();
+      `UPDATE tournament_participations SET deleted_at = ?, updated_at = ? WHERE id = ? AND organization_id = ? AND deleted_at IS NULL`
+    ).bind(now, now, id, auth.user.organization_id).run();
 
     return jsonResponse({ success: true });
   } catch (error) {

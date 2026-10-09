@@ -36,8 +36,14 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
 
     // Delete enrollment
     const result = await env.DB.prepare(
-      "DELETE FROM class_enrollments WHERE class_id = ? AND student_id = ?"
-    ).bind(classId, studentId).run();
+      `DELETE FROM class_enrollments
+       WHERE class_id = ? AND student_id = ?
+         AND EXISTS (
+           SELECT 1 FROM students s
+           WHERE s.id = class_enrollments.student_id
+             AND s.organization_id = ? AND s.branch_id = ? AND s.deleted_at IS NULL
+         )`
+    ).bind(classId, studentId, auth.user.organization_id, branchId).run();
 
     if (result.meta.changes === 0) {
       return new Response(JSON.stringify({ error: 'Enrollment not found' }), { 

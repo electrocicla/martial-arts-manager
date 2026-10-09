@@ -191,6 +191,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       });
     }
 
+    if (auth.user.role === 'student') return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
     const body = await request.json() as CreateClassRequest;
   const { id, name, discipline, date, time, location, instructor, maxStudents, description, isRecurring, recurrencePattern, parentCourseId } = body;
   const instructorId = auth.user.id;
@@ -338,6 +339,13 @@ export async function onRequestPut(context: { request: Request; env: Env, params
     const id = params?.id;
     if (!id) return new Response(JSON.stringify({ error: 'Missing class id' }), { status: 400 });
 
+    if (auth.user.role === 'student') return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
+    const ownedClass = await env.DB.prepare(
+      "SELECT id FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL AND (? = 'admin' OR created_by = ? OR instructor_id = ?)"
+    ).bind(id, branchId, auth.user.role, auth.user.id, auth.user.id).first<{ id: string }>();
+    if (!ownedClass) return new Response(JSON.stringify({ error: 'Class not found' }), { status: 404 });
+
     const body = await request.json();
     const url = new URL(request.url);
     const applyTo = (body.applyTo as string) || url.searchParams.get('applyTo') || 'single';
@@ -352,7 +360,14 @@ export async function onRequestPut(context: { request: Request; env: Env, params
     if (body.time) { sets.push('time = ?'); values.push(body.time); }
     if (body.location) { sets.push('location = ?'); values.push(body.location); }
     if (body.instructor) { sets.push('instructor = ?'); values.push(body.instructor); }
-    if (body.instructorId) { sets.push('instructor_id = ?'); values.push(body.instructorId); }
+    if (body.instructorId) {
+      if (typeof body.instructorId !== 'string') return new Response(JSON.stringify({ error: 'Invalid instructorId' }), { status: 400 });
+      const membership = await env.DB.prepare(
+        "SELECT 1 AS allowed FROM organization_memberships WHERE organization_id = ? AND user_id = ? AND role IN ('admin', 'instructor') AND status = 'active' AND is_active = 1"
+      ).bind(auth.user.organization_id, body.instructorId).first<{ allowed: number }>();
+      if (!membership) return new Response(JSON.stringify({ error: 'Instructor not found in this organization' }), { status: 400 });
+      sets.push('instructor_id = ?'); values.push(body.instructorId);
+    }
     if (typeof body.maxStudents === 'number') { sets.push('max_students = ?'); values.push(body.maxStudents); }
     if (typeof body.description === 'string') { sets.push('description = ?'); values.push(body.description); }
     if (typeof body.isRecurring === 'boolean') { sets.push('is_recurring = ?'); values.push(body.isRecurring ? 1 : 0); }
@@ -367,41 +382,41 @@ export async function onRequestPut(context: { request: Request; env: Env, params
     const updateValues = [...values];
 
     const sql = auth.user.role === 'admin'
-      ? `UPDATE classes SET ${sets.join(', ')} WHERE id = ? AND deleted_at IS NULL`
-      : `UPDATE classes SET ${sets.join(', ')} WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL`;
+      ? `UPDATE classes SET ${sets.join(', ')} WHERE id = ? AND branch_id = ? AND deleted_at IS NULL`
+      : `UPDATE classes SET ${sets.join(', ')} WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL`;
     const singleUpdateValues = auth.user.role === 'admin'
-      ? [...updateValues, id]
-      : [...updateValues, id, auth.user.id, auth.user.id];
+      ? [...updateValues, id, branchId]
+      : [...updateValues, id, branchId, auth.user.id, auth.user.id];
 
     // If updating all occurrences for a recurring parent, apply update to all children
     if (applyTo === 'all') {
       // Find the parent_course_id for this class
       const { results: parentRes } = await env.DB.prepare(
         auth.user.role === 'admin'
-          ? 'SELECT id, parent_course_id, is_recurring FROM classes WHERE id = ? AND deleted_at IS NULL'
-          : 'SELECT id, parent_course_id, is_recurring FROM classes WHERE id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL'
-      ).bind(...(auth.user.role === 'admin' ? [id] : [id, auth.user.id, auth.user.id])).all<{ id: string; parent_course_id?: string | null; is_recurring: number }>();
+          ? 'SELECT id, parent_course_id, is_recurring FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL'
+          : 'SELECT id, parent_course_id, is_recurring FROM classes WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL'
+      ).bind(...(auth.user.role === 'admin' ? [id, branchId] : [id, branchId, auth.user.id, auth.user.id])).all<{ id: string; parent_course_id?: string | null; is_recurring: number }>();
       const parentRow = parentRes?.[0];
       const parentId = parentRow?.parent_course_id || (parentRow?.is_recurring === 1 ? parentRow.id : undefined);
       if (parentId) {
         // Update all classes with same parent_course_id
         const updateSql = auth.user.role === 'admin'
-          ? `UPDATE classes SET ${sets.join(', ')} WHERE (parent_course_id = ? OR id = ?) AND deleted_at IS NULL`
-          : `UPDATE classes SET ${sets.join(', ')} WHERE (parent_course_id = ? OR id = ?) AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL`;
+          ? `UPDATE classes SET ${sets.join(', ')} WHERE (parent_course_id = ? OR id = ?) AND branch_id = ? AND deleted_at IS NULL`
+          : `UPDATE classes SET ${sets.join(', ')} WHERE (parent_course_id = ? OR id = ?) AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL`;
         const recurringUpdateValues = auth.user.role === 'admin'
-          ? [...updateValues, parentId, parentId]
-          : [...updateValues, parentId, parentId, auth.user.id, auth.user.id];
+          ? [...updateValues, parentId, parentId, branchId]
+          : [...updateValues, parentId, parentId, branchId, auth.user.id, auth.user.id];
         await env.DB.prepare(updateSql).bind(...recurringUpdateValues).run();
         const { results } = auth.user.role === 'admin'
-          ? await env.DB.prepare('SELECT * FROM classes WHERE (parent_course_id = ? OR id = ?) AND deleted_at IS NULL ORDER BY date, time').bind(parentId, parentId).all<ClassRecord>()
-          : await env.DB.prepare('SELECT * FROM classes WHERE (parent_course_id = ? OR id = ?) AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL ORDER BY date, time').bind(parentId, parentId, auth.user.id, auth.user.id).all<ClassRecord>();
+          ? await env.DB.prepare('SELECT * FROM classes WHERE (parent_course_id = ? OR id = ?) AND branch_id = ? AND deleted_at IS NULL ORDER BY date, time').bind(parentId, parentId, branchId).all<ClassRecord>()
+          : await env.DB.prepare('SELECT * FROM classes WHERE (parent_course_id = ? OR id = ?) AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL ORDER BY date, time').bind(parentId, parentId, branchId, auth.user.id, auth.user.id).all<ClassRecord>();
         return new Response(JSON.stringify(results || []), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
     }
 
     await env.DB.prepare(sql).bind(...singleUpdateValues).run();
 
-    const { results } = await env.DB.prepare('SELECT * FROM classes WHERE id = ?').bind(id).all<ClassRecord>();
+    const { results } = await env.DB.prepare('SELECT * FROM classes WHERE id = ? AND branch_id = ?').bind(id, branchId).all<ClassRecord>();
     return new Response(JSON.stringify(results?.[0] || {}), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
@@ -419,13 +434,19 @@ export async function onRequestDelete(context: { request: Request; env: Env, par
     const id = params?.id;
     if (!id) return new Response(JSON.stringify({ error: 'Missing class id' }), { status: 400 });
 
+    if (auth.user.role === 'student') return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
+    const ownedClass = await env.DB.prepare("SELECT id FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL AND (? = 'admin' OR created_by = ? OR instructor_id = ?)")
+      .bind(id, branchId, auth.user.role, auth.user.id, auth.user.id).first<{ id: string }>();
+    if (!ownedClass) return new Response(JSON.stringify({ error: 'Class not found' }), { status: 404 });
+
     // Soft delete: set deleted_at and updated_by
     const now = new Date().toISOString();
     await env.DB.prepare(
       auth.user.role === 'admin'
-        ? 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ? AND deleted_at IS NULL'
-        : 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ? AND (created_by = ? OR instructor_id = ?)'
-    ).bind(...(auth.user.role === 'admin' ? [now, now, auth.user.id, id] : [now, now, auth.user.id, id, auth.user.id, auth.user.id])).run();
+        ? 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ? AND branch_id = ? AND deleted_at IS NULL'
+        : 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?)'
+    ).bind(...(auth.user.role === 'admin' ? [now, now, auth.user.id, id, branchId] : [now, now, auth.user.id, id, branchId, auth.user.id, auth.user.id])).run();
 
     // Check affected rows if available (D1 may provide 'success' without rowcount)
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });

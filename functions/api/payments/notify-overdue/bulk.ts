@@ -114,23 +114,25 @@ export async function onRequestPost({
 
       const stmt = env.DB.prepare(
         `SELECT s.id, s.name, COALESCE(sba.started_at, s.join_date) AS join_date, s.created_at,
-                u.id AS user_id,
+                om.user_id AS user_id,
                 MAX(CASE WHEN p.status = 'completed' THEN p.date END) AS last_completed_date,
                 (SELECT amount FROM payments
                    WHERE student_id = s.id AND branch_id = ? AND status = 'completed' AND deleted_at IS NULL
                    ORDER BY date DESC LIMIT 1) AS last_completed_amount,
                 AVG(CASE WHEN p.status = 'completed' THEN p.amount ELSE NULL END) AS avg_amount
            FROM students s
-           LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
+           LEFT JOIN organization_memberships om ON om.student_id = s.id
+             AND om.organization_id = ? AND om.role = 'student'
+             AND om.status = 'active' AND om.is_active = 1
            LEFT JOIN payments p ON p.student_id = s.id AND p.branch_id = ? AND p.deleted_at IS NULL
            LEFT JOIN student_branch_assignments sba ON sba.student_id = s.id AND sba.ended_at IS NULL
-          WHERE s.deleted_at IS NULL AND s.is_active = 1 AND s.branch_id = ?${ownershipClause}
+          WHERE s.deleted_at IS NULL AND s.is_active = 1 AND s.branch_id = ? AND s.organization_id = ?${ownershipClause}
           GROUP BY s.id
           LIMIT ?`,
       );
       const bound = isAdmin
-        ? stmt.bind(branchId, branchId, branchId, MAX_BULK_RECIPIENTS)
-        : stmt.bind(branchId, branchId, branchId, auth.user.id, auth.user.id, MAX_BULK_RECIPIENTS);
+        ? stmt.bind(branchId, auth.user.organization_id, branchId, branchId, auth.user.organization_id, MAX_BULK_RECIPIENTS)
+        : stmt.bind(branchId, auth.user.organization_id, branchId, branchId, auth.user.organization_id, auth.user.id, auth.user.id, MAX_BULK_RECIPIENTS);
 
       const { results } = await bound.all<OverdueRow>();
       const today = new Date();
@@ -165,20 +167,22 @@ export async function onRequestPost({
 
         const stmt = env.DB.prepare(
           `SELECT s.id, s.name, COALESCE(sba.started_at, s.join_date) AS join_date, s.created_at,
-                  u.id AS user_id,
+                  om.user_id AS user_id,
             MAX(CASE WHEN p.status = 'completed' THEN p.date END) AS last_completed_date,
                   (SELECT amount FROM payments
                      WHERE student_id = s.id AND branch_id = ? AND status = 'completed' AND deleted_at IS NULL
                      ORDER BY date DESC LIMIT 1) AS last_completed_amount,
             AVG(CASE WHEN p.status = 'completed' THEN p.amount ELSE NULL END) AS avg_amount
              FROM students s
-             LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
+             LEFT JOIN organization_memberships om ON om.student_id = s.id
+             AND om.organization_id = ? AND om.role = 'student'
+             AND om.status = 'active' AND om.is_active = 1
              LEFT JOIN payments p ON p.student_id = s.id AND p.branch_id = ? AND p.deleted_at IS NULL
              LEFT JOIN student_branch_assignments sba ON sba.student_id = s.id AND sba.ended_at IS NULL
-            WHERE s.deleted_at IS NULL AND s.branch_id = ? AND s.id IN (${placeholders})${ownershipClause}
+            WHERE s.deleted_at IS NULL AND s.branch_id = ? AND s.organization_id = ? AND s.id IN (${placeholders})${ownershipClause}
             GROUP BY s.id`,
         );
-        const params: string[] = [branchId, branchId, branchId, ...chunk];
+        const params: string[] = [branchId, auth.user.organization_id, branchId, branchId, auth.user.organization_id, ...chunk];
         if (!isAdmin) {
           params.push(auth.user.id, auth.user.id);
         }
@@ -225,14 +229,14 @@ export async function onRequestPost({
       const existing = await withNotificationsTable(env.DB, () =>
         env.DB.prepare(
           `SELECT id FROM notifications
-            WHERE user_id = ?
+            WHERE user_id = ? AND organization_id = ?
               AND action_type = 'payment_pending'
               AND requires_confirmation = 1
               AND confirmed_at IS NULL
               AND metadata LIKE ?
             LIMIT 1`,
         )
-          .bind(row.user_id, `%"monthLabel":"${paymentCycleMonthLabel}"%`)
+          .bind(row.user_id, auth.user.organization_id, `%"monthLabel":"${paymentCycleMonthLabel}"%`)
           .first<{ id: string }>(),
       );
 
@@ -268,14 +272,15 @@ export async function onRequestPost({
         await withNotificationsTable(env.DB, () =>
           env.DB.prepare(
             `INSERT INTO notifications (
-                id, user_id, message, type, read, created_at,
+                id, user_id, organization_id, message, type, read, created_at,
                 requires_confirmation, action_type, metadata,
                 confirmation_notify_user_id
-             ) VALUES (?, ?, ?, ?, 0, ?, 1, ?, ?, ?)`,
+             ) VALUES (?, ?, ?, ?, ?, 0, ?, 1, ?, ?, ?)`,
           )
             .bind(
               notificationId,
               row.user_id,
+              auth.user.organization_id,
               message,
               'payment_pending',
               isoNow,

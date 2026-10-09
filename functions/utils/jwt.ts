@@ -11,6 +11,8 @@ interface JWTPayload {
   role: string;
   iat: number;
   exp: number;
+  organization_id: string;
+  token_use: 'access' | 'refresh';
 }
 
 interface TokenPair {
@@ -43,8 +45,10 @@ export async function createTokens(
   userId: string,
   email: string,
   role: string,
-  jwtSecret: string
+  jwtSecret: string,
+  organizationId: string
 ): Promise<TokenPair> {
+  if (!organizationId.trim()) throw new Error('Organization ID is required for JWT creation');
   const now = Math.floor(Date.now() / 1000);
   
   // Access token (2 hours for better UX)
@@ -54,6 +58,8 @@ export async function createTokens(
     role,
     iat: now,
     exp: now + 2 * 60 * 60, // 2 hours
+    organization_id: organizationId,
+    token_use: 'access',
   };
 
   // Refresh token (30 days for longer sessions)
@@ -63,6 +69,8 @@ export async function createTokens(
     role,
     iat: now,
     exp: now + 30 * 24 * 60 * 60, // 30 days
+    organization_id: organizationId,
+    token_use: 'refresh',
   };
 
   const [accessToken, refreshToken] = await Promise.all([
@@ -121,7 +129,7 @@ export async function verifyJWT(token: string, secret: string): Promise<JWTPaylo
     // Decode header
     const header = JSON.parse(base64urlDecode(encodedHeader));
     
-    if (header.alg !== 'HS256') return null;
+    if (!header || typeof header !== 'object' || header.alg !== 'HS256' || header.typ !== 'JWT') return null;
 
     // Verify signature
     const unsignedToken = `${encodedHeader}.${encodedPayload}`;
@@ -151,14 +159,22 @@ export async function verifyJWT(token: string, secret: string): Promise<JWTPaylo
       return null;
     }
 
-    // Decode payload
-    const payload: JWTPayload = JSON.parse(base64urlDecode(encodedPayload));
-    
-    // Check expiration
+    // Verify signed tenant claims and token purpose with runtime type guards.
+    const decoded: unknown = JSON.parse(base64urlDecode(encodedPayload));
+    if (!decoded || typeof decoded !== 'object') return null;
+    const claims = decoded as Record<string, unknown>;
+    const { sub, email, role, iat, exp, organization_id, token_use } = claims;
     const now = Math.floor(Date.now() / 1000);
-    if (payload.exp < now) return null;
-
-    return payload;
+    if (
+      typeof sub !== 'string' || !sub ||
+      typeof email !== 'string' || !email ||
+      (role !== 'admin' && role !== 'instructor' && role !== 'student') ||
+      typeof iat !== 'number' || !Number.isFinite(iat) || iat > now + 60 ||
+      typeof exp !== 'number' || !Number.isFinite(exp) || exp <= now || exp <= iat ||
+      typeof organization_id !== 'string' || !organization_id.trim() ||
+      (token_use !== 'access' && token_use !== 'refresh')
+    ) return null;
+    return { sub, email, role, iat, exp, organization_id, token_use };
   } catch (error) {
     console.error('JWT verification failed:', error);
     return null;

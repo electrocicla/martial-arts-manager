@@ -1,3 +1,4 @@
+import { organizationHeaders } from '../../lib/organization';
 import { Save, User as UserIcon, Camera } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import useSettings from '../../hooks/useSettings';
@@ -33,10 +34,10 @@ export default function ProfileSettings() {
 
       const response = await fetch('/api/student/profile', {
         method: 'PUT',
-        headers: {
+        headers: organizationHeaders({
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
-        },
+        }),
         body: JSON.stringify({
           name: form.name,
           email: form.email,
@@ -112,9 +113,9 @@ export default function ProfileSettings() {
     try {
       const response = await fetch('/api/students/avatar', {
         method: 'POST',
-        headers: {
+        headers: organizationHeaders({
           'Authorization': `Bearer ${accessToken}`
-        },
+        }),
         body: formData
       });
 

@@ -70,12 +70,14 @@ export async function onRequestPost({
 
     const student = await env.DB
       .prepare(
-        `SELECT s.id, s.name, s.created_by, s.instructor_id, u.id AS user_id
+        `SELECT s.id, s.name, s.created_by, s.instructor_id, om.user_id AS user_id
            FROM students s
-           LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
-          WHERE s.id = ? AND s.branch_id = ? AND s.deleted_at IS NULL`,
+           LEFT JOIN organization_memberships om ON om.student_id = s.id
+             AND om.organization_id = ? AND om.role = 'student'
+             AND om.status = 'active' AND om.is_active = 1
+          WHERE s.id = ? AND s.branch_id = ? AND s.organization_id = ? AND s.deleted_at IS NULL`,
       )
-      .bind(studentId, branchId)
+      .bind(auth.user.organization_id, studentId, branchId, auth.user.organization_id)
       .first<StudentRecord>();
 
     if (!student) {
@@ -114,14 +116,14 @@ export async function onRequestPost({
       env.DB
         .prepare(
           `SELECT id FROM notifications
-            WHERE user_id = ?
+            WHERE user_id = ? AND organization_id = ?
               AND action_type = 'payment_pending'
               AND requires_confirmation = 1
               AND confirmed_at IS NULL
               AND metadata LIKE ?
             LIMIT 1`,
         )
-        .bind(student.user_id, `%"monthLabel":"${monthLabel}"%`)
+        .bind(student.user_id, auth.user.organization_id, `%"monthLabel":"${monthLabel}"%`)
         .first<{ id: string }>(),
     );
 
@@ -157,14 +159,15 @@ export async function onRequestPost({
       env.DB
         .prepare(
           `INSERT INTO notifications (
-              id, user_id, message, type, read, created_at,
+              id, user_id, organization_id, message, type, read, created_at,
               requires_confirmation, action_type, metadata,
               confirmation_notify_user_id
-           ) VALUES (?, ?, ?, ?, 0, ?, 1, ?, ?, ?)`,
+           ) VALUES (?, ?, ?, ?, ?, 0, ?, 1, ?, ?, ?)`,
         )
         .bind(
           notificationId,
           student.user_id,
+          auth.user.organization_id,
           message,
           'payment_pending',
           isoNow,

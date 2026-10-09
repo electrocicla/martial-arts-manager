@@ -2,38 +2,45 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { apiClient } from '../lib/api-client';
 import { branchService } from '../services/branch.service';
+import { BRANCH_STORAGE_KEY, INITIAL_BRANCH_ID, resolveAuthorizedBranchId } from '../lib/organization';
 import type { BranchSummary } from '../types';
 import { useAuth } from './AuthContext';
 import { BranchContext, type BranchContextValue } from './branchContext.shared';
 import { invalidateMercadoPagoStatus } from '../hooks/useMercadoPagoStatus';
 
-const BRANCH_STORAGE_KEY = 'hamarr:selected-branch';
-const MAIN_BRANCH_ID = 'main';
-
 function readStoredBranchId(): string {
-  if (typeof window === 'undefined') return MAIN_BRANCH_ID;
+  if (typeof window === 'undefined') return INITIAL_BRANCH_ID;
   try {
-    return window.localStorage.getItem(BRANCH_STORAGE_KEY) || MAIN_BRANCH_ID;
+    return window.localStorage.getItem(BRANCH_STORAGE_KEY) || INITIAL_BRANCH_ID;
   } catch {
-    return MAIN_BRANCH_ID;
+    return INITIAL_BRANCH_ID;
   }
 }
 
 export function BranchProvider({ children }: { children: ReactNode }) {
   const { user, accessToken, isLoading: authLoading } = useAuth();
   const [branches, setBranches] = useState<BranchSummary[]>([]);
-  const [activeBranchId, setActiveBranchId] = useState(readStoredBranchId);
+  const preferredBranchIdRef = useRef(readStoredBranchId());
+  const branchLoadGenerationRef = useRef(0);
+  const authorizedBranchIdsRef = useRef<ReadonlySet<string>>(new Set());
+  // Do not trust a persisted branch until the backend returns authorized branches.
+  const [activeBranchId, setActiveBranchId] = useState(INITIAL_BRANCH_ID);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  apiClient.setBranchId(activeBranchId);
+  apiClient.setBranchId(activeBranchId || null);
 
   const selectBranch = useCallback((branchId: string) => {
+    // A stale or forged branch selection must never become an API header.
+    if (!authorizedBranchIdsRef.current.has(branchId)) return;
+    branchLoadGenerationRef.current += 1;
+    preferredBranchIdRef.current = branchId;
     apiClient.setBranchId(branchId);
     invalidateMercadoPagoStatus();
     setActiveBranchId(branchId);
@@ -45,26 +52,48 @@ export function BranchProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshBranches = useCallback(async () => {
+    const requestGeneration = ++branchLoadGenerationRef.current;
     if (authLoading || !user || !accessToken) {
+      authorizedBranchIdsRef.current = new Set();
+      apiClient.setBranchId(null);
+      setActiveBranchId(INITIAL_BRANCH_ID);
       setBranches([]);
+      setError(null);
+      setIsLoading(false);
       return;
     }
 
     apiClient.setAccessToken(accessToken);
-    apiClient.setBranchId(activeBranchId);
+    apiClient.setBranchId(activeBranchId || null);
     setIsLoading(true);
     setError(null);
 
     const response = await branchService.getAll();
+    // Ignore a stale response after logout or a newer branch refresh.
+    if (requestGeneration !== branchLoadGenerationRef.current) return;
     if (response.success && response.data) {
       const nextBranches = response.data.branches;
+      authorizedBranchIdsRef.current = new Set(nextBranches.map((branch) => branch.id));
       setBranches(nextBranches);
 
-      if (!nextBranches.some((branch) => branch.id === activeBranchId)) {
-        const fallback = nextBranches.find((branch) => branch.is_main === 1) ?? nextBranches[0];
-        if (fallback) selectBranch(fallback.id);
+      const resolvedBranchId = resolveAuthorizedBranchId(
+        nextBranches,
+        activeBranchId || preferredBranchIdRef.current,
+      );
+      if (resolvedBranchId && resolvedBranchId !== activeBranchId) {
+        selectBranch(resolvedBranchId);
+      } else if (!resolvedBranchId) {
+        // Zero authorized branches must not preserve a prior account's selection.
+        apiClient.setBranchId(null);
+        invalidateMercadoPagoStatus();
+        setActiveBranchId(INITIAL_BRANCH_ID);
       }
     } else {
+      authorizedBranchIdsRef.current = new Set();
+      apiClient.setBranchId(null);
+      invalidateMercadoPagoStatus();
+      setActiveBranchId(INITIAL_BRANCH_ID);
+      setBranches([]);
       setError(response.error || 'No se pudieron cargar las sedes');
     }
     setIsLoading(false);

@@ -9,6 +9,7 @@ import { getRefreshTokenFromRequest, createRefreshTokenCookie, createClearRefres
 import { normalizeAvatarUrl } from '../../utils/avatar';
 
 import { Env } from '../../types/index';
+import { resolveAuthenticatedOrganization, organizationErrorResponse, getRequestedOrganizationId } from '../../utils/organizations';
 
 interface RefreshResponse {
   success: true;
@@ -20,6 +21,8 @@ interface RefreshResponse {
     role: string;
     student_id?: string;
     avatar_url?: string;
+    organization_id: string;
+    platform_admin: boolean;
   };
   refreshToken?: string;
 }
@@ -44,7 +47,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Verify refresh token
     const payload = await verifyJWT(refreshToken, env.JWT_SECRET);
-    if (!payload) {
+    if (!payload || payload.token_use !== 'refresh') {
       const response = new Response(
         JSON.stringify({ error: 'Invalid or expired refresh token' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
@@ -54,9 +57,18 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       return response;
     }
 
+    // A refresh token is bound to its original tenant even when the user has
+    // memberships in multiple organizations. Never switch tenants on refresh.
+    if (payload.organization_id !== getRequestedOrganizationId(request)) {
+      return new Response(
+        JSON.stringify({ error: 'Refresh token belongs to another organization', code: 'ORGANIZATION_TOKEN_MISMATCH' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
     // Find session in database
     const session = await findSessionByRefreshToken(env.DB, refreshToken);
-    if (!session) {
+    if (!session || session.user_id !== payload.sub) {
       const response = new Response(
         JSON.stringify({ error: 'Session not found or expired' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
@@ -79,30 +91,18 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       return response;
     }
 
-    // Auto-link student_id if missing (for students without student_id)
-    let studentId = user.student_id ?? undefined;
-    if (user.role === 'student' && !studentId) {
-      const studentMatch = await env.DB.prepare(
-        'SELECT id FROM students WHERE email = ? AND deleted_at IS NULL'
-      )
-        .bind(user.email)
-        .first<{ id: string }>();
-
-      if (studentMatch?.id) {
-        studentId = studentMatch.id;
-        const now = new Date().toISOString();
-        await env.DB.prepare('UPDATE users SET student_id = ?, updated_at = ? WHERE id = ?')
-          .bind(studentId, now, user.id)
-          .run();
-      }
+    const organization = await resolveAuthenticatedOrganization(request, env, user.id);
+    if (payload.organization_id !== organization.organizationId) {
+      return new Response(JSON.stringify({ error: 'Refresh token belongs to another organization', code: 'ORGANIZATION_TOKEN_MISMATCH' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
 
     // Create new tokens
     const { accessToken, refreshToken: newRefreshToken } = await createTokens(
       user.id,
       user.email,
-      user.role,
-      env.JWT_SECRET
+      organization.role,
+      env.JWT_SECRET,
+      organization.organizationId
     );
 
     // Delete old session
@@ -132,8 +132,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
-        student_id: studentId,
+        role: organization.role,
+        student_id: organization.studentId ?? undefined,
+        organization_id: organization.organizationId,
+        platform_admin: organization.platformAdmin,
         avatar_url: normalizeAvatarUrl(user.avatar_url),
       },
     };
@@ -159,7 +161,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     return response;
 
-  } catch (error) {
+  } catch (error: unknown) {
+    const organizationError = organizationErrorResponse(error);
+    if (organizationError) return organizationError;
     console.error('Token refresh error:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),

@@ -46,7 +46,7 @@ export async function onRequestGet({ env, request }: { env: Env; request: Reques
         });
       }
 
-      const { results } = await env.DB.prepare("SELECT * FROM attendance WHERE class_id = ? ORDER BY created_at DESC").bind(classId).all<AttendanceRecord>();
+      const { results } = await env.DB.prepare("SELECT a.* FROM attendance a INNER JOIN students s ON s.id = a.student_id WHERE a.class_id = ? AND s.organization_id = ? ORDER BY a.created_at DESC").bind(classId, auth.user.organization_id).all<AttendanceRecord>();
       return new Response(JSON.stringify(results), {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -55,12 +55,12 @@ export async function onRequestGet({ env, request }: { env: Env; request: Reques
     // No classId: return all attendance records that belong to classes owned by this user
     // Join with classes to ensure we only return records for this user's classes
     const attendanceQuery = auth.user.role === 'admin'
-      ? `SELECT a.* FROM attendance a INNER JOIN classes c ON a.class_id = c.id WHERE c.branch_id = ? AND c.deleted_at IS NULL ORDER BY a.created_at DESC`
-      : `SELECT a.* FROM attendance a INNER JOIN classes c ON a.class_id = c.id WHERE c.branch_id = ? AND (c.created_by = ? OR c.instructor_id = ?) AND c.deleted_at IS NULL ORDER BY a.created_at DESC`;
+      ? `SELECT a.* FROM attendance a INNER JOIN classes c ON a.class_id = c.id INNER JOIN students s ON s.id = a.student_id WHERE c.branch_id = ? AND s.organization_id = ? AND c.deleted_at IS NULL ORDER BY a.created_at DESC`
+      : `SELECT a.* FROM attendance a INNER JOIN classes c ON a.class_id = c.id INNER JOIN students s ON s.id = a.student_id WHERE c.branch_id = ? AND s.organization_id = ? AND (c.created_by = ? OR c.instructor_id = ?) AND c.deleted_at IS NULL ORDER BY a.created_at DESC`;
 
     const { results } = auth.user.role === 'admin'
-      ? await env.DB.prepare(attendanceQuery).bind(branchId).all<AttendanceRecord>()
-      : await env.DB.prepare(attendanceQuery).bind(branchId, auth.user.id, auth.user.id).all<AttendanceRecord>();
+      ? await env.DB.prepare(attendanceQuery).bind(branchId, auth.user.organization_id).all<AttendanceRecord>()
+      : await env.DB.prepare(attendanceQuery).bind(branchId, auth.user.organization_id, auth.user.id, auth.user.id).all<AttendanceRecord>();
 
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
@@ -115,9 +115,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     const studentCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL"
-        : "SELECT id FROM students WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [studentId, branchId] : [studentId, branchId, auth.user.id, auth.user.id])).first();
+        ? "SELECT id FROM students WHERE id = ? AND branch_id = ? AND organization_id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM students WHERE id = ? AND branch_id = ? AND organization_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [studentId, branchId, auth.user.organization_id] : [studentId, branchId, auth.user.organization_id, auth.user.id, auth.user.id])).first();
 
     if (!classCheck || !studentCheck) {
       return new Response(JSON.stringify({ error: 'Class or student not found or access denied' }), { 

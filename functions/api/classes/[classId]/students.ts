@@ -57,9 +57,9 @@ export async function onRequestPost({ request, env, params }: { request: Request
     // Verify student exists and belongs to user (admins can enroll any student)
     const studentCheck = await env.DB.prepare(
       auth.user.role === 'admin'
-        ? "SELECT id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL"
-        : "SELECT id FROM students WHERE id = ? AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [studentId, branchId] : [studentId, branchId, auth.user.id, auth.user.id])).first();
+        ? "SELECT id FROM students WHERE id = ? AND branch_id = ? AND organization_id = ? AND deleted_at IS NULL"
+        : "SELECT id FROM students WHERE id = ? AND branch_id = ? AND organization_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL"
+    ).bind(...(auth.user.role === 'admin' ? [studentId, branchId, auth.user.organization_id] : [studentId, branchId, auth.user.organization_id, auth.user.id, auth.user.id])).first();
 
     if (!studentCheck) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
@@ -167,8 +167,10 @@ export async function onRequestGet({ request, env, params }: { request: Request;
       WHERE (ce.class_id = ? OR ce.class_id = (SELECT parent_course_id FROM classes WHERE id = ?))
         AND ce.enrollment_status = 'active'
         AND s.deleted_at IS NULL
+        AND s.organization_id = ?
+        AND s.branch_id = ?
       ORDER BY s.name ASC
-    `).bind(classId, classId, classId).all();
+    `).bind(classId, classId, classId, auth.user.organization_id, branchId).all();
 
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' }

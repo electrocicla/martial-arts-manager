@@ -1,361 +1,170 @@
-/**
- * Account Approval API Endpoints
- * 
- * GET /api/auth/pending-approvals - List pending account approvals (admin/instructor)
- * POST /api/auth/pending-approvals - Approve a user account
- * DELETE /api/auth/pending-approvals?user_id=xxx - Reject a user account
- */
-
-import { Env } from '../../types/index';
-import { authenticateUser } from '../../middleware/auth';
-
+/** Tenant-local membership approvals. Global user state is never mutated by academy staff. */
+import type { Env, D1PreparedStatement } from '../../types/index';
+import { authenticateUser, type AuthenticatedOrganizationUser } from '../../middleware/auth';
+import { resolveMainBranchId } from '../../utils/organizations';
 import { ensureStudentHasInitialPayment } from '../../utils/payment-provisioning';
 import { logAuditAction, getClientIP } from '../../utils/db';
-import { MAIN_BRANCH_ID } from '../../utils/branches';
 
-interface PendingUser {
+interface MembershipTarget {
   id: string;
-  email: string;
   name: string;
-  role: string;
-  created_at: string;
-  registration_notes: string | null;
+  email: string;
+  role: 'admin' | 'instructor' | 'student';
+  student_id: string | null;
 }
 
-// GET - List pending approvals
-export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
+const json = (body: unknown, status = 200): Response =>
+  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+
+async function authorize(
+  request: Request, env: Env,
+): Promise<{ user: AuthenticatedOrganizationUser } | { error: Response }> {
+  const auth = await authenticateUser(request, env);
+  if (!auth.authenticated) {
+    return { error: json({ error: auth.error, code: auth.code }, auth.status ?? 401) };
+  }
+  if (auth.user.role !== 'admin') {
+    return { error: json({ error: 'Access denied' }, 403) };
+  }
+  return { user: auth.user };
+}
+
+async function findPending(
+  env: Env, organizationId: string, userId: string, actorRole: string,
+): Promise<MembershipTarget | null> {
+  return env.DB.prepare(`
+    SELECT u.id, u.name, u.email, om.role, om.student_id
+    FROM organization_memberships om
+    JOIN users u ON u.id = om.user_id
+    WHERE om.organization_id = ? AND om.user_id = ?
+      AND om.status = 'pending' AND om.is_active = 1 AND u.is_active = 1
+      AND (? <> 'instructor' OR om.role = 'student')
+  `).bind(organizationId, userId, actorRole).first<MembershipTarget>();
+}
+
+export async function onRequestGet({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
-    const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) {
-      return new Response(JSON.stringify({ error: auth.error }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Only admins and instructors can view pending approvals
-    if (auth.user.role === 'student') {
-      return new Response(JSON.stringify({ error: 'Access denied' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Get pending approval accounts (instructors only see students)
-    const isInstructor = auth.user.role === 'instructor';
-    const query = `
-      SELECT 
-        id, 
-        email, 
-        name, 
-        role, 
-        created_at,
-        registration_notes
-      FROM users
-      WHERE is_approved = 0 AND is_active = 1${isInstructor ? " AND role = 'student'" : ''}
-      ORDER BY created_at DESC
-    `;
-    const { results } = await env.DB.prepare(query).all<PendingUser>();
-
-    return new Response(JSON.stringify({ 
-      pending_users: results || []
-    }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-  } catch (error) {
-    console.error('Pending approvals error:', error);
-    return new Response(JSON.stringify({ 
-      error: (error as Error).message 
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    const result = await authorize(request, env);
+    if ('error' in result) return result.error;
+    const { user } = result;
+    const pending = await env.DB.prepare(`
+      SELECT u.id, u.email, u.name, om.role, u.created_at, u.registration_notes
+      FROM organization_memberships om JOIN users u ON u.id = om.user_id
+      WHERE om.organization_id = ? AND om.status = 'pending'
+        AND om.is_active = 1 AND u.is_active = 1
+        AND (? <> 'instructor' OR om.role = 'student')
+      ORDER BY om.created_at DESC
+    `).bind(user.organization_id, user.role).all<MembershipTarget>();
+    return json({ pending_users: pending.results ?? [] });
+  } catch (error: unknown) {
+    console.error('Pending approvals failed:', error);
+    return json({ error: 'Internal server error' }, 500);
   }
 }
 
-// POST - Approve account
-export async function onRequestPost({ request, env }: { request: Request; env: Env }) {
+export async function onRequestPost({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
-    const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) {
-      return new Response(JSON.stringify({ error: auth.error }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Only admins and instructors can approve accounts
-    if (auth.user.role === 'student') {
-      return new Response(JSON.stringify({ error: 'Access denied' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
+    const result = await authorize(request, env);
+    if ('error' in result) return result.error;
+    const { user } = result;
     const body = await request.json() as { user_id?: string; userId?: string };
-    const user_id = body.user_id || body.userId;
+    const userId = body.user_id ?? body.userId;
+    if (!userId || typeof userId !== 'string') return json({ error: 'User ID is required' }, 400);
 
-    if (!user_id) {
-      return new Response(JSON.stringify({ error: 'User ID is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Verify the user exists
-    const user = await env.DB.prepare(`
-      SELECT id, email, name, role, student_id, is_approved FROM users WHERE id = ?
-    `).bind(user_id).first<{ id: string; email: string; name: string; role: string; student_id?: string | null; is_approved: number }>();
-
-    if (!user) {
-      return new Response(JSON.stringify({ 
-        error: 'User not found' 
-      }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+    const pending = await findPending(env, user.organization_id, userId, user.role);
+    if (!pending) return json({ error: 'Pending membership not found' }, 404);
 
     const now = new Date().toISOString();
-    const wasPending = !user.is_approved;
+    const operations: D1PreparedStatement[] = [];
+    let studentId = pending.student_id;
+    let branchId: string | undefined;
 
-    // Ensure student accounts always have a linked, active student profile
-    let linkedStudentId = user.student_id || null;
-
-    if (user.role === 'student') {
-      // Validate existing linked student profile
-      if (linkedStudentId) {
-        const existingLinked = await env.DB.prepare(
-          'SELECT id FROM students WHERE id = ? AND deleted_at IS NULL'
-        )
-          .bind(linkedStudentId)
-          .first<{ id: string }>();
-
-        if (!existingLinked?.id) {
-          linkedStudentId = null;
-        }
+    if (pending.role === 'student') {
+      branchId = await resolveMainBranchId(env, user.organization_id);
+      if (studentId) {
+        const linked = await env.DB.prepare(`
+          SELECT id FROM students WHERE id = ? AND organization_id = ? AND deleted_at IS NULL
+        `).bind(studentId, user.organization_id).first<{ id: string }>();
+        if (!linked) studentId = null;
       }
-
-      if (!linkedStudentId) {
-        const studentByEmail = await env.DB.prepare(
-          `SELECT id, deleted_at FROM students
-           WHERE email = ?
-           ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC
-           LIMIT 1`
-        )
-          .bind(user.email)
-          .first<{ id: string; deleted_at?: string | null }>();
-
-        if (studentByEmail?.id) {
-          linkedStudentId = studentByEmail.id;
-
-          if (studentByEmail.deleted_at) {
-            await env.DB.prepare(
-              `UPDATE students
-               SET name = ?, is_active = 1, deleted_at = NULL,
-                   instructor_id = COALESCE(NULLIF(instructor_id, ''), ?),
-                   updated_at = ?, updated_by = ?
-               WHERE id = ?`
-            )
-              .bind(
-                user.name,
-                auth.user.role === 'instructor' ? auth.user.id : null,
-                now,
-                auth.user.id,
-                linkedStudentId
-              )
-              .run();
-          }
-        } else {
-          linkedStudentId = crypto.randomUUID();
-
-          await env.DB.prepare(`
+      if (!studentId) {
+        const candidate = await env.DB.prepare(`
+          SELECT id FROM students WHERE email = ? AND organization_id = ? AND deleted_at IS NULL
+          LIMIT 1
+        `).bind(pending.email, user.organization_id).first<{ id: string }>();
+        studentId = candidate?.id ?? crypto.randomUUID();
+        if (!candidate) {
+          operations.push(env.DB.prepare(`
             INSERT INTO students (
-              id, name, email, belt, discipline, join_date,
-              is_active, created_by, instructor_id, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
-          `)
-            .bind(
-              linkedStudentId,
-              user.name,
-              user.email,
-              'White',
-              'Brazilian Jiu-Jitsu',
-              now,
-              auth.user.id,
-              auth.user.role === 'instructor' ? auth.user.id : null,
-              now,
-              now
-            )
-            .run();
+              id, name, email, belt, discipline, join_date, is_active,
+              created_by, instructor_id, created_at, updated_at, branch_id, organization_id
+            ) VALUES (?, ?, ?, 'White', 'Brazilian Jiu-Jitsu', ?, 1, ?, ?, ?, ?, ?, ?)
+          `).bind(studentId, pending.name, pending.email, now, user.id,
+            user.role === 'instructor' ? user.id : null, now, now, branchId, user.organization_id));
         }
       }
-
-      if (linkedStudentId) {
-        // Keep instructor ownership when approver is instructor and assignment is missing
-        if (auth.user.role === 'instructor') {
-          await env.DB.prepare(
-            "UPDATE students SET instructor_id = ?, updated_at = ?, updated_by = ? WHERE id = ? AND (instructor_id IS NULL OR instructor_id = '')"
-          )
-            .bind(auth.user.id, now, auth.user.id, linkedStudentId)
-            .run();
-        }
-
-        await env.DB.prepare(
-          'UPDATE users SET student_id = ?, updated_at = ? WHERE id = ?'
+      operations.push(env.DB.prepare(`
+        INSERT INTO student_branch_assignments
+          (id, student_id, branch_id, started_at, assigned_by, created_at)
+        SELECT ?, ?, ?, ?, ?, ?
+        WHERE NOT EXISTS (
+          SELECT 1 FROM student_branch_assignments
+          WHERE student_id = ? AND ended_at IS NULL
         )
-          .bind(linkedStudentId, now, user_id)
-          .run();
-      }
+      `).bind(crypto.randomUUID(), studentId, branchId, now, user.id, now, studentId));
     }
 
-    // Approve the account (idempotent if already approved)
-    if (wasPending) {
-      await env.DB.prepare(`
-        UPDATE users 
-        SET is_approved = 1, approved_by = ?, approved_at = ?, updated_at = ?
-        WHERE id = ?
-      `).bind(auth.user.id, now, now, user_id).run();
-    }
+    operations.push(env.DB.prepare(`
+      UPDATE organization_memberships
+      SET status = 'active', student_id = ?, approved_by = ?,
+          approved_at = ?, updated_at = ?
+      WHERE organization_id = ? AND user_id = ? AND status = 'pending'
+    `).bind(studentId, user.id, now, now, user.organization_id, userId));
 
-    if (user.role === 'student' && linkedStudentId) {
-      await env.DB.prepare(`
-        INSERT INTO student_branch_assignments (
-          id, student_id, branch_id, started_at, assigned_by, created_at
-        )
-        SELECT ?, ?, ?, COALESCE(join_date, created_at), ?, ?
-        FROM students
-        WHERE id = ?
-          AND NOT EXISTS (
-            SELECT 1 FROM student_branch_assignments
-            WHERE student_id = ? AND ended_at IS NULL
-          )
-      `).bind(
-        crypto.randomUUID(),
-        linkedStudentId,
-        MAIN_BRANCH_ID,
-        auth.user.id,
-        now,
-        linkedStudentId,
-        linkedStudentId,
-      ).run();
-
+    await env.DB.batch(operations);
+    if (studentId && branchId) {
       await ensureStudentHasInitialPayment(env.DB, {
-        studentId: linkedStudentId,
-        actorUserId: auth.user.id,
-        branchId: MAIN_BRANCH_ID,
-        reason: 'approval',
+        studentId, actorUserId: user.id, branchId, reason: 'approval',
       });
     }
-
-    // Non-blocking audit log
-    logAuditAction(env.DB, {
-      id: crypto.randomUUID(),
-      user_id: auth.user.id,
-      action: wasPending ? 'approve' : 'sync',
-      entity_type: 'user',
-      entity_id: user_id,
-      ip_address: getClientIP(request),
+    void logAuditAction(env.DB, {
+      id: crypto.randomUUID(), user_id: user.id, action: 'approve',
+      entity_type: 'organization_membership', entity_id: userId, ip_address: getClientIP(request),
+      changes: JSON.stringify({ organization_id: user.organization_id }),
     }).catch(() => {});
-
-    return new Response(JSON.stringify({ 
-      success: true,
-      message: wasPending
-        ? `Account for ${user.name} (${user.email}) has been approved`
-        : `Account for ${user.name} (${user.email}) is already approved and profile has been synchronized`
-    }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-  } catch (error) {
-    console.error('Approve account error:', error);
-    return new Response(JSON.stringify({ 
-      error: (error as Error).message 
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return json({ success: true, message: `Account for ${pending.name} has been approved` });
+  } catch (error: unknown) {
+    console.error('Approve membership failed:', error);
+    return json({ error: 'Could not approve organization membership' }, 500);
   }
 }
 
-// DELETE - Reject account
-export async function onRequestDelete({ request, env }: { request: Request; env: Env }) {
+export async function onRequestDelete({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
-    const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) {
-      return new Response(JSON.stringify({ error: auth.error }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Only admins and instructors can reject accounts
-    if (auth.user.role === 'student') {
-      return new Response(JSON.stringify({ error: 'Access denied' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
+    const result = await authorize(request, env);
+    if ('error' in result) return result.error;
+    const { user } = result;
     const url = new URL(request.url);
-    let userId = url.searchParams.get('user_id');
+    const body = url.searchParams.has('user_id')
+      ? null : await request.json().catch(() => null) as { user_id?: string; userId?: string } | null;
+    const userId = url.searchParams.get('user_id') ?? body?.user_id ?? body?.userId;
+    if (!userId) return json({ error: 'User ID is required' }, 400);
+    const target = await findPending(env, user.organization_id, userId, user.role);
+    if (!target) return json({ error: 'Pending membership not found' }, 404);
 
-    if (!userId) {
-      const body = await request.json().catch(() => ({} as { user_id?: string; userId?: string }));
-      userId = body.user_id || body.userId || null;
-    }
-
-    if (!userId) {
-      return new Response(JSON.stringify({ error: 'User ID is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Verify the user exists and is pending approval
-    const user = await env.DB.prepare(`
-      SELECT id, email, name FROM users WHERE id = ? AND is_approved = 0
-    `).bind(userId).first<{ id: string; email: string; name: string }>();
-
-    if (!user) {
-      return new Response(JSON.stringify({ 
-        error: 'User not found or already processed' 
-      }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Mark account as inactive (soft delete)
     await env.DB.prepare(`
-      UPDATE users SET is_active = 0, updated_at = ? WHERE id = ?
-    `).bind(new Date().toISOString(), userId).run();
-
-    // Non-blocking audit log
-    logAuditAction(env.DB, {
-      id: crypto.randomUUID(),
-      user_id: auth.user.id,
-      action: 'reject',
-      entity_type: 'user',
-      entity_id: userId,
-      ip_address: getClientIP(request),
+      UPDATE organization_memberships
+      SET status = 'rejected', is_active = 0, updated_at = ?
+      WHERE organization_id = ? AND user_id = ? AND status = 'pending'
+    `).bind(new Date().toISOString(), user.organization_id, userId).run();
+    void logAuditAction(env.DB, {
+      id: crypto.randomUUID(), user_id: user.id, action: 'reject',
+      entity_type: 'organization_membership', entity_id: userId, ip_address: getClientIP(request),
+      changes: JSON.stringify({ organization_id: user.organization_id }),
     }).catch(() => {});
-
-    return new Response(JSON.stringify({ 
-      success: true,
-      message: `Account for ${user.name} (${user.email}) has been rejected`
-    }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-  } catch (error) {
-    console.error('Reject account error:', error);
-    return new Response(JSON.stringify({ 
-      error: (error as Error).message 
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return json({ success: true, message: `Account for ${target.name} has been rejected` });
+  } catch (error: unknown) {
+    console.error('Reject membership failed:', error);
+    return json({ error: 'Could not reject organization membership' }, 500);
   }
 }

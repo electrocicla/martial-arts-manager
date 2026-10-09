@@ -140,6 +140,7 @@ interface StudentProgressionRow {
   belt: string;
   discipline: string;
   instructor_id: string | null;
+  organization_id: string;
 }
 
 interface CountRow { value: number }
@@ -150,25 +151,26 @@ interface CountRow { value: number }
  */
 export async function fetchStudentProgression(
   db: Env['DB'],
-  studentId: string
+  studentId: string,
+  organizationId: string
 ): Promise<{ student: StudentProgressionRow; evaluation: ProgressionEvaluation } | null> {
   const student = await db.prepare(
-    'SELECT id, name, belt, discipline, instructor_id FROM students WHERE id = ? AND deleted_at IS NULL'
-  ).bind(studentId).first<StudentProgressionRow>();
+    'SELECT id, name, belt, discipline, instructor_id, organization_id FROM students WHERE id = ? AND organization_id = ? AND deleted_at IS NULL'
+  ).bind(studentId, organizationId).first<StudentProgressionRow>();
 
   if (!student) return null;
 
   const classes = await db.prepare(
-    'SELECT COUNT(*) AS value FROM attendance WHERE student_id = ? AND attended = 1'
-  ).bind(studentId).first<CountRow>();
+    'SELECT COUNT(*) AS value FROM attendance WHERE student_id = ? AND attended = 1 AND class_id IN (SELECT c.id FROM classes c JOIN branches b ON b.id = c.branch_id WHERE b.organization_id = ?)'
+  ).bind(studentId, organizationId).first<CountRow>();
 
   const sparrings = await db.prepare(
-    'SELECT COALESCE(SUM(sessions_count), 0) AS value FROM sparring_sessions WHERE student_id = ? AND deleted_at IS NULL'
-  ).bind(studentId).first<CountRow>();
+    'SELECT COALESCE(SUM(sessions_count), 0) AS value FROM sparring_sessions WHERE student_id = ? AND organization_id = ? AND deleted_at IS NULL'
+  ).bind(studentId, organizationId).first<CountRow>();
 
   const tournaments = await db.prepare(
-    'SELECT COUNT(*) AS value FROM tournament_participations WHERE student_id = ? AND deleted_at IS NULL'
-  ).bind(studentId).first<CountRow>();
+    'SELECT COUNT(*) AS value FROM tournament_participations WHERE student_id = ? AND organization_id = ? AND deleted_at IS NULL'
+  ).bind(studentId, organizationId).first<CountRow>();
 
   const evaluation = evaluateProgression({
     currentBelt: student.belt ?? 'White',
@@ -188,6 +190,7 @@ interface BeltReadyNotificationOptions {
   currentBelt: string;
   nextBelt: string;
   instructorId: string | null;
+  organizationId: string;
 }
 
 /**
@@ -197,7 +200,7 @@ interface BeltReadyNotificationOptions {
 export async function notifyInstructorOfReadiness(
   options: BeltReadyNotificationOptions
 ): Promise<void> {
-  const { db, studentId, studentName, currentBelt, nextBelt, instructorId } = options;
+  const { db, studentId, studentName, currentBelt, nextBelt, instructorId, organizationId } = options;
   if (!instructorId) return;
 
   await ensureNotificationsSchema(db);
@@ -212,11 +215,11 @@ export async function notifyInstructorOfReadiness(
   await withNotificationsTable(db, async () => {
     const existing = await db.prepare(
       `SELECT id FROM notifications
-        WHERE user_id = ?
+        WHERE user_id = ? AND organization_id = ?
           AND action_type = 'belt_exam_ready'
           AND metadata = ?
           AND read = 0`
-    ).bind(instructorId, metadata).first<{ id: string }>();
+    ).bind(instructorId, organizationId, metadata).first<{ id: string }>();
 
     if (existing) return;
 
@@ -225,16 +228,24 @@ export async function notifyInstructorOfReadiness(
 
     await db.prepare(
       `INSERT INTO notifications (
-        id, user_id, message, type, read, created_at,
+        id, user_id, organization_id, message, type, read, created_at,
         requires_confirmation, action_type, metadata
-      ) VALUES (?, ?, ?, ?, 0, ?, 0, 'belt_exam_ready', ?)`
+      ) SELECT ?, ?, ?, ?, ?, 0, ?, 0, 'belt_exam_ready', ?
+        WHERE EXISTS (SELECT 1 FROM organization_memberships om
+          WHERE om.user_id = ? AND om.organization_id = ?
+            AND om.status = 'active' AND om.is_active = 1)
+          OR EXISTS (SELECT 1 FROM platform_admins WHERE user_id = ?)`
     ).bind(
       id,
       instructorId,
+      organizationId,
       message,
       'belt_exam_ready',
       new Date().toISOString(),
       metadata,
+      instructorId,
+      organizationId,
+      instructorId,
     ).run();
   });
 }

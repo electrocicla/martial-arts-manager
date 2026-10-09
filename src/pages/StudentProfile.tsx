@@ -1,4 +1,5 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { organizationHeaders } from '../lib/organization';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -272,9 +273,9 @@ export default function StudentProfile() {
     try {
       const response = await fetch('/api/students/avatar', {
         method: 'POST',
-        headers: {
+        headers: organizationHeaders({
           Authorization: `Bearer ${accessToken}`,
-        },
+        }),
         body: formData,
       });
 

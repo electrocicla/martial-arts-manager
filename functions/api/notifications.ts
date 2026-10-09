@@ -13,6 +13,7 @@ import { NotificationRecord, ensureNotificationsSchema, withNotificationsTable }
 interface NotificationOwnershipRecord {
   id: string;
   user_id: string;
+  organization_id: string;
   requires_confirmation?: 0 | 1 | null;
   confirmed_at?: string | null;
 }
@@ -44,7 +45,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
              requires_confirmation, confirmed_at, action_type, metadata,
              confirmation_notify_user_id
         FROM notifications
-       WHERE user_id = ?
+       WHERE user_id = ? AND organization_id = ?
     `;
 
     if (unreadOnly) {
@@ -55,7 +56,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
 
     const notifications = await withNotificationsTable(env.DB, async () => {
       const { results } = await env.DB.prepare(query)
-        .bind(auth.user.id)
+        .bind(auth.user.id, auth.user.organization_id)
         .all<NotificationRecord>();
 
       return results ?? [];
@@ -88,8 +89,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     // Verify ownership
     const notification = await withNotificationsTable(env.DB, () => env.DB.prepare(`
-      SELECT id, user_id, requires_confirmation, confirmed_at FROM notifications WHERE id = ?
-    `).bind(notificationId).first<NotificationOwnershipRecord>());
+      SELECT id, user_id, organization_id, requires_confirmation, confirmed_at FROM notifications WHERE id = ? AND organization_id = ?
+    `).bind(notificationId, auth.user.organization_id).first<NotificationOwnershipRecord>());
 
     if (!notification) {
       return createJsonResponse({ error: 'Notification not found' }, 404);
@@ -108,8 +109,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     // Mark as read
     await withNotificationsTable(env.DB, () => env.DB.prepare(`
-      UPDATE notifications SET read = 1 WHERE id = ?
-    `).bind(notificationId).run());
+      UPDATE notifications SET read = 1 WHERE id = ? AND organization_id = ? AND user_id = ?
+    `).bind(notificationId, auth.user.organization_id, auth.user.id).run());
 
     return createJsonResponse({ success: true });
 
@@ -138,8 +139,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     // Verify ownership
     const notification = await withNotificationsTable(env.DB, () => env.DB.prepare(`
-      SELECT id, user_id, requires_confirmation, confirmed_at FROM notifications WHERE id = ?
-    `).bind(notificationId).first<NotificationOwnershipRecord>());
+      SELECT id, user_id, organization_id, requires_confirmation, confirmed_at FROM notifications WHERE id = ? AND organization_id = ?
+    `).bind(notificationId, auth.user.organization_id).first<NotificationOwnershipRecord>());
 
     if (!notification) {
       return createJsonResponse({ error: 'Notification not found' }, 404);
@@ -158,8 +159,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     // Delete notification
     await withNotificationsTable(env.DB, () => env.DB.prepare(`
-      DELETE FROM notifications WHERE id = ?
-    `).bind(notificationId).run());
+      DELETE FROM notifications WHERE id = ? AND organization_id = ? AND user_id = ?
+    `).bind(notificationId, auth.user.organization_id, auth.user.id).run());
 
     return createJsonResponse({ success: true });
 

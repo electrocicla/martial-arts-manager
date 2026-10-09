@@ -35,10 +35,10 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       FROM exam_assignments ea
       JOIN students s ON ea.student_id = s.id
       JOIN belt_exams be ON ea.exam_id = be.id
-      WHERE 1=1
+      WHERE be.organization_id = ? AND ea.organization_id = ? AND s.organization_id = ?
     `;
 
-    const bindValues: string[] = [];
+    const bindValues: string[] = [auth.user.organization_id, auth.user.organization_id, auth.user.organization_id];
 
     // Students can only see their own assignments
     if (auth.user.role === 'student') {
@@ -107,8 +107,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Check if exam exists
     const exam = await env.DB.prepare(
-      'SELECT * FROM belt_exams WHERE id = ? AND status = ?'
-    ).bind(exam_id, 'scheduled').first();
+      'SELECT * FROM belt_exams WHERE id = ? AND organization_id = ? AND status = ?'
+    ).bind(exam_id, auth.user.organization_id, 'scheduled').first();
 
     if (!exam) {
       return new Response(
@@ -119,8 +119,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Check if student exists
     const student = await env.DB.prepare(
-      'SELECT * FROM students WHERE id = ? AND deleted_at IS NULL'
-    ).bind(student_id).first();
+      'SELECT * FROM students WHERE id = ? AND organization_id = ? AND deleted_at IS NULL'
+    ).bind(student_id, auth.user.organization_id).first();
 
     if (!student) {
       return new Response(
@@ -131,8 +131,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Check if already assigned
     const existing = await env.DB.prepare(
-      'SELECT id FROM exam_assignments WHERE exam_id = ? AND student_id = ?'
-    ).bind(exam_id, student_id).first();
+      'SELECT id FROM exam_assignments WHERE exam_id = ? AND student_id = ? AND organization_id = ?'
+    ).bind(exam_id, student_id, auth.user.organization_id).first();
 
     if (existing) {
       return new Response(
@@ -146,13 +146,13 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     await env.DB.prepare(
       `INSERT INTO exam_assignments (
-        id, exam_id, student_id, status, assigned_at
-      ) VALUES (?, ?, ?, ?, ?)`
-    ).bind(id, exam_id, student_id, 'assigned', now).run();
+        id, exam_id, student_id, status, assigned_at, organization_id
+      ) VALUES (?, ?, ?, ?, ?, ?)`
+    ).bind(id, exam_id, student_id, 'assigned', now, auth.user.organization_id).run();
 
     const assignment = await env.DB.prepare(
-      'SELECT * FROM exam_assignments WHERE id = ?'
-    ).bind(id).first();
+      'SELECT * FROM exam_assignments WHERE id = ? AND organization_id = ?'
+    ).bind(id, auth.user.organization_id).first();
 
     return new Response(JSON.stringify(assignment), {
       status: 201,
@@ -207,8 +207,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
        FROM exam_assignments ea
        JOIN belt_exams be ON ea.exam_id = be.id
        JOIN students s ON ea.student_id = s.id
-       WHERE ea.id = ?`
-    ).bind(id).first<{
+       WHERE ea.id = ? AND ea.organization_id = ? AND be.organization_id = ? AND s.organization_id = ?`
+    ).bind(id, auth.user.organization_id, auth.user.organization_id, auth.user.organization_id).first<{
       student_id: string;
       exam_id: string;
       belt_level: string;
@@ -250,11 +250,11 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       bindValues.push(new Date().toISOString());
     }
 
-    bindValues.push(id);
+    bindValues.push(id, auth.user.organization_id);
 
     if (updateFields.length > 0) {
       await env.DB.prepare(
-        `UPDATE exam_assignments SET ${updateFields.join(', ')} WHERE id = ?`
+        `UPDATE exam_assignments SET ${updateFields.join(', ')} WHERE id = ? AND organization_id = ?`
       ).bind(...bindValues).run();
     }
 
@@ -264,15 +264,15 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       
       // Update student's belt
       await env.DB.prepare(
-        'UPDATE students SET belt = ?, updated_at = ? WHERE id = ?'
-      ).bind(assignment.belt_level, now, assignment.student_id).run();
+        'UPDATE students SET belt = ?, updated_at = ? WHERE id = ? AND organization_id = ?'
+      ).bind(assignment.belt_level, now, assignment.student_id, auth.user.organization_id).run();
 
       // Create belt history record
       const historyId = crypto.randomUUID();
       await env.DB.prepare(
         `INSERT INTO student_belt_history (
-          id, student_id, from_belt, to_belt, exam_id, promotion_date, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`
+          id, student_id, from_belt, to_belt, exam_id, promotion_date, created_at, organization_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(
         historyId,
         assignment.student_id,
@@ -280,13 +280,14 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
         assignment.belt_level,
         assignment.exam_id,
         now,
-        now
+        now,
+        auth.user.organization_id
       ).run();
     }
 
     const updatedAssignment = await env.DB.prepare(
-      'SELECT * FROM exam_assignments WHERE id = ?'
-    ).bind(id).first();
+      'SELECT * FROM exam_assignments WHERE id = ? AND organization_id = ?'
+    ).bind(id, auth.user.organization_id).first();
 
     return new Response(JSON.stringify(updatedAssignment), {
       status: 200,
@@ -329,7 +330,7 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
       );
     }
 
-    await env.DB.prepare('DELETE FROM exam_assignments WHERE id = ?').bind(id).run();
+    await env.DB.prepare('DELETE FROM exam_assignments WHERE id = ? AND organization_id = ?').bind(id, auth.user.organization_id).run();
 
     return new Response(
       JSON.stringify({ success: true }),

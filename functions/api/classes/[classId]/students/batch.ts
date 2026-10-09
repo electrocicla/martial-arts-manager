@@ -104,8 +104,9 @@ export async function onRequestPost({ request, env, params }: { request: Request
         `SELECT id FROM students
          WHERE id IN (${studentPlaceholders})
            AND branch_id = ?
+           AND organization_id = ?
            AND deleted_at IS NULL`
-      ).bind(...chunk, branchId).all<{ id: string }>();
+      ).bind(...chunk, branchId, auth.user.organization_id).all<{ id: string }>();
       eligibleStudents.push(...(results ?? []).map((student) => student.id));
     }
 

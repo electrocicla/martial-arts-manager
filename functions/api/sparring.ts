@@ -54,9 +54,10 @@ const TODAY = (): string => new Date().toISOString().slice(0, 10);
 
 async function maybeNotify(
   env: Env,
-  studentId: string
+  studentId: string,
+  organizationId: string
 ): Promise<void> {
-  const result = await fetchStudentProgression(env.DB, studentId);
+  const result = await fetchStudentProgression(env.DB, studentId, organizationId);
   if (!result || !result.evaluation.readyForExam || !result.evaluation.nextBelt) return;
   await notifyInstructorOfReadiness({
     db: env.DB,
@@ -65,6 +66,7 @@ async function maybeNotify(
     currentBelt: result.student.belt,
     nextBelt: result.evaluation.nextBelt,
     instructorId: result.student.instructor_id,
+    organizationId,
   });
 }
 
@@ -81,8 +83,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     const dateFrom = url.searchParams.get('dateFrom');
     const dateTo = url.searchParams.get('dateTo');
 
-    const where: string[] = ['ss.deleted_at IS NULL'];
-    const binds: Array<string> = [];
+    const where: string[] = ['ss.organization_id = ?', 'ss.deleted_at IS NULL'];
+    const binds: Array<string> = [auth.user.organization_id];
 
     // Students can only see their own sessions
     if (auth.user.role === 'student') {
@@ -104,8 +106,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     const sql = `
       SELECT ss.*, s.name AS student_name, c.name AS class_name
         FROM sparring_sessions ss
-        LEFT JOIN students s ON s.id = ss.student_id
-        LEFT JOIN classes  c ON c.id = ss.class_id
+        LEFT JOIN students s ON s.id = ss.student_id AND s.organization_id = ss.organization_id
+        LEFT JOIN classes c ON c.id = ss.class_id AND c.branch_id IN (SELECT id FROM branches WHERE organization_id = ss.organization_id)
        WHERE ${where.join(' AND ')}
        ORDER BY ss.session_date DESC, ss.created_at DESC
        LIMIT 500
@@ -128,6 +130,18 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const body = await request.json() as CreateSparringBody;
     if (!body.student_id) return errorResponse('student_id is required', 400);
 
+    const student = await env.DB.prepare(
+      'SELECT id FROM students WHERE id = ? AND organization_id = ? AND deleted_at IS NULL',
+    ).bind(body.student_id, auth.user.organization_id).first<{ id: string }>();
+    if (!student) return errorResponse('Student not found', 404);
+    if (body.class_id) {
+      const targetClass = await env.DB.prepare(
+        `SELECT c.id FROM classes c JOIN branches b ON b.id = c.branch_id
+          WHERE c.id = ? AND b.organization_id = ? AND c.deleted_at IS NULL`,
+      ).bind(body.class_id, auth.user.organization_id).first<{ id: string }>();
+      if (!targetClass) return errorResponse('Class not found', 404);
+    }
+
     const sessionsCount = Math.max(1, Math.floor(body.sessions_count ?? 1));
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
@@ -136,8 +150,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     await env.DB.prepare(`
       INSERT INTO sparring_sessions (
         id, student_id, class_id, instructor_id, sessions_count, session_date,
-        intensity, partner_name, notes, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        intensity, partner_name, notes, created_by, created_at, updated_at, organization_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id,
       body.student_id,
@@ -151,9 +165,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       auth.user.id,
       now,
       now,
+      auth.user.organization_id,
     ).run();
 
-    await maybeNotify(env, body.student_id);
+    await maybeNotify(env, body.student_id, auth.user.organization_id);
 
     return jsonResponse({ id, success: true }, 201);
   } catch (error) {
@@ -187,10 +202,10 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (updates.length === 0) return errorResponse('No fields to update', 400);
     updates.push('updated_at = ?');
     binds.push(new Date().toISOString());
-    binds.push(body.id);
+    binds.push(body.id, auth.user.organization_id);
 
     await env.DB.prepare(
-      `UPDATE sparring_sessions SET ${updates.join(', ')} WHERE id = ? AND deleted_at IS NULL`
+      `UPDATE sparring_sessions SET ${updates.join(', ')} WHERE id = ? AND organization_id = ? AND deleted_at IS NULL`
     ).bind(...binds).run();
 
     return jsonResponse({ success: true });
@@ -213,8 +228,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     const now = new Date().toISOString();
     await env.DB.prepare(
-      `UPDATE sparring_sessions SET deleted_at = ?, updated_at = ? WHERE id = ?`
-    ).bind(now, now, id).run();
+      `UPDATE sparring_sessions SET deleted_at = ?, updated_at = ? WHERE id = ? AND organization_id = ? AND deleted_at IS NULL`
+    ).bind(now, now, id, auth.user.organization_id).run();
 
     return jsonResponse({ success: true });
   } catch (error) {

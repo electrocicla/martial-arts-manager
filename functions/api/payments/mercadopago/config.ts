@@ -9,7 +9,6 @@ import {
 } from '../../../utils/mercadopago';
 import {
   branchErrorResponse,
-  MAIN_BRANCH_ID,
   resolveRequestBranchId,
 } from '../../../utils/branches';
 
@@ -31,10 +30,21 @@ const DEFAULT_CONFIG: MercadoPagoConfigStored = {
 
 interface SettingsRow { value: string }
 
-async function loadConfig(env: Env, ownerId: string, branchId: string): Promise<MercadoPagoConfigStored> {
+async function loadConfig(
+  env: Env,
+  ownerId: string,
+  organizationId: string,
+  branchId: string,
+): Promise<MercadoPagoConfigStored> {
   const row = await env.DB.prepare(
-    'SELECT value FROM settings WHERE owner_id = ? AND section = ? AND branch_id = ?',
-  ).bind(ownerId, SETTINGS_SECTION, branchId).first<SettingsRow>();
+    `SELECT value
+       FROM settings
+      WHERE owner_id = ?
+        AND organization_id = ?
+        AND section = ?
+        AND branch_id = ?`,
+  ).bind(ownerId, organizationId, SETTINGS_SECTION, branchId).first<SettingsRow>();
+
   if (!row) return { ...DEFAULT_CONFIG };
   try {
     const parsed = JSON.parse(row.value) as Partial<MercadoPagoConfigStored>;
@@ -62,38 +72,46 @@ function publicView(config: MercadoPagoConfigStored, reveal: boolean) {
   };
 }
 
-export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
+export async function onRequestGet({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
     const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) return errorResponse(auth.error, 401);
+    if (!auth.authenticated) return errorResponse(auth.error, auth.status ?? 401);
     if (auth.user.role !== 'admin') return errorResponse('Admins only', 403);
 
     const url = new URL(request.url);
     const reveal = url.searchParams.get('reveal') === '1';
     const branchId = await resolveRequestBranchId(request, env, auth.user);
-    const config = await loadConfig(env, auth.user.id, branchId);
+    const config = await loadConfig(
+      env,
+      auth.user.id,
+      auth.user.organization_id,
+      branchId,
+    );
     return jsonResponse(publicView(config, reveal));
-  } catch (error) {
+  } catch (error: unknown) {
     const branchResponse = branchErrorResponse(error);
     if (branchResponse) return branchResponse;
     console.error('[MercadoPago Config GET]', error);
-    return errorResponse((error as Error).message, 500);
+    return errorResponse('Internal server error', 500);
   }
 }
 
-export async function onRequestPut({ request, env }: { request: Request; env: Env }) {
+export async function onRequestPut({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
     const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) return errorResponse(auth.error, 401);
+    if (!auth.authenticated) return errorResponse(auth.error, auth.status ?? 401);
     if (auth.user.role !== 'admin') return errorResponse('Admins only', 403);
 
     const branchId = await resolveRequestBranchId(request, env, auth.user);
     const body = (await request.json()) as Partial<MercadoPagoConfigStored>;
-    const current = await loadConfig(env, auth.user.id, branchId);
+    const current = await loadConfig(
+      env,
+      auth.user.id,
+      auth.user.organization_id,
+      branchId,
+    );
 
-    // Treat masked values (received as bullets) as "no change".
-    const looksMasked = (v: string | undefined): boolean => !!v && /^\*+/.test(v);
-
+    const looksMasked = (value: string | undefined): boolean => !!value && /^\*+/.test(value);
     const next: MercadoPagoConfigStored = {
       enabled: typeof body.enabled === 'boolean' ? body.enabled : current.enabled,
       accessToken: typeof body.accessToken === 'string' && !looksMasked(body.accessToken)
@@ -127,22 +145,31 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
       );
     }
 
-    const id = branchId === MAIN_BRANCH_ID
-      ? `${auth.user.id}-${SETTINGS_SECTION}`
-      : `${auth.user.id}-${branchId}-${SETTINGS_SECTION}`;
     const now = new Date().toISOString();
     const value = JSON.stringify(next);
+    const id = `${auth.user.organization_id}-${auth.user.id}-${branchId}-${SETTINGS_SECTION}`;
     await env.DB.prepare(
-      `INSERT INTO settings (id, owner_id, section, value, branch_id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET value = ?, updated_at = ?`,
-    ).bind(id, auth.user.id, SETTINGS_SECTION, value, branchId, now, now, value, now).run();
+      `INSERT INTO settings
+        (id, owner_id, organization_id, section, value, branch_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(organization_id, owner_id, section, branch_id) WHERE branch_id IS NOT NULL
+       DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+    ).bind(
+      id,
+      auth.user.id,
+      auth.user.organization_id,
+      SETTINGS_SECTION,
+      value,
+      branchId,
+      now,
+      now,
+    ).run();
 
     return jsonResponse(publicView(next, false));
-  } catch (error) {
+  } catch (error: unknown) {
     const branchResponse = branchErrorResponse(error);
     if (branchResponse) return branchResponse;
     console.error('[MercadoPago Config PUT]', error);
-    return errorResponse((error as Error).message, 500);
+    return errorResponse('Internal server error', 500);
   }
 }

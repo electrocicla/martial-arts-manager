@@ -29,11 +29,11 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
         COUNT(DISTINCT CASE WHEN ea.status = 'passed' THEN ea.id END) as passed_count
       FROM belt_exams be
       LEFT JOIN users u ON be.examiner_id = u.id
-      LEFT JOIN exam_assignments ea ON be.id = ea.exam_id
+      LEFT JOIN exam_assignments ea ON be.id = ea.exam_id AND ea.organization_id = be.organization_id
     `;
 
-    const conditions: string[] = [];
-    const bindValues: string[] = [];
+    const conditions: string[] = ['be.organization_id = ?'];
+    const bindValues: string[] = [auth.user.organization_id];
 
     // Students can only see exams they are assigned to
     if (auth.user.role === 'student') {
@@ -117,23 +117,33 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       );
     }
 
+    const examiner = await env.DB.prepare(`
+      SELECT 1 AS allowed FROM organization_memberships
+      WHERE organization_id = ? AND user_id = ? AND role IN ('admin', 'instructor')
+        AND status = 'active' AND is_active = 1
+      UNION SELECT 1 FROM platform_admins WHERE user_id = ?
+    `).bind(auth.user.organization_id, examiner_id, examiner_id).first<{ allowed: number }>();
+    if (!examiner) return new Response(JSON.stringify({ error: 'Examiner not found in organization' }), {
+      status: 404, headers: { 'Content-Type': 'application/json' },
+    });
+
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
     await env.DB.prepare(
       `INSERT INTO belt_exams (
         id, belt_level, exam_date, exam_time, location, examiner_id, 
-        discipline, status, max_candidates, notes, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        discipline, status, max_candidates, notes, created_by, created_at, updated_at, organization_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       id, belt_level, exam_date, exam_time, location, examiner_id,
       discipline, 'scheduled', max_candidates || 20, notes || '', 
-      auth.user.id, now, now
+      auth.user.id, now, now, auth.user.organization_id
     ).run();
 
     const exam = await env.DB.prepare(
-      'SELECT * FROM belt_exams WHERE id = ?'
-    ).bind(id).first();
+      'SELECT * FROM belt_exams WHERE id = ? AND organization_id = ?'
+    ).bind(id, auth.user.organization_id).first();
 
     return new Response(JSON.stringify(exam), {
       status: 201,
@@ -189,8 +199,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     // Check if exam exists and user has permission
     const exam = await env.DB.prepare(
-      'SELECT * FROM belt_exams WHERE id = ?'
-    ).bind(id).first<{ created_by: string; examiner_id: string }>();
+      'SELECT * FROM belt_exams WHERE id = ? AND organization_id = ?'
+    ).bind(id, auth.user.organization_id).first<{ created_by: string; examiner_id: string }>();
 
     if (!exam) {
       return new Response(
@@ -220,7 +230,18 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     }
     // Only admins can change examiner_id and status
     if (auth.user.role === 'admin') {
-      if (updates.examiner_id !== undefined) { updateFields.push('examiner_id = ?'); bindValues.push(updates.examiner_id); }
+      if (updates.examiner_id !== undefined) {
+        const examiner = await env.DB.prepare(`SELECT 1 AS allowed FROM organization_memberships
+          WHERE organization_id = ? AND user_id = ? AND role IN ('admin', 'instructor')
+            AND status = 'active' AND is_active = 1
+          UNION SELECT 1 FROM platform_admins WHERE user_id = ?`).bind(
+          auth.user.organization_id, updates.examiner_id, updates.examiner_id,
+        ).first<{ allowed: number }>();
+        if (!examiner) return new Response(JSON.stringify({ error: 'Examiner not found in organization' }), {
+          status: 404, headers: { 'Content-Type': 'application/json' },
+        });
+        updateFields.push('examiner_id = ?'); bindValues.push(updates.examiner_id);
+      }
       if (updates.status !== undefined) { updateFields.push('status = ?'); bindValues.push(updates.status); }
     }
 
@@ -233,15 +254,15 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
 
     updateFields.push('updated_at = ?');
     bindValues.push(new Date().toISOString());
-    bindValues.push(id);
+    bindValues.push(id, auth.user.organization_id);
 
     await env.DB.prepare(
-      `UPDATE belt_exams SET ${updateFields.join(', ')} WHERE id = ?`
+      `UPDATE belt_exams SET ${updateFields.join(', ')} WHERE id = ? AND organization_id = ?`
     ).bind(...bindValues).run();
 
     const updatedExam = await env.DB.prepare(
-      'SELECT * FROM belt_exams WHERE id = ?'
-    ).bind(id).first();
+      'SELECT * FROM belt_exams WHERE id = ? AND organization_id = ?'
+    ).bind(id, auth.user.organization_id).first();
 
     return new Response(JSON.stringify(updatedExam), {
       status: 200,
@@ -286,8 +307,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
 
     // Check if exam exists and user has permission
     const exam = await env.DB.prepare(
-      'SELECT * FROM belt_exams WHERE id = ?'
-    ).bind(id).first<{ created_by: string }>();
+      'SELECT * FROM belt_exams WHERE id = ? AND organization_id = ?'
+    ).bind(id, auth.user.organization_id).first<{ created_by: string }>();
 
     if (!exam) {
       return new Response(
@@ -304,7 +325,7 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
       );
     }
 
-    await env.DB.prepare('DELETE FROM belt_exams WHERE id = ?').bind(id).run();
+    await env.DB.prepare('DELETE FROM belt_exams WHERE id = ? AND organization_id = ?').bind(id, auth.user.organization_id).run();
 
     return new Response(
       JSON.stringify({ success: true }),

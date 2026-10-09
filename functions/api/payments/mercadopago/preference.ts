@@ -17,6 +17,7 @@ const SETTINGS_SECTION = 'mercadopago';
 const PAYMENT_TYPES = new Set(['monthly', 'drop-in', 'private', 'equipment', 'other']);
 
 interface StudentRow { id: string; name: string; email: string }
+interface OrganizationRow { name: string }
 
 interface PreferenceBody {
   studentId?: string;
@@ -28,54 +29,65 @@ interface PreferenceBody {
   pendingUrl?: string;
 }
 
-async function loadActiveConfig(env: Env, branchId: string): Promise<{ ownerId: string; config: MercadoPagoConfigStored } | null> {
+async function loadActiveConfig(
+  env: Env,
+  organizationId: string,
+  branchId: string,
+): Promise<MercadoPagoConfigStored | null> {
   const row = await env.DB.prepare(
-    `SELECT s.owner_id as ownerId, s.value as value
+    `SELECT s.value
      FROM settings s
-     INNER JOIN users u ON u.id = s.owner_id
-     WHERE s.section = ?
+     WHERE s.organization_id = ?
+       AND s.section = ?
        AND s.branch_id = ?
-       AND u.role = 'admin'
-       AND u.is_active = 1
+       AND (
+         EXISTS (
+           SELECT 1
+           FROM organization_memberships om
+           WHERE om.organization_id = s.organization_id
+             AND om.user_id = s.owner_id
+             AND om.role = 'admin'
+             AND om.status = 'active'
+             AND om.is_active = 1
+         )
+         OR EXISTS (
+           SELECT 1 FROM platform_admins pa WHERE pa.user_id = s.owner_id
+         )
+       )
      ORDER BY s.updated_at DESC
      LIMIT 1`,
-  ).bind(SETTINGS_SECTION, branchId).first<{ ownerId: string; value: string }>();
+  ).bind(organizationId, SETTINGS_SECTION, branchId).first<{ value: string }>();
+
   if (!row) return null;
   try {
     const parsed = JSON.parse(row.value) as MercadoPagoConfigStored;
-    if (!isMercadoPagoActive(parsed)) return null;
-    return { ownerId: row.ownerId, config: parsed };
+    return isMercadoPagoActive(parsed) ? parsed : null;
   } catch {
     return null;
   }
 }
 
-/**
- * POST /api/payments/mercadopago/preference
- * Creates a MercadoPago Checkout Pro preference for a given student and
- * inserts a `pending` payment row tied to the preference's external_reference
- * so the webhook can reconcile it later.
- *
- * Auth: any authenticated user. Admins/instructors can pay for any of their
- * students; students can only pay for themselves.
- */
-export async function onRequestPost({ request, env }: { request: Request; env: Env }) {
+export async function onRequestPost({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
     const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) return errorResponse(auth.error, 401);
+    if (!auth.authenticated) return errorResponse(auth.error, auth.status ?? 401);
     const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const body = (await request.json()) as PreferenceBody;
     const studentId = (body.studentId ?? '').trim();
     if (!studentId) return errorResponse('studentId is required', 400);
 
-    const active = await loadActiveConfig(env, branchId);
-    if (!active) return errorResponse('MercadoPago is not active', 409);
-    const { config } = active;
+    const [config, organization] = await Promise.all([
+      loadActiveConfig(env, auth.user.organization_id, branchId),
+      env.DB.prepare('SELECT name FROM organizations WHERE id = ?')
+        .bind(auth.user.organization_id)
+        .first<OrganizationRow>(),
+    ]);
+    if (!config) return errorResponse('MercadoPago is not active', 409);
 
-    // Resolve student & permissions.
-    let studentQuery = 'SELECT id, name, email FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
-    const studentParams: string[] = [studentId, branchId];
+    let studentQuery =
+      'SELECT id, name, email FROM students WHERE id = ? AND organization_id = ? AND branch_id = ? AND deleted_at IS NULL';
+    const studentParams: string[] = [studentId, auth.user.organization_id, branchId];
     if (auth.user.role === 'student') {
       if (auth.user.student_id !== studentId) return errorResponse('Forbidden', 403);
     } else if (auth.user.role === 'instructor') {
@@ -105,12 +117,14 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const pendingUrl = body.pendingUrl || config.pendingUrl || `${origin}/payments?mp=pending`;
     const notificationUrl = config.notificationUrl
       || `${origin}/api/payments/mercadopago/webhook`;
+    const organizationName = organization?.name ?? 'Academy';
+    const statementDescriptor = auth.user.organization_id === 'manzur' ? 'MANZUR' : 'HAMARR';
 
     const preferencePayload: MercadoPagoPreferencePayload = {
       items: [
         {
           id: type,
-          title: `Hamarr ${type} payment - ${student.name}`,
+          title: `${organizationName} ${type} payment - ${student.name}`,
           description: notes || `Membership payment for ${student.name}`,
           quantity: 1,
           unit_price: Number(amount.toFixed(2)),
@@ -122,20 +136,21 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       back_urls: { success: successUrl, failure: failureUrl, pending: pendingUrl },
       auto_return: 'approved',
       notification_url: notificationUrl,
-      statement_descriptor: 'HAMARR',
+      statement_descriptor: statementDescriptor,
       metadata: {
         student_id: student.id,
         payment_id: paymentId,
         type,
         created_by: auth.user.id,
         branch_id: branchId,
+        organization_id: auth.user.organization_id,
       },
     };
 
     let preference;
     try {
       preference = await createPreference(config.accessToken, preferencePayload);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof MercadoPagoApiError) {
         console.error('[MercadoPago Preference] API error', error.status, error.body);
         return errorResponse('Could not create MercadoPago checkout', 502);
@@ -169,10 +184,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       externalReference,
       paymentId,
     }, 201);
-  } catch (error) {
+  } catch (error: unknown) {
     const branchResponse = branchErrorResponse(error);
     if (branchResponse) return branchResponse;
     console.error('[MercadoPago Preference]', error);
-    return errorResponse((error as Error).message, 500);
+    return errorResponse('Internal server error', 500);
   }
 }

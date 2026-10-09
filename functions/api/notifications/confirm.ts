@@ -54,10 +54,10 @@ export async function onRequestPost({
       env.DB.prepare(
         `SELECT id, user_id, message, type, read, created_at,
                 requires_confirmation, confirmed_at, action_type, metadata,
-                confirmation_notify_user_id
-           FROM notifications WHERE id = ?`,
+                confirmation_notify_user_id, organization_id
+           FROM notifications WHERE id = ? AND organization_id = ?`,
       )
-        .bind(notificationId)
+        .bind(notificationId, auth.user.organization_id)
         .first<NotificationRecord>(),
     );
 
@@ -81,9 +81,9 @@ export async function onRequestPost({
 
     await withNotificationsTable(env.DB, () =>
       env.DB.prepare(
-        'UPDATE notifications SET confirmed_at = ?, read = 1 WHERE id = ?',
+        'UPDATE notifications SET confirmed_at = ?, read = 1 WHERE id = ? AND organization_id = ? AND user_id = ? AND confirmed_at IS NULL',
       )
-        .bind(confirmedAt, notificationId)
+        .bind(confirmedAt, notificationId, auth.user.organization_id, auth.user.id)
         .run(),
     );
 
@@ -103,18 +103,27 @@ export async function onRequestPost({
       await withNotificationsTable(env.DB, () =>
         env.DB.prepare(
           `INSERT INTO notifications (
-              id, user_id, message, type, read, created_at,
+              id, user_id, organization_id, message, type, read, created_at,
               requires_confirmation, action_type, metadata
-           ) VALUES (?, ?, ?, ?, 0, ?, 0, ?, ?)`,
+           ) SELECT ?, ?, ?, ?, ?, 0, ?, 0, ?, ?
+              WHERE EXISTS (
+                SELECT 1 FROM organization_memberships om
+                WHERE om.organization_id = ? AND om.user_id = ?
+                  AND om.status = 'active' AND om.is_active = 1
+              ) OR EXISTS (SELECT 1 FROM platform_admins pa WHERE pa.user_id = ?)`,
         )
           .bind(
             followUpId,
             adminId,
+            auth.user.organization_id,
             followUpMessage,
             'payment_pending_confirmed',
             confirmedAt,
             'payment_pending_confirmed',
             followUpMetadata,
+            auth.user.organization_id,
+            adminId,
+            adminId,
           )
           .run(),
       );

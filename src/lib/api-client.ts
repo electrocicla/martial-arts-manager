@@ -5,6 +5,7 @@
  */
 
 import type { ApiResponse, PaginatedResponse } from '../types';
+import { organizationHeaders } from './organization';
 
 export type { ApiResponse, PaginatedResponse };
 
@@ -60,27 +61,15 @@ export class ApiClient {
     try {
       const url = `${this.baseURL}${endpoint}`;
       
-      // Build headers with authentication
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      
-      // Add Authorization header if token exists
+      const headers = organizationHeaders(fetchOptions.headers);
+      if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
       if (this.accessToken) {
-        headers['Authorization'] = `Bearer ${this.accessToken}`;
+        headers.set('Authorization', `Bearer ${this.accessToken}`);
       } else {
         console.warn('[API Client] Access token missing for request:', endpoint);
       }
+      if (this.branchId) headers.set('X-Branch-ID', this.branchId);
 
-      if (this.branchId) {
-        headers['X-Branch-ID'] = this.branchId;
-      }
-      
-      // Merge with any additional headers from options
-      if (fetchOptions.headers) {
-        Object.assign(headers, fetchOptions.headers);
-      }
-      
       const response = await fetch(url, {
         ...fetchOptions,
         headers,

@@ -16,40 +16,48 @@ interface SettingsRow { value: string }
 
 /**
  * GET /api/payments/mercadopago/status
- * Returns the public-safe MercadoPago status used by every authenticated
- * client to decide whether to render the "Pay with MercadoPago" button.
- *
- * Looks up the MercadoPago config under any admin owner (the platform is
- * single-tenant per dojo: a single admin owns the MP account).
+ * Returns the public-safe MercadoPago status for the current organization/branch.
  */
-export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
+export async function onRequestGet({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
     const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) return errorResponse(auth.error, 401);
+    if (!auth.authenticated) return errorResponse(auth.error, auth.status ?? 401);
     const branchId = await resolveRequestBranchId(request, env, auth.user);
 
     const row = await env.DB.prepare(
       `SELECT s.value
        FROM settings s
-       INNER JOIN users u ON u.id = s.owner_id
-       WHERE s.section = ?
+       WHERE s.organization_id = ?
+         AND s.section = ?
          AND s.branch_id = ?
-         AND u.role = 'admin'
-         AND u.is_active = 1
+         AND (
+           EXISTS (
+             SELECT 1
+             FROM organization_memberships om
+             WHERE om.organization_id = s.organization_id
+               AND om.user_id = s.owner_id
+               AND om.role = 'admin'
+               AND om.status = 'active'
+               AND om.is_active = 1
+           )
+           OR EXISTS (
+             SELECT 1 FROM platform_admins pa WHERE pa.user_id = s.owner_id
+           )
+         )
        ORDER BY s.updated_at DESC
        LIMIT 1`,
-    ).bind(SETTINGS_SECTION, branchId).first<SettingsRow>();
+    ).bind(auth.user.organization_id, SETTINGS_SECTION, branchId).first<SettingsRow>();
 
-    if (!row) {
-      return jsonResponse({ active: false });
-    }
+    if (!row) return jsonResponse({ active: false });
 
     let parsed: Partial<MercadoPagoConfigStored> | null = null;
-    try { parsed = JSON.parse(row.value) as Partial<MercadoPagoConfigStored>; } catch { parsed = null; }
-
-    if (!parsed) {
-      return jsonResponse({ active: false });
+    try {
+      parsed = JSON.parse(row.value) as Partial<MercadoPagoConfigStored>;
+    } catch {
+      parsed = null;
     }
+
+    if (!parsed) return jsonResponse({ active: false });
 
     const active = isMercadoPagoActive(parsed);
     return jsonResponse({
@@ -58,10 +66,10 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       defaultAmount: parsed.defaultAmount ?? 0,
       publicKey: active ? parsed.publicKey ?? '' : '',
     });
-  } catch (error) {
+  } catch (error: unknown) {
     const branchResponse = branchErrorResponse(error);
     if (branchResponse) return branchResponse;
     console.error('[MercadoPago Status]', error);
-    return errorResponse((error as Error).message, 500);
+    return errorResponse('Internal server error', 500);
   }
 }

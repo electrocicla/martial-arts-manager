@@ -1,3 +1,4 @@
+import { organizationHeaders } from '../../lib/organization';
 import { useState } from 'react';
 import type { Student } from '../../types/index';
 import { X, Edit2, Trash2, Mail, Phone, Calendar, User, AlertTriangle, Camera, DollarSign } from 'lucide-react';
@@ -100,9 +101,9 @@ export default function StudentDetailsModal({ student, onClose, onEdit, onDelete
       // Upload to R2 via API
       const response = await fetch('/api/students/avatar', {
         method: 'POST',
-        headers: {
+        headers: organizationHeaders({
           'Authorization': `Bearer ${accessToken}`
-        },
+        }),
         body: formData
       });
 

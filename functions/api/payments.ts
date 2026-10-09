@@ -53,6 +53,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       INNER JOIN students s ON p.student_id = s.id
       WHERE p.deleted_at IS NULL AND s.deleted_at IS NULL
         AND p.branch_id = ?
+        AND s.organization_id = ?
         AND NOT (
           p.status = 'pending'
           AND p.notes LIKE ?
@@ -68,10 +69,14 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
           )
         )
     `;
-    const params: string[] = [branchId, AUTO_PENDING_PLACEHOLDER_NOTE];
+    const params: string[] = [branchId, auth.user.organization_id, AUTO_PENDING_PLACEHOLDER_NOTE];
 
-    if (auth.user.role !== 'admin') {
-      query += " AND (s.created_by = ? OR s.instructor_id = ? OR (s.instructor_id IS NULL AND s.created_by IS NOT NULL))";
+    if (auth.user.role === 'student') {
+      if (!auth.user.student_id) return new Response(JSON.stringify({ error: 'Student profile not found' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+      query += ' AND s.id = ?';
+      params.push(auth.user.student_id);
+    } else if (auth.user.role !== 'admin') {
+      query += ' AND (s.created_by = ? OR s.instructor_id = ? OR (s.instructor_id IS NULL AND s.created_by IS NOT NULL))';
       params.push(auth.user.id, auth.user.id);
     }
 
@@ -125,7 +130,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       });
     }
     const branchId = await resolveRequestBranchId(request, env, auth.user);
-
+    if (auth.user.role !== 'admin' && auth.user.role !== 'instructor') {
+      return new Response(JSON.stringify({ error: 'Only staff can record payments' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+    }
     const raw = await request.json() as Record<string, unknown>;
 
     // Accept both camelCase and snake_case request payloads
@@ -161,8 +168,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const now = new Date().toISOString();
 
     // Verify that the student exists and user has access
-    let studentCheckQuery = "SELECT id, instructor_id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL";
-    const studentCheckParams: string[] = [studentId, branchId];
+    let studentCheckQuery = "SELECT id, instructor_id FROM students WHERE id = ? AND branch_id = ? AND organization_id = ? AND deleted_at IS NULL";
+    const studentCheckParams: string[] = [studentId, branchId, auth.user.organization_id];
 
     if (auth.user.role !== 'admin') {
       // If not admin, check if user is the instructor assigned to the student, or if no instructor is assigned

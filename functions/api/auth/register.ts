@@ -2,15 +2,14 @@
  * Register endpoint - create new user account
  */
 
-import { hashPassword } from '../../utils/hash';
-import { createTokens } from '../../utils/jwt';
-import { createUser, emailExists, createSession, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
-import { createRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
+import { hashPassword, verifyPassword } from '../../utils/hash';
+import { findUserByEmail } from '../../utils/db';
+import { isNativeAuthRequest } from '../../middleware/auth';
 import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
 import { isTurnstileConfigured, verifyTurnstileToken } from '../../utils/turnstile';
-import { MAIN_BRANCH_ID } from '../../utils/branches';
 
 import { Env } from '../../types/index';
+import { getRequestedOrganizationId, requireActiveOrganization, getOrganizationMembership, organizationErrorResponse } from '../../utils/organizations';
 
 interface RegisterRequest {
   email: string;
@@ -19,21 +18,6 @@ interface RegisterRequest {
   role?: 'admin' | 'instructor' | 'student';
   instructorId?: string;
   turnstileToken?: string;
-}
-
-interface RegisterResponse {
-  success: true;
-  pending_approval?: boolean;
-  message?: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-    student_id?: string;
-  };
-  accessToken?: string;
-  refreshToken?: string;
 }
 
 /**
@@ -52,7 +36,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     // even if the request contains another role
     const { email, password, name, instructorId, turnstileToken } = body;
     const role = 'student';
-    const normalizedEmail = email?.toLowerCase();
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
     // Verify Turnstile challenge (skip for native app requests)
     if (!isNativeAuthRequest(request) && isTurnstileConfigured(env.TURNSTILE_SECRET)) {
@@ -118,249 +102,64 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       );
     }
 
-    // Check if email already exists in users
-    const emailAlreadyExists = await emailExists(env.DB, normalizedEmail);
-    if (emailAlreadyExists) {
-      return new Response(
-        JSON.stringify({ error: 'An account with this email already exists' }),
-        { status: 409, headers: { 'Content-Type': 'application/json' } }
-      );
+    const organizationId = getRequestedOrganizationId(request);
+    await requireActiveOrganization(env, organizationId);
+
+    const instructor = await env.DB.prepare(`
+      SELECT om.user_id AS id FROM organization_memberships om
+      JOIN users u ON u.id = om.user_id
+      WHERE om.organization_id = ? AND om.user_id = ?
+        AND om.role IN ('admin', 'instructor') AND om.status = 'active'
+        AND om.is_active = 1 AND u.is_active = 1
+    `).bind(organizationId, instructorId).first<{ id: string }>();
+    if (!instructor) {
+      return new Response(JSON.stringify({ error: 'Selected instructor is invalid or unavailable' }), { status: 400 });
     }
 
-    // Validate selected instructor exists and can receive students
-    if (role === 'student' && instructorId) {
-      const instructor = await env.DB.prepare(
-        "SELECT id FROM users WHERE id = ? AND role IN ('instructor', 'admin') AND is_active = 1 AND is_approved = 1"
-      )
-        .bind(instructorId)
-        .first<{ id: string }>();
-
-      if (!instructor?.id) {
-        return new Response(
-          JSON.stringify({ error: 'Selected instructor is invalid or unavailable' }),
-          { status: 400, headers: { 'Content-Type': 'application/json' } }
-        );
-      }
+    const existingUser = await findUserByEmail(env.DB, normalizedEmail);
+    if (existingUser && !(await verifyPassword(password, existingUser.password_hash))) {
+      return new Response(JSON.stringify({ error: 'Invalid registration credentials' }), { status: 401 });
+    }
+    const userId = existingUser?.id ?? crypto.randomUUID();
+    if (existingUser && await getOrganizationMembership(env.DB, userId, organizationId)) {
+      return new Response(JSON.stringify({ error: 'Membership request already exists' }), { status: 409 });
     }
 
-    // If registering as student, attempt to claim an existing student profile by email
-    let studentId: string | undefined;
-    if (role === 'student') {
-      const existingStudent = await env.DB.prepare(
-        'SELECT id FROM students WHERE email = ? AND deleted_at IS NULL'
-      )
-        .bind(normalizedEmail)
-        .first<{ id: string }>();
+    const now = new Date().toISOString();
+    const membershipInsert = env.DB.prepare(`
+      INSERT INTO organization_memberships
+      (organization_id, user_id, role, status, is_active, student_id, created_at, updated_at)
+      VALUES (?, ?, 'student', 'pending', 1, NULL, ?, ?)
+    `).bind(organizationId, userId, now, now);
 
-      if (existingStudent?.id) {
-        studentId = existingStudent.id;
-      }
+    if (existingUser) {
+      await membershipInsert.run();
+    } else {
+      const passwordHash = await hashPassword(password);
+      await env.DB.batch([
+        env.DB.prepare(`INSERT INTO users
+          (id, email, password_hash, name, role, student_id, is_active, is_approved, created_at, updated_at)
+          VALUES (?, ?, ?, ?, 'student', NULL, 1, 0, ?, ?)`)
+          .bind(userId, normalizedEmail, passwordHash, name.trim(), now, now),
+        membershipInsert,
+      ]);
     }
-
-    // Hash password
-    const passwordHash = await hashPassword(password);
-
-    // Create user
-    const userId = crypto.randomUUID();
-    const user = await createUser(env.DB, {
-      id: userId,
-      email: normalizedEmail,
-      password_hash: passwordHash,
-      name: name.trim(),
-      role,
-      student_id: studentId,
-    });
-
-    // If registering as a student, either link existing student or create a new student record
-    if (role === 'student' && instructorId) {
-      try {
-        const now = new Date().toISOString();
-
-        if (!studentId) {
-          const existingStudentByEmail = await env.DB.prepare(
-            `SELECT id, deleted_at FROM students
-             WHERE email = ?
-             ORDER BY CASE WHEN deleted_at IS NULL THEN 0 ELSE 1 END, created_at DESC
-             LIMIT 1`
-          )
-            .bind(normalizedEmail)
-            .first<{ id: string; deleted_at?: string | null }>();
-
-          if (existingStudentByEmail?.id) {
-            studentId = existingStudentByEmail.id;
-
-            if (existingStudentByEmail.deleted_at) {
-              await env.DB.prepare(
-                `UPDATE students
-                 SET name = ?, is_active = 1, deleted_at = NULL, instructor_id = ?, updated_at = ?, updated_by = ?
-                 WHERE id = ?`
-              )
-                .bind(name.trim(), instructorId, now, instructorId, studentId)
-                .run();
-            } else {
-              await env.DB.prepare(
-                "UPDATE students SET instructor_id = ?, updated_at = ? WHERE id = ? AND (instructor_id IS NULL OR instructor_id = '')"
-              )
-                .bind(instructorId, now, studentId)
-                .run();
-            }
-          } else {
-            studentId = crypto.randomUUID();
-
-            await env.DB.prepare(`
-              INSERT INTO students (
-                id, name, email, belt, discipline, join_date,
-                is_active, created_by, instructor_id, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
-            `)
-              .bind(
-                studentId,
-                name.trim(),
-                normalizedEmail,
-                'White',
-                'Brazilian Jiu-Jitsu',
-                now,
-                instructorId,
-                instructorId,
-                now,
-                now
-              )
-              .run();
-          }
-
-          await env.DB.prepare('UPDATE users SET student_id = ?, updated_at = ? WHERE id = ?')
-            .bind(studentId, now, userId)
-            .run();
-        } else {
-          // Best-effort: attach instructor_id if missing
-          await env.DB.prepare(
-            "UPDATE students SET instructor_id = ?, updated_at = ? WHERE id = ? AND (instructor_id IS NULL OR instructor_id = '')"
-          )
-            .bind(instructorId, now, studentId)
-            .run();
-        }
-      } catch (studentProvisionError) {
-        // Roll back created auth user when student provisioning fails to avoid orphan pending accounts
-        await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run().catch((cleanupError: unknown) => {
-          console.error('Failed to rollback user after student provisioning error:', cleanupError);
-        });
-        throw studentProvisionError;
-      }
-    }
-
-    if (role === 'student' && studentId) {
-      const assignmentNow = new Date().toISOString();
-      await env.DB.prepare(`
-        INSERT INTO student_branch_assignments (
-          id, student_id, branch_id, started_at, assigned_by, created_at
-        )
-        SELECT ?, ?, ?, COALESCE(join_date, created_at), ?, ?
-        FROM students
-        WHERE id = ?
-          AND NOT EXISTS (
-            SELECT 1 FROM student_branch_assignments
-            WHERE student_id = ? AND ended_at IS NULL
-          )
-      `).bind(
-        crypto.randomUUID(),
-        studentId,
-        MAIN_BRANCH_ID,
-        instructorId ?? null,
-        assignmentNow,
-        studentId,
-        studentId,
-      ).run();
-    }
-
-    // Students must wait for admin/instructor approval before they can authenticate
-    if (user.role === 'student' && !user.is_approved) {
-      const pendingResponse: RegisterResponse = {
-        success: true,
-        pending_approval: true,
-        message: 'Your account request has been submitted and is pending approval',
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          student_id: studentId,
-        },
-      };
-
-      return new Response(JSON.stringify(pendingResponse), {
-        status: 201,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    }
-
-    // Create JWT tokens
-    const { accessToken, refreshToken } = await createTokens(
-      user.id,
-      user.email,
-      user.role,
-      env.JWT_SECRET
-    );
-
-    // Create session record
-    const sessionId = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
-
-    await createSession(env.DB, {
-      id: sessionId,
-      user_id: user.id,
-      refresh_token: refreshToken,
-      expires_at: expiresAt,
-      ip_address: getClientIP(request),
-      user_agent: getUserAgent(request),
-    });
-
-    // Log audit action
-    await logAuditAction(env.DB, {
-      id: crypto.randomUUID(),
-      user_id: user.id,
-      action: 'REGISTER',
-      entity_type: 'USER',
-      entity_id: user.id,
-      ip_address: getClientIP(request),
-    });
-
-    // Prepare response
-    const responseData: RegisterResponse = {
+    return new Response(JSON.stringify({
       success: true,
+      pending_approval: true,
+      message: 'Your account request has been submitted and is pending approval',
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        student_id: studentId,
+        id: userId,
+        email: normalizedEmail,
+        name: existingUser?.name ?? name.trim(),
+        role: 'student',
+        organization_id: organizationId,
       },
-      accessToken,
-    };
-
-    if (isNativeAuthRequest(request)) {
-      responseData.refreshToken = refreshToken;
-    }
-
-    // Create response with refresh token cookie
-    const response = new Response(
-      JSON.stringify(responseData),
-      {
-        status: 201,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    // Set refresh token as HTTP-only cookie
-    const cookieMaxAge = 30 * 24 * 60 * 60; // 30 days in seconds
-    response.headers.set('Set-Cookie', createRefreshTokenCookie(refreshToken, cookieMaxAge));
-
-    return response;
+    }), { status: 201, headers: { 'Content-Type': 'application/json' } });
 
   } catch (error) {
+    const organizationError = organizationErrorResponse(error);
+    if (organizationError) return organizationError;
     console.error('Registration error:', error);
     
     // Handle specific database errors
@@ -372,7 +171,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     }
 
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: (error as Error).message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }

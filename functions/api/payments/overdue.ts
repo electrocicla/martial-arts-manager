@@ -98,7 +98,7 @@ export async function onRequestGet({
         s.discipline AS discipline,
         COALESCE(sba.started_at, s.join_date) AS join_date,
         s.created_at AS created_at,
-        u.id   AS user_id,
+        om.user_id AS user_id,
         MAX(CASE WHEN p.status = 'completed' THEN p.date END) AS last_completed_date,
         (
           SELECT amount FROM payments
@@ -111,14 +111,16 @@ export async function onRequestGet({
         ) AS last_completed_amount,
         AVG(CASE WHEN p.status = 'completed' THEN p.amount END) AS avg_amount
       FROM students s
-      LEFT JOIN users u ON u.student_id = s.id AND u.role = 'student'
+      LEFT JOIN organization_memberships om ON om.student_id = s.id
+        AND om.organization_id = ? AND om.role = 'student'
+        AND om.status = 'active' AND om.is_active = 1
       LEFT JOIN payments p ON p.student_id = s.id AND p.branch_id = ? AND p.deleted_at IS NULL
       LEFT JOIN student_branch_assignments sba ON sba.student_id = s.id AND sba.ended_at IS NULL
       WHERE s.deleted_at IS NULL
         AND s.is_active = 1
-        AND s.branch_id = ?
+        AND s.branch_id = ? AND s.organization_id = ?
     `;
-    const aggregateParams: (string | number)[] = [branchId, branchId, branchId];
+    const aggregateParams: (string | number)[] = [branchId, auth.user.organization_id, branchId, branchId, auth.user.organization_id];
 
     if (auth.user.role !== 'admin') {
       aggregateQuery += ' AND (s.created_by = ? OR s.instructor_id = ?)';

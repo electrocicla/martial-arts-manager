@@ -11,6 +11,7 @@ import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
 import { isTurnstileConfigured, verifyTurnstileToken } from '../../utils/turnstile';
 
 import { Env } from '../../types/index';
+import { resolveAuthenticatedOrganization, organizationErrorResponse } from '../../utils/organizations';
 
 interface LoginRequest {
   email: string;
@@ -27,6 +28,8 @@ interface LoginResponse {
     role: string;
     student_id?: string;
     avatar_url?: string;
+    organization_id: string;
+    platform_admin: boolean;
   };
   accessToken: string;
   refreshToken?: string;
@@ -103,41 +106,15 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       );
     }
 
-    // Check if user account is approved
-    if (!user.is_approved) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Your account is pending approval by an administrator',
-          code: 'PENDING_APPROVAL'
-        }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Auto-link student_id if missing (legacy users)
-    let studentId = user.student_id;
-    if (user.role === 'student' && !studentId) {
-      const studentMatch = await env.DB.prepare(
-        'SELECT id FROM students WHERE email = ? AND deleted_at IS NULL'
-      )
-        .bind(user.email)
-        .first<{ id: string }>();
-
-      if (studentMatch?.id) {
-        studentId = studentMatch.id;
-        const now = new Date().toISOString();
-        await env.DB.prepare('UPDATE users SET student_id = ?, updated_at = ? WHERE id = ?')
-          .bind(studentId, now, user.id)
-          .run();
-      }
-    }
+    const organization = await resolveAuthenticatedOrganization(request, env, user.id);
 
     // Create JWT tokens
     const { accessToken, refreshToken } = await createTokens(
       user.id,
       user.email,
-      user.role,
-      env.JWT_SECRET
+      organization.role,
+      env.JWT_SECRET,
+      organization.organizationId
     );
 
     // Create session record
@@ -173,8 +150,10 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
-        student_id: studentId || undefined,
+        role: organization.role,
+        student_id: organization.studentId ?? undefined,
+        organization_id: organization.organizationId,
+        platform_admin: organization.platformAdmin,
         avatar_url: normalizeAvatarUrl(user.avatar_url),
       },
       accessToken,
@@ -201,7 +180,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     return response;
 
-  } catch (error) {
+  } catch (error: unknown) {
+    const organizationError = organizationErrorResponse(error);
+    if (organizationError) return organizationError;
     console.error('Login error:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),

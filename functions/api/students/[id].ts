@@ -40,7 +40,7 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
       return new Response(JSON.stringify({ error: auth.error }), {
-        status: 401,
+        status: auth.status ?? 401,
         headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -59,12 +59,12 @@ export async function onRequestGet({ request, env, params }: { request: Request;
     let query = `
       SELECT s.*, b.name AS branch_name, sba.started_at AS branch_started_at
       FROM students s
-      LEFT JOIN branches b ON b.id = s.branch_id
+      LEFT JOIN branches b ON b.id = s.branch_id AND b.organization_id = s.organization_id
       LEFT JOIN student_branch_assignments sba
         ON sba.student_id = s.id AND sba.ended_at IS NULL
-      WHERE s.id = ? AND s.branch_id = ? AND s.deleted_at IS NULL
+      WHERE s.id = ? AND s.branch_id = ? AND s.organization_id = ? AND s.deleted_at IS NULL
     `;
-    const bindValues: string[] = [studentId, branchId];
+    const bindValues: string[] = [studentId, branchId, auth.user.organization_id];
 
     // Instructors/non-admins are further restricted to their own students
     if (auth.user.role !== 'admin' && auth.user.role !== 'student') {
@@ -121,11 +121,12 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
       return new Response(JSON.stringify({ error: auth.error }), {
-        status: 401,
+        status: auth.status ?? 401,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
+    if (auth.user.role === 'student') return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
     const studentId = params.id;
     const branchId = await resolveRequestBranchId(request, env, auth.user);
 
@@ -149,8 +150,8 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     };
 
     // Verify student exists and is accessible
-    let checkQuery = 'SELECT id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
-    const checkValues: string[] = [studentId, branchId];
+    let checkQuery = 'SELECT id FROM students WHERE id = ? AND branch_id = ? AND organization_id = ? AND deleted_at IS NULL';
+    const checkValues: string[] = [studentId, branchId, auth.user.organization_id];
     if (auth.user.role !== 'admin') {
       checkQuery += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
       checkValues.push(auth.user.id, auth.user.id);
@@ -211,19 +212,19 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     values.push(new Date().toISOString());
 
     // Bind WHERE
-    values.push(studentId);
+    values.push(studentId, branchId, auth.user.organization_id);
 
     const query = `
       UPDATE students 
       SET ${updates.join(', ')}
-      WHERE id = ? AND deleted_at IS NULL
+      WHERE id = ? AND branch_id = ? AND organization_id = ? AND deleted_at IS NULL
     `;
 
     await env.DB.prepare(query).bind(...values).run();
 
     // Fetch and return updated student
-    let readQuery = 'SELECT * FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
-    const readValues: string[] = [studentId, branchId];
+    let readQuery = 'SELECT * FROM students WHERE id = ? AND branch_id = ? AND organization_id = ? AND deleted_at IS NULL';
+    const readValues: string[] = [studentId, branchId, auth.user.organization_id];
     if (auth.user.role !== 'admin') {
       readQuery += ' AND (created_by = ? OR instructor_id = ?)';
       readValues.push(auth.user.id, auth.user.id);
@@ -274,7 +275,7 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
       return new Response(JSON.stringify({ error: auth.error }), {
-        status: 401,
+        status: auth.status ?? 401,
         headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -282,9 +283,11 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
     const studentId = params.id as string;
     const branchId = await resolveRequestBranchId(request, env, auth.user);
 
+    if (auth.user.role === 'student') return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+
     // Verify student exists and user has access
-    let checkQuery = 'SELECT id, email FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
-    const checkParams: string[] = [studentId, branchId];
+    let checkQuery = 'SELECT id, email FROM students WHERE id = ? AND branch_id = ? AND organization_id = ? AND deleted_at IS NULL';
+    const checkParams: string[] = [studentId, branchId, auth.user.organization_id];
 
     if (auth.user.role !== 'admin') {
       checkQuery += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
@@ -307,20 +310,12 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
 
     // Soft delete the student
     await db.prepare(
-      'UPDATE students SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ?'
-    ).bind(now, now, auth.user.id, studentId).run();
+      'UPDATE students SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE id = ? AND branch_id = ? AND organization_id = ?'
+    ).bind(now, now, auth.user.id, studentId, branchId, auth.user.organization_id).run();
 
-    // Delete associated user account if it exists
-    const userAccount = await db.prepare(
-      'SELECT id FROM users WHERE student_id = ? OR email = ?'
-    ).bind(studentId, student.email).first<{ id: string }>();
-
-    if (userAccount) {
-      // Soft-delete user account (preserve audit history)
-      await db.prepare('UPDATE users SET is_active = 0, updated_at = ? WHERE id = ?').bind(now, userAccount.id).run();
-      // Clean up sessions (user can't log in anyway)
-      await db.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userAccount.id).run();
-    }
+    // Revoke only this tenant membership; never deactivate the global user or other sessions.
+    await db.prepare("UPDATE organization_memberships SET is_active = 0, status = 'rejected', updated_at = ? WHERE organization_id = ? AND student_id = ?")
+      .bind(now, auth.user.organization_id, studentId).run();
 
     // Non-blocking audit log
     logAuditAction(env.DB, {

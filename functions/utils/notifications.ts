@@ -3,6 +3,7 @@ import { D1Database } from '../types/index';
 export interface NotificationRecord {
   id: string;
   user_id: string;
+  organization_id: string;
   message: string;
   type: string;
   read: 0 | 1;
@@ -73,11 +74,13 @@ export async function ensureNotificationsSchema(db: D1Database): Promise<void> {
     CREATE TABLE IF NOT EXISTS notifications (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
+      organization_id TEXT NOT NULL,
       message TEXT NOT NULL,
       type TEXT NOT NULL,
       read INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
-      FOREIGN KEY (user_id) REFERENCES users(id)
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (organization_id) REFERENCES organizations(id)
     )
   `).run();
 
@@ -93,6 +96,18 @@ export async function ensureNotificationsSchema(db: D1Database): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, read)
   `).run();
 
+  // Historical unscoped notifications belong to HAMARR. Runtime repair never
+  // invents a tenant, and all new writes must supply organization_id.
+  try {
+    await db.prepare('ALTER TABLE notifications ADD COLUMN organization_id TEXT').run();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!DUPLICATE_COLUMN_REGEX.test(message)) throw error;
+  }
+  await db.prepare(`UPDATE notifications SET organization_id = 'hamarr'
+    WHERE organization_id IS NULL
+      AND EXISTS (SELECT 1 FROM organizations WHERE id = 'hamarr')`).run();
+
   // Idempotently add extended columns introduced for forced-confirmation flows.
   for (const column of NOTIFICATIONS_EXTENDED_COLUMNS) {
     try {
@@ -106,12 +121,17 @@ export async function ensureNotificationsSchema(db: D1Database): Promise<void> {
   }
 
   await db.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_notifications_org_user_read
+      ON notifications(organization_id, user_id, read, created_at)
+  `).run();
+
+  await db.prepare(`
     CREATE INDEX IF NOT EXISTS idx_notifications_action_type ON notifications(action_type)
   `).run();
 
   await db.prepare(`
     CREATE INDEX IF NOT EXISTS idx_notifications_requires_confirmation
-      ON notifications(user_id, requires_confirmation, confirmed_at)
+      ON notifications(organization_id, user_id, requires_confirmation, confirmed_at)
   `).run();
 }
 

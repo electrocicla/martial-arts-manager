@@ -6,8 +6,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { apiClient } from '../lib/api-client';
+import { AUTH_SESSION_HINT_KEY, organizationHeaders } from '../lib/organization';
 
-const AUTH_SESSION_HINT_KEY = 'hamarr:auth-session';
 
 function hasAuthSessionHint(): boolean {
   if (typeof window === 'undefined') return false;
@@ -153,9 +153,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const response = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: organizationHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(data),
         credentials: 'include', // Include cookies for refresh token
       });
@@ -195,9 +193,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const response = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: organizationHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(data),
         credentials: 'include', // Include cookies for refresh token
       });
@@ -240,6 +236,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Call logout endpoint to invalidate refresh token
       await fetch('/api/auth/logout', {
+        headers: organizationHeaders(),
         method: 'POST',
         credentials: 'include',
       });
@@ -258,6 +255,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshAuth = async (): Promise<boolean> => {
     try {
       const response = await fetch('/api/auth/refresh', {
+        headers: organizationHeaders(),
         method: 'POST',
         credentials: 'include',
       });

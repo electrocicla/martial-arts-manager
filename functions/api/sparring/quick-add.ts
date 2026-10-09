@@ -34,6 +34,18 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const body = await request.json() as QuickAddBody;
     if (!body.student_id) return errorResponse('student_id is required', 400);
 
+    const student = await env.DB.prepare(
+      'SELECT id FROM students WHERE id = ? AND organization_id = ? AND deleted_at IS NULL',
+    ).bind(body.student_id, auth.user.organization_id).first<{ id: string }>();
+    if (!student) return errorResponse('Student not found', 404);
+    if (body.class_id) {
+      const targetClass = await env.DB.prepare(
+        `SELECT c.id FROM classes c JOIN branches b ON b.id = c.branch_id
+          WHERE c.id = ? AND b.organization_id = ? AND c.deleted_at IS NULL`,
+      ).bind(body.class_id, auth.user.organization_id).first<{ id: string }>();
+      if (!targetClass) return errorResponse('Class not found', 404);
+    }
+
     const increment = Math.max(1, Math.floor(body.increment ?? 1));
     const now = new Date().toISOString();
     const today = now.slice(0, 10);
@@ -42,8 +54,8 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     await env.DB.prepare(`
       INSERT INTO sparring_sessions (
         id, student_id, class_id, instructor_id, sessions_count, session_date,
-        intensity, partner_name, notes, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        intensity, partner_name, notes, created_by, created_at, updated_at, organization_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id,
       body.student_id,
@@ -57,13 +69,14 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       auth.user.id,
       now,
       now,
+      auth.user.organization_id,
     ).run();
 
     const total = await env.DB.prepare(
-      'SELECT COALESCE(SUM(sessions_count), 0) AS value FROM sparring_sessions WHERE student_id = ? AND deleted_at IS NULL'
-    ).bind(body.student_id).first<TotalRow>();
+      'SELECT COALESCE(SUM(sessions_count), 0) AS value FROM sparring_sessions WHERE student_id = ? AND organization_id = ? AND deleted_at IS NULL'
+    ).bind(body.student_id, auth.user.organization_id).first<TotalRow>();
 
-    const result = await fetchStudentProgression(env.DB, body.student_id);
+    const result = await fetchStudentProgression(env.DB, body.student_id, auth.user.organization_id);
     if (result?.evaluation.readyForExam && result.evaluation.nextBelt) {
       await notifyInstructorOfReadiness({
         db: env.DB,
@@ -72,6 +85,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         currentBelt: result.student.belt,
         nextBelt: result.evaluation.nextBelt,
         instructorId: result.student.instructor_id,
+        organizationId: auth.user.organization_id,
       });
     }
 

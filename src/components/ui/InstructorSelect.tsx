@@ -2,6 +2,7 @@ import { useState, useEffect, forwardRef } from 'react';
 import { Select } from './Select';
 import type { SelectProps } from './Select';
 import { useTranslation } from 'react-i18next';
+import { organizationHeaders } from '../../lib/organization';
 
 interface Instructor {
   id: string;
@@ -23,7 +24,7 @@ export const InstructorSelect = forwardRef<HTMLSelectElement, InstructorSelectPr
     useEffect(() => {
       async function fetchInstructors() {
         try {
-          const response = await fetch('/api/instructors');
+          const response = await fetch('/api/instructors', { headers: organizationHeaders() });
           if (!response.ok) throw new Error('Failed to fetch instructors');
           const data = await response.json();
           setInstructors(data);
