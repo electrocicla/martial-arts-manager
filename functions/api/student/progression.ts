@@ -15,7 +15,7 @@ import { fetchStudentProgression } from '../../utils/beltProgression';
 export async function onRequestGet({ request, env }: { request: Request; env: Env }) {
   try {
     const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) return errorResponse(auth.error, 401);
+    if (!auth.authenticated) return errorResponse(auth.error, auth.status ?? 401);
     if (auth.user.role !== 'student') return errorResponse('This endpoint is for students only', 403);
     if (!auth.user.student_id) return errorResponse('No student profile linked to this account', 404);
 
@@ -35,6 +35,6 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     });
   } catch (error) {
     console.error('[Student Progression GET]', error);
-    return errorResponse((error as Error).message, 500);
+    return errorResponse(error instanceof Error ? error.message : 'Failed to load progression', 500);
   }
 }

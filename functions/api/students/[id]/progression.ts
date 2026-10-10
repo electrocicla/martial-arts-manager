@@ -9,6 +9,10 @@ import { authenticateUser } from '../../../middleware/auth';
 import { errorResponse, jsonResponse } from '../../../utils/response';
 import { ensureSparringSchema } from '../../../utils/sparringSchema';
 import { fetchStudentProgression } from '../../../utils/beltProgression';
+import {
+  branchErrorResponse,
+  resolveRequestBranchId,
+} from '../../../utils/branches';
 
 export async function onRequestGet({ request, env, params }: {
   request: Request;
@@ -17,7 +21,7 @@ export async function onRequestGet({ request, env, params }: {
 }) {
   try {
     const auth = await authenticateUser(request, env);
-    if (!auth.authenticated) return errorResponse(auth.error, 401);
+    if (!auth.authenticated) return errorResponse(auth.error, auth.status ?? 401);
 
     const studentId = params.id;
     if (!studentId) return errorResponse('Student id required', 400);
@@ -26,13 +30,29 @@ export async function onRequestGet({ request, env, params }: {
       return errorResponse('Access denied', 403);
     }
 
-    await ensureSparringSchema(env.DB);
-    const result = await fetchStudentProgression(env.DB, studentId);
-    if (!result) return errorResponse('Student not found', 404);
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
+    let accessQuery =
+      'SELECT id FROM students WHERE id = ? AND branch_id = ? AND organization_id = ? AND deleted_at IS NULL';
+    const accessValues: string[] = [studentId, branchId, auth.user.organization_id];
 
-    // Read-only access: students may view themselves; instructors and admins
-    // may view any student that the existing students-list endpoint already
-    // grants them visibility to (the access check is performed there).
+    if (auth.user.role !== 'admin' && auth.user.role !== 'student') {
+      accessQuery += ' AND (created_by = ? OR instructor_id = ? OR instructor_id IS NULL)';
+      accessValues.push(auth.user.id, auth.user.id);
+    }
+
+    const accessibleStudent = await env.DB.prepare(accessQuery)
+      .bind(...accessValues)
+      .first<{ id: string }>();
+
+    if (!accessibleStudent) return errorResponse('Student not found', 404);
+
+    await ensureSparringSchema(env.DB);
+    const result = await fetchStudentProgression(
+      env.DB,
+      studentId,
+      auth.user.organization_id,
+    );
+    if (!result) return errorResponse('Student not found', 404);
 
     return jsonResponse({
       student: {
@@ -44,7 +64,10 @@ export async function onRequestGet({ request, env, params }: {
       progression: result.evaluation,
     });
   } catch (error) {
+    const branchResponse = branchErrorResponse(error);
+    if (branchResponse) return branchResponse;
+
     console.error('[Student Progression by id]', error);
-    return errorResponse((error as Error).message, 500);
+    return errorResponse(error instanceof Error ? error.message : 'Failed to load progression', 500);
   }
 }

@@ -108,3 +108,4 @@ verify.txt
 
 # Separate nested companion repository
 martial-arts-manager-native/
+/.not-errors-logs/
