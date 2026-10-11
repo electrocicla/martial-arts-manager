@@ -101,7 +101,7 @@ describe('PasswordSettings', () => {
     // Verify success message is rendered and fields are cleared
     await waitFor(() => {
       expect(
-        screen.getByText('Password changed successfully! All other active sessions have been signed out.')
+        screen.getByText('Password changed. Other refresh sessions were revoked; existing access tokens may remain valid until they expire.')
       ).toBeInTheDocument();
       expect(currentPasswordInput).toHaveValue('');
       expect(newPasswordInput).toHaveValue('');

@@ -4,106 +4,90 @@ import { verifyPassword, hashPassword } from '../../utils/hash';
 import { errorResponse, jsonResponse } from '../../utils/response';
 
 interface ChangePasswordRequest {
-  currentPassword?: string;
-  newPassword?: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
+function parseChangePasswordRequest(value: unknown): ChangePasswordRequest | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
+  const fields = value as Record<string, unknown>;
+  if (typeof fields.currentPassword !== 'string' || typeof fields.newPassword !== 'string') {
+    return null;
+  }
+  return { currentPassword: fields.currentPassword, newPassword: fields.newPassword };
+}
+
+function passwordStrengthError(password: string): string | null {
+  if (password.length < 8 || password.length > 128) {
+    return 'New password must contain between 8 and 128 characters';
+  }
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+    return 'New password must contain uppercase, lowercase, number, and special characters';
+  }
+  return null;
 }
 
 /**
- * POST /api/account/change-password
- * Safely changes a user's password and invalidates other sessions.
+ * Updates a global identity password. An identity can belong to multiple
+ * academies, so the new password applies to every one of its memberships.
+ * Password update and refresh-session revocation must commit atomically.
  */
 export async function onRequestPost({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
-    // 1. Authenticate user
     const auth = await authenticateUser(request, env);
     if (!auth.authenticated) {
-      return errorResponse(auth.error || 'Unauthorized', 401);
+      return errorResponse(auth.error, auth.status ?? 401);
     }
 
-    // 2. Parse request body
-    let body: ChangePasswordRequest;
+    let payload: unknown;
     try {
-      body = await request.json();
+      payload = await request.json();
     } catch {
       return errorResponse('Invalid JSON body', 400);
     }
 
-    const { currentPassword, newPassword } = body;
-
-    // 3. Validation
-    if (!currentPassword || !newPassword) {
+    const data = parseChangePasswordRequest(payload);
+    if (!data || !data.currentPassword || !data.newPassword || data.currentPassword.length > 256) {
       return errorResponse('Current password and new password are required', 400);
     }
 
-    // 4. Retrieve user's current password hash
-    const userRow = await env.DB.prepare('SELECT password_hash FROM users WHERE id = ?')
+    const currentHash = await env.DB.prepare('SELECT password_hash FROM users WHERE id = ?')
       .bind(auth.user.id)
       .first<{ password_hash: string }>();
-
-    if (!userRow) {
-      return errorResponse('User not found', 404);
-    }
-
-    // 5. Verify current password
-    const isCurrentPasswordCorrect = await verifyPassword(currentPassword, userRow.password_hash);
-    if (!isCurrentPasswordCorrect) {
+    if (!currentHash) return errorResponse('User not found', 404);
+    if (!await verifyPassword(data.currentPassword, currentHash.password_hash)) {
       return errorResponse('Current password is incorrect', 401);
     }
 
-    // 6. Validate new password strength (SOTA standard)
-    if (newPassword.length < 8) {
-      return errorResponse('New password must be at least 8 characters long', 400);
-    }
-    if (newPassword.length > 128) {
-      return errorResponse('New password must be under 128 characters', 400);
+    const strengthError = passwordStrengthError(data.newPassword);
+    if (strengthError) return errorResponse(strengthError, 400);
+    if (data.currentPassword === data.newPassword) {
+      return errorResponse('New password must differ from the current password', 400);
     }
 
-    // Complexity checks: must have uppercase, lowercase, number, and special character
-    const hasUppercase = /[A-Z]/.test(newPassword);
-    const hasLowercase = /[a-z]/.test(newPassword);
-    const hasDigit = /[0-9]/.test(newPassword);
-    const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
-
-    if (!hasUppercase || !hasLowercase || !hasDigit || !hasSpecial) {
-      return errorResponse(
-        'New password does not meet complexity requirements. It must contain at least one uppercase letter, one lowercase letter, one number, and one special character.',
-        400
-      );
+    const newHash = await hashPassword(data.newPassword);
+    const currentRefreshToken = getRefreshTokenFromRequest(request);
+    const revokeSessions = currentRefreshToken
+      ? env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND refresh_token != ?')
+        .bind(auth.user.id, currentRefreshToken)
+      : env.DB.prepare('DELETE FROM sessions WHERE user_id = ?')
+        .bind(auth.user.id);
+    // A failed session deletion must also roll back the password update.
+    const results = await env.DB.batch([
+      env.DB.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ? AND password_hash = ?')
+        .bind(newHash, new Date().toISOString(), auth.user.id, currentHash.password_hash),
+      revokeSessions,
+    ]);
+    if (results.length !== 2 || !results.every((result) => result.success) || results[0].meta.changes !== 1) {
+      return errorResponse('Password was not changed. Please retry.', 409);
     }
 
-    if (currentPassword === newPassword) {
-      return errorResponse('New password cannot be the same as your current password', 400);
-    }
-
-    // 7. Hash the new password
-    const newPasswordHash = await hashPassword(newPassword);
-
-    // 8. Update in database
-    const now = new Date().toISOString();
-    await env.DB.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
-      .bind(newPasswordHash, now, auth.user.id)
-      .run();
-
-    // 9. Session Revocation: Invalidate all other active refresh sessions for this user
-    try {
-      const currentRefreshToken = getRefreshTokenFromRequest(request);
-      if (currentRefreshToken) {
-        await env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND refresh_token != ?')
-          .bind(auth.user.id, currentRefreshToken)
-          .run();
-      } else {
-        await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?')
-          .bind(auth.user.id)
-          .run();
-      }
-    } catch (sessionError) {
-      console.error('Failed to revoke other sessions:', sessionError);
-      // Don't fail the whole request if only session revocation fails, but log it
-    }
-
-    return jsonResponse({ success: true, message: 'Password changed successfully' });
-  } catch (error) {
-    console.error('Password change error:', error);
-    return errorResponse((error as Error).message || 'Internal server error', 500);
+    return jsonResponse({
+      success: true,
+      message: 'Password updated. Other refresh sessions have been revoked.',
+    });
+  } catch (error: unknown) {
+    console.error('Password change failed:', error instanceof Error ? error.message : 'Unknown error');
+    return errorResponse('Unable to change password', 500);
   }
 }

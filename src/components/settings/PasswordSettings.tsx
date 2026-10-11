@@ -139,7 +139,7 @@ export default function PasswordSettings() {
         setSuccess(
           t(
             'settingsHub.password.success',
-            'Password changed successfully! All other active sessions have been signed out.'
+            'Password changed. Other refresh sessions were revoked; existing access tokens may remain valid until they expire.'
           )
         );
         // Reset form fields
@@ -166,7 +166,7 @@ export default function PasswordSettings() {
         <p className="text-sm text-gray-400">
           {t(
             'settingsHub.password.subtitle',
-            'Update your security credentials. For security, changing your password terminates other sessions.'
+            'Your password belongs to your account across all academies. Changing it revokes other refresh sessions, including those associated with another academy.'
           )}
         </p>
       </header>
