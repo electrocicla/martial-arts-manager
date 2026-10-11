@@ -60,8 +60,12 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       );
     }
 
-    // Validate instructor for students
-    if (role === 'student' && !instructorId) {
+    // Resolve the requested academy before validating its student enrollment policy.
+    const organizationId = getRequestedOrganizationId(request);
+
+    // Preserve HAMARR's instructor requirement; Manzur accepts requests before
+    // its administrator has provisioned the first instructor.
+    if (role === 'student' && organizationId === 'hamarr' && !instructorId) {
       return new Response(
         JSON.stringify({ error: 'Please select an instructor' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -102,18 +106,22 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       );
     }
 
-    const organizationId = getRequestedOrganizationId(request);
     await requireActiveOrganization(env, organizationId);
 
-    const instructor = await env.DB.prepare(`
-      SELECT om.user_id AS id FROM organization_memberships om
-      JOIN users u ON u.id = om.user_id
-      WHERE om.organization_id = ? AND om.user_id = ?
-        AND om.role IN ('admin', 'instructor') AND om.status = 'active'
-        AND om.is_active = 1 AND u.is_active = 1
-    `).bind(organizationId, instructorId).first<{ id: string }>();
-    if (!instructor) {
-      return new Response(JSON.stringify({ error: 'Selected instructor is invalid or unavailable' }), { status: 400 });
+    if (instructorId !== undefined && instructorId !== null && instructorId !== '') {
+      if (typeof instructorId !== 'string') {
+        return new Response(JSON.stringify({ error: 'Invalid instructor selection' }), { status: 400 });
+      }
+      const instructor = await env.DB.prepare(`
+        SELECT om.user_id AS id FROM organization_memberships om
+        JOIN users u ON u.id = om.user_id
+        WHERE om.organization_id = ? AND om.user_id = ?
+          AND om.role IN ('admin', 'instructor') AND om.status = 'active'
+          AND om.is_active = 1 AND u.is_active = 1
+      `).bind(organizationId, instructorId).first<{ id: string }>();
+      if (!instructor) {
+        return new Response(JSON.stringify({ error: 'Selected instructor is invalid or unavailable' }), { status: 400 });
+      }
     }
 
     const existingUser = await findUserByEmail(env.DB, normalizedEmail);
