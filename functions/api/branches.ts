@@ -64,7 +64,7 @@ async function replaceBranchStaff(
        INNER JOIN users u ON u.id = om.user_id
        WHERE om.organization_id = ?
          AND om.user_id = ?
-         AND om.role = 'instructor'
+         AND om.role IN ('admin', 'instructor')
          AND om.status = 'active'
          AND om.is_active = 1
          AND u.is_active = 1`,
