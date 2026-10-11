@@ -116,11 +116,11 @@ try {
   $sql = $null
   $gastonHash = $null
   $diegoHash = $null
-  $result = & npx.cmd wrangler d1 execute $Database --remote --file $tempFile --json 2>&1
+  # Wrangler can mix progress output with JSON when importing a file. Its exit
+  # code is provisional; the exact read-only D1 postconditions below are the
+  # authority for success, including tenant isolation and unchanged HAMARR data.
+  $null = & npx.cmd wrangler d1 execute $Database --remote --file $tempFile --json 2>&1
   if ($LASTEXITCODE -ne 0) { throw "Wrangler D1 import failed (exit code $LASTEXITCODE)." }
-  foreach ($entry in @(ConvertFrom-Json -InputObject ($result -join [Environment]::NewLine))) {
-    if ($entry.success -ne $true) { throw 'D1 import reported a failure.' }
-  }
 }
 finally {
   $sql = $null
