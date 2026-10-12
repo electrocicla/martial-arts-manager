@@ -13,7 +13,7 @@ vi.mock('../../utils/rate-limit', () => ({
 
 interface RecordedQuery { sql: string; values: D1BindValue[] }
 
-function fixture(): { env: Env; queries: RecordedQuery[]; batches: RecordedQuery[][] } {
+function fixture(activeInstructors: string[] = []): { env: Env; queries: RecordedQuery[]; batches: RecordedQuery[][] } {
   const queries: RecordedQuery[] = [];
   const batches: RecordedQuery[][] = [];
   const db: D1Database = {
@@ -28,6 +28,9 @@ function fixture(): { env: Env; queries: RecordedQuery[]; batches: RecordedQuery
         async first<T>(): Promise<T | null> {
           if (sql.includes('FROM organizations WHERE id = ?')) {
             return { id: query.values[0], is_active: 1 } as T;
+          }
+          if (sql.includes('SELECT om.user_id AS id') && activeInstructors.includes(String(query.values[1]))) {
+            return { id: query.values[1] } as T;
           }
           // A new Manzur student must not inherit HAMARR's instructor roster.
           return null;
@@ -92,6 +95,24 @@ describe('organization-scoped student onboarding', () => {
     const response = await onRequestPost({ request: registration('hamarr'), env });
     expect(response.status).toBe(400);
     expect(batches).toHaveLength(0);
+  });
+
+  it('persists Diego as the selected instructor on a tenant-local pending membership', async () => {
+    const { env, batches } = fixture(['diego']);
+    const response = await onRequestPost({ request: registration('manzur', 'diego'), env });
+    expect(response.status).toBe(201);
+    const membership = batches[0].find(({ sql }) => sql.includes('INSERT INTO organization_memberships'));
+    expect(membership?.sql).toContain('requested_instructor_id');
+    expect(membership?.values).toEqual(expect.arrayContaining(['manzur', 'diego']));
+    expect(membership?.values[2]).toBe('diego');
+  });
+
+  it('stores NULL for Manzur enrollments without any selected instructor', async () => {
+    const { env, batches } = fixture();
+    const response = await onRequestPost({ request: registration('manzur'), env });
+    expect(response.status).toBe(201);
+    const membership = batches[0].find(({ sql }) => sql.includes('INSERT INTO organization_memberships'));
+    expect(membership?.values[2]).toBeNull();
   });
 
   it('rejects an instructor who has no active membership in the requested academy', async () => {

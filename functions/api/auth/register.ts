@@ -136,9 +136,9 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const now = new Date().toISOString();
     const membershipInsert = env.DB.prepare(`
       INSERT INTO organization_memberships
-      (organization_id, user_id, role, status, is_active, student_id, created_at, updated_at)
-      VALUES (?, ?, 'student', 'pending', 1, NULL, ?, ?)
-    `).bind(organizationId, userId, now, now);
+      (organization_id, user_id, role, status, is_active, student_id, requested_instructor_id, created_at, updated_at)
+      VALUES (?, ?, 'student', 'pending', 1, NULL, ?, ?, ?)
+    `).bind(organizationId, userId, instructorId || null, now, now);
 
     if (existingUser) {
       await membershipInsert.run();
