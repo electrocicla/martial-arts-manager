@@ -1,6 +1,7 @@
 import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
 import { logAuditAction, getClientIP } from '../utils/db';
+import { currentUtcDateKey, materializeWeeklyClasses, parseWeeklyPattern, weeklyOccurrenceDates } from '../utils/weeklyRecurrence';
 import {
   branchErrorResponse,
   resolveRequestBranchId,
@@ -79,6 +80,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     }
 
     const branchId = await resolveRequestBranchId(request, env, auth.user);
+    await materializeWeeklyClasses(env.DB, branchId, currentUtcDateKey());
     const url = new URL(request.url);
     const where = ['c.deleted_at IS NULL', 'c.branch_id = ?'];
     const joinValues: Array<string | number> = [];
@@ -224,7 +226,12 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         // ignore parse error and treat as single instance
       }
 
-      if (pattern.frequency === 'weekly' && Array.isArray(pattern.days) && pattern.days.length > 0) {
+      if (pattern.frequency === 'weekly') {
+        const validatedPattern = parseWeeklyPattern(recurrencePattern);
+        const occurrenceDates = validatedPattern ? weeklyOccurrenceDates(date, validatedPattern, date) : [];
+        if (!validatedPattern || occurrenceDates.length === 0) {
+          return new Response(JSON.stringify({ error: 'Invalid weekly class schedule' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+        }
         // Ensure there is a parent course row representing this recurring course
         if (parentId) {
           const { results: parentExisting } = await env.DB.prepare('SELECT * FROM classes WHERE id = ? AND created_by = ? AND branch_id = ?').bind(parentId, auth.user.id, branchId).all<ClassRecord>();
@@ -246,21 +253,11 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
           }
         }
 
-        // Determine range: from provided date up to endDate or default 12 weeks
-        const startDate = new Date(date);
-        const endDate = pattern.endDate ? new Date(pattern.endDate) : new Date(startDate.getTime() + 1000 * 60 * 60 * 24 * 7 * 12);
-
-        const toInsert: Array<{ id: string; dateStr: string }> = [];
-
-        // iterate from startDate to endDate by days
-        const cur = new Date(startDate);
-        while (cur <= endDate) {
-          const dow = cur.getDay();
-          if (pattern.days.includes(dow)) {
-            toInsert.push({ id: crypto.randomUUID(), dateStr: cur.toISOString().split('T')[0] });
-          }
-          cur.setDate(cur.getDate() + 1);
-        }
+        // Materialize a bounded initial horizon; subsequent reads extend it safely.
+        // UTC calendar arithmetic avoids daylight-saving and host-timezone drift.
+        const toInsert: Array<{ id: string; dateStr: string }> = occurrenceDates.map((dateStr) => ({
+          id: crypto.randomUUID(), dateStr,
+        }));
 
         // Bulk insert all child session occurrences referencing parent_course_id
         const insertStmt = env.DB.prepare(`

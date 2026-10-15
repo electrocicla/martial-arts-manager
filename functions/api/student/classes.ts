@@ -1,5 +1,6 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
+import { currentUtcDateKey, materializeWeeklyClasses } from '../../utils/weeklyRecurrence';
 import {
   branchErrorResponse,
   resolveRequestBranchId,
@@ -37,6 +38,7 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
     const branchId = await resolveRequestBranchId(request, env, auth.user);
+    await materializeWeeklyClasses(env.DB, branchId, currentUtcDateKey());
 
     // Get enrolled classes
     const { results } = await env.DB.prepare(`
