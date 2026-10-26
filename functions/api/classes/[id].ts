@@ -1,6 +1,8 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 import { logAuditAction, getClientIP } from '../../utils/db';
+import { currentUtcDateKey } from '../../utils/weeklyRecurrence';
+import { isValidDateKey, updateWeeklySeries, WeeklySeriesError, type WeeklySeriesChanges } from '../../utils/weeklySeriesManagement';
 import {
   branchErrorResponse,
   resolveRequestBranchId,
@@ -86,6 +88,27 @@ export async function onRequestPut({ request, env, params }: { request: Request;
     const body = await request.json();
     const url = new URL(request.url);
     const applyTo = (body.applyTo as string) || url.searchParams.get('applyTo') || 'single';
+    if (applyTo === 'all') {
+      const target = await env.DB.prepare(
+        'SELECT id, parent_course_id, is_recurring FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL'
+      ).bind(id, branchId).first<{ id: string; parent_course_id: string | null; is_recurring: number }>();
+      if (target?.is_recurring === 1 && !target.parent_course_id) {
+        try {
+          await updateWeeklySeries(env.DB, branchId, id, auth.user.id, body as WeeklySeriesChanges);
+          const updated = await env.DB.prepare('SELECT * FROM classes WHERE id = ? AND branch_id = ?').bind(id, branchId).first<ClassRecord>();
+          return new Response(JSON.stringify(updated), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        } catch (error) {
+          if (error instanceof WeeklySeriesError) return new Response(JSON.stringify({ error: error.message }), {
+            status: error.status, headers: { 'Content-Type': 'application/json' },
+          });
+          throw error;
+        }
+      }
+      if (body.date !== undefined || body.recurrencePattern !== undefined) {
+        return new Response(JSON.stringify({ error: 'Edit the weekly template to change the dates of a recurring series.' }), { status: 409 });
+      }
+    }
+
 
     const sets: string[] = [];
     const values: Array<string | number | null> = [];
@@ -145,7 +168,38 @@ export async function onRequestPut({ request, env, params }: { request: Request;
       }
     }
 
-    await env.DB.prepare(sql).bind(...singleUpdateValues).run();
+    // Move one occurrence without recreating its original date on the next calendar read.
+    const original = await env.DB.prepare(
+      'SELECT date, time, parent_course_id FROM classes WHERE id = ? AND branch_id = ? AND deleted_at IS NULL'
+    ).bind(id, branchId).first<{ date: string; time: string; parent_course_id: string | null }>();
+    if (original?.parent_course_id && body.date !== undefined && body.date !== original.date) {
+      if (typeof body.date !== 'string' || !isValidDateKey(body.date)) {
+        return new Response(JSON.stringify({ error: 'Invalid new date' }), { status: 400 });
+      }
+      if (original.date < currentUtcDateKey()) {
+        return new Response(JSON.stringify({ error: 'Historical sessions cannot be rescheduled.' }), { status: 409 });
+      }
+      const exists = await env.DB.prepare(
+        'SELECT id FROM classes WHERE parent_course_id = ? AND branch_id = ? AND date = ? LIMIT 1'
+      ).bind(original.parent_course_id, branchId, body.date).first<{ id: string }>();
+      if (exists) return new Response(JSON.stringify({ error: 'Another occurrence of this weekly series already uses that date.' }), { status: 409 });
+      const now = new Date().toISOString();
+      await env.DB.batch([
+        env.DB.prepare(sql).bind(...singleUpdateValues),
+        env.DB.prepare(`INSERT OR IGNORE INTO classes (
+          id, name, discipline, date, time, location, instructor, max_students,
+          description, is_recurring, recurrence_pattern, is_active, parent_course_id,
+          instructor_id, created_by, created_at, updated_at, deleted_at, branch_id
+        ) SELECT ?, name, discipline, ?, ?, location, instructor, max_students,
+          description, 0, NULL, 0, parent_course_id,
+          instructor_id, created_by, ?, ?, ?, branch_id
+          FROM classes WHERE id = ? AND branch_id = ?`).bind(
+          crypto.randomUUID(), original.date, original.time, now, now, now, id, branchId,
+        ),
+      ]);
+    } else {
+      await env.DB.prepare(sql).bind(...singleUpdateValues).run();
+    }
 
     // Non-blocking audit log
     logAuditAction(env.DB, {
@@ -196,9 +250,9 @@ export async function onRequestDelete({ request, env, params }: { request: Reque
       if (parentId) {
         await env.DB.prepare(
           auth.user.role === 'admin'
-            ? 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE (parent_course_id = ? OR id = ?) AND branch_id = ? AND deleted_at IS NULL'
-            : 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE (parent_course_id = ? OR id = ?) AND branch_id = ? AND (created_by = ? OR instructor_id = ?)'
-        ).bind(...(auth.user.role === 'admin' ? [now, now, auth.user.id, parentId, parentId, branchId] : [now, now, auth.user.id, parentId, parentId, branchId, auth.user.id, auth.user.id])).run();
+            ? 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE (id = ? OR (parent_course_id = ? AND date >= ?)) AND branch_id = ? AND deleted_at IS NULL'
+            : 'UPDATE classes SET deleted_at = ?, updated_at = ?, updated_by = ? WHERE (id = ? OR (parent_course_id = ? AND date >= ?)) AND branch_id = ? AND (created_by = ? OR instructor_id = ?) AND deleted_at IS NULL'
+        ).bind(...(auth.user.role === 'admin' ? [now, now, auth.user.id, parentId, parentId, currentUtcDateKey(), branchId] : [now, now, auth.user.id, parentId, parentId, currentUtcDateKey(), branchId, auth.user.id, auth.user.id])).run();
         return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
     }
