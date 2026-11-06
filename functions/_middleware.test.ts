@@ -73,4 +73,77 @@ describe('global security middleware', () => {
     expect(body.requestId).toBe(response.headers.get('X-Request-ID'));
     expect(JSON.stringify(body)).not.toContain('secret implementation detail');
   });
+
+  it('rejects an unbound Manzur deployment before a private handler executes', async () => {
+    const next = vi.fn(async () => Response.json({ leaked: true }));
+    const response = await onRequest({
+      request: new Request('https://manzurbros.cl/api/auth/refresh', {
+        headers: { 'X-Organization-ID': 'hamarr', 'Sec-Fetch-Site': 'same-origin' },
+      }),
+      env,
+      next,
+    });
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({ code: 'SITE_ORGANIZATION_REQUIRED' });
+    expect(next).not.toHaveBeenCalled();
+    expect(response.headers.get('X-Request-ID')).toBeTruthy();
+  });
+
+  it('enforces the Manzur browser tenant on a configured Pages project', async () => {
+    const next = vi.fn(async () => Response.json({ success: true }));
+    const pinnedEnv: Env = { ...env, SITE_ORGANIZATION_ID: 'manzur' };
+    for (const tenant of ['hamarr', '']) {
+      const response = await onRequest({
+        request: new Request('https://manzurbros.cl/api/auth/register', {
+          headers: { 'X-Organization-ID': tenant, 'Sec-Fetch-Site': 'same-origin' },
+        }),
+        env: pinnedEnv,
+        next,
+      });
+      expect(response.status).toBe(403);
+      await expect(response.json()).resolves.toMatchObject({ code: 'BROWSER_TENANT_MISMATCH' });
+    }
+    expect(next).not.toHaveBeenCalled();
+
+    const accepted = await onRequest({
+      request: new Request('https://manzurbros.cl/api/auth/register', {
+        headers: { 'X-Organization-ID': 'manzur', 'Sec-Fetch-Site': 'same-origin' },
+      }),
+      env: pinnedEnv,
+      next,
+    });
+    expect(accepted.status).toBe(200);
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not treat a spoofed native marker with browser fetch metadata as exempt', async () => {
+    const next = vi.fn(async () => Response.json({ success: true }));
+    const response = await onRequest({
+      request: new Request('https://hamarr.cl/api/auth/login', {
+        headers: {
+          'X-Client-Platform': 'native',
+          'X-Organization-ID': 'manzur',
+          'Sec-Fetch-Site': 'same-origin',
+        },
+      }),
+      env,
+      next,
+    });
+    expect(response.status).toBe(403);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('preserves native API tenant transport while keeping endpoint authorization unchanged', async () => {
+    const next = vi.fn(async () => Response.json({ denied: true }, { status: 401 }));
+    const response = await onRequest({
+      request: new Request('https://hamarr.cl/api/students', {
+        headers: { 'X-Client-Platform': 'native', 'X-Organization-ID': 'manzur' },
+      }),
+      env,
+      next,
+    });
+    expect(response.status).toBe(401);
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
 });

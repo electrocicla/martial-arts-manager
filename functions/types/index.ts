@@ -107,6 +107,8 @@ export interface Env {
   JWT_SECRET: string;
   AVATARS: R2Bucket;
   TURNSTILE_SECRET: string;
+  /** Per-Pages project browser tenant pin; Manzur and preview hosts require it. */
+  SITE_ORGANIZATION_ID?: string;
 }
 
 // Student types

@@ -1,4 +1,5 @@
 import { Env } from './types/index';
+import { evaluateTenantBinding, tenantBindingErrorResponse } from './utils/browser-tenant-binding';
 
 const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal server error';
 
@@ -123,7 +124,8 @@ export async function onRequest(context: MiddlewareContext): Promise<Response> {
   let response: Response;
 
   try {
-    response = await context.next();
+    const binding = evaluateTenantBinding(context.request, context.env.SITE_ORGANIZATION_ID);
+    response = binding.allowed ? await context.next() : tenantBindingErrorResponse(binding);
   } catch (error: unknown) {
     const url = new URL(context.request.url);
     console.error(

@@ -13,28 +13,29 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-export const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-  role: z.enum(['admin', 'instructor', 'student']),
-  instructorId: z.string().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-}).refine((data) => data.role, {
-  message: "Please select a role",
-  path: ["role"],
-}).refine((data) => {
-  if (data.role === 'student' && !data.instructorId) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Please select an instructor",
-  path: ["instructorId"],
-});
+export type RegistrationOrganizationId = 'hamarr' | 'manzur';
+
+/** Academy-specific student onboarding; the server remains authoritative. */
+export function registerSchemaForOrganization(organizationId: RegistrationOrganizationId) {
+  return z.object({
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    email: z.string().email('Please enter a valid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string(),
+    role: z.enum(['admin', 'instructor', 'student']),
+    instructorId: z.string().optional(),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  }).refine((data) => organizationId !== 'hamarr' ||
+    data.role !== 'student' || Boolean(data.instructorId?.trim()), {
+    message: 'Please select an instructor',
+    path: ['instructorId'],
+  });
+}
+
+// Preserve existing HAMARR form consumers by default.
+export const registerSchema = registerSchemaForOrganization('hamarr');
 
 // =====================================
 // STUDENT SCHEMAS

@@ -10,8 +10,11 @@ import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { Turnstile } from '../components/ui/Turnstile';
 import { useAuth } from '../context/AuthContext';
 import { isTurnstileConfigured } from '../lib/turnstile';
-import { registerSchema, type RegisterFormData } from '../lib/validation';
+import { registerSchemaForOrganization, type RegisterFormData } from '../lib/validation';
+import { ORGANIZATION_ID } from '../lib/organization';
 import { useTranslation } from 'react-i18next';
+
+const registrationSchema = registerSchemaForOrganization(ORGANIZATION_ID);
 
 export default function Register() {
   const turnstileEnabled = isTurnstileConfigured();
@@ -31,7 +34,7 @@ export default function Register() {
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registrationSchema),
     defaultValues: {
       role: 'student', // Force student role by default
     },
@@ -114,7 +117,7 @@ export default function Register() {
             {/* Role is fixed to 'student' for public registration - hidden field */}
             <input type="hidden" {...register('role')} value="student" />
 
-            {/* Instructor selection - always shown since all public registrations are students */}
+            {/* HAMARR requires an instructor. Manzur lets administrators approve unassigned students. */}
             <div>
               <InstructorSelect
                 {...register('instructorId')}
@@ -122,6 +125,11 @@ export default function Register() {
                 error={errors.instructorId?.message}
                 disabled={isLoading}
               />
+              {ORGANIZATION_ID === 'manzur' && (
+                <p className="mt-2 text-sm text-gray-400">
+                  {t('registerPage.instructorOptionalManzur', 'El instructor es opcional. Si no seleccionas uno, la administración de Manzur revisará tu solicitud.')}
+                </p>
+              )}
             </div>
             <div>
               <Input
