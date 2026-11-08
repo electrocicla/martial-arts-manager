@@ -73,6 +73,11 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
   }
 }
 
+export function hasExamCapacity(maxCandidates: number, assignedCount: number): boolean {
+  return Number.isInteger(maxCandidates) && maxCandidates > 0
+    && Number.isFinite(assignedCount) && assignedCount < maxCandidates;
+}
+
 // POST /api/belt-exams/assignments - Assign student to exam
 export async function onRequestPost({ request, env }: { request: Request; env: Env }) {
   try {
@@ -108,7 +113,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     // Check if exam exists
     const exam = await env.DB.prepare(
       'SELECT * FROM belt_exams WHERE id = ? AND organization_id = ? AND status = ?'
-    ).bind(exam_id, auth.user.organization_id, 'scheduled').first();
+    ).bind(exam_id, auth.user.organization_id, 'scheduled').first<{ id: string; max_candidates: number; discipline: string }>();
 
     if (!exam) {
       return new Response(
@@ -120,13 +125,20 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     // Check if student exists
     const student = await env.DB.prepare(
       'SELECT * FROM students WHERE id = ? AND organization_id = ? AND deleted_at IS NULL'
-    ).bind(student_id, auth.user.organization_id).first();
+    ).bind(student_id, auth.user.organization_id).first<{ id: string; discipline: string }>();
 
     if (!student) {
       return new Response(
         JSON.stringify({ error: 'Student not found' }),
         { status: 404, headers: { 'Content-Type': 'application/json' } }
       );
+    }
+
+    if (student.discipline !== exam.discipline) {
+      return new Response(JSON.stringify({ error: 'Student discipline is not eligible for this exam' }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // Check if already assigned
@@ -139,6 +151,16 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         JSON.stringify({ error: 'Student already assigned to this exam' }),
         { status: 409, headers: { 'Content-Type': 'application/json' } }
       );
+    }
+
+    const assignedCount = await env.DB.prepare(
+      'SELECT COUNT(*) AS count FROM exam_assignments WHERE exam_id = ? AND organization_id = ?'
+    ).bind(exam_id, auth.user.organization_id).first<{ count: number }>();
+    if (!hasExamCapacity(exam.max_candidates, assignedCount?.count ?? 0)) {
+      return new Response(JSON.stringify({ error: 'No more available exam slots' }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     const id = crypto.randomUUID();
