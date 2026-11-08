@@ -55,7 +55,8 @@ export async function onRequestPost({ request, env, params }: { request: Request
     const body = await request.json() as { student_ids: string[] };
     const { student_ids } = body;
 
-    if (!Array.isArray(student_ids) || student_ids.length === 0) {
+    if (!Array.isArray(student_ids) || student_ids.length === 0 || student_ids.length > 5000
+      || student_ids.some((id) => typeof id !== 'string' || id.length === 0 || id.length > 128)) {
       return new Response(JSON.stringify({ error: 'student_ids must be a non-empty array' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
@@ -100,13 +101,19 @@ export async function onRequestPost({ request, env, params }: { request: Request
     for (let i = 0; i < student_ids.length; i += D1_SAFE_CHUNK_SIZE) {
       const chunk = student_ids.slice(i, i + D1_SAFE_CHUNK_SIZE);
       const studentPlaceholders = chunk.map(() => '?').join(',');
+      const isAdmin = auth.user.role === 'admin';
       const { results } = await env.DB.prepare(
         `SELECT id FROM students
          WHERE id IN (${studentPlaceholders})
            AND branch_id = ?
            AND organization_id = ?
-           AND deleted_at IS NULL`
-      ).bind(...chunk, branchId, auth.user.organization_id).all<{ id: string }>();
+           AND is_active = 1
+           AND deleted_at IS NULL
+           ${isAdmin ? '' : 'AND (created_by = ? OR instructor_id = ?)'}`
+      ).bind(...(isAdmin
+        ? [...chunk, branchId, auth.user.organization_id]
+        : [...chunk, branchId, auth.user.organization_id, auth.user.id, auth.user.id])
+      ).all<{ id: string }>();
       eligibleStudents.push(...(results ?? []).map((student) => student.id));
     }
 
