@@ -7,5 +7,5 @@
 - [x] Refresh cookie race and D1 transactional rotation; avatar D1 CAS + orphan cleanup and regression tests.
 - [x] Dual Hamarr/Manzur branded builds+verify, `test:web:build` 7/7, typecheck/lint PASS; final full test:run latest revision pending final receipt.
 - [ ] Installed Native secure access and live four-host shared D1/R2 tenant proof, secret/Turnstile; external gates remain CLOSED until verified.
-- [ ] Git stage/commit/push only verified owned/adopted files after QA; report exact SHA/0-0 and remaining dirty paths. Current all source checks passed, documentation/publication next.
+- [x] Git exact 20 scoped files independently staged/diff audited, validated source commit `54a009a5fdc0` pushed origin/feature/manzur-white-label-multitenant, reverified ahead0/behind0 staging empty. 29 other prior dirty/untracked files preserved.
 - [ ] Production: BLOCKED by owner-controlled independent cross-client and credential gates; no deployment authorization.
