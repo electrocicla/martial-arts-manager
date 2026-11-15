@@ -12,9 +12,10 @@ import {
   branchErrorResponse,
   resolveRequestBranchId,
 } from '../../../utils/branches';
+import { resolveMercadoPagoUrls } from '../../../utils/mercadopago-url-policy';
+import { resolveMercadoPagoCheckout } from '../../../utils/mercadopago-price-policy';
 
 const SETTINGS_SECTION = 'mercadopago';
-const PAYMENT_TYPES = new Set(['monthly', 'drop-in', 'private', 'equipment', 'other']);
 
 interface StudentRow { id: string; name: string; email: string }
 interface OrganizationRow { name: string }
@@ -97,26 +98,32 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const student = await env.DB.prepare(studentQuery).bind(...studentParams).first<StudentRow>();
     if (!student) return errorResponse('Student not found or access denied', 404);
 
-    const amount = typeof body.amount === 'number' && body.amount > 0
-      ? body.amount
-      : config.defaultAmount;
-    if (!(amount > 0)) return errorResponse('amount must be greater than zero', 400);
-
-    const type = body.type && PAYMENT_TYPES.has(body.type) ? body.type : 'monthly';
-    const notes = typeof body.notes === 'string' ? body.notes.slice(0, 500) : '';
+    const checkout = resolveMercadoPagoCheckout({
+      role: auth.user.role,
+      isPlatformAdmin: auth.user.platform_admin === true,
+      defaultAmount: config.defaultAmount,
+      requestedAmount: body.amount,
+      requestedType: body.type,
+    });
+    if (!checkout.ok) return errorResponse(checkout.message, checkout.status);
+    const { amount, type } = checkout;
+    const userNotes = typeof body.notes === 'string' ? body.notes.slice(0, 500) : '';
+    const notes = checkout.overridden
+      ? `Admin amount override by ${auth.user.id}. ${userNotes}`.trim()
+      : userNotes;
 
     const externalReference = `mp_${student.id}_${Date.now()}_${crypto.randomUUID()}`;
     const paymentId = crypto.randomUUID();
     const now = new Date().toISOString();
     const today = now.slice(0, 10);
 
-    const baseUrl = new URL(request.url);
-    const origin = `${baseUrl.protocol}//${baseUrl.host}`;
-    const successUrl = body.successUrl || config.successUrl || `${origin}/payments?mp=success`;
-    const failureUrl = body.failureUrl || config.failureUrl || `${origin}/payments?mp=failure`;
-    const pendingUrl = body.pendingUrl || config.pendingUrl || `${origin}/payments?mp=pending`;
-    const notificationUrl = config.notificationUrl
-      || `${origin}/api/payments/mercadopago/webhook`;
+    let callbacks;
+    try {
+      callbacks = resolveMercadoPagoUrls(auth.user.organization_id, body, config);
+    } catch (error: unknown) {
+      return errorResponse(error instanceof Error ? error.message : 'Invalid payment callback URL', 400);
+    }
+    const { successUrl, failureUrl, pendingUrl, notificationUrl } = callbacks;
     const organizationName = organization?.name ?? 'Academy';
     const statementDescriptor = auth.user.organization_id === 'manzur' ? 'MANZUR' : 'HAMARR';
 

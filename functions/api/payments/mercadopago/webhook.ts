@@ -16,14 +16,6 @@ interface ConfigRow {
   branch_id: string;
   organization_id: string;
 }
-interface PaymentRow {
-  id: string;
-  student_id: string;
-  amount: number;
-  status: string;
-  external_reference: string | null;
-  external_id: string | null;
-}
 
 interface ActiveConfig {
   branchId: string;
@@ -95,126 +87,95 @@ function statusFromMercadoPago(mpStatus: string): 'completed' | 'pending' | 'fai
   }
 }
 
+/**
+ * Commit only a locally issued checkout, using one atomic UPDATE rather than
+ * SELECT-then-INSERT. Existing unique idx_payments_external_id prevents the
+ * same provider payment ID from settling two local records concurrently.
+ */
 async function reconcilePayment(
   env: Env,
   mpPayment: MercadoPagoPaymentResponse,
   branchId: string,
   organizationId: string,
+  currency: string,
 ): Promise<void> {
-  const externalReference = mpPayment.external_reference ?? null;
+  const meta = mpPayment.metadata ?? {};
+  const metaOrg = typeof meta.organization_id === 'string' ? meta.organization_id : '';
+  const metaBranch = typeof meta.branch_id === 'string' ? meta.branch_id : '';
+  const studentId = typeof meta.student_id === 'string' ? meta.student_id : '';
+  const localPaymentId = typeof meta.payment_id === 'string' ? meta.payment_id : '';
+  const type = typeof meta.type === 'string' ? meta.type : '';
+  const externalReference = mpPayment.external_reference;
+
+  if (!metaOrg || metaOrg !== organizationId || !metaBranch || metaBranch !== branchId
+    || !studentId || !localPaymentId || !type || !externalReference) {
+    throw new PaymentBindingError('Missing or mismatched payment ownership metadata');
+  }
+  const amount = mpPayment.transaction_amount;
+  if (mpPayment.currency_id !== currency || !Number.isFinite(amount) || amount <= 0
+    || !Number.isSafeInteger(mpPayment.id) || mpPayment.id <= 0) {
+    throw new PaymentBindingError('Payment currency, amount, or identity is invalid');
+  }
+
   const externalId = String(mpPayment.id);
   const newStatus = statusFromMercadoPago(mpPayment.status);
   const paymentDate = (
-    mpPayment.date_approved
-    ?? mpPayment.date_created
-    ?? new Date().toISOString()
+    mpPayment.date_approved ?? mpPayment.date_created ?? new Date().toISOString()
   ).slice(0, 10);
   const now = new Date().toISOString();
   const noteLine = `MercadoPago ${mpPayment.status}${mpPayment.payment_method_id ? ` via ${mpPayment.payment_method_id}` : ''}`;
-  const metadata = (mpPayment.metadata ?? {}) as Record<string, unknown>;
-  const metadataOrganizationId =
-    typeof metadata.organization_id === 'string' ? metadata.organization_id : null;
 
-  if (metadataOrganizationId && metadataOrganizationId !== organizationId) {
-    throw new Error('MercadoPago payment tenant mismatch');
-  }
-
-  if (externalReference) {
-    const existing = await env.DB.prepare(
-      `SELECT p.id, p.student_id, p.amount, p.status, p.external_reference, p.external_id
-         FROM payments p
-         INNER JOIN students s ON s.id = p.student_id
-        WHERE p.external_reference = ?
-          AND p.branch_id = ?
-          AND s.organization_id = ?
-          AND p.deleted_at IS NULL
-        ORDER BY p.created_at DESC
-        LIMIT 1`,
-    ).bind(externalReference, branchId, organizationId).first<PaymentRow>();
-
-    if (existing) {
-      await env.DB.prepare(
-        `UPDATE payments SET
-          status = ?,
-          external_id = ?,
-          payment_method = COALESCE(?, payment_method),
-          notes = ?,
-          date = ?,
-          updated_at = ?
-         WHERE id = ?`,
-      ).bind(
-        newStatus,
-        externalId,
-        mpPayment.payment_method_id ?? null,
-        noteLine,
-        paymentDate,
-        now,
-        existing.id,
-      ).run();
-      return;
-    }
-  }
-
-  const duplicate = await env.DB.prepare(
-    `SELECT p.id
-       FROM payments p
-       INNER JOIN students s ON s.id = p.student_id
-      WHERE p.external_id = ?
-        AND p.branch_id = ?
-        AND s.organization_id = ?
-        AND p.deleted_at IS NULL
-      LIMIT 1`,
-  ).bind(externalId, branchId, organizationId).first<{ id: string }>();
-
-  if (duplicate) {
-    await env.DB.prepare(
-      'UPDATE payments SET status = ?, notes = ?, date = ?, updated_at = ? WHERE id = ?',
-    ).bind(newStatus, noteLine, paymentDate, now, duplicate.id).run();
-    return;
-  }
-
-  const metaStudentId = typeof metadata.student_id === 'string' ? metadata.student_id : null;
-  const type = typeof metadata.type === 'string' ? metadata.type : 'monthly';
-  const createdBy = typeof metadata.created_by === 'string' ? metadata.created_by : null;
-  if (!metaStudentId) {
-    console.error('[MercadoPago Webhook] Cannot reconcile payment without student_id', externalId);
-    return;
-  }
-
-  const student = await env.DB.prepare(
-    `SELECT id
-       FROM students
-      WHERE id = ?
-        AND organization_id = ?
-        AND branch_id = ?
-        AND deleted_at IS NULL`,
-  ).bind(metaStudentId, organizationId, branchId).first<{ id: string }>();
-  if (!student) {
-    console.error('[MercadoPago Webhook] Student missing for payment', externalId);
-    return;
-  }
-
-  await env.DB.prepare(
-    `INSERT INTO payments (
-      id, student_id, branch_id, amount, date, type, notes, status, payment_method,
-      payment_source, external_id, external_reference, created_by, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'mercadopago', ?, ?, ?, ?, ?)`,
+  // D1 SQLite UPDATE is atomic. Require the exact pending payment ID, provider
+  // reference, student, tenant, branch, payment type and server-recorded amount.
+  // A replay updates the same row only; refunded/completed cannot be demoted by
+  // a late pending/failed notification.
+  const updated = await env.DB.prepare(
+    `UPDATE payments SET
+       status = CASE
+         WHEN status = 'refunded' THEN status
+         WHEN status = 'completed' AND ? IN ('pending', 'failed') THEN status
+         ELSE ?
+       END,
+       external_id = ?,
+       payment_method = COALESCE(?, payment_method),
+       notes = ?,
+       date = ?,
+       updated_at = ?
+     WHERE id = ?
+       AND external_reference = ?
+       AND student_id = ?
+       AND branch_id = ?
+       AND payment_source = 'mercadopago'
+       AND type = ?
+       AND ROUND(amount, 2) = ?
+       AND (external_id IS NULL OR external_id = ?)
+       AND deleted_at IS NULL
+       AND EXISTS (
+         SELECT 1 FROM students s
+          WHERE s.id = payments.student_id
+            AND s.organization_id = ?
+            AND s.branch_id = ?
+            AND s.deleted_at IS NULL
+       )
+     RETURNING id`,
   ).bind(
-    crypto.randomUUID(),
-    student.id,
-    branchId,
-    Number(mpPayment.transaction_amount.toFixed(2)),
-    paymentDate,
-    type,
-    noteLine,
-    newStatus,
+    newStatus, newStatus, externalId,
     mpPayment.payment_method_id ?? null,
-    externalId,
-    externalReference,
-    createdBy,
-    now,
-    now,
-  ).run();
+    noteLine, paymentDate, now,
+    localPaymentId, externalReference, studentId, branchId,
+    type, Number(amount.toFixed(2)), externalId, organizationId, branchId,
+  ).first<{ id: string }>();
+
+  if (!updated || updated.id !== localPaymentId) {
+    throw new PaymentBindingError('Payment did not match a locally issued checkout');
+  }
+}
+
+class PaymentBindingError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PaymentBindingError';
+  }
 }
 
 /**
@@ -262,44 +223,54 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     const activeConfigs = await loadActiveConfigs(env);
     if (activeConfigs.length === 0) return errorResponse('MercadoPago not active', 409);
 
-    let matchedSignature = false;
-    let matchedConfig: ActiveConfig | null = null;
-    let mpPayment: MercadoPagoPaymentResponse | null = null;
+    let signedCount = 0;
+    let fetchedCount = 0;
+    const eligible: Array<{ entry: ActiveConfig; payment: MercadoPagoPaymentResponse }> = [];
 
+    // A merchant credential and signature can be shared by multiple academy
+    // branches. Fetching the payment is not sufficient to select a tenant:
+    // compare trusted MercadoPago metadata to every signed active config.
     for (const entry of activeConfigs) {
-      const validSignature = await verifyWebhookSignature(
-        entry.config.webhookSecret,
-        signatureHeader,
-        requestId,
-        dataId,
-      );
-      if (!validSignature) continue;
-      matchedSignature = true;
+      if (!await verifyWebhookSignature(
+        entry.config.webhookSecret, signatureHeader, requestId, dataId,
+      )) continue;
+      signedCount += 1;
 
       try {
-        mpPayment = await getPayment(entry.config.accessToken, dataId);
-        matchedConfig = entry;
-        break;
+        const payment = await getPayment(entry.config.accessToken, dataId);
+        fetchedCount += 1;
+        if (String(payment.id) !== dataId) {
+          return errorResponse('Payment identity mismatch', 409);
+        }
+        if (payment.metadata?.organization_id === entry.organizationId
+          && payment.metadata?.branch_id === entry.branchId) {
+          eligible.push({ entry, payment });
+        }
       } catch (error: unknown) {
         if (error instanceof MercadoPagoApiError && error.status === 404) continue;
         throw error;
       }
     }
 
-    if (!matchedSignature) {
-      console.error('[MercadoPago Webhook] Invalid signature for', dataId);
+    if (signedCount === 0) {
       return errorResponse('Invalid signature', 401);
     }
-    if (!mpPayment || !matchedConfig) {
+    if (fetchedCount === 0) {
       return jsonResponse({ ok: true, ignored: 'payment not found yet' });
     }
+    if (eligible.length !== 1) {
+      // Missing/mismatched metadata or multiple matching branch configs must
+      // never be resolved by first-match ordering or caller-supplied headers.
+      return errorResponse('Ambiguous or mismatched payment tenant', 409);
+    }
 
-    await reconcilePayment(
-      env,
-      mpPayment,
-      matchedConfig.branchId,
-      matchedConfig.organizationId,
-    );
+    const { entry, payment } = eligible[0];
+    try {
+      await reconcilePayment(env, payment, entry.branchId, entry.organizationId, entry.config.currency);
+    } catch (error: unknown) {
+      if (error instanceof PaymentBindingError) return errorResponse(error.message, 409);
+      throw error;
+    }
     return jsonResponse({ ok: true });
   } catch (error: unknown) {
     console.error('[MercadoPago Webhook]', error);

@@ -12,6 +12,22 @@ describe('tenant-bound JWT', () => {
     });
   });
 
+  it('uses unique signed refresh identities even within one second', async () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-11-15T18:00:00Z'));
+      const one = await createTokens('same-user', 'member@example.org', 'student', 'unit-secret', 'manzur');
+      const two = await createTokens('same-user', 'member@example.org', 'student', 'unit-secret', 'manzur');
+      expect(one.refreshToken).not.toBe(two.refreshToken);
+      const oneClaims = await verifyJWT(one.refreshToken, 'unit-secret');
+      const twoClaims = await verifyJWT(two.refreshToken, 'unit-secret');
+      expect(oneClaims?.jti).toMatch(/^[a-f0-9-]{36}$/i);
+      expect(oneClaims?.jti).not.toBe(twoClaims?.jti);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('rejects missing tenant and signature tampering', async () => {
     await expect(createTokens('u1', 'u@example.org', 'student', 'unit-secret', '')).rejects.toThrow('Organization ID');
     const { accessToken } = await createTokens('u1', 'u@example.org', 'student', 'unit-secret', 'hamarr');

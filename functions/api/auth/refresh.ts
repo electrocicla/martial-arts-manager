@@ -3,8 +3,8 @@
  */
 
 import { verifyJWT, createTokens } from '../../utils/jwt';
-import { findSessionByRefreshToken, findUserById, updateUserLastLogin, createSession, deleteSession } from '../../utils/db';
-import { getRefreshTokenFromRequest, createRefreshTokenCookie, createClearRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
+import { findSessionByRefreshToken, findUserById, updateUserLastLogin, rotateSessionForRefresh, deleteSession } from '../../utils/db';
+import { getRefreshTokenFromRequest, createRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
 
 import { normalizeAvatarUrl } from '../../utils/avatar';
 
@@ -41,7 +41,6 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
       // Clear invalid cookie
-      response.headers.append('Set-Cookie', createClearRefreshTokenCookie());
       return response;
     }
 
@@ -53,7 +52,6 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
       // Clear invalid cookie
-      response.headers.append('Set-Cookie', createClearRefreshTokenCookie());
       return response;
     }
 
@@ -74,7 +72,6 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
       // Clear invalid cookie
-      response.headers.append('Set-Cookie', createClearRefreshTokenCookie());
       return response;
     }
 
@@ -87,7 +84,6 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       );
       // Clear invalid cookie and delete session
       await deleteSession(env.DB, refreshToken);
-      response.headers.append('Set-Cookie', createClearRefreshTokenCookie());
       return response;
     }
 
@@ -105,24 +101,27 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       organization.organizationId
     );
 
-    // Delete old session
-    await deleteSession(env.DB, refreshToken);
-
-    // Create new session
+    // D1 batch runs the INSERT-from-live-session and DELETE in one transaction.
+    // A failed successor INSERT rolls back the predecessor consumption.
     const sessionId = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
-
-    await createSession(env.DB, {
-      id: sessionId,
-      user_id: user.id,
-      refresh_token: newRefreshToken,
-      expires_at: expiresAt,
-      ip_address: session.ip_address,
-      user_agent: session.user_agent,
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const rotated = await rotateSessionForRefresh(env.DB, refreshToken, payload.sub, {
+      id: sessionId, refresh_token: newRefreshToken, expires_at: expiresAt,
     });
+    if (!rotated) {
+      // A raced stale 401 MUST NOT clear a newer Set-Cookie from the winner.
+      return new Response(JSON.stringify({ error: 'Refresh token already used or expired' }), {
+        status: 401, headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Update user's last login
-    await updateUserLastLogin(env.DB, user.id);
+    try {
+      await updateUserLastLogin(env.DB, user.id);
+    } catch (error: unknown) {
+      // Nonessential telemetry must never strand an already-rotated session.
+      console.error('Could not update last login timestamp after token rotation:', error);
+    }
 
     // Prepare response
     const responseData: RefreshResponse = {

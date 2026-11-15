@@ -123,6 +123,46 @@ export async function findSessionByRefreshToken(db: D1Database, refreshToken: st
 }
 
 /**
+ * Atomically consume a refresh session. At most one concurrent request may
+ * rotate this token; older sessions remain valid only until first rotation.
+ */
+export async function consumeSessionForRefresh(
+  db: D1Database,
+  refreshToken: string,
+  userId: string,
+): Promise<Session | null> {
+  return db.prepare(
+    'DELETE FROM sessions WHERE refresh_token = ? AND user_id = ? AND expires_at > datetime("now") RETURNING *'
+  ).bind(refreshToken, userId).first<Session>();
+}
+
+/**
+ * Atomically rotate a refresh session using a D1 transactional batch. Insert
+ * the successor from the still-existing predecessor before deleting it.
+ * On insert failure D1 rolls back both statements, preserving the old token.
+ */
+export async function rotateSessionForRefresh(
+  db: D1Database,
+  oldToken: string,
+  userId: string,
+  next: { id: string; refresh_token: string; expires_at: string },
+): Promise<boolean> {
+  const now = new Date().toISOString();
+  const [created, consumed] = await db.batch<{ id: string }>([
+    db.prepare(`INSERT INTO sessions
+      (id, user_id, refresh_token, expires_at, created_at, ip_address, user_agent)
+      SELECT ?, user_id, ?, ?, ?, ip_address, user_agent
+        FROM sessions
+       WHERE refresh_token = ? AND user_id = ? AND expires_at > datetime('now')
+      RETURNING id`).bind(next.id, next.refresh_token, next.expires_at, now, oldToken, userId),
+    db.prepare(`DELETE FROM sessions
+       WHERE refresh_token = ? AND user_id = ? AND expires_at > datetime('now')
+       RETURNING id`).bind(oldToken, userId),
+  ]);
+  return created.results?.[0]?.id === next.id && consumed.results?.length === 1;
+}
+
+/**
  * Delete session by refresh token
  */
 export async function deleteSession(db: D1Database, refreshToken: string): Promise<void> {

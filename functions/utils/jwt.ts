@@ -13,6 +13,7 @@ interface JWTPayload {
   exp: number;
   organization_id: string;
   token_use: 'access' | 'refresh';
+  jti?: string;
 }
 
 interface TokenPair {
@@ -71,6 +72,7 @@ export async function createTokens(
     exp: now + 30 * 24 * 60 * 60, // 30 days
     organization_id: organizationId,
     token_use: 'refresh',
+    jti: crypto.randomUUID(),
   };
 
   const [accessToken, refreshToken] = await Promise.all([
@@ -163,7 +165,7 @@ export async function verifyJWT(token: string, secret: string): Promise<JWTPaylo
     const decoded: unknown = JSON.parse(base64urlDecode(encodedPayload));
     if (!decoded || typeof decoded !== 'object') return null;
     const claims = decoded as Record<string, unknown>;
-    const { sub, email, role, iat, exp, organization_id, token_use } = claims;
+    const { sub, email, role, iat, exp, organization_id, token_use, jti } = claims;
     const now = Math.floor(Date.now() / 1000);
     if (
       typeof sub !== 'string' || !sub ||
@@ -172,9 +174,10 @@ export async function verifyJWT(token: string, secret: string): Promise<JWTPaylo
       typeof iat !== 'number' || !Number.isFinite(iat) || iat > now + 60 ||
       typeof exp !== 'number' || !Number.isFinite(exp) || exp <= now || exp <= iat ||
       typeof organization_id !== 'string' || !organization_id.trim() ||
-      (token_use !== 'access' && token_use !== 'refresh')
+      (token_use !== 'access' && token_use !== 'refresh') ||
+      (jti !== undefined && (typeof jti !== 'string' || !/^[a-f0-9-]{36}$/i.test(jti)))
     ) return null;
-    return { sub, email, role, iat, exp, organization_id, token_use };
+    return { sub, email, role, iat, exp, organization_id, token_use, ...(jti ? { jti } : {}) };
   } catch (error) {
     console.error('JWT verification failed:', error);
     return null;

@@ -66,6 +66,7 @@ interface AvatarAccessUser {
   id: string;
   role: string;
   student_id?: string | null;
+  organization_id: string;
 }
 
 export function buildAvatarStudentAccessQuery(
@@ -73,8 +74,8 @@ export function buildAvatarStudentAccessQuery(
   branchId: string,
   user: AvatarAccessUser,
 ): { query: string; params: string[] } {
-  let query = 'SELECT id FROM students WHERE id = ? AND branch_id = ? AND deleted_at IS NULL';
-  const params = [studentId, branchId];
+  let query = 'SELECT id, avatar_url FROM students WHERE id = ? AND branch_id = ? AND organization_id = ? AND deleted_at IS NULL';
+  const params = [studentId, branchId, user.organization_id];
 
   if (user.role === 'student') {
     query += ' AND id = ?';
@@ -85,6 +86,18 @@ export function buildAvatarStudentAccessQuery(
   }
 
   return { query, params };
+}
+
+/** New R2 keys bind org/branch; legacy uploads bind at least studentId. */
+export function avatarObjectOwnedByStudent(
+  metadata: Readonly<Record<string, string>> | undefined,
+  studentId: string,
+  organizationId: string,
+  branchId: string,
+): boolean {
+  return metadata?.studentId === studentId &&
+    (!metadata.organizationId || metadata.organizationId === organizationId) &&
+    (!metadata.branchId || metadata.branchId === branchId);
 }
 
 export async function onRequestPost({ request, env }: { request: Request; env: Env }) {
@@ -150,35 +163,58 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
       ? fileExtension
       : (normalizedType ? MIME_TO_EXTENSION[normalizedType] : undefined);
     const safeExtension = resolvedExtension || 'bin';
-    const fileName = `avatars/${auth.user.id}/${studentId}-${timestamp}.${safeExtension}`;
+    const fileName = `avatars/${auth.user.organization_id}/${branchId}/${studentId}-${timestamp}-${crypto.randomUUID()}.${safeExtension}`;
 
-    // Upload to R2
+    // Each upload uses a fresh R2 key. Preserve the previously referenced
+    // object until the D1 pointer and linked-user pointer commit together.
+    const previousAvatarUrl = (results[0] as { avatar_url?: string | null }).avatar_url ?? null;
+    const avatarUrl = `/api/avatars?key=${encodeURIComponent(fileName)}`;
     const arrayBuffer = await file.arrayBuffer();
     const contentType = normalizedType || (fileExtension ? EXTENSION_TO_MIME[fileExtension] : undefined) || 'application/octet-stream';
     await env.AVATARS.put(fileName, arrayBuffer, {
-      httpMetadata: {
-        contentType,
-      },
+      httpMetadata: { contentType },
       customMetadata: {
-        userId: auth.user.id,
-        studentId: studentId,
-        uploadedAt: new Date().toISOString(),
-      }
+        userId: auth.user.id, studentId, organizationId: auth.user.organization_id,
+        branchId, uploadedAt: new Date().toISOString(),
+      },
     });
 
-    // Serve via our Pages Function proxy (avoids needing a separate public avatars domain)
-    const avatarUrl = `/api/avatars?key=${encodeURIComponent(fileName)}`;
-
-    // Update student record with avatar URL
-    const now = new Date().toISOString();
-    await env.DB.prepare(
-      "UPDATE students SET avatar_url = ?, updated_at = ?, updated_by = ? WHERE id = ?"
-    ).bind(avatarUrl, now, auth.user.id, studentId).run();
-
-    // Also update users table if this student is linked to a user
-    await env.DB.prepare(
-      "UPDATE users SET avatar_url = ?, updated_at = ? WHERE student_id = ?"
-    ).bind(avatarUrl, now, studentId).run();
+    try {
+      const now = new Date().toISOString();
+      // D1 batch is transactional: if linked user update fails, student update
+      // rolls back. The old avatar reference is never overwritten on failure.
+      const [studentUpdate] = await env.DB.batch<{ id: string }>([
+        env.DB.prepare(
+          `UPDATE students SET avatar_url = ?, updated_at = ?, updated_by = ?
+             WHERE id = ? AND organization_id = ? AND branch_id = ?
+               AND avatar_url IS ? AND deleted_at IS NULL RETURNING id`,
+        ).bind(avatarUrl, now, auth.user.id, studentId, auth.user.organization_id, branchId, previousAvatarUrl),
+        env.DB.prepare(
+          `UPDATE users SET avatar_url = ?, updated_at = ?
+             WHERE student_id = ? AND id IN (
+               SELECT user_id FROM organization_memberships
+                WHERE organization_id = ? AND student_id = ?
+             ) AND EXISTS (
+               SELECT 1 FROM students s
+                WHERE s.id = ? AND s.organization_id = ? AND s.branch_id = ?
+                  AND s.avatar_url = ? AND s.deleted_at IS NULL
+             )`,
+        ).bind(avatarUrl, now, studentId, auth.user.organization_id, studentId,
+          studentId, auth.user.organization_id, branchId, avatarUrl),
+      ]);
+      if (studentUpdate.results?.[0]?.id !== studentId) {
+        throw new Error('Student avatar reference changed concurrently');
+      }
+    } catch (persistError: unknown) {
+      // Never delete the previous avatar: only the newly created unique R2
+      // object is eligible for compensation. Failed cleanup is logged for GC.
+      try {
+        await env.AVATARS.delete(fileName);
+      } catch (cleanupError: unknown) {
+        console.error('R2 orphan avatar cleanup failed:', cleanupError);
+      }
+      throw persistError;
+    }
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -222,12 +258,10 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
       });
     }
 
-    // Get student and verify ownership (admin can access all)
-    const { results } = await env.DB.prepare(
-      auth.user.role === 'admin'
-        ? "SELECT avatar_url FROM students WHERE id = ? AND deleted_at IS NULL"
-        : "SELECT avatar_url FROM students WHERE id = ? AND (created_by = ? OR instructor_id = ? OR id = ?) AND deleted_at IS NULL"
-    ).bind(...(auth.user.role === 'admin' ? [studentId] : [studentId, auth.user.id, auth.user.id, auth.user.student_id || ''])).all<{ avatar_url?: string }>();
+    // Use the identical organization, branch and role predicate as avatar upload.
+    const branchId = await resolveRequestBranchId(request, env, auth.user);
+    const access = buildAvatarStudentAccessQuery(studentId, branchId, auth.user);
+    const { results } = await env.DB.prepare(access.query).bind(...access.params).all<{ avatar_url?: string }>();
 
     if (!results || results.length === 0) {
       return new Response(JSON.stringify({ error: 'Student not found or access denied' }), { 
@@ -253,9 +287,16 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
         // If URL parsing fails, skip R2 deletion
       }
       
-      if (key) {
+      if (key && key.startsWith('avatars/') && !key.includes('..') && !key.includes('\\')) {
         try {
-          await env.AVATARS.delete(key);
+          // A stored avatar_url never grants permission to delete an R2 object.
+          // Check the exact student and the tenant/branch on new object metadata.
+          const object = await env.AVATARS.head(key);
+          if (avatarObjectOwnedByStudent(
+            object?.customMetadata, studentId, auth.user.organization_id, branchId,
+          )) {
+            await env.AVATARS.delete(key);
+          }
         } catch (error) {
           console.error('R2 delete error:', error);
         }
@@ -265,8 +306,8 @@ export async function onRequestDelete({ request, env }: { request: Request; env:
     // Update student record to remove avatar URL
     const now = new Date().toISOString();
     await env.DB.prepare(
-      "UPDATE students SET avatar_url = NULL, updated_at = ?, updated_by = ? WHERE id = ?"
-    ).bind(now, auth.user.id, studentId).run();
+      "UPDATE students SET avatar_url = NULL, updated_at = ?, updated_by = ? WHERE id = ? AND organization_id = ? AND branch_id = ?"
+    ).bind(now, auth.user.id, studentId, auth.user.organization_id, branchId).run();
 
     return new Response(JSON.stringify({ success: true }), { 
       status: 200,

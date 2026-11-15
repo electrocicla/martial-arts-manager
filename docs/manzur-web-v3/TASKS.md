@@ -1,0 +1,11 @@
+# V3 task ledger
+- [x] Host instructions, own lifecycle, rootIndex6, branch/upstream and 40-path dirty baseline independently verified.
+- [x] Read V2 plan/tasks/worklog/deployments, review payment preference/webhook and existing schema unique external ID.
+- [ ] Review latest workspace snapshot/claims and original payment preference callback diff ownership before edits.
+- [x] Server-derived required membership price; privileged override gating and tamper tests.
+- [x] Webhook exact signed metadata/config/reference and atomic existing payment updates; regression suite.
+- [x] Refresh cookie race and D1 transactional rotation; avatar D1 CAS + orphan cleanup and regression tests.
+- [x] Dual Hamarr/Manzur branded builds+verify, `test:web:build` 7/7, typecheck/lint PASS; final full test:run latest revision pending final receipt.
+- [ ] Installed Native secure access and live four-host shared D1/R2 tenant proof, secret/Turnstile; external gates remain CLOSED until verified.
+- [ ] Git stage/commit/push only verified owned/adopted files after QA; report exact SHA/0-0 and remaining dirty paths. Current all source checks passed, documentation/publication next.
+- [ ] Production: BLOCKED by owner-controlled independent cross-client and credential gates; no deployment authorization.
