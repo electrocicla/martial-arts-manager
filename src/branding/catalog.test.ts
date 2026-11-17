@@ -11,6 +11,10 @@ describe('fixed web academy identities', () => {
     expect(hamarr.pageTitle).not.toEqual(manzur.pageTitle);
     expect(hamarr.pwaCacheName).not.toEqual(manzur.pwaCacheName);
     expect(manzur.iconUrl).not.toEqual(hamarr.iconUrl);
+    expect(manzur.iconAlt).toContain('Escudo oficial');
+    expect(manzur.themeColor).toBe('#E32935');
+    expect(manzur.backgroundColor).toBe('#050505');
+    expect(manzur.pwaCacheName).toBe('manzur-pwa-v2');
     expect(manzur.instagramUrl).toBe('https://www.instagram.com/manzur_bros.la');
   });
   it('fails closed for a Manzur Android download before artwork and APK approval', () => {

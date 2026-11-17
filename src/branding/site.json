@@ -29,14 +29,14 @@
     "socialTitle": "MANZUR BROS — Disciplina que conecta",
     "socialDescription": "Conecta con tu entrenamiento: clases, asistencia y progreso en Manzur Bros.",
     "siteUrl": "https://manzurbros.pages.dev",
-    "themeColor": "#CFA765",
-    "backgroundColor": "#0A1217",
+    "themeColor": "#E32935",
+    "backgroundColor": "#050505",
     "iconUrl": "/manzur-mark.svg",
     "iconType": "image/svg+xml",
-    "iconAlt": "Monograma geométrico M de Manzur Bros",
+    "iconAlt": "Escudo oficial de Manzur Bros Brazilian Jiu Jitsu",
     "socialImageUrl": "https://manzurbros.pages.dev/manzur-share.svg",
     "instagramUrl": "https://www.instagram.com/manzur_bros.la",
     "androidApkUrl": null,
-    "pwaCacheName": "manzur-pwa-v1"
+    "pwaCacheName": "manzur-pwa-v2"
   }
 }

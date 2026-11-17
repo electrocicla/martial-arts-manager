@@ -28,6 +28,8 @@ test('Manzur static metadata excludes Hamarr references and downloads', () => {
   const manifest = JSON.parse(result.manifestWebmanifest);
   expect(manifest.icons[0].src).toBe('/manzur-mark.svg');
   expect(manifest.icons[0].type).toBe('image/svg+xml');
+  expect(manifest.theme_color).toBe('#E32935');
+  expect(result.serviceWorker).toContain('manzur-pwa-v2');
 });
 
 test('renderer fails closed on changed required markers or invalid organization', () => {
