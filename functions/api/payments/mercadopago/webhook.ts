@@ -24,6 +24,9 @@ interface ActiveConfig {
 }
 
 async function loadActiveConfigs(env: Env): Promise<ActiveConfig[]> {
+  // The dedicated Manzur host may only process its own provider credentials.
+  // The legacy shared Native API host retains metadata-bound multi-tenant routing.
+  const organizationScope = env.SITE_ORGANIZATION_ID === 'manzur' ? 'manzur' : null;
   const { results } = await env.DB.prepare(
     `SELECT s.value, s.branch_id, s.organization_id
        FROM settings s
@@ -31,6 +34,7 @@ async function loadActiveConfigs(env: Env): Promise<ActiveConfig[]> {
          ON b.id = s.branch_id
         AND b.organization_id = s.organization_id
       WHERE s.section = ?
+        AND (? IS NULL OR s.organization_id = ?)
         AND s.branch_id IS NOT NULL
         AND b.is_active = 1
         AND (
@@ -48,10 +52,11 @@ async function loadActiveConfigs(env: Env): Promise<ActiveConfig[]> {
           )
         )
       ORDER BY s.updated_at DESC`,
-  ).bind(SETTINGS_SECTION).all<ConfigRow>();
+  ).bind(SETTINGS_SECTION, organizationScope, organizationScope).all<ConfigRow>();
 
   const configs: ActiveConfig[] = [];
   for (const row of results ?? []) {
+    if (organizationScope !== null && row.organization_id !== organizationScope) continue;
     try {
       const parsed = JSON.parse(row.value) as MercadoPagoConfigStored;
       if (isMercadoPagoActive(parsed)) {

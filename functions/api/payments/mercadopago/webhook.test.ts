@@ -87,6 +87,29 @@ describe('MercadoPago shared D1/R2 tenant-safe webhook settlement', () => {
     expect(prepare.mock.calls.every(([sql]) => !String(sql).includes('INSERT INTO payments'))).toBe(true);
   });
 
+  it('does not settle a Hamarr callback through the dedicated Manzur web host', async () => {
+    const { env, updates } = mockEnv([['hamarr', 'branch-h']]);
+    env.SITE_ORGANIZATION_ID = 'manzur';
+    mp.getPayment.mockResolvedValue({
+      ...base, metadata: { ...base.metadata, organization_id: 'hamarr', branch_id: 'branch-h' },
+    });
+    const result = await onRequestPost({ env, request: request() });
+    expect(result.status).toBe(409);
+    expect(mp.verifyWebhookSignature).not.toHaveBeenCalled();
+    expect(mp.getPayment).not.toHaveBeenCalled();
+    expect(updates).toHaveLength(0);
+  });
+
+  it('uses only the Manzur provider configuration on the Manzur deployment', async () => {
+    const { env, updates } = mockEnv([['hamarr', 'branch-h'], ['manzur', 'branch-m']]);
+    env.SITE_ORGANIZATION_ID = 'manzur';
+    expect((await onRequestPost({ env, request: request() })).status).toBe(200);
+    expect(mp.verifyWebhookSignature).toHaveBeenCalledTimes(1);
+    expect(mp.getPayment).toHaveBeenCalledTimes(1);
+    expect(updates).toHaveLength(1);
+    expect(updates[0].values).toContain('manzur');
+  });
+
   it('rejects missing org/branch metadata, and ambiguous active configs', async () => {
     mp.getPayment.mockResolvedValue({ ...base, metadata: { student_id: 'student-m' } });
     const missing = mockEnv();
