@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title">
+  <title id="title">Manzur Bros · Artes Marciales</title>
+  <rect width="1200" height="630" fill="#0A1217"/>
+  <path d="M0 590L600 130l600 460" fill="none" stroke="#CFA765" stroke-width="2" opacity=".22"/>
+  <rect x="65" y="65" width="1070" height="500" rx="22" fill="none" stroke="#CFA765" stroke-width="2" opacity=".45"/>
+  <rect x="98" y="202" width="174" height="174" rx="34" fill="#152128" stroke="#CFA765" stroke-width="3"/>
+  <path d="M126 337v-91l28 46 32-47 32 47 27-46v91" fill="none" stroke="#E8C887" stroke-width="13"/>
+  <text x="325" y="290" fill="#F6F0E7" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="86" letter-spacing="2">MANZUR BROS</text>
+  <text x="329" y="354" fill="#CFA765" font-family="Arial,Helvetica,sans-serif" font-size="30" letter-spacing="8">ARTES MARCIALES</text>
+  <path d="M330 393h700" stroke="#CFA765" stroke-width="2" opacity=".6"/>
+</svg>

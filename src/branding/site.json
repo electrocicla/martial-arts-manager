@@ -1,0 +1,42 @@
+{
+  "hamarr": {
+    "name": "HAMARR",
+    "shortName": "HAMARR",
+    "fullName": "HAMARR JIU-JITSU",
+    "description": "HAMARR JIU-JITSU/MMA: sistema de gestión exclusivo para alumnos Hamarr. Perfil, asistencia, progresión, clases y pagos.",
+    "keywords": "hamarr, jiu-jitsu, mma, artes marciales, gestión alumnos, asistencia, progresión cinturón, pagos, clases",
+    "pageTitle": "HAMARR JIU-JITSU",
+    "socialTitle": "HAMARR JIU-JITSU - Sistema de Gestión Profesional",
+    "socialDescription": "Sistema de gestión exclusivo para alumnos Hamarr.",
+    "siteUrl": "https://hamarr.cl",
+    "themeColor": "#DC2626",
+    "backgroundColor": "#111827",
+    "iconUrl": "/hammar_logo.jpeg",
+    "iconType": "image/jpeg",
+    "iconAlt": "Logo de HAMARR JIU-JITSU",
+    "socialImageUrl": "https://hamarr.cl/hammar_logo.jpeg",
+    "instagramUrl": "https://www.instagram.com/hamarr_jiujitsu_mma/",
+    "androidApkUrl": "/downloads/hamarr-app-latest.apk",
+    "pwaCacheName": "hamarr-pwa-v7"
+  },
+  "manzur": {
+    "name": "MANZUR BROS",
+    "shortName": "MANZUR",
+    "fullName": "MANZUR BROS · Artes Marciales",
+    "description": "Manzur Bros: tu espacio para conectar con las clases, asistencia y progreso de entrenamiento en artes marciales.",
+    "keywords": "manzur bros, artes marciales, clases, entrenamiento, jiu-jitsu, alumnos, asistencia",
+    "pageTitle": "MANZUR BROS | Artes Marciales",
+    "socialTitle": "MANZUR BROS — Disciplina que conecta",
+    "socialDescription": "Conecta con tu entrenamiento: clases, asistencia y progreso en Manzur Bros.",
+    "siteUrl": "https://manzurbros.pages.dev",
+    "themeColor": "#CFA765",
+    "backgroundColor": "#0A1217",
+    "iconUrl": "/manzur-mark.svg",
+    "iconType": "image/svg+xml",
+    "iconAlt": "Monograma geométrico M de Manzur Bros",
+    "socialImageUrl": "https://manzurbros.pages.dev/manzur-share.svg",
+    "instagramUrl": "https://www.instagram.com/manzur_bros.la",
+    "androidApkUrl": null,
+    "pwaCacheName": "manzur-pwa-v1"
+  }
+}

@@ -1,0 +1,19 @@
+# Manzur visual preview — 2026-11-17
+
+Goal: publish a public visual review of the pending Manzur landing on the existing manzurbros Pages project, not production or an integrated account demo.
+
+Baseline: feature/manzur-white-label-multitenant, c4e8c82d5401, upstream 0/0, 29 preexisting dirty paths. V3 54a009a5fdc0 source security and c4e8c82d5401 docs published.
+
+Architecture: separate Vite entry renders the Manzur landing and a restriction screen for other routes. No authentication, private routes, real API clients, credentials or data. A dedicated Pages worker rejects API requests and non-read methods, applies noindex and restrictive CSP. No service worker registration. Separate generated dist/manzur-visual-preview/site. Use a preview branch distinct from main. No new database/bucket, Hamarr deployment or remote data writes.
+
+Acceptance: route and worker tests, typecheck/lint/full tests, artifact guard, Pages receipt, HTTPS checks. Commit only owned or explicitly reviewed/adopted preview-required source paths. Integrated preview remains gated by shared-data security, Native compatibility and secrets/Turnstile. No production approval flags.
+
+## Review, ownership and release receipt
+
+- Direct execution: task martial-manzur-preview-20261117-1902, session b8963cb9-54ce-4bb7-8bf9-2131e6f122bc. No subagents deployed.
+- Scoped adoption of earlier, now inactive WEB-A/B work after source review and current QA: vite.config.ts, public/sw.js, Manzur SVGs, src/branding/{ManzurLandingPage.tsx,manzurCopy.ts,catalog.ts,catalog.lookup.ts,catalog.test.ts,site.json,static/site-artifacts.mjs,static/site-artifacts.test.mjs}, scripts/web/verify-build.mjs. These are required by the standalone preview or validate its branding contract. Other legacy pending integration changes remain outside this release: CI/package/app/login/APK/payment UI, browser tenant-binding, production deployment helpers/config and previous docs. Review found potential unset-brand Hamarr APK default regression; integrated release remains pending.
+- Live-worktree typecheck PASS exit0 (validation_24f731128771495f), lint PASS exit0 (validation_2a006be16ef44306), full tests PASS exit0 (validation_c9ff0eabaf884ef2): 261 passed/3 skipped, 49 files passed/1 skipped. New visual route tests 7/7; preview-worker tests 10/10. Complete redacted stdout/stderr observed. Not a frozen clean-commit QA result.
+- Build: node scripts/web/build-manzur-preview.mjs; termrun_209e65d141c840c398139e6bea7f18eb exit0, brand verifier 18 files. Wrangler direct upload using generated preview-local config from dist/manzur-visual-preview, explicit project manzurbros, branch visual-preview-20261117, dirty source accurately declared. Deployment termrun_42f461ee5f5c426ab387259167ef5022 exit0, Worker compiled, 16 static files uploaded.
+- Deployment ID 7d381e97-f5a8-4cf0-b533-0adc85e4fa55; immutable URL https://7d381e97.manzurbros.pages.dev; branch alias https://visual-preview-20261117.manzurbros.pages.dev. Wrangler deployment list verified Environment=Preview, branch visual-preview-20261117. Not production main; no new D1/R2, no database writes or Hamarr deploy.
+- Live HTTPS smoke: root 200, /login 200 (restricted visual route in client), /_brand.json 200 and {academyId: manzur, preview: visual-only}, /api/preview-health 503 and explicit disabled JSON. No real credentials, personal data, payment or Native E2E. Browser breakpoint rendering not separately validated by this smoke.
+- To rebuild the isolated artifact: node scripts/web/build-manzur-preview.mjs; deploy ONLY with the confirmed non-production branch and exact project from its dedicated generated directory. Do not use the integrated production deploy script or bypass release gates. Actual integrated Manzur Web launch remains blocked on shared R2 legacy protection, Native compatibility, anti-abuse, secrets/Turnstile and four-client tenant isolation acceptance.

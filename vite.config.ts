@@ -1,9 +1,27 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+
+type AcademyId = 'hamarr' | 'manzur';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+const academyId = (process.env.VITE_ORGANIZATION_ID || 'hamarr') as AcademyId;
+if (academyId !== 'hamarr' && academyId !== 'manzur') {
+  throw new Error('Unsupported academy web build identity');
+}
+const academyCatalog: unknown = JSON.parse(readFileSync(new URL('./src/branding/site.json', import.meta.url), 'utf8'));
+if (!isRecord(academyCatalog) || !isRecord(academyCatalog[academyId])) {
+  throw new Error('Academy metadata is missing or malformed');
+}
+const selectedBrand = { ...academyCatalog[academyId], id: academyId };
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  define: { __ACADEMY_BRAND__: JSON.stringify(selectedBrand) },
   build: {
     rollupOptions: {
       output: {

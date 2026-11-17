@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Manzur Bros — monograma M</title>
+  <rect width="128" height="128" rx="28" fill="#0A1217"/>
+  <rect x="8" y="8" width="112" height="112" rx="22" fill="none" stroke="#CFA765" stroke-width="2" opacity=".8"/>
+  <path d="M26 90V37l19 29 19-30 19 30 19-29v53" fill="none" stroke="#E8C887" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"/>
+  <path d="M26 99h76" stroke="#CFA765" stroke-width="3"/>
+</svg>
