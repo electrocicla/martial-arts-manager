@@ -91,7 +91,7 @@ describe('global security middleware', () => {
 
   it('enforces the Manzur browser tenant on a configured Pages project', async () => {
     const next = vi.fn(async () => Response.json({ success: true }));
-    const pinnedEnv: Env = { ...env, SITE_ORGANIZATION_ID: 'manzur' };
+    const pinnedEnv: Env = { ...env, SITE_ORGANIZATION_ID: 'manzur', JWT_SECRET: 'test-only-jwt-material', TURNSTILE_SECRET: 'test-only-turnstile-material' };
     for (const tenant of ['hamarr', '']) {
       const response = await onRequest({
         request: new Request('https://manzurbros.cl/api/auth/register', {
@@ -114,6 +114,26 @@ describe('global security middleware', () => {
     });
     expect(accepted.status).toBe(200);
     expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails closed when Manzur API secrets are absent, before touching a handler', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const next = vi.fn(async () => Response.json({ ok: true }));
+    for (const secrets of [
+      { JWT_SECRET: '', TURNSTILE_SECRET: 'test-only' },
+      { JWT_SECRET: 'test-only', TURNSTILE_SECRET: '' },
+    ]) {
+      const response = await onRequest({
+        request: new Request('https://manzurbros.pages.dev/api/auth/login', {
+          method: 'POST', headers: { 'X-Organization-ID': 'manzur' },
+        }),
+        env: { ...env, ...secrets, SITE_ORGANIZATION_ID: 'manzur' },
+        next,
+      });
+      expect(response.status).toBe(503);
+      expect(response.headers.get('Cache-Control')).toBe('no-store');
+    }
+    expect(next).not.toHaveBeenCalled();
   });
 
   it('does not treat a spoofed native marker with browser fetch metadata as exempt', async () => {

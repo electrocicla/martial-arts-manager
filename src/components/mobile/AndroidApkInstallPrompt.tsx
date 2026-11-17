@@ -6,9 +6,11 @@ import { useAuth } from '../../context/AuthContext';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { APP_PREFERENCE_KEYS, readBooleanPreference } from '../../lib/preferences';
+import { ACADEMY_BRAND } from '../../branding/catalog';
 
 const APK_PROMPT_DISMISSED_UNTIL_KEY = 'hamarr:apk-prompt-dismissed-until';
-const DEFAULT_ANDROID_APK_URL = '/downloads/hamarr-app-latest.apk';
+// Only the existing verified HAMARR artifact may be advertised. Manzur has no approved APK on this host.
+const DEFAULT_ANDROID_APK_URL = ACADEMY_BRAND.androidApkUrl;
 const LATER_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24h
 const DOWNLOAD_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000; // 30d
 
@@ -57,11 +59,13 @@ export default function AndroidApkInstallPrompt({ context = 'dashboard' }: Andro
   const [isOpen, setIsOpen] = useState(false);
 
   const apkUrl = useMemo(() => {
+    if (ACADEMY_BRAND.id !== 'hamarr') return null;
     const configured = (import.meta.env.VITE_ANDROID_APK_URL as string | undefined)?.trim();
     return configured && configured.length > 0 ? configured : DEFAULT_ANDROID_APK_URL;
   }, []);
 
   useEffect(() => {
+    if (!apkUrl) return;
     if (!readBooleanPreference(APP_PREFERENCE_KEYS.androidInstallPrompt, true)) return;
     if (!isAndroidDevice()) return;
     if (!ALLOWED_HOSTS.has(window.location.hostname)) return;
@@ -83,7 +87,7 @@ export default function AndroidApkInstallPrompt({ context = 'dashboard' }: Andro
     if (dismissedUntil && dismissedUntil > Date.now()) return;
 
     setIsOpen(true);
-  }, [context, isAuthenticated, location.pathname]);
+  }, [apkUrl, context, isAuthenticated, location.pathname]);
 
   const closeForLater = () => {
     setDismissedUntil(Date.now() + LATER_COOLDOWN_MS);
@@ -91,10 +95,13 @@ export default function AndroidApkInstallPrompt({ context = 'dashboard' }: Andro
   };
 
   const handleDownload = () => {
+    if (!apkUrl) return;
     setDismissedUntil(Date.now() + DOWNLOAD_COOLDOWN_MS);
     setIsOpen(false);
     window.open(apkUrl, '_blank', 'noopener,noreferrer');
   };
+
+  if (!apkUrl) return null;
 
   return (
     <Modal

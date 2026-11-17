@@ -93,6 +93,64 @@ describe('Cloudflare Pages host-bound browser tenants', () => {
     }), 'hamarr')).toMatchObject({ allowed: false, code: 'BROWSER_FETCH_SITE_DENIED' });
   });
 
+  it('permits only same-origin authenticated-avatar GET without an organization header', () => {
+    const sameOriginImage = new Request('https://manzurbros.pages.dev/api/avatars?key=avatars%2Fmanzur%2Ffile', {
+      method: 'GET',
+      headers: { 'Sec-Fetch-Site': 'same-origin' },
+    });
+    expect(evaluateTenantBinding(sameOriginImage, 'manzur')).toMatchObject({
+      allowed: true, siteOrganizationId: 'manzur', transport: 'browser',
+    });
+    const postWithoutOrg = new Request(sameOriginImage.url, {
+      method: 'POST', headers: { 'Sec-Fetch-Site': 'same-origin' },
+    });
+    expect(evaluateTenantBinding(postWithoutOrg, 'manzur')).toMatchObject({
+      allowed: false, code: 'BROWSER_TENANT_MISMATCH',
+    });
+    const imageWithWrongOrg = new Request(sameOriginImage.url, {
+      method: 'GET', headers: { 'X-Organization-ID': 'hamarr', 'Sec-Fetch-Site': 'same-origin' },
+    });
+    expect(evaluateTenantBinding(imageWithWrongOrg, 'manzur')).toMatchObject({
+      allowed: false, code: 'BROWSER_TENANT_MISMATCH',
+    });
+    const crossOriginImage = new Request(sameOriginImage.url, {
+      method: 'GET', headers: { Origin: 'https://hamarr.cl' },
+    });
+    expect(evaluateTenantBinding(crossOriginImage, 'manzur')).toMatchObject({
+      allowed: false, code: 'BROWSER_ORIGIN_MISMATCH',
+    });
+  });
+
+  it('allows only signed-shape server callbacks through Manzur host binding', () => {
+    const endpoint = '/api/payments/mercadopago/webhook';
+    const signed = request('manzurbros.pages.dev', {
+      'x-signature': 'ts=123,v1=opaque-signature', 'x-request-id': 'mp-request',
+    }, endpoint);
+    expect(evaluateTenantBinding(signed, 'manzur')).toMatchObject({
+      allowed: true, siteOrganizationId: 'manzur', transport: 'browser',
+    });
+    expect(evaluateTenantBinding(request('manzurbros.pages.dev', {}, endpoint), 'manzur')).toMatchObject({
+      allowed: false, code: 'BROWSER_TENANT_MISMATCH',
+    });
+    expect(evaluateTenantBinding(request('manzurbros.pages.dev', {
+      'x-signature': '', 'x-request-id': 'mp-request',
+    }, endpoint), 'manzur')).toMatchObject({ allowed: false, code: 'BROWSER_TENANT_MISMATCH' });
+    expect(evaluateTenantBinding(request('manzurbros.pages.dev', {
+      'x-signature': 'ts=123,v1=opaque', 'x-request-id': 'mp-request',
+      'X-Organization-ID': 'hamarr',
+    }, endpoint), 'manzur')).toMatchObject({ allowed: false, code: 'BROWSER_TENANT_MISMATCH' });
+    expect(evaluateTenantBinding(request('manzurbros.pages.dev', {
+      Origin: 'https://hostile.example',
+      'x-signature': 'ts=123,v1=opaque', 'x-request-id': 'mp-request',
+    }, endpoint), 'manzur')).toMatchObject({ allowed: false, code: 'BROWSER_ORIGIN_MISMATCH' });
+    const invalidMethod = new Request('https://manzurbros.pages.dev' + endpoint, {
+      method: 'GET', headers: { 'x-signature': 'ts=123,v1=opaque', 'x-request-id': 'mp-request' },
+    });
+    expect(evaluateTenantBinding(invalidMethod, 'manzur')).toMatchObject({
+      allowed: false, code: 'BROWSER_TENANT_MISMATCH',
+    });
+  });
+
   it('allows external navigation to public branded pages without exposing their API', () => {
     expect(evaluateTenantBinding(request('manzurbros.cl', {
       'Sec-Fetch-Site': 'cross-site',
@@ -112,6 +170,20 @@ describe('Cloudflare Pages host-bound browser tenants', () => {
       expect(isNativeTransportCandidate(input)).toBe(false);
       expect(evaluateTenantBinding(input, 'hamarr').allowed).toBe(false);
     }
+  });
+
+  it('pins the canonical Manzur Pages hostname and rejects Native header spoofing', () => {
+    for (const host of ['manzurbros.pages.dev', 'manzurbros.cl', 'preview.manzurbros.pages.dev']) {
+      for (const org of ['hamarr', 'manzur']) {
+        expect(evaluateTenantBinding(request(host, {
+          'X-Client-Platform': 'native', 'X-Organization-ID': org,
+        }), 'manzur')).toMatchObject({ allowed: false, code: 'NATIVE_TRANSPORT_NOT_ALLOWED' });
+      }
+    }
+    expect(evaluateTenantBinding(request('manzurbros.pages.dev'), 'hamarr'))
+      .toMatchObject({ allowed: false, code: 'SITE_HOST_ORGANIZATION_MISMATCH' });
+    expect(evaluateTenantBinding(request('manzurbros.pages.dev'), undefined))
+      .toMatchObject({ allowed: false, code: 'SITE_ORGANIZATION_REQUIRED' });
   });
 
   it('preserves genuine native transport shape to hamarr.cl without granting an identity', () => {

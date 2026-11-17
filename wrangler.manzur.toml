@@ -1,0 +1,22 @@
+# Dedicated Manzur Pages application. BOTH academies share the existing production
+# D1 and R2 resources; authorization is strictly partitioned by organization.
+# Do not create a second database or bucket. Never deploy without tenant-isolation QA.
+name = "manzurbros"
+pages_build_output_dir = "./dist/manzur"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "martial-arts-db"
+database_id = "4ad2408a-54e1-45e3-a352-42be3e284299"
+
+[[r2_buckets]]
+binding = "AVATARS"
+bucket_name = "martial-arts-manager-bucket"
+
+[vars]
+SITE_ORGANIZATION_ID = "manzur"
+
+# JWT_SECRET and TURNSTILE_SECRET are project-local encrypted secrets.
+# Credentials must never be committed or used as authorization to bypass tenant checks.

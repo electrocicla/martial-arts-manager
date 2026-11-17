@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { useToast } from '../../hooks/useToast';
+import { ACADEMY_BRAND } from '../../branding/catalog';
 import mercadoPagoService, { type MercadoPagoConfigInput } from '../../services/mercadopago.service';
 import { invalidateMercadoPagoStatus } from '../../hooks/useMercadoPagoStatus';
 import type { MercadoPagoConfigDTO } from '../../types/index';
@@ -327,7 +328,7 @@ export default function MercadoPagoSettings() {
               type="url"
               value={form.successUrl ?? ''}
               onChange={(e) => handleChange('successUrl', e.target.value)}
-              placeholder="https://hamarr.cl/payments?mp=success"
+              placeholder={`${ACADEMY_BRAND.siteUrl}/payments?mp=success`}
             />
           </div>
 
@@ -340,7 +341,7 @@ export default function MercadoPagoSettings() {
               type="url"
               value={form.failureUrl ?? ''}
               onChange={(e) => handleChange('failureUrl', e.target.value)}
-              placeholder="https://hamarr.cl/payments?mp=failure"
+              placeholder={`${ACADEMY_BRAND.siteUrl}/payments?mp=failure`}
             />
           </div>
 
@@ -353,7 +354,7 @@ export default function MercadoPagoSettings() {
               type="url"
               value={form.pendingUrl ?? ''}
               onChange={(e) => handleChange('pendingUrl', e.target.value)}
-              placeholder="https://hamarr.cl/payments?mp=pending"
+              placeholder={`${ACADEMY_BRAND.siteUrl}/payments?mp=pending`}
             />
           </div>
 
@@ -366,7 +367,7 @@ export default function MercadoPagoSettings() {
               type="url"
               value={form.notificationUrl ?? ''}
               onChange={(e) => handleChange('notificationUrl', e.target.value)}
-              placeholder="https://hamarr.cl/api/payments/mercadopago/webhook"
+              placeholder={`${ACADEMY_BRAND.siteUrl}/api/payments/mercadopago/webhook`}
             />
             <p className="mt-1 text-xs text-gray-400">{t('mercadopago.hints.notificationUrl')}</p>
           </div>

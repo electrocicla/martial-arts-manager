@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/manzur-white-label-multitenant]
   pull_request:
-    branches: [main]
+    branches: [main, feature/manzur-white-label-multitenant]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -15,9 +15,9 @@ permissions:
 
 jobs:
   validate:
-    name: Typecheck, lint, test, build
+    name: Typecheck, lint, tests, both web brands
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -44,8 +44,14 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Test
+      - name: Unit tests
         run: pnpm test:run
 
-      - name: Build
-        run: pnpm build
+      - name: Build-safety tests
+        run: pnpm test:web:build
+
+      - name: Verify isolated Hamarr web build
+        run: pnpm build:web:hamarr
+
+      - name: Verify isolated Manzur web build
+        run: pnpm build:web:manzur

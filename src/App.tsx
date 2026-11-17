@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
+import { ACADEMY_BRAND } from './branding/catalog';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
@@ -18,7 +19,9 @@ import { BranchProvider } from './context/BranchContext';
 import { useBranch } from './hooks/useBranch';
 
 // Lazy load components
-const LandingPage = lazy(() => import('./components/LandingPage'));
+const LandingPage = import.meta.env.VITE_ORGANIZATION_ID === 'manzur'
+  ? lazy(() => import('./branding/ManzurLandingPage'))
+  : lazy(() => import('./components/LandingPage'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const StudentManager = lazy(() => import('./components/StudentManager'));
 const ClassManager = lazy(() => import('./components/ClassManager'));
@@ -44,7 +47,7 @@ const LoadingSpinner = () => (
   <div className="min-h-screen bg-gray-900 flex items-center justify-center">
     <div className="flex flex-col items-center gap-4">
       <span className="loading loading-spinner loading-lg text-primary"></span>
-      <p className="text-base-content font-medium animate-pulse">Loading Hamarr...</p>
+      <p className="text-base-content font-medium animate-pulse">{`Loading ${ACADEMY_BRAND.shortName}...`}</p>
     </div>
   </div>
 );
@@ -138,6 +141,11 @@ function AppWrapper() {
 }
 
 function App() {
+  useEffect(() => {
+    document.title = ACADEMY_BRAND.pageTitle;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', ACADEMY_BRAND.themeColor);
+  }, []);
+
   return (
     <ErrorBoundary>
       <ThemeProvider>

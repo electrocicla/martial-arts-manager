@@ -33,7 +33,7 @@ async function filesUnder(directory) {
 }
 
 /** Verify final publishable bytes, not just Vite environment variables. */
-export async function verifyBrandBuild(brand, directory) {
+export async function verifyBrandBuild(brand, directory, { production = false } = {}) {
   if (!BRAND_IDS.includes(brand)) fail('Unsupported academy: ' + brand);
   const output = resolve(directory);
   const [html, sw, offline, manifestText, markerText] = await Promise.all([
@@ -49,6 +49,22 @@ export async function verifyBrandBuild(brand, directory) {
   try { marker = JSON.parse(markerText); } catch { fail('Invalid brand marker JSON'); }
   if (marker.academyId !== brand) fail('Build marker does not match requested academy');
   const files = await filesUnder(output);
+  if (production) {
+    if (Object.hasOwn(marker, 'preview')) fail('Preview marker forbidden in production');
+    if (files.some((name) => /^_worker\.js(?:\/|$)/i.test(name))) {
+      fail('Preview or custom worker forbidden in the integrated Pages Functions artifact');
+    }
+    if (!/<link\b[^>]*\brel=["']manifest["']/i.test(html)) fail('Production PWA manifest link missing');
+    if (/<meta\b[^>]*\bname=["']robots["'][^>]*\bnoindex\b/i.test(html)) {
+      fail('Preview noindex forbidden in production');
+    }
+    for (const filename of files.filter((name) => /\.(?:js|mjs|html|json)$/i.test(name))) {
+      const body = await readFile(join(output, filename), 'utf8');
+      if (/Vista previa visual|Sin cuentas, pagos ni datos reales|Acceso a cuentas no habilitado|Manzur visual preview: backend disabled/i.test(body)) {
+        fail('Preview-only presentation in production: ' + filename);
+      }
+    }
+  }
   for (const filename of files) {
     if (filename.toLowerCase().endsWith('.apk') && brand === 'manzur') {
       fail('APK must not be published in Manzur Pages: ' + filename);
@@ -99,7 +115,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   const brand = process.argv[2];
   const directory = process.argv[3] ?? BRAND_OUTPUTS[brand];
   if (!BRAND_IDS.includes(brand)) fail('Usage: node scripts/web/verify-build.mjs hamarr|manzur [output-directory]');
-  verifyBrandBuild(brand, directory)
+  verifyBrandBuild(brand, directory, { production: true })
     .then((result) => console.log('Verified ' + result.academyId + ' build: ' + result.filesChecked + ' files in ' + result.directory))
     .catch((error) => { console.error(error instanceof Error ? error.message : String(error)); process.exitCode = 1; });
 }

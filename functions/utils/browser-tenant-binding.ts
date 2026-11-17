@@ -15,6 +15,7 @@ export type TenantBinding =
 const CANONICAL_HOSTS: Readonly<Record<string, SiteOrganization>> = {
   'hamarr.cl': 'hamarr',
   'www.hamarr.cl': 'hamarr',
+  'manzurbros.pages.dev': 'manzur',
   'manzurbros.cl': 'manzur',
   'www.manzurbros.cl': 'manzur',
 };
@@ -73,13 +74,17 @@ export function evaluateTenantBinding(
     return deny('SITE_ORGANIZATION_REQUIRED', 'Site organization binding is required');
   }
 
-  // Native requests can legitimately target hamarr.cl for either academy, but
-  // the caller-set platform hint is never proof of application identity.
+  const isApi = url.pathname === '/api' || url.pathname.startsWith('/api/');
+  // The installed Native clients still use hamarr.cl. The dedicated Manzur
+  // web deployment never admits the unauthenticated Native transport hint.
+  if (isApi && configured === 'manzur' && request.headers.get('X-Client-Platform') === 'native') {
+    return deny('NATIVE_TRANSPORT_NOT_ALLOWED', 'Native transport is not supported on this site');
+  }
+  // Preserve existing Native transport compatibility on the legacy API host.
   if (isNativeTransportCandidate(request)) {
     return { allowed: true, siteOrganizationId: configured, transport: 'native-candidate' };
   }
 
-  const isApi = url.pathname === '/api' || url.pathname.startsWith('/api/');
   if (isApi) {
     // Navigation to the public website from an external link is legitimate;
     // cross-origin API actions are not, regardless of the platform header.
@@ -92,9 +97,20 @@ export function evaluateTenantBinding(
       return deny('BROWSER_FETCH_SITE_DENIED', 'Cross-site API requests are not allowed');
     }
     const organization = request.headers.get('X-Organization-ID')?.trim();
+    // HTML image elements cannot set X-Organization-ID. The only exception
+    // is GET /api/avatars, whose handler verifies cookie/bearer authorization
+    // and exact tenant ownership before reading the shared R2 object.
+    const authenticatedAvatarRead = request.method === 'GET' && url.pathname === '/api/avatars';
+    // MercadoPago server-to-server callbacks cannot supply X-Organization-ID.
+    // This transport-only exception never bypasses the webhook handler's HMAC
+    // verification or trusted branch/tenant reconciliation.
+    const signedWebhookCandidate = request.method === 'POST' &&
+      url.pathname === '/api/payments/mercadopago/webhook' &&
+      Boolean(request.headers.get('x-signature')?.trim()) &&
+      Boolean(request.headers.get('x-request-id')?.trim());
     // Old HAMARR clients without a header retain their original default.
-    // Manzur must never silently fall back to HAMARR on header omission.
-    if ((!organization && configured !== 'hamarr') ||
+    // Other Manzur API calls still require an explicit matching tenant header.
+    if ((!organization && configured !== 'hamarr' && !authenticatedAvatarRead && !signedWebhookCandidate) ||
       (organization && organization !== configured)) {
       return deny('BROWSER_TENANT_MISMATCH', 'Browser organization does not match this site', 403);
     }

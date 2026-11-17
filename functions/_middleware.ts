@@ -125,7 +125,20 @@ export async function onRequest(context: MiddlewareContext): Promise<Response> {
 
   try {
     const binding = evaluateTenantBinding(context.request, context.env.SITE_ORGANIZATION_ID);
-    response = binding.allowed ? await context.next() : tenantBindingErrorResponse(binding);
+    const path = new URL(context.request.url).pathname;
+    const isApi = path === '/api' || path.startsWith('/api/');
+    if (!binding.allowed) {
+      response = tenantBindingErrorResponse(binding);
+    } else if (binding.siteOrganizationId === 'manzur' && isApi &&
+      (!context.env.JWT_SECRET?.trim() || !context.env.TURNSTILE_SECRET?.trim())) {
+      // The dedicated web API must never fall back to unprotected authentication.
+      response = Response.json(createInternalErrorBody(requestId), {
+        status: 503,
+        headers: { 'Cache-Control': 'no-store' },
+      });
+    } else {
+      response = await context.next();
+    }
   } catch (error: unknown) {
     const url = new URL(context.request.url);
     console.error(

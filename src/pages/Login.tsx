@@ -13,6 +13,8 @@ import AndroidApkInstallPrompt from '../components/mobile/AndroidApkInstallPromp
 import { useAuth } from '../context/AuthContext';
 import { isTurnstileConfigured } from '../lib/turnstile';
 import { loginSchema, type LoginFormData } from '../lib/validation';
+import { ACADEMY_BRAND } from '../branding/catalog';
+import { getManzurCopy } from '../branding/manzurCopy';
 
 export default function Login() {
   const turnstileEnabled = isTurnstileConfigured();
@@ -21,7 +23,9 @@ export default function Login() {
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
   const { login, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isManzur = ACADEMY_BRAND.id === 'manzur';
+  const manzur = getManzurCopy(i18n.resolvedLanguage ?? i18n.language);
 
   const {
     register,
@@ -59,13 +63,15 @@ export default function Login() {
   };
 
   return (
-    <div className="dark-page min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-red-900/20 to-black px-4 py-6 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className={isManzur
+      ? "dark-page relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050505] px-4 py-8 text-[#fefefe] sm:px-6 lg:px-8"
+      : "dark-page min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-red-900/20 to-black px-4 py-6 sm:px-6 lg:px-8 relative overflow-hidden"}>
       <AndroidApkInstallPrompt context="login" />
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-transparent to-red-900/30"></div>
+      <div className={isManzur ? "absolute inset-0 bg-[radial-gradient(ellipse_at_80%_10%,rgba(227,18,25,.14),transparent_50%)]" : "absolute inset-0 bg-gradient-to-br from-black/50 via-transparent to-red-900/30"}></div>
       <div className="absolute top-0 left-0 w-full h-full">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-red-500/20 to-red-600/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-r from-red-800/20 to-black/30 rounded-full blur-3xl"></div>
+        <div className={isManzur ? "absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-[#e31219]/10 blur-3xl" : "absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-red-500/20 to-red-600/20 rounded-full blur-3xl"}></div>
+        <div className={isManzur ? "absolute bottom-1/4 right-1/4 h-48 w-48 rounded-full bg-[#27272a]/15 blur-3xl" : "absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-r from-red-800/20 to-black/30 rounded-full blur-3xl"}></div>
       </div>
 
       <motion.div
@@ -74,20 +80,20 @@ export default function Login() {
         transition={{ duration: 0.6 }}
         className="relative z-10 w-full max-w-md"
       >
-        <Card className="backdrop-blur-xl bg-black/60 border border-red-500/30 shadow-2xl electric-border">
+        <Card className={isManzur ? "rounded-3xl border border-[#e31219]/35 bg-[#18181b]/95 shadow-2xl backdrop-blur-xl" : "backdrop-blur-xl bg-black/60 border border-red-500/30 shadow-2xl electric-border"}>
           <CardHeader className="text-center px-6 py-8">
-            {/* HAMARR Logo */}
+            {/* Academy logo */}
             <motion.div 
               className="relative w-24 h-24 mx-auto mb-6"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <div className="w-full h-full rounded-full bg-slate-800 p-2 electric-border">
+              <div className={isManzur ? "h-full w-full rounded-2xl border border-[#e31219]/35 bg-[#050505] p-1" : "w-full h-full rounded-full bg-slate-800 p-2 electric-border"}>
                 <img 
-                  src="/hammar_logo.jpeg" 
-                  alt="HAMARR Logo" 
-                  className="w-full h-full object-cover rounded-full"
+                  src={ACADEMY_BRAND.iconUrl} 
+                  alt={ACADEMY_BRAND.iconAlt} 
+                  className={isManzur ? "h-full w-full rounded-xl object-contain" : "w-full h-full object-cover rounded-full"}
                 />
               </div>
             </motion.div>
@@ -99,14 +105,14 @@ export default function Login() {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="space-y-2"
             >
-              <h1 className="text-2xl sm:text-3xl font-black dark-energy-text">
-                HAMARR
+              <h1 className={isManzur ? "text-2xl font-black tracking-[.15em] text-[#fefefe] sm:text-3xl" : "text-2xl sm:text-3xl font-black dark-energy-text"}>
+                {ACADEMY_BRAND.name}
               </h1>
-              <h2 className="text-2xl sm:text-3xl font-black fire-energy-text">
+              <h2 className={isManzur ? "text-base font-semibold uppercase tracking-[.27em] text-[#ff7b80] sm:text-lg" : "text-2xl sm:text-3xl font-black fire-energy-text"}>
                 MARTIAL ARTS
               </h2>
-              <h3 className="text-2xl sm:text-3xl font-black dark-energy-text">
-                MANAGER
+              <h3 className={isManzur ? "text-sm font-semibold tracking-[.12em] text-[#d4d4d8] sm:text-base" : "text-2xl sm:text-3xl font-black dark-energy-text"}>
+                {isManzur ? manzur.portal : "MANAGER"}
               </h3>
             </motion.div>
 
@@ -116,7 +122,7 @@ export default function Login() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.6 }}
             >
-              {t('login.welcomeMessage')}
+              {isManzur ? manzur.tagline : t('login.welcomeMessage')}
             </motion.p>
           </CardHeader>
 
@@ -177,7 +183,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="text-slate-400 hover:text-cyan-400 transition-colors duration-200"
+                      className={isManzur ? "text-[#d4b579] transition-colors hover:text-[#f0d6a8]" : "text-slate-400 hover:text-cyan-400 transition-colors duration-200"}
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -210,11 +216,11 @@ export default function Login() {
 
               <Button
                 type="submit"
-                className="w-full mega-cta-button text-white font-black py-4 text-lg relative overflow-hidden transition-all duration-700 group"
+                className={isManzur ? "group relative w-full overflow-hidden rounded-xl bg-[#c51626] py-4 text-lg font-bold text-[#fefefe] transition hover:bg-[#970d1a]" : "w-full mega-cta-button text-white font-black py-4 text-lg relative overflow-hidden transition-all duration-700 group"}
                 disabled={isLoading}
                 isLoading={isLoading}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 opacity-90" />
+                <div className={isManzur ? "pointer-events-none absolute inset-0 bg-gradient-to-r from-[#dfbb7b] to-[#b48b51] opacity-80" : "absolute inset-0 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 opacity-90"} />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-400/30 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                 <span className="relative z-10 flex items-center justify-center gap-3">
@@ -235,7 +241,7 @@ export default function Login() {
                 {t('login.noAccount')}{' '}
                 <Link
                   to="/register"
-                  className="login-signup-link"
+                  className={isManzur ? "font-semibold text-[#eac889] underline underline-offset-4 hover:text-white" : "login-signup-link"}
                 >
                   {t('login.signUp')}
                 </Link>
