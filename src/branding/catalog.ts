@@ -21,6 +21,8 @@ export interface AcademyBrand {
   readonly instagramUrl: string;
   readonly androidApkUrl: string | null;
   readonly pwaCacheName: string;
+  /** Public widget identifier; never a server-side Turnstile secret. */
+  readonly turnstileSiteKey: string;
 }
 
 /**

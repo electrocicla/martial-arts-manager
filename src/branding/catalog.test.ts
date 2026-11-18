@@ -17,6 +17,11 @@ describe('fixed web academy identities', () => {
     expect(manzur.pwaCacheName).toBe('manzur-pwa-v2');
     expect(manzur.instagramUrl).toBe('https://www.instagram.com/manzur_bros.la');
   });
+  it('keeps public Turnstile widgets partitioned by academy', () => {
+    expect(getAcademyBrand('manzur').turnstileSiteKey).toBe('0x4AAAAAAGGHtpExcNlq2cF4');
+    expect(getAcademyBrand('hamarr').turnstileSiteKey).toBe('0x4AAAAAADLmd_1VIOAIyh2i');
+    expect(getAcademyBrand('manzur').turnstileSiteKey).not.toBe(getAcademyBrand('hamarr').turnstileSiteKey);
+  });
   it('fails closed for a Manzur Android download before artwork and APK approval', () => {
     expect(getAcademyBrand('manzur').androidApkUrl).toBeNull();
     expect(getAcademyBrand('hamarr').androidApkUrl).toBe('/downloads/hamarr-app-latest.apk');

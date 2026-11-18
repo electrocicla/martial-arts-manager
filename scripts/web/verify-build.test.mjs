@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { verifyBrandBuild } from './verify-build.mjs';
 import { pinnedEnvironment } from './build-web.mjs';
 import { assertManzurSharedBindings, assertRequiredSecrets, readManzurProject, deployBrand } from './deploy-web.mjs';
+
+const site = JSON.parse(await readFile('src/branding/site.json', 'utf8'));
 
 async function fixture(brand) {
   const dir = await mkdtemp(join(tmpdir(), 'academy-build-'));
@@ -16,6 +18,7 @@ async function fixture(brand) {
     'sw.js': 'const CACHE_NAME = "' + brand + '-pwa";',
     'offline.html': '<!doctype html><title>Offline</title>',
     '_brand.json': JSON.stringify({ academyId: brand }),
+    'app.js': 'const widget = ' + JSON.stringify(site[brand].turnstileSiteKey) + ';',
     'logo.svg': '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
   };
   for (const [name, body] of Object.entries(files)) {
@@ -85,6 +88,19 @@ test('integrated Manzur build cannot contain visual preview markers, worker or n
     await writeFile(join(dir, 'index.html'), html);
     await writeFile(join(dir, 'preview.js'), 'const notice = "Vista previa visual";');
     await assert.rejects(() => verifyBrandBuild('manzur', dir, { production: true }), /Preview-only presentation/);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test('production verification detects absent or mixed academy Turnstile widgets', async () => {
+  const dir = await fixture('manzur');
+  try {
+    await writeFile(join(dir, 'index.html'), '<title>MANZUR</title><link rel="manifest" href="/manifest.webmanifest">');
+    await writeFile(join(dir, 'app.js'), 'const widget = "missing";');
+    await assert.rejects(() => verifyBrandBuild('manzur', dir, { production: true }), /widget missing/);
+    await writeFile(join(dir, 'app.js'), JSON.stringify([site.manzur.turnstileSiteKey, site.hamarr.turnstileSiteKey]));
+    await assert.rejects(() => verifyBrandBuild('manzur', dir, { production: true }), /Other academy Turnstile/);
+    await writeFile(join(dir, 'app.js'), JSON.stringify(site.manzur.turnstileSiteKey));
+    assert.equal((await verifyBrandBuild('manzur', dir, { production: true })).academyId, 'manzur');
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 

@@ -114,7 +114,12 @@ export async function deployBrand(brand, env = process.env) {
   const project = await readManzurProject(env);
   assertManzurSharedBindings(project, hamarrConfig, manzurConfig);
   assertRequiredSecrets(project);
-  assert(env.VITE_TURNSTILE_SITE_KEY?.trim(), 'explicit Manzur Turnstile site key is required');
+  const catalog = JSON.parse(await readFile('src/branding/site.json', 'utf8'));
+  const siteKey = catalog.manzur?.turnstileSiteKey;
+  assert(typeof siteKey === 'string' && /^0x4[A-Za-z0-9_-]+$/.test(siteKey) &&
+    siteKey !== catalog.hamarr?.turnstileSiteKey, 'dedicated Manzur public Turnstile site key is required');
+  assert(!env.VITE_TURNSTILE_SITE_KEY?.trim() || env.VITE_TURNSTILE_SITE_KEY.trim() === siteKey,
+    'Manzur Turnstile environment override conflicts with the authorized widget');
 
   await buildBrand('manzur', env);
   await verifyBrandBuild('manzur', BRAND_OUTPUTS.manzur, { production: true });

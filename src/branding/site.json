@@ -17,7 +17,8 @@
     "socialImageUrl": "https://hamarr.cl/hammar_logo.jpeg",
     "instagramUrl": "https://www.instagram.com/hamarr_jiujitsu_mma/",
     "androidApkUrl": "/downloads/hamarr-app-latest.apk",
-    "pwaCacheName": "hamarr-pwa-v7"
+    "pwaCacheName": "hamarr-pwa-v7",
+    "turnstileSiteKey": "0x4AAAAAADLmd_1VIOAIyh2i"
   },
   "manzur": {
     "name": "MANZUR BROS",
@@ -37,6 +38,7 @@
     "socialImageUrl": "https://manzurbros.pages.dev/manzur-share.svg",
     "instagramUrl": "https://www.instagram.com/manzur_bros.la",
     "androidApkUrl": null,
-    "pwaCacheName": "manzur-pwa-v2"
+    "pwaCacheName": "manzur-pwa-v2",
+    "turnstileSiteKey": "0x4AAAAAAGGHtpExcNlq2cF4"
   }
 }

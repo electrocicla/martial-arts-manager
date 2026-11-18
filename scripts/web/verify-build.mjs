@@ -58,12 +58,22 @@ export async function verifyBrandBuild(brand, directory, { production = false } 
     if (/<meta\b[^>]*\bname=["']robots["'][^>]*\bnoindex\b/i.test(html)) {
       fail('Preview noindex forbidden in production');
     }
+    const catalog = JSON.parse(await readFile('src/branding/site.json', 'utf8'));
+    const ownKey = catalog[brand]?.turnstileSiteKey;
+    const otherKey = catalog[brand === 'manzur' ? 'hamarr' : 'manzur']?.turnstileSiteKey;
+    if (typeof ownKey !== 'string' || !ownKey || typeof otherKey !== 'string' || !otherKey || ownKey === otherKey) {
+      fail('Distinct public Turnstile site keys are required');
+    }
+    let hasOwnWidget = false;
     for (const filename of files.filter((name) => /\.(?:js|mjs|html|json)$/i.test(name))) {
       const body = await readFile(join(output, filename), 'utf8');
+      if (body.includes(otherKey)) fail('Other academy Turnstile widget embedded in production: ' + filename);
+      if (/\.(?:js|mjs)$/i.test(filename) && body.includes(ownKey)) hasOwnWidget = true;
       if (/Vista previa visual|Sin cuentas, pagos ni datos reales|Acceso a cuentas no habilitado|Manzur visual preview: backend disabled/i.test(body)) {
         fail('Preview-only presentation in production: ' + filename);
       }
     }
+    if (brand === 'manzur' && !hasOwnWidget) fail('Manzur public Turnstile widget missing from production JavaScript');
   }
   for (const filename of files) {
     if (filename.toLowerCase().endsWith('.apk') && brand === 'manzur') {
