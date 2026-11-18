@@ -1,5 +1,6 @@
 import { Env } from './types/index';
 import { evaluateTenantBinding, tenantBindingErrorResponse } from './utils/browser-tenant-binding';
+import { attachNativeAvatarGrants } from './utils/native-avatar-grants';
 
 const INTERNAL_SERVER_ERROR_MESSAGE = 'Internal server error';
 
@@ -72,7 +73,7 @@ function applySecurityHeaders(headers: Headers, nonce: string | null, requestId:
   headers.set('X-Request-ID', requestId);
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'DENY');
-  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  headers.set('Referrer-Policy', headers.get('Referrer-Policy') === 'no-referrer' ? 'no-referrer' : 'strict-origin-when-cross-origin');
   headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   headers.set(
     'Permissions-Policy',
@@ -138,6 +139,7 @@ export async function onRequest(context: MiddlewareContext): Promise<Response> {
       });
     } else {
       response = await context.next();
+      response = await attachNativeAvatarGrants(context.request, context.env, response);
     }
   } catch (error: unknown) {
     const url = new URL(context.request.url);

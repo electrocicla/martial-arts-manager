@@ -5,7 +5,7 @@
 import { hashPassword, verifyPassword } from '../../utils/hash';
 import { findUserByEmail } from '../../utils/db';
 import { isNativeAuthRequest } from '../../middleware/auth';
-import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
+import { reserveAuthRateLimit } from '../../utils/auth-rate-limit';
 import { isTurnstileConfigured, verifyTurnstileToken } from '../../utils/turnstile';
 
 import { Env } from '../../types/index';
@@ -25,16 +25,13 @@ interface RegisterRequest {
  */
 export async function onRequestPost({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
-    // Rate limit: 5 registrations per minute per IP
-    const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
-    const { allowed, retryAfterMs } = checkRateLimit(`register:${ip}`, 5, 60_000);
-    if (!allowed) return rateLimitResponse(retryAfterMs);
-
     // Parse request body
     const body = await request.json() as RegisterRequest;
     // Force role to 'student' for public registration to prevent privilege escalation
     // even if the request contains another role
     const { email, password, name, instructorId, turnstileToken } = body;
+    const quotaDenied = await reserveAuthRateLimit(env, request, 'register', email);
+    if (quotaDenied) return quotaDenied;
     const role = 'student';
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
@@ -53,7 +50,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     }
 
     // Validate input
-    if (!email || !password || !name) {
+    if (typeof email !== 'string' || !email || typeof password !== 'string' || !password || typeof name !== 'string' || !name) {
       return new Response(
         JSON.stringify({ error: 'Email, password, and name are required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -74,7 +71,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (email.length > 254 || !emailRegex.test(email)) {
       return new Response(
         JSON.stringify({ error: 'Invalid email format' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }

@@ -6,9 +6,8 @@ vi.mock('../../utils/hash', () => ({
   hashPassword: vi.fn(async () => 'new-student-hash'),
   verifyPassword: vi.fn(async () => true),
 }));
-vi.mock('../../utils/rate-limit', () => ({
-  checkRateLimit: vi.fn(() => ({ allowed: true, retryAfterMs: 0 })),
-  rateLimitResponse: vi.fn(() => new Response(null, { status: 429 })),
+vi.mock('../../utils/auth-rate-limit', () => ({
+  reserveAuthRateLimit: vi.fn(async () => null),
 }));
 
 interface RecordedQuery { sql: string; values: D1BindValue[] }

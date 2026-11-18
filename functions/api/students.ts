@@ -2,6 +2,7 @@ import { Env } from '../types/index';
 import { authenticateUser } from '../middleware/auth';
 import { ensureStudentHasInitialPayment } from '../utils/payment-provisioning';
 import { normalizeAvatarUrl } from '../utils/avatar';
+import { canonicalAvatarReference } from '../utils/native-avatar-grants';
 import { logAuditAction, getClientIP } from '../utils/db';
 import {
   branchErrorResponse,
@@ -341,7 +342,7 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (body.emergencyContactPhone !== undefined) { updates.push('emergency_contact_phone = ?'); values.push(body.emergencyContactPhone || null); }
     if (body.notes !== undefined) { updates.push('notes = ?'); values.push(body.notes || null); }
     if (body.is_active !== undefined) { updates.push('is_active = ?'); values.push(body.is_active); }
-    if (body.avatar_url !== undefined) { updates.push('avatar_url = ?'); values.push(body.avatar_url || null); }
+    if (body.avatar_url !== undefined) { updates.push('avatar_url = ?'); values.push(typeof body.avatar_url === 'string' && body.avatar_url ? canonicalAvatarReference(body.avatar_url) : null); }
 
     if (updates.length === 0) {
       return new Response(JSON.stringify({ error: 'No fields to update' }), {

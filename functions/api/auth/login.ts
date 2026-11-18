@@ -7,7 +7,7 @@ import { createTokens } from '../../utils/jwt';
 import { findUserByEmail, createSession, updateUserLastLogin, logAuditAction, getClientIP, getUserAgent } from '../../utils/db';
 import { createRefreshTokenCookie, isNativeAuthRequest } from '../../middleware/auth';
 import { normalizeAvatarUrl } from '../../utils/avatar';
-import { checkRateLimit, rateLimitResponse } from '../../utils/rate-limit';
+import { reserveAuthRateLimit } from '../../utils/auth-rate-limit';
 import { isTurnstileConfigured, verifyTurnstileToken } from '../../utils/turnstile';
 
 import { Env } from '../../types/index';
@@ -40,14 +40,11 @@ interface LoginResponse {
  */
 export async function onRequestPost({ request, env }: { request: Request; env: Env }): Promise<Response> {
   try {
-    // Rate limit: 10 attempts per minute per IP
-    const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
-    const { allowed, retryAfterMs } = checkRateLimit(`login:${ip}`, 10, 60_000);
-    if (!allowed) return rateLimitResponse(retryAfterMs);
-
     // Parse request body
     const body = await request.json() as LoginRequest;
     const { email, password, turnstileToken } = body;
+    const quotaDenied = await reserveAuthRateLimit(env, request, 'login', email);
+    if (quotaDenied) return quotaDenied;
 
     // Verify Turnstile challenge (skip for native app requests)
     if (!isNativeAuthRequest(request) && isTurnstileConfigured(env.TURNSTILE_SECRET)) {
@@ -64,7 +61,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     }
 
     // Validate input
-    if (!email || !password) {
+    if (typeof email !== 'string' || !email || typeof password !== 'string' || !password) {
       return new Response(
         JSON.stringify({ error: 'Email and password are required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -73,7 +70,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (email.length > 254 || !emailRegex.test(email)) {
       return new Response(
         JSON.stringify({ error: 'Invalid email format' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -81,7 +78,7 @@ export async function onRequestPost({ request, env }: { request: Request; env: E
     }
 
     // Find user by email
-    const user = await findUserByEmail(env.DB, email.toLowerCase());
+    const user = await findUserByEmail(env.DB, email.trim().toLowerCase());
     if (!user) {
       return new Response(
         JSON.stringify({ error: 'Invalid email or password' }),

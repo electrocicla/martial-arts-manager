@@ -10,8 +10,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
     }
 
     const student = await env.DB.prepare(
-      "SELECT * FROM students WHERE id = ?"
-    ).bind(auth.user.student_id).first();
+      "SELECT * FROM students WHERE id = ? AND organization_id = ? AND deleted_at IS NULL"
+    ).bind(auth.user.student_id, auth.user.organization_id).first();
 
     if (!student) {
       return new Response(JSON.stringify({ error: 'Student profile not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
@@ -77,8 +77,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
         return new Response(JSON.stringify({ error: 'Email is already in use' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
       }
 
-      const existingStudent = await env.DB.prepare('SELECT id FROM students WHERE email = ? AND id != ? AND deleted_at IS NULL')
-        .bind(trimmed, auth.user.student_id)
+      const existingStudent = await env.DB.prepare('SELECT id FROM students WHERE email = ? AND id != ? AND organization_id = ? AND deleted_at IS NULL')
+        .bind(trimmed, auth.user.student_id, auth.user.organization_id)
         .first<{ id: string }>();
       if (existingStudent?.id) {
         return new Response(JSON.stringify({ error: 'Email is already in use' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
@@ -100,8 +100,8 @@ export async function onRequestPut({ request, env }: { request: Request; env: En
     if (emergency_contact_phone !== undefined) { query += ", emergency_contact_phone = ?"; params.push(emergency_contact_phone); }
     if (notes !== undefined) { query += ", notes = ?"; params.push(notes); }
 
-    query += " WHERE id = ?";
-    params.push(auth.user.student_id);
+    query += " WHERE id = ? AND organization_id = ? AND deleted_at IS NULL";
+    params.push(auth.user.student_id, auth.user.organization_id);
 
     const statements: D1PreparedStatement[] = [env.DB.prepare(query).bind(...params)];
 

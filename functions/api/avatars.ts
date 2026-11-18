@@ -4,6 +4,7 @@ import type { AuthenticatedOrganizationUser } from '../middleware/auth';
 import { findSessionByRefreshToken, findUserById } from '../utils/db';
 import { verifyJWT } from '../utils/jwt';
 import { resolveAuthenticatedOrganization } from '../utils/organizations';
+import { readNativeAvatarGrant } from '../utils/native-avatar-grants';
 
 type AcademyId = 'hamarr' | 'manzur';
 
@@ -45,6 +46,11 @@ async function authorizedUser(
     findUserById(env.DB, claims.sub),
   ]);
   if (!session || session.user_id !== claims.sub || !user || user.is_active !== 1) return null;
+  return resolveCurrentUser(scoped, env, user);
+}
+
+async function resolveCurrentUser(scoped: Request, env: Env, user: NonNullable<Awaited<ReturnType<typeof findUserById>>>): Promise<AuthenticatedOrganizationUser | null> {
+  if (user.is_active !== 1) return null;
   try {
     const organization = await resolveAuthenticatedOrganization(scoped, env, user.id);
     return {
@@ -90,10 +96,14 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
   try {
     const key = avatarKey(request);
     if (!key) return new Response('Not found', { status: 404 });
-    const organizationId = trustedOrganization(request, env);
+    const grant = await readNativeAvatarGrant(request, env, key);
+    const organizationId = grant?.organization ?? trustedOrganization(request, env);
     if (!organizationId) return new Response('Forbidden', { status: 403 });
-    const user = await authorizedUser(request, env, organizationId);
-    if (!user) return new Response('Unauthorized', { status: 401 });
+    const grantUser = grant ? await findUserById(env.DB, grant.sub) : null;
+    const user = grant
+      ? (grantUser ? await resolveCurrentUser(scopedRequest(request, organizationId), env, grantUser) : null)
+      : await authorizedUser(request, env, organizationId);
+    if (!user || user.organization_id !== organizationId) return new Response('Unauthorized', { status: 401, headers: { 'Cache-Control': 'no-store' } });
 
     const object = await env.AVATARS.get(key);
     if (!object) return new Response('Not found', { status: 404 });
@@ -141,7 +151,8 @@ export async function onRequestGet({ request, env }: { request: Request; env: En
       status: 200,
       headers: {
         'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream',
-        'Cache-Control': 'private, max-age=120',
+        'Cache-Control': grant ? 'private, no-store' : 'private, max-age=120',
+        'Referrer-Policy': 'no-referrer',
         'Vary': 'Cookie, Authorization, X-Organization-ID',
         'ETag': object.httpEtag,
       },
