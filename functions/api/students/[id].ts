@@ -1,6 +1,7 @@
 import { Env } from '../../types/index';
 import { authenticateUser } from '../../middleware/auth';
 import { normalizeAvatarUrl } from '../../utils/avatar';
+import { canonicalAvatarReference } from '../../utils/native-avatar-grants';
 import { logAuditAction, getClientIP } from '../../utils/db';
 import {
   branchErrorResponse,
@@ -192,6 +193,8 @@ export async function onRequestPut({ request, env, params }: { request: Request;
         if (field === 'disciplines') {
           const disciplinesJson = body.disciplines && body.disciplines.length > 0 ? JSON.stringify(body.disciplines) : null;
           values.push(disciplinesJson);
+        } else if (field === 'avatar_url' && typeof body.avatar_url === 'string') {
+          values.push(canonicalAvatarReference(body.avatar_url));
         } else {
           values.push(body[field] as string | number | null);
         }

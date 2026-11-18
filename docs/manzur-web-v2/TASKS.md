@@ -1,0 +1,15 @@
+# Work items — 2026-11-15
+- [x] Identity rootIndex6 and own Agents Global lifecycle connected.
+- [x] Git branch, HEAD, tracking, 33 preexisting dirty/untracked paths and prior Nov13 provenance reviewed.
+- [x] Authenticated avatar GET: enforce current tenant+student ownership and instructor's active branch_staff assignment.
+- [x] Uploaded avatar R2 customMetadata: bind organizationId and branchId. DELETE requires exact student and tenant/branch metadata when present. Preserve legacy metadata.
+- [x] Add GET branch guard and cross-tenant/branch/student delete ownership regression tests.
+- [x] Add signed unique refresh-token jti, single-use D1 atomic session consumption, same-second uniqueness test.
+- [ ] Revalidate after JWT/DB/refresh edits; previous initial tests did not cover latest edits.
+- [ ] Web build verification, independent brand bundles and smoke tests.
+- [ ] Webhook signed metadata and idempotency tests; no live payments.
+- [ ] Verify installed Native image GET/header behavior, registration/login compatibility. BLOCKED pending independent Native authenticated tests.
+- [ ] Durable native login/register abuse prevention or independently verified attestation. BLOCKED; client header spoofable.
+- [ ] Verify Manzur Pages secret inventory and Turnstile host policy. Prior inventory EMPTY.
+- [ ] Git commit + push only validated, proven owned paths.
+- [ ] Manzur Pages production release. BLOCKED on live Hamarr R2 endpoint security review, Native, anti-abuse, tenant and credential gates; no authorization to alter Hamarr production.
