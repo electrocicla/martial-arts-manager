@@ -34,6 +34,8 @@ await writeFile(join(root, 'site', '_worker.js'), worker, { flag: 'wx' });
 let next = config.replace(/^pages_build_output_dir\s*=\s*"[^"]+"$/m, 'pages_build_output_dir = "site"');
 if (brand === 'hamarr' && !pinned) next += '\n[env.production.vars]\nSITE_ORGANIZATION_ID = "hamarr"\n';
 if (brand === 'manzur') {
+  // Wrangler download config may emit an invalid empty placement table.
+  next = next.replace(/\[placement\]\r?\n(?=\[env\.production\])/, '[placement]\nmode = "off"\n');
   // Worker build uses node compatibility; preserve the existing production date.
   if (!/^compatibility_flags\s*=/m.test(next)) next = next.replace(/^compatibility_date\s*=\s*"[^"]+"$/m, '$&\ncompatibility_flags = ["nodejs_compat"]');
   if (/\[env\.production\]\s*\ncompatibility_date\s*=\s*"[^"]+"/.test(next)) next = next.replace(/(\[env\.production\]\s*\ncompatibility_date\s*=\s*"[^"]+")/, '$1\ncompatibility_flags = ["nodejs_compat"]');
